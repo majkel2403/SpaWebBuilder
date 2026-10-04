@@ -140,9 +140,462 @@ body.killed::after { content: ''; position: fixed; inset: 0; pointer-events: non
   .rv { opacity: 1; transform: none; filter: none; }
 }
 
+/* ---- code.css ---- */
+/* ===== code — "jev-starter" editor window: light / hot-pink / light / dark-terminal panes (prefix code-) ===== */
+#code { position: relative; padding-top: clamp(40px, 6vw, 84px); padding-bottom: clamp(46px, 7vw, 96px); }
+.code-head { margin-bottom: clamp(18px, 2.6vw, 30px); }
+.code-h2 { font-size: clamp(24px, 3.7vw, 46px); max-width: 26ch; }
+.code-head .lede { max-width: 72ch; }
+.code-stage { position: relative; }
+.code-glow { position: absolute; inset: -9% -5% -7%; z-index: 0; pointer-events: none;
+  background: radial-gradient(54% 46% at 76% 22%, rgba(255, 46, 110, .27), transparent 72%), radial-gradient(46% 46% at 12% 88%, rgba(166, 107, 255, .16), transparent 72%), radial-gradient(40% 40% at 52% 52%, rgba(255, 46, 110, .08), transparent 80%); }
+
+/* ---- the window ---- */
+.code-win { --code-fs: 12px; --code-lh: 19px; --code-rows: 14; position: relative; z-index: 1; border-radius: 16px; border-color: rgba(255, 70, 140, .3);
+  background: linear-gradient(180deg, rgba(15, 8, 21, .84), rgba(7, 4, 12, .9));
+  box-shadow: 0 34px 80px -34px rgba(0, 0, 0, .95), 0 0 0 1px rgba(255, 46, 110, .06), 0 0 70px -16px rgba(255, 46, 110, .38); }
+.code-bar { position: relative; display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; font: 600 12.5px/1 var(--mono); border-bottom: 1px solid rgba(255, 255, 255, .07); background: linear-gradient(180deg, rgba(255, 255, 255, .04), transparent); }
+.code-bar::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 26%; height: 1px; background: linear-gradient(90deg, transparent, #ff7ab3, #fff, #ff7ab3, transparent); box-shadow: 0 0 10px rgba(255, 46, 110, .9); animation: codeTravel 6.5s linear infinite; will-change: transform; }
+@keyframes codeTravel { from { transform: translateX(-110%); } to { transform: translateX(400%); } }
+.code-dots { display: inline-flex; gap: 7px; flex: none; }
+.code-dots i { width: 11px; height: 11px; border-radius: 50%; background: #6d6578; }
+.code-dots i:nth-child(1) { background: #ff4d7e; box-shadow: 0 0 10px rgba(255, 46, 110, .85); }
+.code-dots i:nth-child(3) { background: #f4eef6; }
+.code-title { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--mut); font-weight: 500; }
+.code-title b { color: var(--ink); font-weight: 700; letter-spacing: .01em; }
+.code-tab { position: relative; transition: color .35s, text-shadow .35s; }
+.code-tab.hot { color: #fff; text-shadow: 0 0 12px rgba(255, 46, 110, .95); }
+.code-eq { width: 72px; height: 20px; flex: none; }
+
+.code-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 12px; }
+
+/* ---- pane shell ---- */
+.code-pane { position: relative; display: flex; flex-direction: column; min-width: 0; border-radius: 12px; overflow: hidden; isolation: isolate; box-shadow: 0 16px 36px -18px rgba(0, 0, 0, .85); }
+.code-ph { flex: none; position: relative; z-index: 2; display: flex; align-items: center; gap: 9px; height: 34px; padding: 0 12px; font: 600 11.5px/1 var(--mono); border-bottom: 1px solid var(--code-hair); }
+.code-ph b { font-weight: 700; letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.code-pd { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--code-dot); box-shadow: 0 0 8px var(--code-dot); transition: transform .25s; }
+.code-meta { margin-left: auto; flex: none; font-size: 10px; letter-spacing: .04em; color: var(--code-meta); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.code-meta em { font-style: normal; display: inline-block; min-width: 2ch; text-align: right; }
+.code-tag { flex: none; padding: 2px 6px; border-radius: 99px; font-size: 8.5px; letter-spacing: .16em; text-transform: uppercase; border: 1px solid currentColor; opacity: .85; }
+.code-paused { color: var(--amber); }
+
+.code-view { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) 26px; position: relative; z-index: 1; }
+.code-body { position: relative; height: calc(var(--code-rows) * var(--code-lh) + 16px); overflow-x: auto; overflow-y: hidden; font: 400 var(--code-fs)/var(--code-lh) var(--mono); outline: none; scrollbar-width: thin; scrollbar-color: var(--code-sb) transparent; overscroll-behavior-x: contain; }
+.code-body:focus-visible { box-shadow: inset 0 0 0 2px var(--code-caret); }
+.code-doc { position: relative; min-width: 100%; width: max-content; padding: 8px 0; will-change: transform; }
+.code-src { margin: 0; padding: 0 16px 0 14px; font: inherit; white-space: pre; }
+.code-ln { position: relative; height: var(--code-lh); padding-right: 18px; white-space: pre; }
+.code-no { display: inline-block; width: 2.4ch; margin: 0 1.6ch 0 1ch; text-align: right; color: var(--code-no); user-select: none; opacity: 0; transition: opacity .2s; }
+.code-ln.on .code-no { opacity: 1; }
+.code-band { position: absolute; left: 0; right: 0; top: 8px; height: var(--code-lh); background: var(--code-band); box-shadow: inset 2px 0 0 var(--code-bandc); pointer-events: none; transition: transform .17s cubic-bezier(.2, .8, .2, 1), background-color .3s; will-change: transform; }
+.code-caret { display: inline-block; width: 2px; height: 1.2em; margin-left: 1px; vertical-align: -.22em; background: var(--code-caret); box-shadow: 0 0 8px var(--code-caret); animation: codeBlink 1.05s steps(1) infinite; }
+.code-typing .code-caret { animation: none; }
+@keyframes codeBlink { 50% { opacity: 0; } }
+
+/* minimap (a tiny canvas of coloured line stubs + the viewport window) */
+.code-mm { position: relative; border-left: 1px solid var(--code-hair); background: var(--code-mmbg); overflow: hidden; }
+.code-mm canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.code-mm i { position: absolute; left: 1px; right: 1px; top: 0; height: 56px; border-radius: 2px; border: 1px solid var(--code-mmv); background: var(--code-mmvf); will-change: transform; }
+
+/* ---- token colours (set per skin) ---- */
+.code-k { color: var(--t-k); font-weight: 600; } .code-s { color: var(--t-s); } .code-n { color: var(--t-n); } .code-c { color: var(--t-c); font-style: italic; }
+.code-f, .code-fa { color: var(--t-f); } .code-fd { color: var(--t-f); font-weight: 700; } .code-b { color: var(--t-b); } .code-ct { color: var(--t-ct); font-weight: 600; }
+.code-a { color: var(--t-a); } .code-o { color: var(--t-o); } .code-v, .code-w { color: var(--t-v); } .code-p { color: var(--t-p); } .code-jk { color: var(--t-jk); font-weight: 700; }
+
+/* ---- skin 1 + 3 : LIGHT ---- */
+.code-light { color: #2a2033; background: linear-gradient(180deg, #f7f4f8, #f0ecf2);
+  --code-hair: rgba(42, 32, 51, .11); --code-dot: #ff2e6e; --code-meta: #6c6277; --code-no: #8f84a0; --code-band: rgba(255, 46, 110, .075); --code-bandc: #ff2e6e; --code-caret: #e0105a; --code-sb: #cfc4d8;
+  --code-mmbg: rgba(42, 32, 51, .04); --code-mmv: rgba(224, 16, 90, .55); --code-mmvf: rgba(224, 16, 90, .08);
+  --t-k: #c10f58; --t-s: #08704c; --t-n: #a14f00; --t-c: #6c6277; --t-f: #1b4fd1; --t-b: #7b34d8; --t-ct: #a63c06; --t-a: #2a2033; --t-o: #8a1f55; --t-v: #2a2033; --t-p: #5b5066; --t-jk: #2a2033; }
+.code-light .code-ph { background: linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, 0)); }
+.code-light .code-ph b { color: #1c1424; }
+.code-light::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(120% 70% at 100% 0%, rgba(255, 46, 110, .07), transparent 60%), repeating-linear-gradient(0deg, rgba(42, 32, 51, .018) 0 1px, transparent 1px 3px); }
+
+/* ---- skin 2 : HOT PINK ---- */
+.code-hot { color: #0c0207; background: linear-gradient(165deg, #ff3a7d 0%, #e0105a 125%);
+  box-shadow: 0 0 0 1px rgba(255, 140, 180, .35), 0 0 56px -6px rgba(255, 46, 110, .6), 0 16px 36px -18px rgba(0, 0, 0, .85);
+  --code-hair: rgba(12, 2, 7, .22); --code-dot: #fff; --code-meta: #3a0719; --code-no: #54112d; --code-band: rgba(255, 255, 255, .26); --code-bandc: #0c0207; --code-caret: #0c0207; --code-sb: rgba(12, 2, 7, .4);
+  --code-mmbg: rgba(12, 2, 7, .1); --code-mmv: rgba(12, 2, 7, .7); --code-mmvf: rgba(255, 255, 255, .22);
+  --t-k: #0c0207; --t-s: #0c0207; --t-n: #0c0207; --t-c: #0c0207; --t-f: #0c0207; --t-b: #0c0207; --t-ct: #0c0207; --t-a: #0c0207; --t-o: #0c0207; --t-v: #0c0207; --t-p: #0c0207; --t-jk: #0c0207; }
+.code-hot > * { position: relative; z-index: 1; }
+.code-hot::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .24) 50%, transparent 62%) no-repeat; background-size: 60% 100%; animation: codeSheen 7.5s ease-in-out infinite; will-change: transform; }
+@keyframes codeSheen { 0% { transform: translateX(-70%); } 55%, 100% { transform: translateX(170%); } }
+.code-hot::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(165deg, #ff6a3d 0%, #e0301a 125%); opacity: 0; transition: opacity .7s; }
+body.killed .code-hot::after { opacity: 1; }
+.code-hot .code-ph { background: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0)); }
+.code-hot .code-ph b { color: #0c0207; }
+.code-hot .code-jk { font-weight: 800; }
+.code-hot .code-live { border-radius: 3px; background: rgba(255, 255, 255, .3); box-shadow: 0 0 0 2px rgba(255, 255, 255, .3); }
+.code-hot .code-bool { background: #0c0207; color: #ffd5e4; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-bool.no { color: #ffd36b; }
+.code-hot .code-d-execute, .code-hot .code-d-buy { background: #0c0207; color: #7dffd0; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-d-review { background: #0c0207; color: #ffd36b; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-d-skip { background: #0c0207; color: #d9d0e2; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-d-sell { background: #0c0207; color: #ff8f9b; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-tag { color: #0c0207; background: rgba(255, 255, 255, .5); border-color: transparent; font-weight: 700; }
+.code-hot .code-tag::before { content: ''; display: inline-block; width: 5px; height: 5px; margin-right: 5px; border-radius: 50%; background: #0c0207; vertical-align: 1px; animation: lampPulse 1.2s ease-in-out infinite; }
+.code-hot .code-mm canvas { mix-blend-mode: normal; }
+
+/* ---- skin 4 : DARK TERMINAL ---- */
+.code-dark { color: #e8e0ee; background: linear-gradient(180deg, #100a18, #08040d); box-shadow: inset 0 0 0 1px rgba(255, 70, 140, .22), 0 16px 36px -18px rgba(0, 0, 0, .9);
+  --code-hair: rgba(255, 255, 255, .09); --code-dot: #ff2e6e; --code-meta: #9b92a8; --code-no: #8d8499; --code-band: rgba(255, 46, 110, .1); --code-bandc: #ff2e6e; --code-caret: #ff4f8d; --code-sb: rgba(255, 255, 255, .2);
+  --code-mmbg: rgba(255, 255, 255, .025); --code-mmv: rgba(255, 70, 140, .6); --code-mmvf: rgba(255, 70, 140, .08); }
+.code-dark .code-ph { background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0)); }
+.code-dark .code-ph b { color: #f4eef6; }
+.code-dark::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(90% 60% at 0% 100%, rgba(255, 46, 110, .12), transparent 70%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .02) 0 1px, transparent 1px 3px); }
+.code-term { overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 8px 0; height: calc(var(--code-rows) * var(--code-lh) + 16px); }
+.code-out { flex: none; will-change: transform; }
+.code-tl { height: var(--code-lh); padding: 0 14px; white-space: pre; color: #e8e0ee; animation: codeIn .22s var(--ease) both; }
+.code-tl.seed { animation: none; }
+@keyframes codeIn { from { opacity: 0; } to { opacity: 1; } }
+.code-dark .code-caret { width: .62em; height: 1.1em; vertical-align: -.2em; margin-left: 2px; border-radius: 1px; background: #ff4f8d; box-shadow: 0 0 10px #ff4f8d; }
+.code-tm { color: #9b92a8; } .code-td { color: #8d8499; } .code-tx { color: #e8e0ee; }
+.code-t-buy { color: var(--green); text-shadow: 0 0 10px rgba(46, 230, 166, .45); } .code-t-sell { color: var(--red); text-shadow: 0 0 10px rgba(255, 77, 94, .45); }
+.code-t-hold { color: #b6aec2; } .code-t-close { color: var(--orange); } .code-t-flatten { color: var(--violet); text-shadow: 0 0 10px rgba(166, 107, 255, .5); }
+.code-t-conf { color: var(--amber); } .code-t-ok { color: var(--green); } .code-t-no { color: var(--red); }
+.code-t-dest { color: var(--pink2); text-shadow: 0 0 10px rgba(255, 46, 110, .5); }
+.code-t-warn { color: var(--pink2); }
+.code-t-ps { color: var(--pink); font-weight: 700; } .code-t-cmd { color: #f4eef6; font-weight: 600; }
+.code-t-kill { background: var(--red); color: #14030b; font-weight: 800; padding: 1px 0; box-shadow: 0 0 0 3px var(--red), 0 0 22px 2px rgba(255, 77, 94, .7); border-radius: 2px; }
+.code-t-arm { background: rgba(46, 230, 166, .18); color: var(--green); font-weight: 700; padding: 1px 0; box-shadow: 0 0 0 3px rgba(46, 230, 166, .18); border-radius: 2px; }
+.code-run { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; padding: 4px 9px 4px 7px; border-radius: 99px; font: 700 9.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--pink2); border: 1px solid rgba(255, 70, 140, .5); background: rgba(255, 46, 110, .1); transition: background .25s, color .25s, box-shadow .25s; }
+.code-run::before { content: ''; position: absolute; inset: -8px -6px; }
+.code-run i { width: 0; height: 0; border-left: 7px solid currentColor; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; }
+.code-run:hover { background: rgba(255, 46, 110, .3); color: #fff; box-shadow: 0 0 16px rgba(255, 46, 110, .55); }
+.code-run:active { transform: scale(.96); }
+.code-run:focus-visible { outline: 2px solid var(--pink2); outline-offset: 2px; }
+
+/* kill-switch line on questions.py */
+body.killed .code-ln[data-kill] { background: rgba(255, 77, 94, .2); box-shadow: inset 2px 0 0 var(--red); }
+body.killed .code-ln[data-kill]::after { content: ' # KILL file found - all orders to review'; color: #b3001c; font-style: italic; font-weight: 700; }
+body.killed .code-light { --code-bandc: #e0102f; --code-band: rgba(255, 77, 94, .1); --code-caret: #e0102f; }
+
+/* ---- status bar ---- */
+.code-status { display: flex; align-items: center; gap: 16px; min-height: 30px; padding: 6px 14px; font: 500 10.5px/1.3 var(--mono); letter-spacing: .04em; color: #1a0610; background: linear-gradient(90deg, #ff3a7d, #e0105a 125%); position: relative; }
+.code-status b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.code-status .lamp { width: 6px; height: 6px; margin-right: 8px; background: #0c0207; box-shadow: none; }
+.code-st-q { display: inline-flex; align-items: center; gap: 12px; margin-left: auto; margin-right: auto; }
+.code-st-l { opacity: .85; }
+.code-q i { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 2px; background: #0c0207; vertical-align: 0; }
+.code-q-r i { background: #fff; } .code-q-s i { background: rgba(12, 2, 7, .35); }
+.code-qbar { display: inline-flex; width: 74px; height: 6px; border-radius: 99px; overflow: hidden; background: rgba(12, 2, 7, .22); }
+.code-qbar i { display: block; height: 100%; flex: 1 1 0; transition: flex-grow .6s var(--ease); }
+.code-qbar .x { background: #0c0207; } .code-qbar .r { background: #fff; } .code-qbar .s { background: rgba(12, 2, 7, .4); }
+.code-st-b { margin-left: auto; white-space: nowrap; }
+body.killed .code-status { background: linear-gradient(90deg, #ff6a3d, #e0301a 125%); }
+body.killed .code-win { border-color: rgba(255, 77, 94, .6); box-shadow: 0 34px 80px -34px rgba(0, 0, 0, .95), 0 0 80px -12px rgba(255, 60, 80, .5); }
+body.killed .code-bar::after { background: linear-gradient(90deg, transparent, #ff6a78, #fff, #ff6a78, transparent); }
+
+/* ---- responsive ---- */
+@media (max-width: 1100px) { .code-win { --code-fs: 11.5px; --code-lh: 18px; } }
+@media (max-width: 760px) {
+  .code-win { --code-fs: 10.5px; --code-lh: 17px; --code-rows: 12; border-radius: 13px; }
+  .code-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 8px; }
+  .code-bar { height: 42px; padding: 0 12px; gap: 10px; font-size: 12px; }
+  .code-eq { width: 56px; }
+  .code-view { grid-template-columns: minmax(0, 1fr) 22px; }
+  .code-status { gap: 10px; padding: 6px 12px; font-size: 10px; flex-wrap: wrap; }
+  .code-st-a { display: none; }
+  .code-st-q { margin: 0; gap: 9px; flex-wrap: wrap; }
+  .code-qbar { width: 54px; }
+  .code-st-b { margin-left: auto; }
+  .code-meta { font-size: 9.5px; }
+}
+@media (max-width: 380px) { .code-qbar { display: none; } }
+@media (prefers-reduced-motion: reduce) { .code-bar::after, .code-hot::before { animation: none; } .code-caret { animation: none; } .code-band { transition: none; } }
+
+/* ---- fx.css ---- */
+/* ===== fx — page atmosphere, kill theatre, toasts, boot (prefix fx-) ===== */
+
+/* ---------- 1. background: css gradient layer (fallback + pre-first-frame look) under the webgl plasma canvas ---------- */
+#fx-bgf, #fx-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#fx-bgf { z-index: -3;
+  background:
+    radial-gradient(120% 95% at 50% 45%, transparent 48%, rgba(3, 1, 8, .5) 80%, rgba(2, 1, 5, .88) 100%),
+    radial-gradient(58% 46% at 14% 8%, rgba(96, 26, 140, .27), transparent 72%),
+    radial-gradient(46% 40% at 88% 26%, rgba(150, 22, 80, .18), transparent 72%),
+    radial-gradient(70% 55% at 50% 112%, rgba(44, 38, 150, .24), transparent 74%),
+    #05030a; }
+body.killed #fx-bgf { background:
+    radial-gradient(120% 95% at 50% 45%, transparent 44%, rgba(64, 0, 8, .5) 78%, rgba(30, 0, 4, .9) 100%),
+    radial-gradient(58% 46% at 14% 8%, rgba(140, 22, 30, .28), transparent 72%),
+    radial-gradient(46% 40% at 88% 26%, rgba(170, 80, 14, .18), transparent 72%),
+    radial-gradient(70% 55% at 50% 112%, rgba(110, 20, 24, .24), transparent 74%),
+    #05030a; }
+#fx-bg { z-index: -2; opacity: 0; transition: opacity 1s ease; }
+html.fx-gl #fx-bg { opacity: 1; }
+
+/* ---------- 2. overlays (all pointer-events:none, all below the hud z-index 60) ---------- */
+.fx-ov { position: fixed; inset: 0; pointer-events: none; }
+
+.fx-scan { z-index: 55; overflow: hidden; opacity: .5; background: repeating-linear-gradient(180deg, rgba(0, 0, 0, .24) 0 1px, transparent 1px 3px); }
+.fx-scan i { position: absolute; left: 0; right: 0; top: 0; height: 26vh; transform: translateY(-30vh); will-change: transform; animation: fxRoll 11s linear infinite;
+  background: linear-gradient(180deg, transparent, rgba(255, 60, 120, .035) 45%, rgba(255, 110, 170, .06) 78%, transparent); }
+body.killed .fx-scan i { background: linear-gradient(180deg, transparent, rgba(255, 60, 50, .045) 45%, rgba(255, 110, 70, .075) 78%, transparent); }
+@keyframes fxRoll { to { transform: translateY(130vh); } }
+@media (hover: none), (pointer: coarse) { .fx-scan { opacity: .26; } }
+
+/* film grain: sparse light specks from an inline svg turbulence tile, hopped around in steps (transform only) */
+.fx-grain { inset: -120px; z-index: 56; opacity: .05; will-change: transform; animation: fxGrain .8s steps(1) infinite; background-size: 256px 256px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .96  0 0 0 0 .86  0 0 0 0 1  0 0 0 5 -3.15'/></filter><rect width='256' height='256' filter='url(%23n)'/></svg>"); }
+@keyframes fxGrain {
+  0% { transform: translate(0, 0); } 12% { transform: translate(-37px, 23px); } 25% { transform: translate(29px, -51px); } 37% { transform: translate(-61px, -17px); }
+  50% { transform: translate(47px, 38px); } 62% { transform: translate(-19px, 64px); } 75% { transform: translate(58px, -33px); } 87% { transform: translate(-44px, -58px); } 100% { transform: translate(0, 0); } }
+
+/* ---------- 3. cursor spotlight (fine pointers only) ---------- */
+.fx-spotwrap { display: none; z-index: 54; overflow: hidden; }
+@media (hover: hover) and (pointer: fine) { .fx-spotwrap { display: block; } }
+#fx-spot { position: absolute; left: 0; top: 0; width: 640px; height: 640px; margin: -320px 0 0 -320px; border-radius: 50%; opacity: 0; transition: opacity .5s; will-change: transform;
+  background: radial-gradient(circle closest-side, rgba(255, 70, 140, .09), rgba(255, 46, 110, .035) 46%, transparent 100%); }
+.fx-spotwrap.on #fx-spot { opacity: 1; }
+body.killed #fx-spot { background: radial-gradient(circle closest-side, rgba(255, 80, 70, .1), rgba(255, 60, 50, .04) 46%, transparent 100%); }
+
+/* ---------- 4. reveal cleanup: once a .rv has landed, drop its stagger delay so later hover transitions are instant ---------- */
+.rv.fx-done { transition-delay: 0s; }
+#fx-tick { position: fixed; left: 0; top: 0; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
+
+/* ---------- 7. hud nav: section in view ---------- */
+.nav { position: relative; }
+.nav a.on { color: #fff; background: rgba(255, 46, 110, .11); text-shadow: 0 0 14px rgba(255, 46, 110, .7); }
+.fx-navbar { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0; border-radius: 2px; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, var(--pink), var(--pink2)); box-shadow: 0 0 10px var(--pink), 0 0 24px rgba(255, 46, 110, .75);
+  transition: left .5s var(--ease), width .5s var(--ease), opacity .3s; }
+.fx-navbar.on { opacity: 1; }
+
+/* ---------- 8. kill theatre: shockwave, glitch, toasts ---------- */
+#fx-shock { position: fixed; inset: 0; z-index: 85; pointer-events: none; overflow: hidden; }
+.fx-ring { --rc: 255, 77, 94; position: absolute; width: 520px; height: 520px; translate: -50% -50%; border-radius: 50%; will-change: scale, opacity;
+  background: radial-gradient(circle closest-side, transparent 0, rgba(var(--rc), .05) 58%, rgba(var(--rc), 0) 80%, rgba(var(--rc), .32) 92.5%, rgba(var(--rc), .95) 97%, rgba(var(--rc), 0) 100%);
+  animation: fxRing .95s cubic-bezier(.16, .7, .22, 1) both; }
+.fx-ring.g { --rc: 46, 230, 166; }
+.fx-ring.b { animation-duration: 1.3s; animation-delay: .1s; filter: saturate(.8); }
+@keyframes fxRing { 0% { scale: .02; opacity: 1; } 65% { opacity: .8; } 100% { scale: var(--s, 6); opacity: 0; } }
+
+#fx-glitch { position: fixed; inset: 0; z-index: 86; pointer-events: none; display: none; overflow: hidden; }
+html.fx-glitch #fx-glitch { display: block; }
+#fx-glitch::before { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 50%, rgba(255, 40, 70, 0), rgba(255, 40, 70, .3) 100%); animation: fxFlash .35s ease-out both; }
+#fx-glitch i { position: absolute; left: -6%; right: -6%; opacity: 0; mix-blend-mode: screen; animation: fxSlice .35s steps(1) both;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 70, .42) 16%, rgba(0, 235, 255, .36) 64%, transparent);
+  -webkit-backdrop-filter: hue-rotate(150deg) saturate(2.4) brightness(1.35); backdrop-filter: hue-rotate(150deg) saturate(2.4) brightness(1.35); }
+#fx-glitch i:nth-child(1) { top: 8%; height: 4.5%; --gx: 26; animation-delay: 0s; }
+#fx-glitch i:nth-child(2) { top: 23%; height: 2.2%; --gx: -38; animation-delay: .03s; }
+#fx-glitch i:nth-child(3) { top: 41%; height: 7%; --gx: 18; animation-delay: .06s; }
+#fx-glitch i:nth-child(4) { top: 57%; height: 3%; --gx: -30; animation-delay: .02s; }
+#fx-glitch i:nth-child(5) { top: 72%; height: 5.5%; --gx: 42; animation-delay: .05s; }
+#fx-glitch i:nth-child(6) { top: 88%; height: 2.4%; --gx: -22; animation-delay: .08s; }
+@keyframes fxFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fxSlice {
+  0% { opacity: 1; transform: translateX(calc(var(--gx) * 1px)); } 16% { opacity: 0; } 30% { opacity: 1; transform: translateX(calc(var(--gx) * -1.4px)); }
+  48% { opacity: 0; } 62% { opacity: 1; transform: translateX(calc(var(--gx) * .6px)); } 80% { opacity: 0; } 100% { opacity: 0; } }
+/* rgb split on every piece of text + a few px of jitter on the sections, ~350 ms, css only */
+html.fx-glitch { animation: fxSplit .35s steps(1) both; }
+@keyframes fxSplit {
+  0% { text-shadow: 4px 0 rgba(255, 20, 70, .9), -4px 0 rgba(0, 235, 255, .9); } 20% { text-shadow: -6px 0 rgba(255, 20, 70, .9), 5px 0 rgba(0, 235, 255, .9); }
+  40% { text-shadow: 2px 0 rgba(255, 20, 70, .8), -2px 0 rgba(0, 235, 255, .8); } 60% { text-shadow: -3px 1px rgba(255, 20, 70, .8), 3px -1px rgba(0, 235, 255, .8); }
+  80% { text-shadow: 1px 0 rgba(255, 20, 70, .6), -1px 0 rgba(0, 235, 255, .6); } 100% { text-shadow: none; } }
+html.fx-glitch .sec, html.fx-glitch .foot { animation: fxJit .35s steps(1) both; }
+@keyframes fxJit { 0% { translate: -5px 0; } 14% { translate: 6px 1px; } 28% { translate: -3px -1px; } 42% { translate: 4px 0; } 57% { translate: -2px 1px; } 71% { translate: 2px 0; } 85% { translate: -1px 0; } 100% { translate: 0 0; } }
+
+#fx-toasts { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); translate: -50% 0; z-index: 92; width: min(92vw, 640px);
+  display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.fx-toast { --tc: 255, 122, 179; position: relative; display: flex; align-items: center; gap: 11px; max-width: 100%; padding: 11px 18px; border-radius: 16px; overflow: hidden;
+  font: 700 11px/1.4 var(--mono); letter-spacing: .07em; color: var(--ink); background: rgba(14, 8, 22, .84);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5); backdrop-filter: blur(14px) saturate(1.5); border: 1px solid rgba(var(--tc), .5);
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, .85), 0 0 30px -6px rgba(var(--tc), .55), inset 0 1px 0 rgba(255, 255, 255, .09);
+  animation: fxToastIn .5s var(--ease) both; }
+.fx-t-kill { --tc: 255, 77, 94; animation: fxToastIn .5s var(--ease) both, fxToastShake .4s steps(1) .05s; }
+.fx-t-ok { --tc: 46, 230, 166; }
+.fx-t-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--tc)); box-shadow: 0 0 10px rgb(var(--tc)), 0 0 22px rgba(var(--tc), .8); animation: lampPulse 1s ease-in-out infinite; }
+.fx-t-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgb(var(--tc)); box-shadow: 0 0 8px rgb(var(--tc)); transform-origin: left; animation: fxToastBar 3s linear both; }
+.fx-t-out { animation: fxToastOut .36s ease-in both; } .fx-t-out.fast { animation-duration: .15s; }
+@keyframes fxToastIn { from { opacity: 0; translate: 0 18px; scale: .94; filter: blur(6px); } to { opacity: 1; translate: 0 0; scale: 1; filter: none; } }
+@keyframes fxToastOut { to { opacity: 0; translate: 0 -10px; scale: .96; filter: blur(5px); } }
+@keyframes fxToastBar { to { transform: scaleX(0); } }
+@keyframes fxToastShake { 0% { translate: -6px 0; } 25% { translate: 5px 0; } 50% { translate: -3px 0; } 75% { translate: 2px 0; } 100% { translate: 0 0; } }
+@media (max-width: 700px) { .fx-toast { padding: 10px 14px; font-size: 10.5px; letter-spacing: .05em; } }
+
+/* ---------- 5. boot overlay ---------- */
+#fx-boot { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; color: var(--ink); font: 500 12px/1.7 var(--mono);
+  animation: fxBootFail .01s linear 2.2s forwards; }
+@keyframes fxBootFail { to { visibility: hidden; pointer-events: none; } }
+/* two full-height layers, each clipped to one half, slide apart on the way out; identical backgrounds keep the seam invisible */
+.fx-bh { position: absolute; inset: 0; will-change: transform; background-color: #05030a;
+  background-image: radial-gradient(52% 56% at 50% 50%, rgba(255, 46, 110, .17), transparent 72%), radial-gradient(40% 40% at 12% 100%, rgba(110, 50, 220, .16), transparent 70%),
+    linear-gradient(rgba(255, 255, 255, .034) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .034) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 44px 44px, 44px 44px; background-position: 0 0, 0 0, 50% 50%, 50% 50%; }
+.fx-bh.t { clip-path: inset(0 0 50% 0); } .fx-bh.b { clip-path: inset(50% 0 0 0); }
+.fx-bx { position: relative; z-index: 2; width: min(540px, calc(100vw - 32px)); padding: 16px 18px 14px; border-radius: 14px; border: 1px solid rgba(255, 46, 110, .38);
+  background: linear-gradient(180deg, rgba(20, 10, 26, .82), rgba(9, 5, 14, .86)); box-shadow: 0 0 60px -10px rgba(255, 46, 110, .5), 0 30px 80px -20px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .08); }
+.fx-bhead { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 11px; border-bottom: 1px solid var(--line); }
+.fx-bhead b { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; font: 800 16px/1 var(--sans); color: #fff; background: linear-gradient(145deg, #ff4f8d, #e0155a); box-shadow: 0 0 20px rgba(255, 46, 110, .65), inset 0 1px 0 rgba(255, 255, 255, .4); }
+.fx-bhead span { font: 700 13px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; }
+.fx-bhead em { margin-left: auto; font-style: normal; font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--mut); }
+.fx-blog { min-height: 7.9em; }
+.fx-bl { min-height: 1.7em; color: #cfc6d6; white-space: pre-wrap; overflow-wrap: anywhere; visibility: hidden; }
+.fx-bl.show { visibility: visible; }
+.fx-bl::before { content: '> '; color: var(--pink); }
+.fx-bl em { font-style: normal; font-weight: 700; color: var(--green); text-shadow: 0 0 10px rgba(46, 230, 166, .6); }
+.fx-bl em:not(:empty)::before { content: ' '; }
+.fx-bl.cur::after { content: ''; display: inline-block; width: .55em; height: 1em; margin-left: 3px; vertical-align: -.14em; background: var(--pink); box-shadow: 0 0 10px var(--pink); animation: fxCaret .5s steps(1) infinite; }
+@keyframes fxCaret { 50% { opacity: 0; } }
+.fx-bbar { height: 3px; margin-top: 12px; border-radius: 3px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.fx-bbar i { display: block; height: 100%; width: 100%; transform: scaleX(0); transform-origin: left; border-radius: inherit; background: linear-gradient(90deg, var(--pink), var(--pink2), #fff); box-shadow: 0 0 14px var(--pink); }
+.fx-bmeta { display: flex; justify-content: space-between; gap: 12px; margin-top: 9px; font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--mut); font-variant-numeric: tabular-nums; }
+.fx-bmeta span:first-child { color: var(--pink2); }
+.fx-bline { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; z-index: 3; opacity: 0; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--pink2) 18%, #fff 50%, var(--pink2) 82%, transparent); box-shadow: 0 0 22px 3px rgba(255, 46, 110, .95), 0 0 90px 16px rgba(255, 46, 110, .5); }
+#fx-boot::after { content: ''; position: absolute; inset: 0; z-index: 4; opacity: 0; pointer-events: none; background: radial-gradient(70% 55% at 50% 50%, rgba(255, 205, 225, .55), rgba(255, 46, 110, 0) 70%); }
+/* out: terminal drops, line flashes, halves slide away */
+.fx-out { pointer-events: none; }
+.fx-out .fx-bx { animation: fxBoxOut .14s ease-in both; }
+.fx-out .fx-bh.t { animation: fxHalfT .4s cubic-bezier(.76, 0, .24, 1) .1s both; } .fx-out .fx-bh.b { animation: fxHalfB .4s cubic-bezier(.76, 0, .24, 1) .1s both; }
+.fx-out .fx-bline { animation: fxBLine .5s ease-out both; }
+.fx-out::after { animation: fxBFlash .34s ease-out both; }
+.fx-fast .fx-bx { animation-duration: .08s; } .fx-fast .fx-bh.t, .fx-fast .fx-bh.b { animation-duration: .22s; animation-delay: .02s; } .fx-fast .fx-bline { animation-duration: .3s; }
+@keyframes fxBoxOut { to { opacity: 0; scale: 1.04; filter: blur(4px); } }
+@keyframes fxHalfT { to { transform: translateY(-50%); } } @keyframes fxHalfB { to { transform: translateY(50%); } }
+@keyframes fxBLine { 0% { opacity: 0; scale: .12 1; } 22% { opacity: 1; scale: 1 1; } 70% { opacity: 1; scale: 1 2.4; } 100% { opacity: 0; scale: 1 .2; } }
+@keyframes fxBFlash { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+@media (max-width: 700px) { .fx-bx { padding: 14px 14px 12px; font-size: 11px; } .fx-bhead em { display: none; } .fx-bmeta span:last-child { text-align: right; } }
+
+/* ---------- reduced motion / print ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #fx-boot, .fx-spotwrap, .fx-scan i, #fx-glitch, #fx-shock { display: none !important; }
+  .fx-grain { animation: none; }
+}
+@media print { #fx-bg, .fx-ov, #fx-boot, #fx-toasts, #fx-shock, #fx-glitch { display: none !important; } }
+
+/* ---- hero.css ---- */
+/* ===== hero — "JEV DECIDES" luminous decision network (prefix hero-) ===== */
+#hero { position: relative; background: var(--bg); isolation: isolate; }
+.hero-stage { position: relative; height: clamp(560px, 88vh, 920px); overflow: hidden; background: radial-gradient(90% 70% at 50% 46%, #14061a 0%, #08040d 56%, #05030a 100%); }
+.hero-net { position: absolute; inset: 0; overflow: hidden; }
+.hero-net canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#hero-live { touch-action: pan-y; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.hero-net canvas { clip-path: inset(0 0 0 0); transition: clip-path 1.9s cubic-bezier(.3, .7, .2, 1), opacity .9s ease; }
+#hero-static { transition: filter .7s var(--ease), clip-path 1.9s cubic-bezier(.3, .7, .2, 1), opacity .9s ease; }
+/* intro state (added by hero.js, removed after the boot overlay): everything starts hidden and flows in */
+.hero-card, .hero-chip, .hero-fig, .hero-legend { transition: opacity .9s var(--ease), transform .9s var(--ease); }
+.hero-card { transition-delay: .35s; } .hero-chip { transition-delay: .7s; } .hero-fig, .hero-legend { transition-delay: .9s; }
+.hero-pre .hero-net canvas { clip-path: inset(0 100% 0 0); opacity: 0; }
+.hero-pre .hero-card { opacity: 0; transform: translateY(18px); } .hero-pre .hero-chip { opacity: 0; transform: translateY(-10px); } .hero-pre .hero-fig, .hero-pre .hero-legend { opacity: 0; }
+body.killed #hero-static { filter: hue-rotate(15deg) saturate(1.25) brightness(1.05); }
+
+/* ---- background FX (compositor-only: transforms + opacity) ---- */
+.hero-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.hero-bg > i { position: absolute; display: block; }
+.hero-aura { left: var(--hero-jx, 38%); top: var(--hero-jy, 50%); width: min(1100px, 130%); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; mix-blend-mode: screen; opacity: .85;
+  background: conic-gradient(from 0deg, transparent 0, rgba(255, 46, 110, .26) 8%, transparent 26%, rgba(166, 107, 255, .14) 44%, transparent 60%, rgba(255, 46, 110, .2) 78%, transparent 100%);
+  -webkit-mask: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, .55) 45%, transparent 100%); mask: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, .55) 45%, transparent 100%);
+  animation: heroSpin 46s linear infinite; will-change: transform; }
+@keyframes heroSpin { to { rotate: 360deg; } }
+.hero-grid { inset: 0; opacity: .5; background-image: radial-gradient(rgba(255, 120, 170, .22) 1px, transparent 1.3px); background-size: 26px 26px; background-position: 13px 13px;
+  -webkit-mask: radial-gradient(70% 62% at 50% 48%, #000 0, transparent 100%); mask: radial-gradient(70% 62% at 50% 48%, #000 0, transparent 100%); }
+.hero-scan { top: 0; bottom: 0; left: 0; width: 240px; background: linear-gradient(90deg, transparent, rgba(255, 60, 130, .05) 50%, rgba(255, 60, 130, .10) 96%, rgba(255, 90, 160, .24) 99.6%, transparent 100%); -webkit-mask: linear-gradient(180deg, transparent, #000 20%, #000 80%, transparent); mask: linear-gradient(180deg, transparent, #000 20%, #000 80%, transparent); animation: heroScan 8.5s linear infinite; will-change: transform; }
+@keyframes heroScan { from { transform: translateX(-220px); } to { transform: translateX(110vw); } }
+.hero-vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(130% 100% at 50% 46%, transparent 52%, rgba(5, 3, 10, .72) 100%), linear-gradient(180deg, rgba(5, 3, 10, .55), transparent 12%, transparent 88%, rgba(5, 3, 10, .6)); }
+
+/* ---- readout chip (top-right) ---- */
+.hero-chip { position: absolute; top: 14px; right: clamp(12px, 2vw, 28px); z-index: 4; max-width: calc(100% - 24px); pointer-events: none;
+  display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 10px; font-size: 10.5px; line-height: 1.5; letter-spacing: .03em; color: #cfc6d8; white-space: nowrap;
+  background: linear-gradient(180deg, rgba(24, 9, 28, .78), rgba(10, 5, 16, .78)); border: 1px solid rgba(255, 70, 140, .34); box-shadow: 0 0 28px rgba(255, 46, 110, .2), inset 0 1px 0 rgba(255, 255, 255, .06);
+  backdrop-filter: blur(10px) saturate(1.3); -webkit-backdrop-filter: blur(10px) saturate(1.3); }
+.hero-c-top { display: inline-flex; align-items: center; gap: 7px; padding-right: 10px; border-right: 1px solid rgba(255, 255, 255, .12); }
+.hero-c-top .lamp { width: 6px; height: 6px; }
+.hero-c-lab { font-size: 8.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--mut); }
+.hero-c-body b { color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+.hero-c-body .hero-c-act { color: var(--pink2); text-shadow: 0 0 12px rgba(255, 46, 110, .7); text-transform: uppercase; letter-spacing: .08em; }
+.hero-c-k { color: #9d93aa; }
+.hero-sep { color: #7d7389; margin: 0 .5em; }
+.hero-badge { font-style: normal; font-weight: 800; font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; color: #04130d; background: var(--green); box-shadow: 0 0 14px rgba(46, 230, 166, .55); }
+.hero-badge[data-d="review"] { background: var(--amber); color: #1c1300; box-shadow: 0 0 14px rgba(255, 193, 61, .55); }
+.hero-badge[data-d="skip"] { background: #8d8499; color: #120d18; box-shadow: none; }
+body.killed .hero-badge[data-d="review"] { background: var(--red); color: #1a0306; box-shadow: 0 0 14px rgba(255, 77, 94, .7); }
+.hero-c-why { font-size: 9px; color: var(--mut); letter-spacing: .06em; }
+.hero-c-why:empty { display: none; }
+body.killed .hero-chip { border-color: rgba(255, 77, 94, .55); box-shadow: 0 0 30px rgba(255, 60, 80, .3); }
+
+/* ---- fig label (top-left) ---- */
+.hero-fig { position: absolute; top: 22px; left: clamp(14px, 2vw, 30px); z-index: 3; pointer-events: none; display: flex; align-items: center; gap: 10px; font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: #8d8499; }
+.hero-fig i { width: 26px; height: 1px; background: linear-gradient(90deg, transparent, var(--pink)); box-shadow: 0 0 10px var(--pink); }
+@media (max-width: 1100px) { .hero-fig { display: none; } }
+
+/* ---- legend (bottom-right) ---- */
+.hero-legend { position: absolute; right: clamp(12px, 2vw, 28px); bottom: 11px; z-index: 3; display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 4px 14px; max-width: 70%; pointer-events: none; font-size: 8.5px; letter-spacing: .16em; text-transform: uppercase; color: #a89db3; }
+.hero-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.hero-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.hero-dot-ex { background: var(--pink); box-shadow: 0 0 8px var(--pink); } .hero-dot-rv { background: var(--amber); box-shadow: 0 0 8px var(--amber); } .hero-dot-sk { background: #8d8499; }
+.hero-leg-sim { color: #8d8499; letter-spacing: .12em; }
+
+/* ---- title card (bottom-left, glass, 3px hot-pink spine) ---- */
+.hero-card { position: absolute; left: clamp(12px, 2vw, 28px); bottom: 24px; z-index: 4; padding: 13px 22px 15px 18px; border-radius: 6px 12px 12px 6px; max-width: calc(100% - 24px);
+  background: linear-gradient(180deg, rgba(20, 7, 24, .78), rgba(8, 4, 13, .84)); border: 1px solid rgba(255, 70, 140, .28); border-left: 3px solid var(--pink);
+  box-shadow: -6px 0 32px -6px rgba(255, 46, 110, .55), 0 0 48px rgba(255, 46, 110, .16), inset 0 1px 0 rgba(255, 255, 255, .07);
+  backdrop-filter: blur(12px) saturate(1.3); -webkit-backdrop-filter: blur(12px) saturate(1.3); }
+.hero-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 8.5px; letter-spacing: .22em; text-transform: uppercase; color: #b3a8be; margin-bottom: 6px; }
+.hero-eyebrow .lamp { width: 6px; height: 6px; }
+.hero-title { font: 800 clamp(30px, 3.05vw, 44px)/1 var(--mono); letter-spacing: .015em; color: #fff; text-shadow: 0 0 32px rgba(255, 46, 110, .55), 0 0 2px rgba(255, 255, 255, .6); white-space: nowrap; }
+.hero-title .glitch { display: inline-block; min-width: 11ch; }
+.hero-sub { margin-top: 9px; font-size: clamp(10.5px, .86vw, 12px); font-weight: 500; letter-spacing: .04em; color: var(--ink); white-space: nowrap; }
+.hero-sub i { font-style: normal; color: #7d7389; margin: 0 .7em; }
+.hero-w1 { color: var(--orange); text-shadow: 0 0 14px rgba(255, 138, 61, .5); } .hero-w2 { color: var(--pink2); text-shadow: 0 0 14px rgba(255, 46, 110, .6); } .hero-w3 { color: #fff; }
+.hero-sub b { font-weight: 700; }
+body.killed .hero-card { border-left-color: var(--red); box-shadow: -6px 0 32px -6px rgba(255, 77, 94, .6), 0 0 48px rgba(255, 60, 80, .18), inset 0 1px 0 rgba(255, 255, 255, .07); }
+
+/* ---- the hot-pink rule under the stage ---- */
+.hero-rule { position: relative; height: 1px; background: linear-gradient(90deg, rgba(255, 46, 110, 0), var(--pink) 16%, #ff9cc4 50%, var(--pink) 84%, rgba(255, 46, 110, 0));
+  box-shadow: 0 0 12px 1px rgba(255, 46, 110, .75), 0 0 46px 5px rgba(255, 46, 110, .32), 0 -10px 40px rgba(255, 46, 110, .12); }
+.hero-rule::after { content: ''; position: absolute; left: 0; top: -1px; height: 3px; width: 22%; background: linear-gradient(90deg, transparent, #fff, transparent); opacity: .85; filter: blur(.6px); animation: heroRule 6.5s linear infinite; will-change: transform; }
+@keyframes heroRule { from { transform: translateX(-100%); } to { transform: translateX(460%); } }
+body.killed .hero-rule { background: linear-gradient(90deg, rgba(255, 77, 94, 0), var(--red) 16%, #ff9aa4 50%, var(--red) 84%, rgba(255, 77, 94, 0)); box-shadow: 0 0 12px 1px rgba(255, 77, 94, .8), 0 0 46px 5px rgba(255, 60, 80, .35); }
+body.killed .hero-aura { filter: hue-rotate(14deg) saturate(1.2); }
+
+/* ---- responsive ---- */
+@media (max-width: 1100px) { .hero-eyebrow { display: none; } .hero-card { padding: 11px 18px 13px 16px; } }
+@media (max-width: 899px) { .hero-c-lab, .hero-c-top { display: none; } }
+@media (max-width: 699px) {
+  .hero-stage { height: auto; display: flex; flex-direction: column; background: #07040c; }
+  .hero-net { position: relative; inset: auto; width: 100%; aspect-ratio: 1 / 1.15; flex: none; }
+  .hero-chip { top: 7px; left: 8px; right: 8px; max-width: none; justify-content: flex-start; white-space: normal; flex-wrap: wrap; gap: 2px 8px; padding: 6px 10px; font-size: 8.5px; line-height: 1.55; }
+  .hero-c-top { display: none; }
+  .hero-c-body { flex: 1 1 auto; min-width: 0; white-space: normal; }
+  .hero-badge { font-size: 8px; padding: 1px 6px; }
+  .hero-c-why { font-size: 8px; }
+  .hero-legend { left: 10px; right: 10px; bottom: 6px; justify-content: flex-start; max-width: none; gap: 2px 10px; font-size: 7px; letter-spacing: .1em; }
+  .hero-leg-sim { flex-basis: 100%; letter-spacing: .06em; }
+  .hero-card { position: relative; left: auto; bottom: auto; margin: 6px var(--gut) 20px; max-width: none; }
+  .hero-eyebrow { display: flex; font-size: 8px; } .hero-title { font-size: clamp(30px, 10.5vw, 44px); }
+  .hero-sub { font-size: 11.5px; white-space: normal; } .hero-sub i { margin: 0 .45em; }
+  .hero-grid { background-size: 20px 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .hero-pre .hero-net canvas { clip-path: inset(0 0 0 0); opacity: 1; } .hero-pre .hero-card, .hero-pre .hero-chip, .hero-pre .hero-fig, .hero-pre .hero-legend { opacity: 1; transform: none; } .hero-aura, .hero-scan, .hero-rule::after { animation: none; } .hero-bg > .hero-scan { display: none; } }
+
 </style>
 </head>
 <body>
+<!-- 00-fx.html -->
+<!-- fx: page atmosphere (webgl plasma, grain, scanlines, vignette, cursor light) · kill theatre · toasts · boot overlay -->
+<noscript><style>#fx-boot{display:none!important}</style></noscript>
+<div id="fx-bgf" aria-hidden="true"></div>
+<canvas id="fx-bg" aria-hidden="true"></canvas>
+<div class="fx-ov fx-spotwrap" id="fx-spotwrap" aria-hidden="true"><i id="fx-spot"></i></div>
+<div class="fx-ov fx-scan" aria-hidden="true"><i></i></div>
+<div class="fx-ov fx-grain" aria-hidden="true"></div>
+<i id="fx-tick" aria-hidden="true"></i>
+<div id="fx-shock" aria-hidden="true"></div>
+<div id="fx-glitch" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div id="fx-toasts" role="status" aria-live="polite"></div>
+<div id="fx-boot" aria-hidden="true">
+  <i class="fx-bh t"></i><i class="fx-bh b"></i>
+  <div class="fx-bx">
+    <div class="fx-bhead"><b>J</b><span>jev desk</span><em>boot // simulation</em></div>
+    <div class="fx-blog" id="fx-blog"></div>
+    <div class="fx-bbar"><i id="fx-bfill"></i></div>
+    <div class="fx-bmeta"><span id="fx-bpct">00%</span><span>click or press any key to skip</span></div>
+  </div>
+  <i class="fx-bline"></i>
+</div>
+
 <!-- 05-hud.html -->
 <header class="hud" id="hud">
   <a class="logo" href="#hero" aria-label="JEV home"><b>J</b><span class="hide-s">JEV</span></a>
@@ -159,6 +612,175 @@ body.killed::after { content: ''; position: fixed; inset: 0; pointer-events: non
   </nav>
   <button class="kill" id="killBtn" type="button" aria-pressed="false" title="Kill switch — halts every order, routes all to human review"><i></i><span id="killTxt">ARMED</span></button>
 </header>
+
+<!-- 10-hero.html -->
+<section id="hero" class="hero" aria-label="Jev decides: state, encode, typed questions, answers, code acts (simulation)">
+  <div class="hero-stage" id="heroStage">
+    <div class="hero-net" id="heroNet">
+      <div class="hero-bg" aria-hidden="true"><i class="hero-aura"></i><i class="hero-grid"></i><i class="hero-scan"></i></div>
+      <canvas id="hero-static" aria-hidden="true"></canvas>
+      <canvas id="hero-live" role="img" aria-label="Live diagram: every decision flows left to right from state, through encode and Jev system one, into three typed questions, eleven answers and three code actions. Click or tap to fire a simulated decision."></canvas>
+      <div class="hero-vig" aria-hidden="true"></div>
+      <div class="hero-fig" aria-hidden="true"><i></i>fig 01 &middot; one decision, read left to right</div>
+      <div class="hero-chip" id="hero-chip">
+        <span class="hero-c-top"><i class="lamp pink"></i><span class="hero-c-lab">latest decision</span></span>
+        <span class="hero-c-body">
+          <b id="hero-c-sym">BTC-PERP</b><span class="hero-sep">·</span><b id="hero-c-act" class="hero-c-act">buy</b><span class="hero-sep">·</span><span class="hero-c-k">conf</span> <b id="hero-c-conf">0.93</b><span class="hero-sep">·</span><b id="hero-c-size">1%</b><span class="hero-sep">·</span><span class="hero-c-k">risk</span> <b id="hero-c-risk">ok</b><span class="hero-sep">&rarr;</span><em id="hero-c-dest" class="hero-badge" data-d="execute">execute</em><span class="hero-c-tail"><span class="hero-sep">·</span><span id="hero-c-ms">3.2</span> ms</span>
+        </span>
+        <span class="hero-c-why" id="hero-c-why"></span>
+      </div>
+      <div class="hero-legend" aria-hidden="true">
+        <span><i class="hero-dot hero-dot-ex"></i>execute</span><span><i class="hero-dot hero-dot-rv"></i>review</span><span><i class="hero-dot hero-dot-sk"></i>skip</span><span class="hero-leg-sim">simulated &middot; no orders sent &middot; tap the network to fire</span>
+      </div>
+      <button class="sr-only" type="button" id="hero-fire">fire a sample decision</button>
+    </div>
+    <div class="hero-card">
+      <div class="hero-eyebrow"><i class="lamp pink"></i>jev &middot; system one &middot; typed answers</div>
+      <h1 class="hero-title"><span class="glitch" id="heroTitle" data-text="JEV DECIDES">JEV DECIDES</span></h1>
+      <p class="hero-sub"><b class="hero-w1">hermes writes</b><i>&middot;</i><b class="hero-w2">jev decides</b><i>&middot;</i><b class="hero-w3">code acts</b></p>
+    </div>
+  </div>
+  <div class="hero-rule" aria-hidden="true"></div>
+</section>
+
+<!-- 20-code.html -->
+<section class="sec" id="code" aria-label="jev-starter: the plain code around jev - illustrative python and a simulated terminal">
+  <div class="wrap">
+    <div class="sec-head code-head rv">
+      <div class="eb">code acts <i>jev-starter &middot; 4 files</i></div>
+      <h2 class="h2 code-h2">the model <em>answers</em>. plain code decides what is sent.</h2>
+      <p class="lede">hermes wrote the intent, jev answers three typed questions, and a few lines of python hold the floor, the loss cap and the kill switch. hard rules live in code, not in the model. illustrative code &middot; simulated desk &middot; no order ever leaves this page.</p>
+    </div>
+
+    <div class="code-stage">
+      <i class="code-glow" aria-hidden="true"></i>
+      <div class="code-win card rv" id="code-win">
+        <div class="code-bar">
+          <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-title"><b>jev-starter</b><span class="hide-s"> &mdash; <span class="code-tab" data-t="desk">desk.py</span> &middot; <span class="code-tab" data-t="state">state.json</span> &middot; <span class="code-tab" data-t="queue">queue</span> &middot; <span class="code-tab" data-t="q">questions.py</span></span><span class="show-s"> &mdash; 4 files</span></span>
+          <canvas class="code-eq" id="code-eq" aria-hidden="true"></canvas>
+        </div>
+
+        <div class="code-grid">
+          <!-- 1 - desk.py : light -->
+          <article class="code-pane code-light" data-k="desk" aria-label="desk.py">
+            <header class="code-ph"><i class="code-pd"></i><b>desk.py</b><span class="code-meta">ln <em class="code-ln-n">1</em> &middot; <em class="code-ts-n">0.0</em> t/s</span></header>
+            <div class="code-view">
+              <div class="code-body" tabindex="0" role="region" aria-label="desk.py source (scroll sideways on small screens)">
+                <div class="code-doc"><pre class="code-src" data-lang="py">import json
+from pathlib import Path
+from uuid import uuid4
+
+import jev
+from questions import QUESTIONS, FLOOR, gate
+
+# hermes wrote the intent. jev answers it. code decides.
+def desk(intent, state):
+    answer = jev.ask(state, questions=QUESTIONS)
+    ok = answer.confidence &gt;= FLOOR and answer.risk_ok
+    dest = "execute" if ok and gate(answer) else "review"
+    if answer.choice == "hold":
+        dest = "skip"
+
+    folder = Path(__file__).parent / "queue" / dest
+    folder.mkdir(parents=True, exist_ok=True)
+    job = folder / f"{uuid4().hex[:8]}.json"
+    job.write_text(json.dumps(dict(
+        intent=intent, choice=answer.choice,
+        size=answer.size, conf=answer.confidence,
+    )))
+    return job</pre></div>
+              </div>
+              <div class="code-mm" aria-hidden="true"><canvas></canvas><i></i></div>
+            </div>
+          </article>
+
+          <!-- 2 - state.json : hot pink, re-types itself with the latest decision -->
+          <article class="code-pane code-hot" data-k="state" aria-label="state.json">
+            <header class="code-ph"><i class="code-pd"></i><b>state.json</b><span class="code-tag" aria-hidden="true">live</span><span class="code-meta">ln <em class="code-ln-n">1</em> &middot; <em class="code-ts-n">0.0</em> t/s</span></header>
+            <div class="code-view">
+              <div class="code-body" tabindex="0" role="region" aria-label="state.json: the state and the typed answers of the latest simulated decision">
+                <div class="code-doc"><pre class="code-src" data-lang="json">{
+  "id": "b71d44a2",
+  "state": {
+    "symbol": "BTC-PERP",
+    "price": 84722.4,
+    "edge_bps": 22.4,
+    "spread_bps": 1.2,
+    "imbalance": 0.41,
+    "position_pct": 0.5,
+    "daily_pnl": 312,
+    "latency_ms": 41
+  },
+  "answers": {
+    "action": { "choice": "buy", "conf": 0.93 },
+    "size": { "pct": 1, "p": 0.62 },
+    "risk_ok": { "flag": true, "p": 0.96 }
+  },
+  "dest": "execute",
+  "why": "ok",
+  "ms": 3.2
+}</pre></div>
+              </div>
+              <div class="code-mm" aria-hidden="true"><canvas></canvas><i></i></div>
+            </div>
+          </article>
+
+          <!-- 3 - questions.py : light -->
+          <article class="code-pane code-light" data-k="q" aria-label="questions.py">
+            <header class="code-ph"><i class="code-pd"></i><b>questions.py</b><span class="code-meta">ln <em class="code-ln-n">1</em> &middot; <em class="code-ts-n">0.0</em> t/s</span></header>
+            <div class="code-view">
+              <div class="code-body" tabindex="0" role="region" aria-label="questions.py source (scroll sideways on small screens)">
+                <div class="code-doc"><pre class="code-src" data-lang="py"># hard rules live in code, not in the model.
+from pathlib import Path
+from jev import choice, score, flag
+
+QUESTIONS = {
+    "action": choice("buy", "sell", "hold", "close", "flatten"),
+    "size": score(0.5, 1, 2, 4),            # % of capital
+    "risk_ok": flag("spread, latency, loss, feed age"),
+}
+
+FLOOR = 0.85                  # below this a human looks first
+DAILY_LOSS_CAP = 2000         # usd, then the desk stops
+MAX_POSITION = 0.04           # 4% of capital
+KILL = Path("KILL").exists()  # one file halts the desk
+
+def gate(answer):
+    if KILL or answer.daily_pnl &lt;= -DAILY_LOSS_CAP:
+        return False
+    return answer.size / 100 &lt;= MAX_POSITION</pre></div>
+              </div>
+              <div class="code-mm" aria-hidden="true"><canvas></canvas><i></i></div>
+            </div>
+          </article>
+
+          <!-- 4 - zsh : dark terminal, streams the real decisions -->
+          <article class="code-pane code-dark" data-k="zsh" aria-label="zsh terminal">
+            <header class="code-ph"><i class="code-pd"></i><b>zsh &mdash; jev-starter</b><span class="code-tag code-paused" aria-hidden="true" hidden>paused</span><button class="code-run" type="button" aria-label="fire a sample decision (simulated)"><i aria-hidden="true"></i>run</button><span class="code-meta">ln <em class="code-ln-n">1</em> &middot; <em class="code-ts-n">0.0</em> t/s</span></header>
+            <div class="code-view">
+              <div class="code-body code-term" role="log" aria-live="off" aria-label="terminal output: simulated decisions, newest at the bottom">
+                <div class="code-out"></div>
+              </div>
+              <div class="code-mm" aria-hidden="true"><canvas></canvas><i></i></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="code-status" role="status" aria-label="simulated queue counters">
+          <span class="code-st-a"><i class="lamp"></i>jev-starter &middot; python</span>
+          <span class="code-st-q" aria-hidden="false"><span class="code-st-l">queue/</span>
+            <span class="code-q code-q-x"><i></i>execute <b id="code-n-x">0</b></span>
+            <span class="code-q code-q-r"><i></i>review <b id="code-n-r">0</b></span>
+            <span class="code-q code-q-s"><i></i>skip <b id="code-n-s">0</b></span>
+            <span class="code-qbar" aria-hidden="true"><i class="x"></i><i class="r"></i><i class="s"></i></span>
+          </span>
+          <span class="code-st-b"><span class="hide-s">floor <b id="code-fl">0.85</b> &middot; </span>kill <b id="code-kl">armed</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- 50-desk-open.html -->
 <section class="sec" id="desk">
@@ -511,6 +1133,1572 @@ body.killed::after { content: ''; position: fixed; inset: 0; pointer-events: non
     document.documentElement.classList.add('ready');
   };
 })();
+
+</script>
+<script>/* ---- code.js ---- */
+/* code — the "jev-starter" editor window under the hero (bottom of the JEV DECIDES reference).
+ * desk.py (light) · state.json (hot pink, re-types itself with the latest real decision) · questions.py (light) · zsh (dark, streams real decisions)
+ * own tiny highlighter · per-line typing reveal · moving current-line band · minimaps · audio-bars glyph · live queue status bar.
+ * Everything is simulated: the decisions come from the shared JEV bus. */
+JEV.mod('code', () => {
+  const J = JEV, $ = J.$, clamp = J.clamp, reduce = J.reduce;
+  const root = $('#code'), win = root && $('#code-win', root);
+  if (!win) return;
+  const doc = document;
+
+  /* =====================================================================
+   * 1. tiny python highlighter (regex tokens -> classes code-k/-s/-n/-c/-f/-fd/-b/-ct/-a/-o/-v/-w)
+   * ===================================================================== */
+  const KW = new Set('import from def return if elif else and or not in is as for while with pass lambda True False None'.split(' '));
+  const RE = /(#.*$)|(f?"(?:[^"\\]|\\.)*"?|f?'(?:[^'\\]|\\.)*'?)|(\d+(?:\.\d+)?)|([A-Za-z_]\w*)|(\s+)|(->|>=|<=|==|!=|[^\sA-Za-z_\d])/g;
+  function hl(src) {
+    const out = []; let m, prev = '';
+    RE.lastIndex = 0;
+    while ((m = RE.exec(src))) {
+      const s = m[0]; let c = 'o';
+      if (m[1]) c = 'c';
+      else if (m[2]) c = 's';
+      else if (m[3]) c = 'n';
+      else if (m[4]) {
+        const call = src.charAt(RE.lastIndex) === '(';
+        if (KW.has(s)) c = 'k';
+        else if (prev === 'def') c = 'fd';
+        else if (/^[A-Z]/.test(s) && !/^[A-Z0-9_]+$/.test(s)) c = 'b';
+        else if (call) c = 'f';
+        else if (prev === '.') c = 'a';
+        else if (/^[A-Z][A-Z0-9_]+$/.test(s)) c = 'ct';
+        else c = 'v';
+      } else if (m[5]) {
+        if (out.length) { out[out.length - 1].t += s; continue; } // trailing space joins the previous token
+        c = 'w';
+      }
+      if (c !== 'w' && m[5] === undefined) prev = s;
+      const last = out[out.length - 1];
+      if (last && last.c === c && (c === 'o' || c === 'v' || c === 'w') && last.t.trim().length === last.t.length) { last.t += s; continue; }
+      out.push({ c, t: s });
+    }
+    return out;
+  }
+
+  /* =====================================================================
+   * 2. panes (static code + json) : build · type · band · scroll · minimap
+   * ===================================================================== */
+  const MMC = {
+    light: { k: '#c10f58', s: '#08704c', n: '#a14f00', c: '#bfb5c9', f: '#1b4fd1', fd: '#1b4fd1', b: '#7b34d8', ct: '#a63c06', a: '#6f6480', o: '#8a1f55', v: '#6f6480', p: '#9a8fa8', jk: '#2a2033' },
+    hot: { live: 'rgba(255,255,255,.95)', v: 'rgba(12,2,7,.7)' },
+  };
+  const panes = {};
+  const mk = (k, cfg) => {
+    const el = $('.code-pane[data-k="' + k + '"]', win), mm = $('.code-mm', el);
+    const P = Object.assign({
+      k, el, body: $('.code-body', el), doc: $('.code-doc', el), mmW: mm, mmC: $('canvas', mm), mmV: $('i', mm), skin: el.classList.contains('code-hot') ? 'hot' : 'light',
+      mLn: $('.code-ln-n', el), mLnV: '', mTs: $('.code-ts-n', el), mTsV: '', dot: $('.code-pd', el),
+      band: doc.createElement('i'), caret: doc.createElement('i'), lines: [], mode: 'idle', li: 0, ti: 0, ci: 0, began: false, pause: 0, carry: 0, wait: 0, rt: false,
+      cur: 0, sy: 0, ty: 0, lh: 19, rows: 14, hv: 282, dh: 0, gm: null, seen: false, out: true, ts: 0, typedAt: -9,
+    }, cfg);
+    P.band.className = 'code-band'; P.band.setAttribute('aria-hidden', 'true'); P.caret.className = 'code-caret'; P.caret.setAttribute('aria-hidden', 'true');
+    panes[k] = P;
+    return P;
+  };
+  const D = mk('desk', { cps: 150, delay: 0, base: 9.3, hop: { ask: 9, gate: 11, skip: 13, write: 18 }, rest: 18, tab: 'desk' });
+  const S = mk('state', { cps: 130, delay: 0.18, base: 9.4, hop: { id: 1, action: 13, size: 14, risk: 15, dest: 17 }, rest: 17, tab: 'state' });
+  const Q = mk('q', { cps: 150, delay: 0.38, base: 9.3, hop: { action: 5, size: 6, risk: 7, floor: 10, cap: 11, kill: 13, gate: 15 }, rest: 15, tab: 'q' });
+
+  function build(P, models) {
+    const d = P.doc;
+    d.textContent = ''; d.appendChild(P.band);
+    P.lines = models.map((toks, i) => {
+      const el = doc.createElement('div'), no = doc.createElement('span');
+      el.className = 'code-ln'; no.className = 'code-no'; no.textContent = String(i + 1); el.appendChild(no);
+      if (P.hop.kill === i) el.setAttribute('data-kill', '');
+      const tk = toks.map((m) => { const s = doc.createElement('span'); s.className = 'code-' + m.c + (m.x ? ' ' + m.x : ''); el.appendChild(s); return { el: s, c: m.c, t: m.t, live: !!m.live, x: m.x || '' }; });
+      d.appendChild(el);
+      return { el, no, toks: tk, on: false, done: false };
+    });
+    P.dh = P.lines.length * P.lh + 16;
+  }
+  const cls = (k) => { k.el.className = 'code-' + k.c + (k.x ? ' ' + k.x : ''); };
+  function setModel(P, m) { m.forEach((toks, i) => toks.forEach((tk, j) => { const k = P.lines[i].toks[j]; k.t = tk.t; k.x = tk.x || ''; })); }
+  function blank(P) {
+    for (const L of P.lines) { L.on = L.done = false; L.el.classList.remove('on'); for (const k of L.toks) { k.el.textContent = ''; cls(k); } }
+    P.cur = 0; P.sy = P.ty = 0; P.li = P.ti = P.ci = 0; P.began = false; P.carry = 0;
+    applyScroll(P); band(P, 0);
+  }
+  function fillAll(P) {
+    for (const L of P.lines) { L.on = L.done = true; L.el.classList.add('on'); for (const k of L.toks) k.el.textContent = k.t; }
+    P.mode = 'idle'; P.el.classList.remove('code-typing');
+    P.caretEnd = -2; band(P, P.rest); mm(P);
+  }
+  function band(P, i) {
+    P.cur = i; P.band.style.transform = 'translate3d(0,' + (i * P.lh) + 'px,0)';
+    const L = P.lines[i];
+    if (L) { const tk = L.toks, at = tk.length ? tk[tk.length - 1].el.nextSibling : null; if (P.caret.parentNode !== L.el || P.caretEnd !== i) { L.el.insertBefore(P.caret, at); P.caretEnd = i; } }
+    follow(P, i);
+  }
+  function follow(P, i) {
+    const y0 = 8 + i * P.lh, m = 2 * P.lh, max = Math.max(0, P.dh - P.hv);
+    if (y0 < P.ty + m) P.ty = y0 - m; else if (y0 + P.lh > P.ty + P.hv - m) P.ty = y0 + P.lh - P.hv + m;
+    P.ty = clamp(P.ty, 0, max);
+  }
+  function applyScroll(P) {
+    P.doc.style.transform = 'translate3d(0,' + (-P.sy).toFixed(2) + 'px,0)';
+    P.mmV.style.transform = 'translate3d(0,' + (4 + (P.sy / P.lh) * 4).toFixed(2) + 'px,0)';
+  }
+  function scroll(P, dt) {
+    const d = P.ty - P.sy;
+    if (Math.abs(d) < 0.04) { if (d !== 0) { P.sy = P.ty; applyScroll(P); } return; }
+    P.sy += d * (1 - Math.exp(-dt * 9)); applyScroll(P);
+  }
+
+  /* minimap: coloured stubs per typed line (0.5 px per char, 4 px pitch) */
+  function mm(P) {
+    const m = P.gm; if (!m) return;
+    const g = m.g; g.clearRect(0, 0, m.W, m.H);
+    const pal = MMC[P.skin];
+    for (let i = 0; i < P.lines.length; i++) {
+      const L = P.lines[i]; if (!L.done && !P.rt) break;
+      let x = 3;
+      for (const k of L.toks) {
+        const w = k.t.length * 0.5;
+        if (k.c !== 'w' && k.t.trim()) { g.fillStyle = k.live ? pal.live : pal[k.c] || pal.v; g.fillRect(x, 4 + i * 4, Math.max(0.6, Math.min(w, m.W - x - 1)), 1.8); }
+        x += w;
+        if (x > m.W) break;
+      }
+    }
+  }
+  for (const P of [D, S, Q]) {
+    J.watch(P.mmW, () => { const f = J.fit(P.mmC); P.gm = f; mm(P); });
+    J.watch(P.body, () => {
+      const cs = getComputedStyle(win);
+      P.lh = parseFloat(cs.getPropertyValue('--code-lh')) || 19; P.rows = parseFloat(cs.getPropertyValue('--code-rows')) || 14;
+      P.hv = P.rows * P.lh + 16; P.dh = P.lines.length * P.lh + 16; P.mmV.style.height = (P.rows * 4 + 2) + 'px';
+      band(P, P.cur); P.sy = P.ty = clamp(P.ty, 0, Math.max(0, P.dh - P.hv)); applyScroll(P);
+    });
+  }
+
+  /* ---- typing engine: one line at a time, tokens in order; "live" tokens (json values) pop in whole with a flash ---- */
+  function flash(el) {
+    if (reduce || !el.animate) return;
+    el.animate([{ backgroundColor: '#ffffff', boxShadow: '0 0 0 3px #fff, 0 0 22px 6px rgba(255,255,255,.95)' }], { duration: 950, easing: 'ease-out' });
+  }
+  function beginLine(P, L) {
+    if (P.rt) for (const k of L.toks) { k.el.textContent = ''; cls(k); }
+    L.on = true; L.done = false; L.el.classList.add('on');
+    P.cur = P.li; P.band.style.transform = 'translate3d(0,' + (P.li * P.lh) + 'px,0)';
+    L.el.insertBefore(P.caret, L.no.nextSibling); P.caretEnd = -1;
+    follow(P, P.li); P.began = true;
+  }
+  function endLine(P, L) {
+    L.done = true; P.began = false; P.li++; P.ti = 0; P.ci = 0;
+    const toks = L.toks.length;
+    P.pause = (toks === 0 ? 0.05 : 0.035 + Math.random() * 0.07) * (P.rt ? 0.7 : 1);
+    mm(P);
+    if (P.li >= P.lines.length) finish(P);
+  }
+  function finish(P) {
+    P.mode = 'idle'; P.rt = false; P.el.classList.remove('code-typing'); P.idleAt = J.time;
+    P.caretEnd = -2; band(P, P.rest); mm(P);
+  }
+  function type(P, dt) {
+    if (P.mode !== 'type') return;
+    if (P.wait > 0) { P.wait -= dt; return; }
+    if (P.pause > 0) { P.pause -= dt; return; }
+    const b = P.cps * dt + P.carry; let n = Math.floor(b); P.carry = b - n;
+    let guard = 160;
+    while (n > 0 && P.mode === 'type' && guard-- > 0) {
+      const L = P.lines[P.li];
+      if (!L) { finish(P); break; }
+      if (!P.began) beginLine(P, L);
+      const k = L.toks[P.ti];
+      if (!k) { endLine(P, L); if (P.pause > 0) break; continue; }
+      if (k.live) { k.el.textContent = k.t; flash(k.el); L.el.insertBefore(P.caret, k.el.nextSibling); P.ti++; P.ci = 0; n -= 3; continue; }
+      if (!k.t.trim()) { k.el.textContent = k.t; P.ti++; P.ci = 0; continue; } // indentation is free
+      const take = Math.min(n, k.t.length - P.ci);
+      P.ci += take; n -= take; k.el.textContent = k.t.slice(0, P.ci);
+      if (P.ci >= k.t.length) { P.ti++; P.ci = 0; L.el.insertBefore(P.caret, k.el.nextSibling); }
+    }
+    if (P.mode === 'type' && P.lines[P.li] && P.lines[P.li].toks.length === 0 && P.began) endLine(P, P.lines[P.li]);
+  }
+  function start(P, o) {
+    o = o || {};
+    if (reduce) { fillAll(P); return; }
+    P.rt = !!o.rt;
+    if (!P.rt) blank(P); else { P.li = P.ti = P.ci = 0; P.began = false; P.carry = 0; P.ty = 0; }
+    P.mode = 'type'; P.wait = o.delay || 0; P.cps = o.cps || P.cps; P.pause = 0; P.el.classList.add('code-typing'); P.typedAt = J.time;
+    tab(P.tab);
+  }
+
+  /* ---- static panes ---- */
+  const lineModels = (P) => $('.code-src', P.doc).textContent.replace(/\n$/, '').split('\n').map(hl);
+  build(D, lineModels(D)); build(Q, lineModels(Q));
+
+  /* ---- state.json: model built from a real decision record ---- */
+  const DEF = { id: 'b71d44a2', symbol: 'BTC-PERP', action: 'buy', conf: 0.93, size: 1, sizeIdx: 1, sizes: [0.1, 0.62, 0.2, 0.08], riskOk: true, pRisk: 0.96, dest: 'execute', reason: 'ok', ms: 3.2, floor: 0.85, killed: false,
+    state: { price: 84722.4, edge_bps: 22.4, spread_bps: 1.2, imbalance: 0.41, position_pct: 0.5, daily_pnl: 312, latency_ms: 41 } };
+  function stateModel(d) {
+    const s = d.state;
+    const T = (c, t) => ({ c, t }), V = (c, t, x) => ({ c, t, live: true, x: 'code-live' + (x ? ' ' + x : '') });
+    const w = (n) => T('w', '  '.repeat(n)), jk = (k) => T('jk', '"' + k + '"'), p = (t) => T('p', t);
+    const str = (v, x) => V('s', '"' + v + '"', x), num = (v) => V('n', String(v)), bool = (b) => V('k', String(!!b), 'code-bool' + (b ? '' : ' no'));
+    const row = (n, k, val, last) => [w(n), jk(k), p(': '), val, p(last ? '' : ',')];
+    const f1 = (v) => (+v).toFixed(1), f2 = (v) => (+v).toFixed(2);
+    return [
+      [p('{')],
+      row(1, 'id', str(d.id)),
+      [w(1), jk('state'), p(': {')],
+      row(2, 'symbol', str(d.symbol)), row(2, 'price', num(s.price)), row(2, 'edge_bps', num(f1(s.edge_bps))), row(2, 'spread_bps', num(f1(s.spread_bps))),
+      row(2, 'imbalance', num(f2(s.imbalance))), row(2, 'position_pct', num(f1(s.position_pct))), row(2, 'daily_pnl', num(Math.round(s.daily_pnl))), row(2, 'latency_ms', num(Math.round(s.latency_ms)), true),
+      [w(1), p('},')],
+      [w(1), jk('answers'), p(': {')],
+      [w(2), jk('action'), p(': { '), jk('choice'), p(': '), str(d.action, 'code-d-' + d.action), p(', '), jk('conf'), p(': '), num(f2(d.conf)), p(' },')],
+      [w(2), jk('size'), p(': { '), jk('pct'), p(': '), num(d.size), p(', '), jk('p'), p(': '), num(f2(d.sizes[d.sizeIdx])), p(' },')],
+      [w(2), jk('risk_ok'), p(': { '), jk('flag'), p(': '), bool(d.riskOk), p(', '), jk('p'), p(': '), num(f2(d.pRisk)), p(' }')],
+      [w(1), p('},')],
+      row(1, 'dest', str(d.dest, 'code-d-' + d.dest)),
+      row(1, 'why', str(d.reason)),
+      row(1, 'ms', num(f1(d.ms)), true),
+      [p('}')],
+    ];
+  }
+  let latest = null, lastRetype = -99;
+  build(S, stateModel(DEF));
+  function retype(d, t) {
+    setModel(S, stateModel(d));
+    lastRetype = t;
+    start(S, { rt: true, cps: 200 });
+  }
+
+  /* ---- start / restart when a pane scrolls into view ---- */
+  if ('IntersectionObserver' in window) {
+    const byEl = new Map([D, S, Q].map((P) => [P.el, P]));
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) {
+        const P = byEl.get(e.target);
+        if (e.intersectionRatio >= 0.3 && P.out) {
+          P.out = false;
+          if (P === S && latest) setModel(S, stateModel(latest));
+          start(P, { delay: P.delay });
+          if (P === S) lastRetype = J.time;
+        } else if (e.intersectionRatio === 0) P.out = true;
+      }
+    }, { threshold: [0, 0.3] });
+    for (const P of [D, S, Q]) io.observe(P.el);
+  } else for (const P of [D, S, Q]) fillAll(P);
+  if (reduce) for (const P of [D, S, Q]) fillAll(P);
+
+  /* =====================================================================
+   * 3. zsh : real decisions from the bus, ~900 ms behind so each lands as the hero's code-act card fires
+   * ===================================================================== */
+  const zel = $('.code-pane[data-k="zsh"]', win), zout = $('.code-out', zel), zbody = $('.code-term', zel), zmmW = $('.code-mm', zel), zmmC = $('canvas', zmmW), zmmV = $('i', zmmW);
+  const Z = { q: [], hist: [], n: 0, ndec: 0, off: 0, lh: 19, rows: 14, caret: doc.createElement('i'), gm: null, hold: false, lastPrint: -9, mLn: $('.code-ln-n', zel), mTs: $('.code-ts-n', zel), mLnV: '', mTsV: '', tag: $('.code-paused', zel), dirty: false };
+  Z.caret.className = 'code-caret'; Z.caret.setAttribute('aria-hidden', 'true');
+  const DELAY = 0.9, STEP = 0.095;
+  const pad = (s, n) => s + ' '.repeat(Math.max(1, n - s.length));
+  function zFormat(d) {
+    const L = [], a = d.action, ms = Math.max(1, Math.round(d.ms)), ms2 = Math.max(1, Math.round(d.ms * 0.62));
+    L.push([['tx', 'choice='], ['t-' + a, pad(a, 8)], ['tx', 'conf='], ['t-conf', d.conf.toFixed(2)], ['td', '  ' + ms + ' ms']]);
+    L.push([['tx', 'size='], ['tx', d.size + '%'], ['td', ' (score)']]);
+    L.push([['tx', 'risk_ok='], [d.riskOk ? 't-ok' : 't-no', String(d.riskOk)], ['td', ' (flag)   ' + ms2 + ' ms']]);
+    const r = d.reason;
+    if (r === 'hold') L.push([['td', '> '], ['t-warn', 'hold -> skip, nothing to send']]);
+    else if (r === 'kill switch') L.push([['td', '> '], ['t-warn', 'kill switch -> human review']]);
+    else if (r === 'risk flag') L.push([['td', '> '], ['t-warn', 'risk_ok=false -> human review']]);
+    else if (d.dest === 'review') L.push([['td', '> '], ['t-warn', 'below ' + d.floor.toFixed(2) + ' -> human review']]);
+    L.push([['tx', 'Saved handoff: '], ['td', 'queue/'], ['t-dest', d.dest], ['td', '/'], ['tx', d.id + '.json']]);
+    if (++Z.ndec % 20 === 0) {
+      L.push([['t-ps', '$ '], ['t-cmd', 'ls queue/']]);
+      L.push([['t-ok', 'execute/ '], ['t-conf', 'review/ '], ['t-warn', 'skip/']]);
+    }
+    return L;
+  }
+  function zPush(lines, at, seed) { lines.forEach((toks, i) => Z.q.push({ at: at + i * STEP, toks, seed: !!seed })); if (Z.q.length > 44) Z.q.splice(0, Z.q.length - 44); }
+  function zPrint(e, instant) {
+    const el = doc.createElement('div');
+    el.className = 'code-tl' + (instant || e.seed || reduce ? ' seed' : '');
+    for (const [c, t] of e.toks) { const s = doc.createElement('span'); s.className = 'code-' + c; s.textContent = t; el.appendChild(s); }
+    zout.appendChild(el); el.appendChild(Z.caret);
+    while (zout.childNodes.length > 40) zout.removeChild(zout.firstChild);
+    Z.hist.push(e.toks); if (Z.hist.length > 60) Z.hist.shift();
+    Z.n++; Z.dirty = true; Z.lastPrint = J.time;
+    if (!instant && !e.seed && !reduce) Z.off = Math.min(Z.off + Z.lh, Z.lh * 3);
+  }
+  const ZC = { 't-buy': '#2ee6a6', 't-sell': '#ff4d5e', 't-hold': '#b6aec2', 't-close': '#ff8a3d', 't-flatten': '#a66bff', 't-conf': '#ffc13d', 't-ok': '#2ee6a6', 't-no': '#ff4d5e', 't-dest': '#ff7ab3', 't-warn': '#ff7ab3', 't-ps': '#ff2e6e', 't-cmd': '#f4eef6', 'tx': '#cfc6d8', 'td': '#6f6680', 'tm': '#8d8499', 't-kill': '#ff4d5e', 't-arm': '#2ee6a6' };
+  function zMm() {
+    const m = Z.gm; if (!m) return;
+    const g = m.g; g.clearRect(0, 0, m.W, m.H);
+    const n = Z.hist.length;
+    for (let i = 0; i < n; i++) {
+      let x = 3;
+      for (const [c, t] of Z.hist[i]) { const w = t.length * 0.5; if (t.trim()) { g.fillStyle = ZC[c] || '#cfc6d8'; g.fillRect(x, 4 + i * 4, Math.max(0.6, Math.min(w, m.W - x - 1)), 1.8); } x += w; if (x > m.W) break; }
+    }
+    const top = 4 + Math.max(0, n - Z.rows) * 4;
+    zmmV.style.transform = 'translate3d(0,' + top + 'px,0)'; zmmV.style.height = (Math.min(n, Z.rows) * 4 + 2) + 'px';
+  }
+  J.watch(zmmW, () => { Z.gm = J.fit(zmmC); zMm(); });
+  J.watch(zbody, () => { const cs = getComputedStyle(win); Z.lh = parseFloat(cs.getPropertyValue('--code-lh')) || 19; Z.rows = parseFloat(cs.getPropertyValue('--code-rows')) || 14; });
+  // seed: the prompt, then whatever the engine already decided
+  zPush([[['t-ps', '$ '], ['t-cmd', 'jev watch queue/ --sim']], [['td', 'floor ' + J.S.floor.toFixed(2) + ' - cap $' + J.fmt(J.RULES.lossCap) + ' - max ' + J.RULES.maxPos + '% - listening']]], 0, true);
+  for (const d of J.recent.slice(0, 3).reverse()) zPush(zFormat(d), 0, true);
+  { const first = Z.q.splice(0); first.forEach((e) => zPrint(e, true)); Z.off = 0; }
+  if (zel) {
+    const fine = (e) => e.pointerType === 'mouse';
+    zel.addEventListener('pointerenter', (e) => { if (fine(e)) { Z.hold = true; Z.tag.hidden = false; } });
+    zel.addEventListener('pointerleave', (e) => { if (fine(e)) { Z.hold = false; Z.tag.hidden = true; } });
+    $('.code-run', zel).addEventListener('click', () => { J.fire(); });
+  }
+  function zFlush(t, dt) {
+    if (Z.off > 0.05) { Z.off *= Math.exp(-dt * 13); zout.style.transform = 'translate3d(0,' + Z.off.toFixed(2) + 'px,0)'; } else if (Z.off !== 0) { Z.off = 0; zout.style.transform = ''; }
+    if (Z.hold) return;
+    let k = 0;
+    while (k < Z.q.length && Z.q[k].at <= t) { const e = Z.q[k++]; if (t - e.at > 1.6) e.seed = true; zPrint(e, false); }
+    if (k) { Z.q.splice(0, k); }
+    if (Z.dirty) { Z.dirty = false; zMm(); }
+  }
+
+  /* =====================================================================
+   * 4. chrome: tabs · hops · meta · status bar · audio-bars glyph
+   * ===================================================================== */
+  const tabs = {};
+  for (const el of J.$$('.code-tab', win)) tabs[el.dataset.t] = { el, until: 0, on: false };
+  function tab(k) { const o = tabs[k]; if (!o) return; o.until = J.time + 0.75; if (!o.on) { o.on = true; o.el.classList.add('hot'); } }
+  function pop(el) { if (!reduce && el.animate) el.animate([{ transform: 'scale(1.9)' }, { transform: 'none' }], { duration: 480, easing: 'cubic-bezier(.2,.8,.2,1)' }); }
+  const hops = []; let lastHop = -9, eqAct = 0;
+  function planHops(d, t0) {
+    eqAct = Math.min(1, eqAct + 0.7);
+    if (t0 - lastHop < 2.0) return; lastHop = t0;
+    hops.push({ at: t0, P: D, i: D.hop.ask, tab: 'desk' }, { at: t0 + 0.12, P: Q, i: Q.hop.action }, { at: t0 + 0.2, P: S, i: S.hop.action }, { at: t0 + 0.3, P: Q, i: Q.hop.size },
+      { at: t0 + 0.45, P: D, i: D.hop.gate }, { at: t0 + 0.48, P: Q, i: Q.hop.risk }, { at: t0 + 0.6, P: S, i: S.hop.dest });
+    if (d.dest === 'skip') hops.push({ at: t0 + 0.66, P: D, i: D.hop.skip });
+    hops.push({ at: t0 + 0.72, P: Q, i: d.killed ? Q.hop.kill : Q.hop.gate, tab: 'q' }, { at: t0 + DELAY, P: D, i: D.hop.write, tab: 'queue' });
+  }
+  function runHops(t) {
+    for (let i = hops.length - 1; i >= 0; i--) {
+      const h = hops[i]; if (h.at > t) continue;
+      hops.splice(i, 1);
+      if (h.P.mode === 'idle' && !h.P.out) { band(h.P, h.i); pop(h.P.dot); }
+      if (h.tab) tab(h.tab);
+    }
+  }
+  const nX = $('#code-n-x'), nR = $('#code-n-r'), nS = $('#code-n-s'), fl = $('#code-fl'), kl = $('#code-kl'), qb = J.$$('.code-qbar i', win);
+  const st = { x: -1, r: -1, s: -1, f: '', k: '' };
+  function status() {
+    const c = J.S.dest;
+    if (c.execute !== st.x) { st.x = c.execute; nX.textContent = c.execute; qb[0].style.flexGrow = Math.max(0.2, c.execute); }
+    if (c.review !== st.r) { st.r = c.review; nR.textContent = c.review; qb[1].style.flexGrow = Math.max(0.2, c.review); }
+    if (c.skip !== st.s) { st.s = c.skip; nS.textContent = c.skip; qb[2].style.flexGrow = Math.max(0.2, c.skip); }
+    const f = J.S.floor.toFixed(2); if (f !== st.f) { st.f = f; fl.textContent = f; }
+    const k = J.S.killed ? 'THROWN' : 'armed'; if (k !== st.k) { st.k = k; kl.textContent = k; }
+  }
+  function meta(P, t) {
+    const typing = P.mode === 'type';
+    const ln = String(P.cur + 1), ts = typing ? (P.base + Math.sin(t * 3.1) * 0.45 + Math.sin(t * 7.3) * 0.25).toFixed(1) : '0.0';
+    if (ln !== P.mLnV) { P.mLnV = ln; P.mLn.textContent = ln; }
+    if (ts !== P.mTsV) { P.mTsV = ts; P.mTs.textContent = ts; }
+  }
+  function zMeta(t) {
+    const ln = String(Z.n), act = t - Z.lastPrint < 1.4, ts = act ? (7.7 + Math.sin(t * 3.7) * 0.5 + Math.sin(t * 9.1) * 0.2).toFixed(1) : '0.0';
+    if (ln !== Z.mLnV) { Z.mLnV = ln; Z.mLn.textContent = ln; }
+    if (ts !== Z.mTsV) { Z.mTsV = ts; Z.mTs.textContent = ts; }
+  }
+
+  /* audio-bars glyph: breathes, jumps on every decision, rides the typing */
+  const eq = $('#code-eq'), NB = 16, bars = new Float32Array(NB); let eg = null, ew = 72, eh = 20, egr = null;
+  J.watch(eq, () => { const f = J.fit(eq); eg = f.g; ew = f.W; eh = f.H; egr = eg.createLinearGradient(0, eh, 0, 0); egr.addColorStop(0, '#ff2e6e'); egr.addColorStop(0.55, '#ff9cc4'); egr.addColorStop(1, '#ffffff'); });
+  J.task(eq, (t, dt) => {
+    if (!eg) return;
+    const typing = (D.mode === 'type' ? 1 : 0) + (S.mode === 'type' ? 1 : 0) + (Q.mode === 'type' ? 1 : 0);
+    eqAct *= Math.exp(-dt * 3.2);
+    const act = Math.min(1, eqAct + typing * 0.22), bw = (ew - (NB - 1) * 2) / NB;
+    eg.clearRect(0, 0, ew, eh);
+    eg.fillStyle = J.S.killed ? '#ff8a96' : egr;
+    for (let i = 0; i < NB; i++) {
+      const n = 0.5 + 0.5 * Math.sin(t * (2.1 + i * 0.41) + i * 1.9), n2 = 0.5 + 0.5 * Math.sin(t * (4.3 + i * 0.27) + i * 0.7);
+      const tg = clamp(0.1 + 0.17 * n + act * (0.28 + 0.55 * n2), 0.08, 1);
+      bars[i] += (tg - bars[i]) * (tg > bars[i] ? 0.5 : 0.12);
+      const h = Math.max(2, Math.round(bars[i] * eh)), x = Math.round(i * (bw + 2));
+      eg.fillRect(x, eh - h, Math.max(1.5, bw), h);
+    }
+  });
+
+  /* =====================================================================
+   * 5. master tick (runs only while #code is on screen)
+   * ===================================================================== */
+  let lastMeta = 0;
+  J.task(root, (t, dt) => {
+    for (const P of [D, S, Q]) { type(P, dt); scroll(P, dt); }
+    if (S.mode === 'idle' && latest && !S.out && t - lastRetype >= 5 && latest.id !== S.last) { S.last = latest.id; retype(latest, t); }
+    runHops(t);
+    zFlush(t, dt);
+    for (const k in tabs) { const o = tabs[k]; if (o.on && t > o.until) { o.on = false; o.el.classList.remove('hot'); } }
+    if (t - lastMeta > 0.25) { lastMeta = t; for (const P of [D, S, Q]) meta(P, t); zMeta(t); status(); }
+  });
+
+  /* =====================================================================
+   * 6. bus
+   * ===================================================================== */
+  J.bus.on('decision', (d) => {
+    latest = d;
+    const t = J.time;
+    zPush(zFormat(d), t + DELAY, false);
+    planHops(d, t);
+  });
+  J.bus.on('kill', (on) => {
+    const t = J.time;
+    zPush([[[on ? 't-kill' : 't-arm', on ? ' KILL SWITCH - routing all to review ' : ' ARMED - gate open at floor ' + J.S.floor.toFixed(2) + ' ']]], t, false);
+    if (Q.mode === 'idle' && !Q.out) { band(Q, on ? Q.hop.kill : Q.hop.gate); }
+    tab('q'); eqAct = 1;
+    status();
+  });
+  J.bus.on('floor', (v) => { zPush([[['td', '> '], ['t-warn', 'FLOOR set to ' + (+v).toFixed(2)]]], J.time, false); status(); });
+  status();
+});
+
+</script>
+<script>/* ---- fx.js ---- */
+/* fx — page-wide atmosphere + micro-interaction layer.
+ * webgl plasma background · cursor/card light · reveal · boot · orb eyes · nav · kill-switch theatre · JEV.toast / JEV.pulse */
+JEV.mod('fx', () => {
+  const J = JEV, doc = document, root = doc.documentElement;
+  const $ = J.$, $$ = J.$$, clamp = J.clamp, reduce = J.reduce;
+  const fine = !!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
+  const hudEl = $('#hud'), decEl = $('#mDec'), killBtn = $('#killBtn');
+  let winW = window.innerWidth, winH = window.innerHeight, scrollY = window.scrollY || 0, scrollMax = 1, away = false;
+
+  /* =====================================================================
+   * 0. pulse + toast API (defined first so other modules can call them)
+   * ===================================================================== */
+  let bgPost = null; // set once the plasma (worker or main thread) is alive: bgPost(message)
+
+  function hudGlow(s) {
+    if (!hudEl || reduce || !hudEl.animate) return;
+    const c = J.S.killed ? '255,77,94' : '255,46,110';
+    hudEl.animate([{ boxShadow: '0 8px 0 -8px rgba(' + c + ',0)' }, { boxShadow: '0 10px 38px -8px rgba(' + c + ',' + (0.2 + 0.55 * s).toFixed(2) + ')', offset: 0.22 }, { boxShadow: '0 10px 38px -8px rgba(' + c + ',0)' }], { duration: 780, easing: 'ease-out' });
+  }
+  /** kick the shader ripple (ring from the viewport centre) + a brief hud glow */
+  J.pulse = (s) => {
+    s = clamp(s == null ? 0.5 : +s || 0, 0, 1);
+    if (s <= 0) return;
+    hudGlow(s);
+    if (bgPost) bgPost({ t: 'p', s });
+  };
+
+  const toastHost = $('#fx-toasts'), toasts = [];
+  function dismiss(t, fast) {
+    if (t.gone) return;
+    t.gone = true; clearTimeout(t.timer);
+    const i = toasts.indexOf(t); if (i >= 0) toasts.splice(i, 1);
+    t.el.classList.add('fx-t-out'); if (fast) t.el.classList.add('fast');
+    setTimeout(() => t.el.remove(), fast ? 170 : 400);
+  }
+  /** bottom-centre glass pill, auto-dismiss 3 s, max 2 stacked. kind: 'info' | 'ok' | 'kill' */
+  J.toast = (msg, kind) => {
+    if (!toastHost) return;
+    kind = kind || 'info';
+    for (const o of toasts.slice()) if (o.msg === msg) dismiss(o, true);
+    const el = doc.createElement('div'), dot = doc.createElement('i'), tx = doc.createElement('span'), bar = doc.createElement('b');
+    el.className = 'fx-toast fx-t-' + kind; dot.className = 'fx-t-dot'; bar.className = 'fx-t-bar'; tx.textContent = msg;
+    el.append(dot, tx, bar); toastHost.appendChild(el);
+    const t = { el, msg, gone: false, timer: 0 };
+    toasts.push(t);
+    while (toasts.length > 2) dismiss(toasts[0], true);
+    t.timer = setTimeout(() => dismiss(t), 3000);
+  };
+
+  /* =====================================================================
+   * 1. #fx-bg — webgl plasma (domain-warped fbm), data bands, grain, pointer glow, pulse ripple, kill shift.
+   *    renders in a worker on an OffscreenCanvas (context creation + compile never block the main thread),
+   *    with the very same code as a main-thread fallback; css gradient fallback when there is no webgl at all.
+   * ===================================================================== */
+  const bg = $('#fx-bg');
+  const VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+  const FS = [
+    '#ifdef GL_FRAGMENT_PRECISION_HIGH', 'precision highp float;', '#else', 'precision mediump float;', '#endif',
+    'uniform vec2 uRes,uPtr;uniform float uSc,uT,uKill,uScroll,uProg,uPA;uniform vec2 uPu[3];',
+    'const float CAP=.0049;', // linear-luminance ceiling of the plasma: keeps 12px grey text >= 4.5:1 anywhere
+    'const mat2 ROT=mat2(.8,-.6,.6,.8);const vec3 LW=vec3(.2126,.7152,.0722);',
+    'vec3 hue(vec3 c){return c/dot(c,LW);}',
+    'float h11(float p){p=fract(p*.1031);p*=p+33.33;p*=p+p;return fract(p);}',
+    'float h12(vec2 p){vec3 q=fract(vec3(p.xyx)*.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}',
+    'float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h12(i),h12(i+vec2(1.,0.)),f.x),mix(h12(i+vec2(0.,1.)),h12(i+vec2(1.,1.)),f.x),f.y);}',
+    'float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<OCT;i++){v+=a*vn(p);p=ROT*p*2.02+17.3;a*=.5;}return v;}',
+    'float ring(float d,vec2 u){float r=u.x*.62,w=.03+u.x*.045,x=(d-r)/w;return u.y*exp(-x*x)*exp(-u.x*1.4);}',
+    'void main(){',
+    ' vec2 fc=gl_FragCoord.xy,uv=fc/uRes;float asp=uRes.x/uRes.y;vec2 p=(uv-.5)*vec2(asp,1.);',
+    ' float d0=length(p);float rg=ring(d0,uPu[0])+ring(d0,uPu[1])+ring(d0,uPu[2]);',
+    ' vec2 pw=p+(p/(d0+.001))*rg*.06;', // ripple refracts the plasma
+    ' float t=uT;vec2 q=pw*1.7+vec2(0.,uScroll*.00024);',
+    ' vec2 w=vec2(fbm(q+vec2(0.,t*.05)),fbm(q+vec2(5.2,1.3)+vec2(-t*.04,t*.012)));',
+    ' float f=fbm(q*1.15+2.9*(w-.5)+vec2(t*.03,-t*.021));',
+    ' float k=uKill;',
+    // palette at unit luminance, so every layer below has an explicit luminance budget (linear light)
+    ' vec3 hInd=hue(mix(vec3(.03,.05,.60),vec3(.55,.03,.02),k));',
+    ' vec3 hVio=hue(mix(vec3(.30,.02,.80),vec3(.95,.30,.012),k));',
+    ' vec3 hMag=hue(mix(vec3(1.,.025,.28),vec3(1.,.08,.04),k));',
+    ' float hf=smoothstep(.26,.74,.55*f+.45*w.y+.14*sin(uProg*6.2832));', // hue field: indigo -> violet -> magenta, drifts with plasma + page progress
+    ' vec3 hc=mix(mix(hInd,hVio,clamp(hf*2.,0.,1.)),hMag,clamp(hf*2.-1.,0.,1.));',
+    ' float a1=smoothstep(.30,.78,f);float a2=smoothstep(.42,.82,.5*(w.x+w.y)+.4*(f-.45));',
+    ' float r1=pow(1.-abs(2.*f-1.),6.)*smoothstep(.28,.66,f);float r2=pow(1.-abs(2.*w.x-1.),8.)*smoothstep(.3,.7,w.y);', // aurora filaments (iso-contours of the noise)
+    ' float ray=pow(.5+.5*sin(pw.x*9.+w.y*6.5+t*.12),6.)*smoothstep(.15,.95,uv.y)*smoothstep(.3,.72,f);', // slow vertical curtains, strongest toward the top
+    ' vec3 col=vec3(.0015,.0009,.003);',
+    ' col+=hc*(a1*.0017+a2*.0010);',
+    ' col+=mix(hVio,hMag,.6)*(r1*.0024+r2*.0011);',
+    ' col+=hInd*ray*.0013;',
+    ' float side=smoothstep(.15,.95,abs(p.x)/(asp*.5));float wide=smoothstep(1.25,1.9,asp);', // calmer behind the centre column on wide screens
+    ' col*=mix(1.,mix(.55,1.15,side),wide);',
+    // faint horizontal data bands: dashed hairline + soft fill, sliding segments (css-px space)
+    ' vec2 cp=fc/uSc;float row=floor(cp.y/34.);float rs=h11(row*1.37+3.1);float on=step(.78,rs);',
+    ' float spd=(h11(row+7.7)-.5)*.05;float bx=fract(rs*13.7+t*spd);float seg=.10+.5*h11(row+1.9);float u=fract(uv.x-bx);',
+    ' float inSeg=smoothstep(0.,.015,u)*(1.-smoothstep(seg,seg+.02,u));',
+    ' float my=mod(cp.y,34.);float line=(1.-smoothstep(0.,1.3,abs(my-1.5)*uSc))*(.5+.5*step(.5,fract((cp.x+row*19.)/14.)));',
+    ' col+=mix(hVio,hMag,hf)*on*inSeg*(line*.0016+.0005*(1.-smoothstep(0.,30.,my)));',
+    // killed: slow red sweep
+    ' float sw=exp(-pow((fract(uv.y*.9-t*.16)-.5)*8.,2.));col+=vec3(.9,.04,.02)*sw*k*.003;',
+    // soft luminance limiter
+    ' float L=dot(col,LW);col*=1./pow(1.+pow(L/CAP,3.),1./3.);',
+    // vignette baked in (plasma only, never over text): dark corners, red-hot edges while killed
+    ' float vg=smoothstep(.5,1.12,length(p*vec2(.86,1.)));col*=1.-.7*vg;col+=vec3(.9,.02,.03)*k*vg*.0011;',
+    // drifting data motes: two parallax layers of tiny twinkling points (full-quality path only; points are far too small to touch text contrast)
+    '#ifdef MOTES',
+    ' float mo=0.;',
+    ' for(int Ly=0;Ly<2;Ly++){float sc=Ly==0?64.:104.;vec2 g=vec2(cp.x,cp.y-t*(Ly==0?3.2:5.4))/sc;vec2 id=floor(g),f=fract(g)-.5;float hh=h12(id+float(Ly)*17.);',
+    '  vec2 of=(vec2(h12(id+3.1),h12(id+7.7))-.5)*.62;float dd=length(f-of)*sc;float tw=.5+.5*sin(t*(.8+hh*2.2)+hh*40.);',
+    '  mo+=step(.74,hh)*(1.-smoothstep(.6,3.1,dd))*(.35+.65*tw)*(Ly==0?1.:.6);}',
+    ' col+=mix(hVio,hMag,hf)*mo*.0062*(.4+.6*smoothstep(0.,.5,a1+a2));',
+    '#endif',
+    // pointer glow + ripple light (added after the limiter, small bounded budget)
+    ' vec2 pp=(uPtr-.5)*vec2(asp,1.);float dg=length(p-pp);float g=exp(-dg*dg*60.)*.8+exp(-dg*dg*7.)*.2;',
+    ' col+=mix(vec3(.9,.03,.22),vec3(1.,.12,.03),k)*g*uPA*.0065;',
+    ' col+=mix(vec3(.9,.1,.5),vec3(1.,.4,.05),k)*min(rg,1.3)*.0125;',
+    ' col=pow(col,vec3(.4545));col+=(h12(fc+fract(t*7.3)*91.7)-.5)*.0075;', // gamma + dither/grain
+    ' gl_FragColor=vec4(col,1.);}',
+  ].join('\n');
+
+  /* renderer + simulation. SELF-CONTAINED (no closure access): its source is shipped into the worker via toString().
+   * messages: Float32Array[nx, ny, idle, away, scroll, prog] · {t:'k',v} kill · {t:'p',s} pulse · {t:'r',w,h} css size */
+  function createBg(canvas, VS, FS, o) {
+    const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+    const S = { T: 11.7, kill: o.killed ? 1 : 0, killT: o.killed ? 1 : 0, sx: 0.5, sy: 0.55, pa: 0.5, nx: 0.5, ny: 0.5, idle: 1, away: 0, scroll: 0, prog: 0, cw: o.w, ch: o.h, qual: 1, reduce: !!o.reduce };
+    const P = [{ a: 9, s: 0 }, { a: 9, s: 0 }, { a: 9, s: 0 }], pu = new Float32Array(6);
+    let pi = 0, gl = null, U = null, soft = false, info = '', warm = 0, gAcc = 0, gN = 0;
+    const cb = o.cb || function () {};
+
+    function init() {
+      const t0 = performance.now();
+      let g = null;
+      try {
+        const ob = { alpha: true, antialias: false, depth: false, stencil: false, powerPreference: 'low-power', preserveDrawingBuffer: false };
+        g = canvas.getContext('webgl', ob) || canvas.getContext('experimental-webgl', ob);
+      } catch (e) { g = null; }
+      if (!g) return false;
+      const t1 = performance.now();
+      try { // software rasteriser (swiftshader / llvmpipe): start small, cheaper noise, lower frame rate
+        const dbg = g.getExtension('WEBGL_debug_renderer_info');
+        soft = /swiftshader|llvmpipe|software|basic render/i.test(String(dbg ? g.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : ''));
+      } catch (e) { soft = false; }
+      if (soft) S.qual = 0.4;
+      const mk = (type, src) => { const sh = g.createShader(type); g.shaderSource(sh, src); g.compileShader(sh); return g.getShaderParameter(sh, g.COMPILE_STATUS) ? sh : null; };
+      const vs = mk(g.VERTEX_SHADER, VS), fs = mk(g.FRAGMENT_SHADER, '#define OCT ' + (soft ? 3 : 4) + '\n' + (soft ? '' : '#define MOTES\n') + FS);
+      if (!vs || !fs) return false;
+      const pr = g.createProgram(); g.attachShader(pr, vs); g.attachShader(pr, fs); g.linkProgram(pr);
+      if (!g.getProgramParameter(pr, g.LINK_STATUS)) return false;
+      g.useProgram(pr);
+      g.bindBuffer(g.ARRAY_BUFFER, g.createBuffer());
+      g.bufferData(g.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), g.STATIC_DRAW);
+      const al = g.getAttribLocation(pr, 'a'); g.enableVertexAttribArray(al); g.vertexAttribPointer(al, 2, g.FLOAT, false, 0, 0);
+      U = {};
+      ['uRes', 'uPtr', 'uSc', 'uT', 'uKill', 'uScroll', 'uProg', 'uPA'].forEach((n) => (U[n] = g.getUniformLocation(pr, n)));
+      U.uPu = g.getUniformLocation(pr, 'uPu[0]');
+      gl = g;
+      info = (soft ? 'software' : 'hw') + ' ctx ' + (t1 - t0).toFixed(0) + 'ms compile+link ' + (performance.now() - t1).toFixed(0) + 'ms';
+      return true;
+    }
+    function size() {
+      if (!gl) return;
+      const base = Math.min(0.5, Math.sqrt(520000 / Math.max(1, S.cw * S.ch))); // <= 0.5x, and <= ~0.5 MP on huge screens
+      const w = Math.max(16, Math.round(S.cw * base * S.qual)), h = Math.max(16, Math.round(S.ch * base * S.qual));
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
+      draw();
+    }
+    function draw() {
+      if (!gl) return;
+      pu[0] = P[0].a; pu[1] = P[0].s; pu[2] = P[1].a; pu[3] = P[1].s; pu[4] = P[2].a; pu[5] = P[2].s;
+      gl.uniform2f(U.uRes, canvas.width, canvas.height);
+      gl.uniform2f(U.uPtr, S.sx, S.sy);
+      gl.uniform1f(U.uSc, canvas.width / S.cw);
+      gl.uniform1f(U.uT, S.T);
+      gl.uniform1f(U.uKill, S.kill);
+      gl.uniform1f(U.uScroll, S.scroll);
+      gl.uniform1f(U.uProg, S.prog);
+      gl.uniform1f(U.uPA, S.pa);
+      gl.uniform2fv(U.uPu, pu);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    function step(dt) {
+      if (!S.reduce) S.T += dt;
+      S.kill += (S.killT - S.kill) * (1 - Math.exp(-dt * 3.2));
+      if (Math.abs(S.killT - S.kill) < 0.002) S.kill = S.killT;
+      let tx, ty, ta;
+      if (S.idle) { tx = 0.5 + 0.3 * Math.sin(S.T * 0.21); ty = 0.55 - 0.25 * Math.sin(S.T * 0.17 + 1.3); ta = 0.5; } // no pointer yet: an ambient light wanders
+      else { tx = S.nx; ty = S.ny; ta = S.away ? 0.35 : 1; }
+      const k = 1 - Math.exp(-dt * 5); S.sx += (tx - S.sx) * k; S.sy += (ty - S.sy) * k; S.pa += (ta - S.pa) * k;
+      for (let i = 0; i < 3; i++) { const p = P[i]; if (p.s > 0) { p.a += dt; if (p.a > 3) p.s = 0; } }
+    }
+    function once() { step(0.016); draw(); }
+    const api = {
+      ok: false,
+      get soft() { return soft; },
+      get info() { return info; },
+      get minDt() { return S.qual < 0.7 ? 0.045 : 0.028; }, // plasma is slow and soft: ~30 fps (20 on weak gpus) is plenty
+      tick(dt) {
+        step(dt); draw();
+        // resolution governor: if the plasma itself cannot keep ~24 fps, drop its resolution (floor 0.4 x)
+        if (!S.reduce && ++warm > 60) { gAcc += dt; if (++gN >= 60) { if (gAcc / gN > 0.05 && S.qual > 0.4) { S.qual = Math.max(0.4, S.qual * 0.85); size(); } gAcc = gN = 0; } }
+      },
+      msg(m) {
+        if (m instanceof Float32Array) { S.nx = m[0]; S.ny = m[1]; S.idle = m[2]; S.away = m[3]; S.scroll = m[4]; S.prog = m[5]; return; }
+        if (m.t === 'k') { S.killT = m.v ? 1 : 0; if (S.reduce) { S.kill = S.killT; once(); } }
+        else if (m.t === 'p') { const p = P[pi]; p.a = 0; p.s = m.s; pi = (pi + 1) % 3; if (S.reduce) once(); }
+        else if (m.t === 'r') { S.cw = m.w; S.ch = m.h; size(); }
+      },
+    };
+    api.ok = init();
+    if (api.ok) {
+      size();
+      canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); gl = null; cb('lost'); });
+      canvas.addEventListener('webglcontextrestored', () => { if (init()) { size(); cb('ready'); } });
+    }
+    return api;
+  }
+
+  /* worker side: autonomous render loop (generation token so pause/resume can never double the loop) */
+  function bgWorkerMain() {
+    let inst = null, running = false, gen = 0, acc = 0, n = 0, reduce = false, last = 0;
+    const raf = self.requestAnimationFrame ? (f) => self.requestAnimationFrame(f) : (f) => setTimeout(() => f(performance.now()), 33);
+    function start() {
+      if (running || !inst) return;
+      running = true; last = performance.now(); const g = ++gen;
+      const f = (now) => {
+        if (!running || g !== gen) return;
+        raf(f);
+        const dt = Math.min(0.05, (now - last) / 1000 || 0.016); last = now; acc += dt;
+        if (acc < inst.minDt) return;
+        const d = acc; acc = 0; inst.tick(d);
+        if (reduce && ++n >= 3) running = false; // reduced motion: a few frames, then still
+      };
+      raf(f);
+    }
+    self.onmessage = (e) => {
+      const m = e.data;
+      if (m.t === 'init') {
+        reduce = !!m.reduce;
+        inst = createBg(m.c, m.vs, m.fs, Object.assign(m, { cb: (t) => self.postMessage({ t }) }));
+        self.postMessage({ t: inst.ok ? 'ready' : 'fail', info: inst.info });
+        if (inst.ok) start();
+      } else if (m.t === 'v') { if (m.h) running = false; else start(); }
+      else if (inst) inst.msg(m);
+    };
+    self.postMessage({ t: 'hi' });
+  }
+
+  const note = (m) => { (J.bootLog || (J.bootLog = [])).push(m); };
+  let bgMode = '';
+
+  /* main-thread wiring shared by both paths: css size -> bg, pointer/scroll state -> bg (only when it changed) */
+  function wireBg(post, drive) {
+    bgPost = post; root.classList.add('fx-gl');
+    J.watch(bg, (r) => { winW = Math.max(1, Math.round(r.width)); winH = Math.max(1, Math.round(r.height)); post({ t: 'r', w: winW, h: winH }); });
+    const st = new Float32Array(6), last = new Float32Array(6).fill(-9);
+    let acc = 0;
+    J.task(bg, (t, dt) => {
+      if (doc.hidden) return;
+      const p = J.pointer, idle = p.x < -1000 ? 1 : 0;
+      st[0] = idle ? 0.5 : p.x / winW; st[1] = idle ? 0.5 : 1 - p.y / winH; st[2] = idle; st[3] = away ? 1 : 0; st[4] = scrollY; st[5] = clamp(scrollY / scrollMax, 0, 1);
+      if (Math.abs(st[0] - last[0]) + Math.abs(st[1] - last[1]) > 0.0004 || st[2] !== last[2] || st[3] !== last[3] || Math.abs(st[4] - last[4]) > 0.5 || Math.abs(st[5] - last[5]) > 0.0005) { last.set(st); post(st); }
+      if (drive) { acc += dt; if (acc >= drive.minDt || J.reduce) { drive.tick(J.reduce ? 0.016 : acc); acc = 0; } }
+    });
+  }
+  function startMain() { // fallback: same renderer on the main thread
+    if (bgMode) return; bgMode = 'main';
+    const inst = createBg(bg, VS, FS, { w: winW, h: winH, reduce, killed: J.S.killed, cb: (t) => { if (t === 'lost') root.classList.add('fx-nogl'); else root.classList.remove('fx-nogl'); } });
+    if (!inst.ok) { root.classList.add('fx-nogl'); return; }
+    note('fx-gl main-thread ' + inst.info);
+    wireBg((m) => inst.msg(m), inst);
+  }
+  function startWorker() {
+    let wk = null, url = '', transferred = false, done = false, to = 0;
+    const toMain = () => { if (done) return; done = true; clearTimeout(to); try { wk && wk.terminate(); } catch (e) { /* ignore */ } if (transferred) root.classList.add('fx-nogl'); else fallbackMain(); };
+    try {
+      const src = 'const createBg=' + createBg.toString() + ';(' + bgWorkerMain.toString() + ')();';
+      url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+      wk = new Worker(url);
+    } catch (e) { fallbackMain(); return; }
+    to = setTimeout(toMain, 4000); // the worker never said hello
+    wk.onerror = toMain;
+    wk.onmessage = (e) => {
+      const m = e.data;
+      if (m.t === 'hi') {
+        clearTimeout(to); try { URL.revokeObjectURL(url); } catch (err) { /* ignore */ }
+        try {
+          const off = bg.transferControlToOffscreen(); transferred = true;
+          wk.postMessage({ t: 'init', c: off, vs: VS, fs: FS, w: winW, h: winH, reduce, killed: J.S.killed }, [off]);
+          bgPost = (msg) => wk.postMessage(msg); // messages queue behind init, so a kill thrown while the context is still warming up is never lost
+        } catch (err) { toMain(); }
+      } else if (m.t === 'ready') {
+        if (bgMode === 'worker') { root.classList.remove('fx-nogl'); return; } // context restored
+        bgMode = 'worker'; note('fx-gl worker ' + m.info);
+        wireBg((msg) => wk.postMessage(msg), null);
+        doc.addEventListener('visibilitychange', () => wk.postMessage({ t: 'v', h: doc.hidden }));
+      } else if (m.t === 'fail') { root.classList.add('fx-nogl'); done = true; wk.terminate(); }
+      else if (m.t === 'lost') root.classList.add('fx-nogl');
+    };
+  }
+  // main-thread fallback waits for the boot overlay's wipe (a context + compile there can stall the main thread for 50 ms - 3 s on weak gpus)
+  let bootDone = false, wantMain = false, mainStarted = false;
+  const runMain = () => { if (mainStarted) return; mainStarted = true; requestAnimationFrame(() => setTimeout(startMain, 0)); };
+  const fallbackMain = () => { wantMain = true; if (bootDone) runMain(); };
+  const startBgOnce = () => { bootDone = true; if (wantMain) runMain(); };
+  setTimeout(startBgOnce, 2300); // failsafe (hidden tab / boot never finishes)
+  if (bg) {
+    const canWorker = typeof Worker === 'function' && typeof OffscreenCanvas === 'function' && typeof Blob === 'function' && !!bg.transferControlToOffscreen && !!window.URL && !!URL.createObjectURL;
+    if (canWorker) requestAnimationFrame(() => setTimeout(startWorker, 0)); else fallbackMain();
+  }
+  root.addEventListener('mouseleave', () => (away = true));
+  root.addEventListener('mouseenter', () => (away = false));
+
+  /* =====================================================================
+   * scroll / resize bookkeeping (cached, never read per frame)
+   * ===================================================================== */
+  let scrollTimer = 0, resizeTimer = 0;
+  const onScrollEnd = [], onResizeEnd = [];
+  function measureDoc() { scrollMax = Math.max(1, root.scrollHeight - winH); }
+  window.addEventListener('scroll', () => {
+    scrollY = window.scrollY || 0;
+    clearTimeout(scrollTimer); scrollTimer = setTimeout(() => onScrollEnd.forEach((f) => f()), 160);
+  }, { passive: true });
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { measureDoc(); onResizeEnd.forEach((f) => f()); }, 160);
+  }, { passive: true });
+  setTimeout(measureDoc, 600); setTimeout(measureDoc, 2600);
+
+  /* =====================================================================
+   * 3. cursor spotlight + card border light (one delegated listener)
+   * ===================================================================== */
+  const spotWrap = $('#fx-spotwrap'), spot = $('#fx-spot');
+  if (fine && !reduce && spotWrap && spot) {
+    let cx = 0, cy = 0, seen = false, lx = -1, ly = -1;
+    J.task(spotWrap, (t, dt) => {
+      const p = J.pointer;
+      if (p.x < -1000) return;
+      if (!seen) { seen = true; cx = p.x; cy = p.y; spotWrap.classList.add('on'); }
+      const k = 1 - Math.exp(-dt * 16);
+      cx += (p.x - cx) * k; cy += (p.y - cy) * k;
+      if (Math.abs(cx - lx) < 0.05 && Math.abs(cy - ly) < 0.05) return;
+      lx = cx; ly = cy;
+      spot.style.transform = 'translate3d(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px,0)';
+    });
+    root.addEventListener('mouseleave', () => spotWrap.classList.remove('on'));
+    root.addEventListener('mouseenter', () => { if (seen) spotWrap.classList.add('on'); });
+  }
+  {
+    let ev = null, raf = 0, lastCard = null, lxx = -1, lyy = -1;
+    const run = () => {
+      raf = 0; if (!ev) return;
+      const c = ev.target && ev.target.closest ? ev.target.closest('.card') : null;
+      if (!c) { lastCard = null; return; }
+      if (c === lastCard && Math.abs(ev.x - lxx) < 0.5 && Math.abs(ev.y - lyy) < 0.5) return;
+      lastCard = c; lxx = ev.x; lyy = ev.y;
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (ev.x - r.left).toFixed(1) + 'px'); c.style.setProperty('--my', (ev.y - r.top).toFixed(1) + 'px');
+    };
+    doc.addEventListener('pointermove', (e) => { ev = { target: e.target, x: e.clientX, y: e.clientY }; if (!raf) raf = requestAnimationFrame(run); }, { passive: true });
+  }
+
+  /* =====================================================================
+   * 4. reveal: IntersectionObserver adds .in to .rv (stagger via --i); failsafes so nothing stays hidden
+   * ===================================================================== */
+  const boot = $('#fx-boot');
+  const seen = new WeakSet(), pend = new Set();
+  let held = [], rio = null;
+  function landed(els) { setTimeout(() => els.forEach((e) => e.classList.add('fx-done')), 1900); }
+  function revealBatch(els) {
+    els = els.filter((e) => !e.classList.contains('in'));
+    if (!els.length) return;
+    const rank = els.map((e) => (getComputedStyle(e).getPropertyValue('--i').trim() ? -1 : 1)); // honour --i set by the module itself
+    let n = 0;
+    els.forEach((e, i) => { if (rank[i] > 0) e.style.setProperty('--i', String(Math.min(n, 10))); n++; });
+    els.forEach((e) => { e.classList.add('in'); pend.delete(e); if (rio) rio.unobserve(e); });
+    landed(els);
+  }
+  const byPos = (a, b) => { const ra = a.boundingClientRect, rb = b.boundingClientRect; return Math.round(ra.top / 40) - Math.round(rb.top / 40) || ra.left - rb.left; };
+  function scanRv() {
+    for (const e of $$('.rv')) {
+      if (seen.has(e)) continue; seen.add(e);
+      if (e.classList.contains('in')) continue;
+      if (reduce || !rio) { e.classList.add('in'); continue; }
+      pend.add(e); rio.observe(e);
+    }
+  }
+  function sweep(inView) { // failsafe: reveal what is above (and, when asked, within) the viewport
+    const hit = [];
+    for (const e of pend) { const r = e.getBoundingClientRect(); if (r.bottom < 0 || (inView && r.top < winH)) hit.push(e); }
+    hit.forEach((e) => { e.classList.add('in'); pend.delete(e); if (rio) rio.unobserve(e); });
+    if (hit.length) landed(hit);
+  }
+  if ('IntersectionObserver' in window && !reduce) {
+    rio = new IntersectionObserver((es) => {
+      const vis = es.filter((e) => e.isIntersecting).sort(byPos).map((e) => e.target);
+      if (!vis.length) return;
+      if (held) { held.push.apply(held, vis); return; } // boot still on screen: park reveals until the wipe starts
+      revealBatch(vis);
+    }, { rootMargin: '0px 0px -5% 0px', threshold: 0 });
+  }
+  function releaseReveal() {
+    if (!held) return;
+    const h = held; held = null;
+    h.sort((a, b) => { const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(); return Math.round(ra.top / 40) - Math.round(rb.top / 40) || ra.left - rb.left; });
+    revealBatch(h);
+  }
+  if (reduce || !rio || !boot) held = null;
+  scanRv();
+  onScrollEnd.push(() => sweep(false));
+  setTimeout(() => { releaseReveal(); sweep(true); }, 3500);
+  if ('MutationObserver' in window) {
+    let mt = 0;
+    new MutationObserver(() => { if (!mt) mt = setTimeout(() => { mt = 0; scanRv(); }, 220); }).observe(doc.body, { childList: true, subtree: true });
+  }
+
+  /* =====================================================================
+   * 5. boot overlay (<= 1.6 s, click / any key skips, removes itself)
+   * ===================================================================== */
+  if (!boot) startBgOnce();
+  if (boot) {
+    if (reduce) { boot.remove(); releaseReveal(); startBgOnce(); }
+    else {
+      const LINES = [
+        ['jev-1.13.0 > typed questions ...', 'ok'], ['hermes > strategy.yaml ...', 'ok'], ['dots > 4y candles ...', 'ok'],
+        ['floor 0.85 | loss cap $2,000 | max pos 4% | kill switch', 'ARMED'], ['simulation only | no real orders | desk', 'online'],
+      ];
+      const starts = [0.04, 0.24, 0.44, 0.64, 0.84], durs = [0.19, 0.19, 0.19, 0.19, 0.17], OUT = 1.04;
+      const logEl = $('#fx-blog'), fill = $('#fx-bfill'), pct = $('#fx-bpct');
+      const rows = LINES.map((l) => {
+        const row = doc.createElement('div'), a = doc.createElement('span'), b = doc.createElement('em');
+        row.className = 'fx-bl'; row.append(a, b); logEl.appendChild(row);
+        return { row, a, b, t: l[0], ok: l[1], n: -1, done: false };
+      });
+      let T0 = -1, over = false, lastPct = -1, tk = null;
+      const finish = (fast) => {
+        if (over) return; over = true;
+        if (tk) tk.stop();
+        boot.classList.add('fx-out'); if (fast) boot.classList.add('fx-fast');
+        releaseReveal(); startBgOnce();
+        doc.removeEventListener('keydown', skip, true);
+        setTimeout(() => boot.remove(), fast ? 330 : 560);
+      };
+      const skip = () => finish(true);
+      boot.addEventListener('pointerdown', skip, { once: true });
+      doc.addEventListener('keydown', skip, true);
+      tk = J.task(boot, (t) => {
+        if (over) return;
+        if (T0 < 0) T0 = t;
+        const e = t - T0; // wall clock: the overlay is gone <= 1.6 s after its first frame no matter how slow the frames are
+        for (let i = 0; i < rows.length; i++) {
+          const r = rows[i], p = clamp((e - starts[i]) / durs[i], 0, 1), n = Math.floor(p * r.t.length);
+          if (p > 0 && n !== r.n) { r.n = n; r.a.textContent = r.t.slice(0, n); r.row.classList.add('show'); }
+          r.row.classList.toggle('cur', p > 0 && p < 1);
+          if (p >= 1 && !r.done) { r.done = true; r.b.textContent = r.ok; }
+        }
+        const f = clamp(e / (OUT - 0.02), 0, 1), q = Math.round(f * 100);
+        fill.style.transform = 'scaleX(' + f.toFixed(3) + ')';
+        if (q !== lastPct) { lastPct = q; pct.textContent = (q < 10 ? '0' : '') + q + '%'; }
+        if (e >= OUT) finish(false);
+      });
+    }
+  }
+
+  /* =====================================================================
+   * 6. orbs: pupils follow the pointer (cached centres, low-rate refresh), idle wander otherwise
+   * ===================================================================== */
+  const tick = $('#fx-tick');
+  if (tick && !reduce) {
+    let orbs = [], lastRef = -9, lpx = -1, lpy = -1, still = 0;
+    const refreshOrbs = () => {
+      const old = new Map(orbs.map((o) => [o.el, o]));
+      orbs = [];
+      for (const el of $$('.orb')) {
+        const r = el.getBoundingClientRect();
+        if (r.width < 6 || r.bottom < -400 || r.top > winH + 400) { const o = old.get(el); if (o) { o.cx = r.left + r.width / 2; o.cy = r.top + r.height / 2 + scrollY; o.vis = false; orbs.push(o); } continue; }
+        const o = old.get(el) || { el, x: 0, y: 0, ph: Math.random() * 6.28 };
+        o.cx = r.left + r.width / 2; o.cy = r.top + r.height / 2 + scrollY; o.max = clamp(r.width * 0.045, 1.2, 3); o.vis = true;
+        orbs.push(o);
+      }
+    };
+    onScrollEnd.push(refreshOrbs); onResizeEnd.push(refreshOrbs);
+    refreshOrbs();
+    J.task(tick, (t, dt) => {
+      if (t - lastRef > 1.4) { lastRef = t; refreshOrbs(); }
+      const p = J.pointer;
+      if (Math.abs(p.x - lpx) + Math.abs(p.y - lpy) > 0.5) { lpx = p.x; lpy = p.y; still = 0; } else still += dt;
+      const idle = p.x < -1000 || still > 3.5;
+      const k = 1 - Math.exp(-dt * 9);
+      for (let i = 0; i < orbs.length; i++) {
+        const o = orbs[i]; if (!o.vis) continue;
+        const oy = o.cy - scrollY;
+        if (oy < -80 || oy > winH + 80) continue;
+        let tx, ty;
+        if (idle) { tx = Math.cos(t * 0.6 + o.ph) * o.max * 0.7; ty = Math.sin(t * 0.43 + o.ph * 1.7) * o.max * 0.45; }
+        else {
+          const dx = p.x - o.cx, dy = p.y - oy, d = Math.sqrt(dx * dx + dy * dy) || 1, s = Math.min(1, d / 170);
+          tx = (dx / d) * o.max * s; ty = (dy / d) * o.max * s;
+        }
+        const nx = o.x + (tx - o.x) * k, ny = o.y + (ty - o.y) * k;
+        if (Math.abs(nx - o.x) + Math.abs(ny - o.y) < 0.012) continue;
+        o.x = nx; o.y = ny;
+        o.el.style.setProperty('--ex', nx.toFixed(2) + 'px'); o.el.style.setProperty('--ey', ny.toFixed(2) + 'px');
+      }
+    });
+  }
+
+  /* =====================================================================
+   * 7. nav: highlight the section in view (sliding pink underline)
+   * ===================================================================== */
+  const nav = $('.nav');
+  if (nav) {
+    const links = $$('a[href^="#"]', nav), secs = links.map((a) => doc.getElementById(a.getAttribute('href').slice(1)));
+    const bar = doc.createElement('i'); bar.className = 'fx-navbar'; bar.setAttribute('aria-hidden', 'true'); nav.appendChild(bar);
+    let cur = -1;
+    const place = () => {
+      const a = links[cur];
+      if (!a || !a.offsetWidth) { bar.classList.remove('on'); return; }
+      bar.style.left = a.offsetLeft + 10 + 'px'; bar.style.width = Math.max(4, a.offsetWidth - 20) + 'px'; bar.classList.add('on');
+    };
+    const mark = (i) => {
+      if (i === cur) return; cur = i;
+      links.forEach((a, j) => { a.classList.toggle('on', j === i); if (j === i) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); });
+      place();
+    };
+    if ('IntersectionObserver' in window) {
+      const band = new Set();
+      const nio = new IntersectionObserver((es) => {
+        es.forEach((e) => (e.isIntersecting ? band.add(e.target) : band.delete(e.target)));
+        let idx = -1; secs.forEach((s, i) => { if (s && band.has(s)) idx = i; });
+        if (idx >= 0) mark(idx);
+      }, { rootMargin: '-38% 0px -58% 0px', threshold: 0 });
+      secs.forEach((s) => s && nio.observe(s));
+    }
+    if (scrollY < 80) mark(0);
+    if ('ResizeObserver' in window) new ResizeObserver(place).observe(nav);
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(place);
+  }
+
+  /* =====================================================================
+   * 8. kill-switch theatre + decision / floor reactions
+   * ===================================================================== */
+  const shockHost = $('#fx-shock');
+  function shock(green) {
+    if (!shockHost || reduce) return;
+    let cx = winW - 90, cy = 28;
+    if (killBtn) { const r = killBtn.getBoundingClientRect(); if (r.width) { cx = r.left + r.width / 2; cy = r.top + r.height / 2; } }
+    const far = Math.max(Math.hypot(cx, cy), Math.hypot(winW - cx, cy), Math.hypot(cx, winH - cy), Math.hypot(winW - cx, winH - cy));
+    const s = ((far * 2.1) / 520).toFixed(2);
+    (green ? [''] : ['', 'b']).forEach((cls) => {
+      const el = doc.createElement('i');
+      el.className = 'fx-ring ' + (green ? 'g ' : '') + cls; el.style.left = cx + 'px'; el.style.top = cy + 'px'; el.style.setProperty('--s', green ? (s * 0.75).toFixed(2) : s);
+      el.addEventListener('animationend', () => el.remove(), { once: true });
+      shockHost.appendChild(el);
+      setTimeout(() => el.remove(), 1700);
+    });
+  }
+  let glitchT = 0;
+  function glitch() {
+    if (reduce) return;
+    clearTimeout(glitchT); root.classList.remove('fx-glitch');
+    requestAnimationFrame(() => { root.classList.add('fx-glitch'); glitchT = setTimeout(() => root.classList.remove('fx-glitch'), 380); });
+  }
+  J.bus.on('kill', (on) => {
+    if (bgPost) bgPost({ t: 'k', v: on });
+    shock(!on);
+    if (on) {
+      glitch(); J.pulse(1);
+      J.toast('KILL SWITCH THROWN - every order now routes to human review', 'kill');
+    } else {
+      J.pulse(0.6);
+      J.toast('ARMED - gate open at floor ' + J.S.floor.toFixed(2), 'ok');
+    }
+  });
+
+  let decAnim = null;
+  function flashDec() {
+    if (!decEl || reduce || !decEl.animate) return;
+    if (decAnim) decAnim.cancel();
+    decEl.style.transformOrigin = 'left center';
+    decAnim = decEl.animate([{ color: '#fff', textShadow: '0 0 14px #ff2e6e, 0 0 30px rgba(255,46,110,.9)', transform: 'scale(1.14)', offset: 0 }, { offset: 1 }], { duration: 640, easing: 'ease-out' });
+  }
+  J.bus.on('decision', (d) => { if (d && d.dest === 'execute') { J.pulse(0.35); flashDec(); } });
+
+  let floorT = 0;
+  J.bus.on('floor', (v) => { clearTimeout(floorT); floorT = setTimeout(() => J.toast('floor -> ' + (+v).toFixed(2)), 600); });
+});
+
+</script>
+<script>/* ---- hero.js ---- */
+/* hero — "JEV DECIDES": a luminous neural-network diagram. Every live decision flows left -> right:
+ * state -> encode -> jev system one -> typed questions -> answers -> code acts.  Two canvases:
+ *   #hero-static  cached mesh (panels, ~1100 additive edges, nodes, labels) — redrawn only on resize / fonts
+ *   #hero-live    per-frame: beams (white-hot head, pink tail), flashes, bars, counters, pointer glow
+ * Everything is simulated; decisions come from the shared JEV bus. */
+JEV.mod('hero', () => {
+  'use strict';
+  const J = JEV, clamp = J.clamp;
+  const stage = J.$('#heroStage'), net = J.$('#heroNet'), cs = J.$('#hero-static'), cl = J.$('#hero-live');
+  if (!stage || !net || !cs || !cl) return;
+  const cardEl = J.$('.hero-card', stage), titleEl = J.$('#heroTitle'), chipEl = J.$('#hero-chip');
+  const CH = { sym: J.$('#hero-c-sym'), act: J.$('#hero-c-act'), conf: J.$('#hero-c-conf'), size: J.$('#hero-c-size'), risk: J.$('#hero-c-risk'), dest: J.$('#hero-c-dest'), ms: J.$('#hero-c-ms'), why: J.$('#hero-c-why') };
+  const FF = "'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
+  const SF = "'Fraunces', 'Playfair Display', 'Iowan Old Style', Georgia, serif";
+  const hasLS = 'letterSpacing' in CanvasRenderingContext2D.prototype;
+  const KEYS = J.STATE_KEYS, ACTS = J.ACTIONS;
+  const ROW = ['buy', 'sell', 'hold', 'close', 'flatten', '0.5%', '1%', '2%', '4%', 'go', 'no-go'];
+  const GRP = [0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2];
+  const GFIRST = [0, 5, 9], GLAST = [4, 8, 10];
+  const DEST = { execute: 0, review: 1, skip: 2 };
+  const DSUB = ['send the order', 'human queue', 'no order'];
+  const DASH = [2, 3], NODASH = [];
+
+  /* ---------- colour ramps + glow sprites (pre-rendered; no shadowBlur per frame) ---------- */
+  const T_PINK = 0, T_AMB = 1, T_RED = 2, T_WHT = 3, T_DIM = 4;
+  const RGB = [[255, 46, 110], [255, 193, 61], [255, 77, 94], [255, 255, 255], [196, 150, 178]];
+  const RAMP = RGB.map((c) => { const a = []; for (let i = 0; i <= 32; i++) a.push('rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (i / 32).toFixed(3) + ')'); return a; });
+  const BRGB = [[255, 148, 198], [255, 216, 128], [255, 132, 142], [255, 255, 255], [226, 196, 212]]; // lighter ramps for beam trails, so they read on top of the bright mesh
+  const BRAMP = BRGB.map((c) => { const a = []; for (let i = 0; i <= 32; i++) a.push('rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (i / 32).toFixed(3) + ')'); return a; });
+  const SPR = RGB.map((c) => {
+    const s = document.createElement('canvas'); s.width = s.height = 96;
+    const x = s.getContext('2d'), gr = x.createRadialGradient(48, 48, 0, 48, 48, 48), hi = c.map((v) => Math.round(v + (255 - v) * 0.62)).join(',');
+    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.1, 'rgba(' + hi + ',.96)'); gr.addColorStop(0.28, 'rgba(' + c.join(',') + ',.55)');
+    gr.addColorStop(0.6, 'rgba(' + c.join(',') + ',.13)'); gr.addColorStop(1, 'rgba(' + c.join(',') + ',0)');
+    x.fillStyle = gr; x.fillRect(0, 0, 96, 96); return s;
+  });
+
+  const SOFT = RGB.map((c) => {
+    const s = document.createElement('canvas'); s.width = s.height = 64; const x = s.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(' + c.join(',') + ',.7)'); gr.addColorStop(0.5, 'rgba(' + c.join(',') + ',.28)'); gr.addColorStop(1, 'rgba(' + c.join(',') + ',0)'); x.fillStyle = gr; x.fillRect(0, 0, 64, 64); return s;
+  });
+  const BND = RGB.map((c) => { // horizontal glow band for a selected answer row (strong at the port, fading right)
+    const s = document.createElement('canvas'); s.width = 128; s.height = 32; const x = s.getContext('2d'); let gr = x.createLinearGradient(0, 0, 0, 32);
+    gr.addColorStop(0, 'rgba(' + c.join(',') + ',0)'); gr.addColorStop(0.5, 'rgba(' + c.join(',') + ',.85)'); gr.addColorStop(1, 'rgba(' + c.join(',') + ',0)'); x.fillStyle = gr; x.fillRect(0, 0, 128, 32);
+    x.globalCompositeOperation = 'destination-in'; gr = x.createLinearGradient(0, 0, 128, 0); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,.25)'); x.fillStyle = gr; x.fillRect(0, 0, 128, 32); return s;
+  });
+
+  /* ---------- graph: 8 layers, one flat node array, one flat edge array ---------- */
+  const LC = [15, 12, 18, 24, 18, 3, 11, 3]; // state · encode · jev a/b/c · questions · answers · code
+  const LS = [0]; for (let i = 0; i < 8; i++) LS.push(LS[i] + LC[i]);
+  const NN = LS[8];
+  const nx = new Float32Array(NN), ny = new Float32Array(NN), nfl = new Float32Array(NN), nL = new Uint8Array(NN);
+  for (let l = 0; l < 8; l++) for (let i = LS[l]; i < LS[l + 1]; i++) nL[i] = l;
+  const EMAX = 1500;
+  const ex0 = new Float32Array(EMAX), ey0 = new Float32Array(EMAX), ex1 = new Float32Array(EMAX), ey1 = new Float32Array(EMAX);
+  const e2 = new Float32Array(EMAX), elen = new Float32Array(EMAX), eA = new Float32Array(EMAX);
+  const esrc = new Int16Array(EMAX), edst = new Int16Array(EMAX), ec = new Uint8Array(EMAX), eTr = new Uint8Array(EMAX);
+  const nout0 = new Int16Array(NN), noutN = new Int16Array(NN), lES = new Int16Array(9);
+  let EN = 0, topoMode = -1;
+
+  function buildTopo(dens) {
+    const R = J.rng(2718), seen = new Uint8Array(32); let n = 0;
+    for (let tr = 0; tr < 7; tr++) {
+      lES[tr] = n;
+      const an = LC[tr], bn = LC[tr + 1], a0 = LS[tr], b0 = LS[tr + 1];
+      const al = tr === 0 ? 0.4 : tr === 1 ? 0.3 : tr === 2 || tr === 3 ? [0.34, 0.27, 0.2][dens] : tr === 4 ? 0.46 : tr === 5 ? 0.7 : 0.3;
+      const curve = tr === 2 || tr === 3 ? 0 : 1;
+      for (let i = 0; i < an; i++) {
+        nout0[a0 + i] = n; seen.fill(0);
+        const pick = (j) => { if (j < 0 || j >= bn || seen[j]) return; seen[j] = 1; esrc[n] = a0 + i; edst[n] = b0 + j; eA[n] = al * (0.72 + R() * 0.56); ec[n] = curve; eTr[n] = tr; n++; };
+        if (tr === 0) { const j = Math.round(i * (bn - 1) / (an - 1)); pick(j); pick(j - 1); pick(j + 1); pick(Math.floor(R() * bn)); }
+        else if (tr === 1) { const c = Math.round(i * (bn - 1) / (an - 1)), k = [2, 3, 4][dens]; for (let d = -k; d <= k; d++) pick(c + d); }
+        else if (tr === 2 || tr === 3) {
+          if (dens === 2) for (let j = 0; j < bn; j++) pick(j);
+          else { const k = dens === 1 ? 14 : 8, off = R() * bn; for (let t = 0; t < k; t++) pick(Math.floor((off + t * bn / k) % bn)); }
+        } else if (tr === 5) { for (let j = GFIRST[i]; j <= GLAST[i]; j++) pick(j); }
+        else for (let j = 0; j < 3; j++) pick(j); // tr 4 (c -> questions) and tr 6 (answers -> code)
+        noutN[a0 + i] = n - nout0[a0 + i];
+      }
+    }
+    lES[7] = n; EN = n; topoMode = dens;
+  }
+  /* point on edge i at u in 0..1 -> PX, PY (S-curve for panel-to-panel edges, straight inside jev) */
+  let PX = 0, PY = 0;
+  function ep(i, u) {
+    const x0 = ex0[i], y0 = ey0[i], x1 = ex1[i], y1 = ey1[i];
+    if (ec[i]) { const s = u * u * (3 - 2 * u), xs = u * (1.5 - 1.5 * u + u * u); PX = x0 + (x1 - x0) * xs; PY = y0 + (y1 - y0) * s; }
+    else { PX = x0 + (x1 - x0) * u; PY = y0 + (y1 - y0) * u; }
+  }
+
+  /* ---------- layout (recomputed on resize only) ---------- */
+  let W = 0, H = 0, M = false, gs = null, gl = null, FS = 9, FS2 = 8;
+  const P = [0, 1, 2, 3, 4, 5].map(() => ({ x: 0, y: 0, w: 0, h: 0 }));
+  const CARDS = [0, 1, 2].map(() => ({ x: 0, y: 0, w: 0, h: 0 }));
+  const rowY = new Float32Array(11), grpY = new Float32Array(3), qy = new Float32Array(3);
+  let pitch = 28, bx0 = 0, bx1 = 0, barH = 5, qr = 14, hdrH = 40, spitch = 28;
+  const cabX = new Float32Array(49), cabY = new Float32Array(49);
+  let jcx = 0, jcy = 0;
+
+  function layout() {
+    const m = M, top = m ? 52 : 64, bot = H - (m ? 26 : 36), ah = bot - top;
+    let pad, w, gp;
+    if (m) { const k = W / 390; pad = 5 * k; w = [14, 22, 100, 44, 88, 54].map((v) => v * k); gp = [14, 12, 12, 10, 8].map((v) => v * k); }
+    else {
+      const cmp = W < 1000; pad = clamp(W * 0.02, 14, 30);
+      w = cmp ? [92, 38, clamp(W * 0.2, 140, 230), 92, 110, 88] : [clamp(W * 0.095, 132, 150), clamp(W * 0.04, 48, 64), clamp(W * 0.225, 212, 330), clamp(W * 0.085, 104, 128), clamp(W * 0.145, 140, 212), clamp(W * 0.103, 104, 152)];
+      const rem = W - 2 * pad - w.reduce((a, b) => a + b, 0), wt = [1, 1.15, 1.2, 1, 0.7];
+      gp = wt.map((v) => Math.max(16, rem * v / 5.05));
+    }
+    const X = []; let x = pad; for (let i = 0; i < 6; i++) { X.push(x); x += w[i] + (gp[i] || 0); }
+    let cardT = 1e9, cardRt = -1;
+    if (!m && cardEl) { cardT = cardEl.offsetTop; cardRt = cardEl.offsetLeft + cardEl.offsetWidth; }
+    const colBot = (i) => (X[i] < cardRt + 6 ? Math.min(bot, cardT - 14) : bot);
+    FS = m ? 7 : 9; FS2 = m ? 7 : 8; hdrH = m ? 24 : 40;
+    // STATE
+    let p = P[0], av = colBot(0) - top;
+    spitch = Math.min(m ? 22 : 30, (av - hdrH - 12) / 15);
+    p.x = X[0]; p.w = w[0]; p.h = hdrH + 15 * spitch + 10; p.y = top + (av - p.h) / 2;
+    for (let i = 0; i < 15; i++) { nx[i] = p.x + p.w - (m ? 6 : 8); ny[i] = p.y + hdrH + (i + 0.5) * spitch; }
+    const cE = p.y + p.h / 2;
+    // ENCODE (narrow, zig-zag)
+    p = P[1]; p.x = X[1]; p.w = w[1]; p.h = Math.min(colBot(1) - top, P[0].h * 0.92); p.y = cE - p.h / 2;
+    { const y0 = p.y + hdrH + 2, y1 = p.y + p.h - 12;
+      for (let j = 0; j < 12; j++) { nx[15 + j] = p.x + p.w * (j % 2 ? 0.7 : 0.3); ny[15 + j] = y0 + (j + 0.5) * (y1 - y0) / 12; } }
+    // JEV SYSTEM ONE (tall, three dense layers)
+    p = P[2]; p.x = X[2]; p.w = w[2]; p.y = top; p.h = colBot(2) - top;
+    const hJ = m ? 24 : 46, iy0 = p.y + hJ, iy1 = p.y + p.h - (m ? 9 : 15), ih = iy1 - iy0;
+    const LY = [[0.13, 0.08, 0.92], [0.5, 0.02, 0.98], [0.87, 0.08, 0.92]];
+    for (let l = 0; l < 3; l++) { const n = LC[2 + l], b = LS[2 + l], c = LY[l]; for (let i = 0; i < n; i++) { nx[b + i] = p.x + p.w * c[0] + (i % 2 ? 1.5 : -1.5); ny[b + i] = iy0 + ih * (c[1] + (c[2] - c[1]) * i / (n - 1)); } }
+    jcx = p.x + p.w / 2; jcy = p.y + p.h / 2;
+    // TYPED QUESTIONS
+    const mid = top + ah / 2, qs = clamp(ah * 0.2, 62, 130); qr = m ? 7.5 : 15;
+    p = P[3]; p.x = X[3]; p.w = w[3];
+    for (let i = 0; i < 3; i++) { qy[i] = mid + (i - 1) * qs; nx[LS[5] + i] = p.x + (m ? p.w / 2 : 26); ny[LS[5] + i] = qy[i]; }
+    p.y = qy[0] - qr - (m ? 30 : 46); p.h = qy[2] + qr + (m ? 44 : 44) - p.y;
+    // ANSWERS (11 rows, 3 groups)
+    const gh = m ? 12 : 16, gg = m ? 6 : 11;
+    pitch = clamp((ah - 6 - hdrH - 3 * gh - 2 * gg - 12) / 11, 16, m ? 24 : 31);
+    const spanH = hdrH + 3 * gh + 2 * gg + 11 * pitch + 12;
+    p = P[4]; p.x = X[4]; p.w = w[4]; p.h = spanH; p.y = top + (ah - spanH) / 2;
+    { let y = p.y + hdrH;
+      for (let g = 0; g < 3; g++) { grpY[g] = y + gh * 0.62; y += gh; for (let r = GFIRST[g]; r <= GLAST[g]; r++) { rowY[r] = y + pitch / 2; y += pitch; } y += gg; }
+      for (let r = 0; r < 11; r++) { nx[LS[6] + r] = p.x + (m ? 6 : 10); ny[LS[6] + r] = rowY[r]; } }
+    barH = m ? 3.5 : 5;
+    bx0 = m ? p.x + 14 : p.x + 22 + 42; bx1 = m ? p.x + p.w - 5 : p.x + p.w - 34;
+    // CODE ACTS (3 glowing cards)
+    p = P[5]; p.x = X[5]; p.w = w[5]; p.h = spanH; p.y = P[4].y;
+    const ch = m ? 48 : clamp(pitch * 2.3, 56, 76), fr = [0.17, 0.5, 0.83];
+    for (let k = 0; k < 3; k++) {
+      const c = CARDS[k]; c.w = p.w - (m ? 9 : 16); c.h = ch; c.x = p.x + (m ? 4.5 : 8); c.y = p.y + hdrH + (spanH - hdrH - 8) * fr[k] - ch / 2;
+      nx[LS[7] + k] = c.x; ny[LS[7] + k] = c.y + ch / 2;
+    }
+    // main cable (catmull-rom through the middle of the tower, bottom-left -> top-right like the reference)
+    const jp = P[2], pts = [[P[1].x + P[1].w, cE], [jp.x, jcy + jp.h * 0.1], [nx[LS[2] + 9], jcy + jp.h * 0.06], [jcx, jcy - jp.h * 0.01], [nx[LS[4] + 9], jcy - jp.h * 0.13], [jp.x + jp.w, jcy - jp.h * 0.21], [P[3].x, qy[1]]];
+    let ci = 0;
+    for (let s = 0; s < 6; s++) {
+      const p0 = pts[Math.max(0, s - 1)], p1 = pts[s], p2 = pts[s + 1], p3 = pts[Math.min(6, s + 2)];
+      for (let k = 0; k < 8; k++) {
+        const t = k / 8, t2 = t * t, t3 = t2 * t;
+        cabX[ci] = 0.5 * (2 * p1[0] + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3);
+        cabY[ci] = 0.5 * (2 * p1[1] + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3);
+        ci++;
+      }
+    }
+    cabX[48] = pts[6][0]; cabY[48] = pts[6][1];
+    // edges
+    for (let i = 0; i < EN; i++) {
+      const s = esrc[i], d = edst[i]; ex0[i] = nx[s]; ey0[i] = ny[s]; ex1[i] = nx[d]; ey1[i] = ny[d];
+      const dx = ex1[i] - ex0[i], dy = ey1[i] - ey0[i]; e2[i] = dx * dx + dy * dy + 1; elen[i] = Math.sqrt(e2[i]) * (ec[i] ? 1.06 : 1);
+    }
+    net.style.setProperty('--hero-jx', jcx.toFixed(0) + 'px'); net.style.setProperty('--hero-jy', jcy.toFixed(0) + 'px');
+  }
+
+  /* ---------- static layer: bloom, panels, additive mesh, nodes, labels, cards ---------- */
+  function rr(g, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+  function T(g, s, x, y, ls) { if (ls && hasLS) { g.letterSpacing = ls + 'px'; g.fillText(s, x, y); g.letterSpacing = '0px'; } else g.fillText(s, x, y); }
+  function panel(g, p, title, sub, hot) {
+    rr(g, p.x, p.y, p.w, p.h, M ? 5 : 9);
+    if (hot) { const gr = g.createLinearGradient(0, p.y, 0, p.y + p.h); gr.addColorStop(0, 'rgba(38,8,32,.9)'); gr.addColorStop(0.5, 'rgba(52,8,40,.84)'); gr.addColorStop(1, 'rgba(18,5,22,.9)'); g.fillStyle = gr; }
+    else g.fillStyle = 'rgba(9,4,15,.84)';
+    g.fill();
+    g.save(); if (hot) { g.shadowColor = 'rgba(255,46,110,.75)'; g.shadowBlur = 26; }
+    g.lineWidth = 1; g.strokeStyle = hot ? 'rgba(255,96,152,.66)' : 'rgba(255,70,140,.26)'; g.stroke(); g.restore();
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    g.fillStyle = hot ? '#ffd0e2' : '#e9dff0'; g.font = '700 ' + (M ? 7 : 8.5) + 'px ' + FF; T(g, title, p.x + (M ? 3 : 10), p.y + (M ? 12 : 17), M ? 0.5 : 1.6);
+    if (sub && !M) { g.fillStyle = '#9c91a8'; g.font = '500 8px ' + FF; T(g, sub, p.x + 10, p.y + 29, 0.4); }
+  }
+  function strokeEdge(g, i) {
+    g.beginPath(); g.moveTo(ex0[i], ey0[i]);
+    if (ec[i]) { const mx = (ex0[i] + ex1[i]) / 2; g.bezierCurveTo(mx, ey0[i], mx, ey1[i], ex1[i], ey1[i]); } else g.lineTo(ex1[i], ey1[i]);
+    g.stroke();
+  }
+  function drawStatic() {
+    const g = gs; g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); g.clearRect(0, 0, W, H);
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+    const jp = P[2];
+    // blooms
+    g.save(); g.translate(jcx, jcy + jp.h * 0.04); g.scale(1, jp.h / (jp.w * 1.25));
+    let gr = g.createRadialGradient(0, 0, 0, 0, 0, jp.w * 1.2); gr.addColorStop(0, 'rgba(255,36,110,.34)'); gr.addColorStop(0.4, 'rgba(255,36,110,.12)'); gr.addColorStop(1, 'rgba(255,36,110,0)');
+    g.fillStyle = gr; g.fillRect(-jp.w * 1.3, -jp.w * 1.3, jp.w * 2.6, jp.w * 2.6); g.restore();
+    { const p = P[5]; gr = g.createRadialGradient(p.x + p.w * 0.5, p.y + p.h * 0.5, 0, p.x + p.w * 0.5, p.y + p.h * 0.5, Math.max(p.h * 0.7, 120));
+      gr.addColorStop(0, 'rgba(255,36,110,.2)'); gr.addColorStop(1, 'rgba(255,36,110,0)'); g.fillStyle = gr; g.fillRect(p.x - 120, p.y - 60, p.w + 240, p.h + 120); }
+    // panels
+    panel(g, P[0], 'STATE', '15 fields \u00b7 from dots', false); panel(g, P[1], 'ENCODE', M ? '' : 'to vector', false);
+    panel(g, P[2], 'JEV · SYSTEM ONE', 'decision layer · one pass', true);
+    panel(g, P[3], M ? 'QUESTIONS' : 'TYPED QUESTIONS', 'choice · score · flag', false);
+    panel(g, P[4], 'ANSWERS', 'real probabilities', false); panel(g, P[5], 'CODE ACTS', 'plain code sends', false);
+    // tower glow column
+    { const lg = g.createLinearGradient(jp.x + jp.w * 0.25, 0, jp.x + jp.w * 0.75, 0); lg.addColorStop(0, 'rgba(255,60,130,0)'); lg.addColorStop(0.5, 'rgba(255,90,160,.12)'); lg.addColorStop(1, 'rgba(255,60,130,0)');
+      g.globalCompositeOperation = 'lighter'; g.fillStyle = lg; g.fillRect(jp.x + jp.w * 0.25, jp.y + 40, jp.w * 0.5, jp.h - 50); }
+    // mesh
+    g.globalCompositeOperation = 'lighter'; g.lineWidth = M ? 0.8 : 0.75;
+    for (let i = 0; i < EN; i++) { g.strokeStyle = 'rgba(255,62,134,' + eA[i].toFixed(3) + ')'; strokeEdge(g, i); }
+    // woven cable strands (the bright diagonal "tower" through the middle)
+    for (let k = -3; k <= 3; k++) {
+      g.strokeStyle = k === 0 ? 'rgba(255,190,220,.75)' : 'rgba(255,100,170,' + (0.5 - Math.abs(k) * 0.07).toFixed(3) + ')'; g.lineWidth = k === 0 ? 1.5 : 1;
+      g.beginPath();
+      for (let i = 0; i < 49; i++) {
+        const a = Math.max(0, i - 1), b = Math.min(48, i + 1); let nxv = cabY[b] - cabY[a], nyv = cabX[a] - cabX[b]; const nl = Math.hypot(nxv, nyv) || 1; nxv /= nl; nyv /= nl;
+        const off = Math.sin(i * 0.42 + k * 1.3) * (M ? 3 : 7) * (k / 3) * Math.sin(Math.PI * i / 48);
+        if (i) g.lineTo(cabX[i] + nxv * off, cabY[i] + nyv * off); else g.moveTo(cabX[i], cabY[i]);
+      }
+      g.stroke();
+    }
+    g.globalCompositeOperation = 'source-over';
+    // nodes
+    for (let i = 0; i < NN; i++) {
+      const l = nL[i]; if (l === 6 || l === 7) continue;
+      g.beginPath();
+      if (l === 0) { g.arc(nx[i], ny[i], M ? 2.6 : 3.4, 0, J.TAU); g.fillStyle = '#0b0610'; g.fill(); g.strokeStyle = 'rgba(255,110,170,.85)'; g.lineWidth = 1; g.stroke(); }
+      else if (l === 5) { g.arc(nx[i], ny[i], qr, 0, J.TAU); const rg = g.createRadialGradient(nx[i], ny[i], 0, nx[i], ny[i], qr); rg.addColorStop(0, 'rgba(255,60,130,.55)'); rg.addColorStop(1, 'rgba(60,8,36,.9)'); g.fillStyle = rg; g.fill(); g.strokeStyle = 'rgba(255,120,176,.95)'; g.lineWidth = M ? 1.2 : 1.8; g.stroke(); g.beginPath(); g.arc(nx[i], ny[i], qr * 0.38, 0, J.TAU); g.fillStyle = 'rgba(255,214,230,.9)'; g.fill(); }
+      else { const r = l === 1 ? (M ? 1.8 : 2.4) : (M ? 1.5 : 2); g.arc(nx[i], ny[i], r, 0, J.TAU); g.fillStyle = l === 1 ? '#ffa2c6' : '#ff8fbb'; g.fill(); }
+    }
+    // state labels (right-aligned to the ports)
+    g.textBaseline = 'middle';
+    if (!M) { g.textAlign = 'right'; g.font = '500 ' + FS + 'px ' + FF; g.fillStyle = '#b0a5bb'; for (let i = 0; i < 15; i++) g.fillText(KEYS[i], nx[i] - 10, ny[i] + 0.5); }
+    // answer rows
+    const pa = P[4];
+    for (let r = 0; r < 11; r++) {
+      const y = rowY[r], gx = nx[LS[6] + r];
+      g.beginPath(); g.arc(gx, y, M ? 2.4 : 3.2, 0, J.TAU); g.fillStyle = '#0b0610'; g.fill(); g.strokeStyle = 'rgba(255,110,170,.85)'; g.lineWidth = 1; g.stroke();
+      g.textAlign = 'left'; g.fillStyle = '#b0a5bb'; g.font = '500 ' + FS + 'px ' + FF;
+      g.fillText(ROW[r], pa.x + (M ? 14 : 22), M ? y - 3.5 : y + 0.5);
+      g.fillStyle = 'rgba(255,255,255,.075)'; g.fillRect(bx0, M ? y + 2.5 : y - barH / 2, bx1 - bx0, barH);
+    }
+    g.textBaseline = 'alphabetic'; g.font = '600 ' + (M ? 7 : 8) + 'px ' + FF; g.textAlign = 'left';
+    const GN = ['choice', 'score', 'flag'], GR = ['', 'of capital', 'risk_ok'];
+    for (let q = 0; q < 3; q++) {
+      g.fillStyle = '#ff9cc4'; T(g, GN[q], pa.x + (M ? 5 : 10), grpY[q] + 3, 0.8);
+      if (GR[q] && !M) { g.fillStyle = '#8d8499'; g.textAlign = 'right'; g.font = '500 8px ' + FF; g.fillText(GR[q], pa.x + pa.w - 8, grpY[q] + 3); g.textAlign = 'left'; g.font = '600 8px ' + FF; }
+      g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 1; g.beginPath(); g.moveTo(pa.x + 5, grpY[q] + (M ? 6 : 8)); g.lineTo(pa.x + pa.w - 5, grpY[q] + (M ? 6 : 8)); g.stroke();
+    }
+    // typed questions
+    const pq = P[3], QN = ['which action?', 'how much?', 'risk ok?'], QT = ['choice', 'score', 'flag'], QM = [['which', 'action?'], ['how', 'much?'], ['risk', 'ok?']];
+    for (let i = 0; i < 3; i++) {
+      if (M) {
+        g.textAlign = 'center'; g.fillStyle = '#f4eef6'; g.font = '600 7px ' + FF; g.fillText(QM[i][0], pq.x + pq.w / 2, qy[i] + qr + 9); g.fillText(QM[i][1], pq.x + pq.w / 2, qy[i] + qr + 17);
+        g.fillStyle = '#ff9cc4'; g.font = '500 7px ' + FF; g.fillText(QT[i], pq.x + pq.w / 2, qy[i] + qr + 25);
+      } else {
+        const tx = pq.x + 26 + qr + 8; g.textAlign = 'left'; g.fillStyle = '#f4eef6'; g.font = '700 9px ' + FF; g.fillText(QN[i], tx, qy[i] - 5);
+        g.fillStyle = '#ff9cc4'; g.font = '500 8px ' + FF; T(g, QT[i], tx, qy[i] + 6, 0.8);
+      }
+    }
+    // code cards
+    const CN = ['execute', 'review', 'skip'];
+    for (let k = 0; k < 3; k++) {
+      const c = CARDS[k]; g.save(); g.shadowColor = 'rgba(255,46,110,.7)'; g.shadowBlur = 24; rr(g, c.x, c.y, c.w, c.h, M ? 5 : 8);
+      const cg = g.createLinearGradient(0, c.y, 0, c.y + c.h); cg.addColorStop(0, k === 2 ? '#5a1238' : '#8a1146'); cg.addColorStop(1, k === 2 ? '#2f0a22' : '#4a0b2b'); g.fillStyle = cg; g.fill(); g.restore();
+      const hg = g.createLinearGradient(0, c.y, 0, c.y + c.h * 0.5); hg.addColorStop(0, 'rgba(255,255,255,.2)'); hg.addColorStop(1, 'rgba(255,255,255,0)'); rr(g, c.x + 1, c.y + 1, c.w - 2, c.h * 0.5, M ? 4 : 7); g.fillStyle = hg; g.fill();
+      rr(g, c.x, c.y, c.w, c.h, M ? 5 : 8); g.strokeStyle = k === 2 ? 'rgba(255,140,185,.55)' : 'rgba(255,140,185,.95)'; g.lineWidth = 1.2; g.stroke();
+      g.beginPath(); g.arc(c.x, c.y + c.h / 2, M ? 2.8 : 3.6, 0, J.TAU); g.fillStyle = '#ffd0e2'; g.fill();
+    }
+  }
+
+  /* ---------- live state ---------- */
+  const stLit = new Float32Array(15), stTxt = new Array(15).fill('');
+  const aVal = new Float32Array(11), aTg = new Float32Array(11), aSel = new Float32Array(11), aSelT = new Float32Array(11), aHot = new Float32Array(11);
+  const aTxt = new Array(11).fill('0%'), aTxtV = new Int16Array(11).fill(-1);
+  const qFl = new Float32Array(3), qOn = new Float32Array(3), qTxt = ['', '', ''], qLab = ['', '', ''];
+  const cPulse = new Float32Array(3), cCount = [J.S.dest.execute, J.S.dest.review, J.S.dest.skip], cTint = [T_PINK, T_AMB, T_DIM], cTxt = ['0', '0', '0'], cCV = [-1, -1, -1];
+  let confV = -1, confTxt = '', conf = 0.9, confTg = 0.9, confA = 0, confOk = true, confRow = 0;
+  let floorV = J.S.floor, floorTxt = 'floor ' + floorV.toFixed(2), killed = J.S.killed, PK = killed ? T_RED : T_PINK, killFl = 0;
+  let mx = -9999, my = -9999, hov = 0, now = 0, lastRun = 0, cableS = -1, cableT0 = 0, cableTint = 0;
+  const RIPN = 8, ripT = new Float32Array(RIPN).fill(-9), ripK = new Uint8Array(RIPN), ripC = new Uint8Array(RIPN); let ripI = 0;
+
+  /* beams: ring buffer, struct-of-arrays */
+  const BN = 520, bE = new Int16Array(BN), bT0 = new Float32Array(BN), bDur = new Float32Array(BN), bW = new Float32Array(BN), bTint = new Uint8Array(BN), bAmb = new Uint8Array(BN), bDone = new Uint8Array(BN);
+  let bi = 0;
+  function beam(e, t0, dur, w, tint, amb) { const b = bi; bi = (bi + 1) % BN; bE[b] = e; bT0[b] = t0; bDur[b] = dur; bW[b] = w > 1 ? 1 : w; bTint[b] = tint; bAmb[b] = amb; bDone[b] = 0; }
+  function arrive(b, e) {
+    const d = edst[e]; nfl[d] = Math.min(1, nfl[d] + (bAmb[b] ? 0.32 : 0.55 + 0.45 * bW[b]));
+    if (bAmb[b] && eTr[e] < 4 && noutN[d] > 0 && Math.random() < 0.72) beam(nout0[d] + ((Math.random() * noutN[d]) | 0), now, bDur[b] * 0.92, bW[b] * 0.92, bTint[b], 1);
+  }
+
+  /* waves: one per decision, ~1.1 s, overlapping */
+  const ST = [0, 0.125, 0.25, 0.375, 0.5, 0.68, 0.84, 1.08];
+  const WV = []; for (let i = 0; i < 6; i++) WV.push({ on: false, t0: 0, st: 0, d: null, demo: false, dk: 0, lit: new Uint8Array(15), sal: new Float32Array(15), tg: new Int16Array(5 * 40), tn: new Uint8Array(5) });
+  const SAL = [null, null,
+    (s) => Math.abs(s.vwap_dist_bps) / 14, (s) => s.spread_bps / 10, (s) => Math.abs(s.imbalance) / 0.55, (s) => Math.abs(s.funding_bps) / 6, (s) => s.vol_1h / 140,
+    (s) => Math.abs(s.edge_bps) / 26, (s) => Math.abs(s.position_pct) / 2.5, (s) => -s.daily_pnl / 1600 + 0.15, (s) => s.drawdown_pct / 8, (s) => s.latency_ms / 260, (s) => s.signal_age_s / 50];
+  const ABBR = { 'thin book': 'thin bk', 'stale feed': 'stale', hyperliquid: 'hyperliq' };
+  function stateText(s) {
+    const t = stTxt; t[0] = s.symbol.replace('-PERP', '-P'); t[1] = s.price >= 1000 ? J.fmt(s.price, 0) : J.fmt(s.price, s.price < 100 ? 2 : 1);
+    t[2] = J.sgn(s.vwap_dist_bps, 1); t[3] = s.spread_bps.toFixed(1); t[4] = J.sgn(s.imbalance, 2); t[5] = J.sgn(s.funding_bps, 1); t[6] = Math.round(s.vol_1h) + '';
+    t[7] = J.sgn(s.edge_bps, 1); t[8] = J.sgn(s.position_pct, 1); t[9] = J.sgn(s.daily_pnl, 0); t[10] = s.drawdown_pct.toFixed(1); t[11] = Math.round(s.latency_ms) + '';
+    t[12] = s.signal_age_s.toFixed(1); t[13] = ABBR[s.venue] || s.venue; t[14] = ABBR[s.regime] || s.regime; txtDirty = true;
+  }
+  function pushT(w, l, n) { const o = l * 40; for (let i = 0; i < w.tn[l]; i++) if (w.tg[o + i] === n) return; if (w.tn[l] < 40) w.tg[o + w.tn[l]++] = n; }
+  function startWave(d, demo) {
+    let w = null; for (let i = 0; i < WV.length; i++) if (!WV[i].on) { w = WV[i]; break; }
+    if (!w) { w = WV[0]; for (let i = 1; i < WV.length; i++) if (WV[i].t0 < w.t0) w = WV[i]; while (w.st < 8) runStage(w, w.st++); }
+    w.on = true; w.t0 = performance.now() / 1000; w.st = 0; w.d = d; w.demo = demo; w.tn.fill(0); w.lit.fill(0);
+    // which state fields matter: top salience (+ always the symbol)
+    const s = d.state; w.sal.fill(0.1); w.sal[0] = 0.5; w.sal[1] = 0.35; w.sal[13] = 0.3; w.sal[14] = 0.3;
+    for (let i = 2; i < 13; i++) w.sal[i] = clamp(SAL[i](s), 0, 1.2);
+    for (let n = 0; n < 5; n++) { let bi2 = -1, bv = 0.25; for (let i = 2; i < 13; i++) if (!w.lit[i] && w.sal[i] > bv) { bv = w.sal[i]; bi2 = i; } if (bi2 < 0) break; w.lit[bi2] = 1; }
+    w.lit[0] = 1;
+    stateText(s);
+    return w;
+  }
+  const lessM = () => (M ? 0.6 : 1);
+  function runStage(w, k) {
+    const d = w.d, t0 = w.t0 + ST[k], R = Math.random, dm = lessM();
+    if (k === 0) {
+      for (let i = 0; i < 15; i++) if (w.lit[i]) {
+        stLit[i] = Math.min(1, 0.5 + 0.5 * Math.min(1, w.sal[i] + 0.3)); nfl[i] = 1;
+        for (let q = 0; q < 2; q++) { const e = nout0[i] + ((R() * noutN[i]) | 0); beam(e, t0 + q * 0.03 + R() * 0.02, 0.18, 0.62 + 0.38 * Math.min(1, w.sal[i]), PK, 0); pushT(w, 1, edst[e] - LS[1]); }
+      }
+    } else if (k <= 3) {
+      const l = k, o = l * 40, n = w.tn[l], per = k === 1 ? 2 : 3;
+      for (let a = 0; a < n; a++) { const src = LS[l] + w.tg[o + a]; for (let q = 0; q < per; q++) { if (R() > dm) continue; const e = nout0[src] + ((R() * noutN[src]) | 0); beam(e, t0 + R() * 0.035, 0.17, 0.5 + R() * 0.45, PK, 0); pushT(w, l + 1, edst[e] - LS[l + 1]); } }
+      if (k === 1) { cableS = 0; cableT0 = t0; cableTint = PK; }
+      if (k === 3) { for (let q = 0; q < 6; q++) pushT(w, 4, (R() * 18) | 0); }
+    } else if (k === 4) {
+      const o = 4 * 40, n = w.tn[4];
+      for (let a = 0; a < n; a++) { const src = LS[4] + w.tg[o + a]; for (let q = 0; q < 3; q++) if (R() < 0.62 * dm + 0.2) beam(nout0[src] + q, t0 + R() * 0.04, 0.17, 0.5 + R() * 0.5, PK, 0); }
+    } else if (k === 5) {
+      const q0 = LS[5];
+      for (let q = 0; q < 3; q++) { qFl[q] = 1; qOn[q] = 1; nfl[q0 + q] = 1; }
+      qTxt[0] = d.action; qTxt[1] = (d.size < 1 ? '0.5' : d.size) + '%'; qTxt[2] = d.riskOk ? 'go' : 'no-go'; for (let q = 0; q < 3; q++) qLab[q] = '= ' + qTxt[q];
+      const pr = [d.p.buy, d.p.sell, d.p.hold, d.p.close, d.p.flatten, d.sizes[0], d.sizes[1], d.sizes[2], d.sizes[3], d.pRisk, 1 - d.pRisk];
+      for (let q = 0; q < 3; q++) for (let r = GFIRST[q]; r <= GLAST[q]; r++) beam(nout0[q0 + q] + (r - GFIRST[q]), t0, 0.17, 0.3 + 0.7 * Math.min(1, pr[r] * 1.3), PK, 0);
+    } else if (k === 6) {
+      aTg[0] = d.p.buy; aTg[1] = d.p.sell; aTg[2] = d.p.hold; aTg[3] = d.p.close; aTg[4] = d.p.flatten;
+      for (let i = 0; i < 4; i++) aTg[5 + i] = d.sizes[i]; aTg[9] = d.pRisk; aTg[10] = 1 - d.pRisk;
+      const rA = ACTS.indexOf(d.action), rS = 5 + d.sizeIdx, rK = d.riskOk ? 9 : 10;
+      aSelT.fill(0); aSelT[rA] = 1; aSelT[rS] = 1; aSelT[rK] = 1; aHot[rA] = 1; aHot[rS] = 1; aHot[rK] = 1; txtDirty = true;
+      conf = confTg; confTg = d.conf; confOk = d.conf >= d.floor; confRow = rA; confA = 0;
+      updateChip(d);
+      const dk = DEST[d.dest], tint = d.dest === 'skip' ? T_DIM : d.dest === 'review' ? (killed ? T_RED : T_AMB) : PK, bw = d.dest === 'skip' ? 0.5 : 1;
+      w.dk = dk;
+      [rA, rS, rK].forEach((r, i) => beam(nout0[LS[6] + r] + dk, w.t0 + 0.86 + i * 0.02, 0.22, bw, tint, 0));
+    } else {
+      const dk = w.dk, tint = dk === 2 ? T_DIM : dk === 1 ? (killed ? T_RED : T_AMB) : PK;
+      cPulse[dk] = 1; cTint[dk] = tint; nfl[LS[7] + dk] = 1; ripT[ripI] = w.t0 + ST[7]; ripK[ripI] = dk; ripC[ripI] = tint; ripI = (ripI + 1) % RIPN;
+      if (!w.demo) cCount[dk]++;
+      w.on = false;
+    }
+  }
+  function updateChip(d) {
+    CH.sym.textContent = d.symbol; CH.act.textContent = d.action; CH.conf.textContent = d.conf.toFixed(2);
+    CH.size.textContent = d.action === 'hold' ? '—' : (d.size < 1 ? '0.5' : d.size) + '%'; CH.risk.textContent = d.riskOk ? 'ok' : 'flag';
+    CH.dest.textContent = d.dest; CH.dest.setAttribute('data-d', d.dest); CH.ms.textContent = d.ms.toFixed(1); CH.why.textContent = d.reason === 'ok' ? '' : d.reason;
+    if (chipEl.animate && !J.reduce) chipEl.animate([{ borderColor: 'rgba(255,255,255,.95)', boxShadow: '0 0 46px rgba(255,46,110,.95), inset 0 0 18px rgba(255,120,170,.35)' }, {}], { duration: 560, easing: 'ease-out' });
+  }
+
+  /* ---------- per-frame ---------- */
+  function spr(t, x, y, s, a) { gl.globalAlpha = a > 1 ? 1 : a; gl.drawImage(SPR[t], x - s / 2, y - s / 2, s, s); }
+  function strokeLive(g, i) { g.beginPath(); g.moveTo(ex0[i], ey0[i]); if (ec[i]) { const m = (ex0[i] + ex1[i]) / 2; g.bezierCurveTo(m, ey0[i], m, ey1[i], ex1[i], ey1[i]); } else g.lineTo(ex1[i], ey1[i]); g.stroke(); }
+  /* cached text layer: state values, answer percentages, code-card tags + counters (re-rendered only when one changes) */
+  const txtCv = document.createElement('canvas'); let gt = null, txtDirty = true, stVals = false; const stBr = new Uint8Array(15);
+  function blit(g, x, y, w, h) { const D = J.DPR; g.drawImage(txtCv, x * D, y * D, w * D, h * D, x, y, w, h); }
+  function renderTxt() {
+    const g = gt; if (!g) return; g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); g.clearRect(0, 0, W, H); g.textBaseline = 'middle';
+    const pst = P[0], pa = P[4];
+    g.font = '500 ' + FS + 'px ' + FF;
+    if (stVals) { g.textAlign = 'left'; for (let i = 0; i < 15; i++) { g.fillStyle = stBr[i] ? '#fff' : '#8f859b'; g.fillText(stTxt[i], pst.x + 9, ny[i] + 0.5); } }
+    if (!M) { g.textAlign = 'right'; g.fillStyle = '#fff'; for (let i = 0; i < 15; i++) if (stBr[i]) g.fillText(KEYS[i], nx[i] - 10, ny[i] + 0.5); }
+    for (let r = 0; r < 11; r++) {
+      const sel = aSelT[r] > 0.5, ty = M ? rowY[r] - 3.5 : rowY[r] + 0.5;
+      g.textAlign = 'right'; g.fillStyle = sel ? '#fff' : '#a89db3'; g.fillText(aTxt[r], pa.x + pa.w - (M ? 4 : 9), ty);
+      if (sel) { g.textAlign = 'left'; g.fillStyle = '#fff'; g.fillText(ROW[r], pa.x + (M ? 14 : 22), ty); }
+    }
+    const CN = ['execute', 'review', 'skip']; g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+    for (let k = 0; k < 3; k++) {
+      const c = CARDS[k]; g.font = '700 ' + (M ? 7 : 8.5) + 'px ' + FF; g.fillStyle = '#fff'; T(g, M || c.w < 116 ? CN[k] : 'orders/' + CN[k], c.x + (M ? 5 : 10), c.y + (M ? 12 : 17), M ? 0.2 : 0.6);
+      if (!M) { g.font = '500 8px ' + FF; g.fillStyle = '#ffc7dc'; g.fillText(DSUB[k], c.x + 10, c.y + 29); }
+      g.font = '700 ' + (M ? 11 : 25) + 'px ' + SF; g.fillStyle = '#fff'; g.fillText(cTxt[k], c.x + (M ? 5 : 10), c.y + c.h - (M ? 7 : 11));
+    }
+    txtDirty = false;
+  }
+  let ambAcc = 0, ax = 0, ay = 0, lax = 0, lay = 0; const auraEl = J.$('.hero-aura', stage);
+  function frame(t, dt) {
+    const g = gl; if (!g || !W) return;
+    now = t; lastRun = t; const dk = dt || 0.016;
+    for (let i = 0; i < WV.length; i++) { const w = WV[i]; if (!w.on) continue; while (w.st < 8 && t >= w.t0 + ST[w.st]) runStage(w, w.st++); }
+    ambAcc += dk * (M ? 8 : 15); while (ambAcc >= 1) { ambAcc -= 1; const e = lES[1] + ((Math.random() * (lES[5] - lES[1])) | 0); beam(e, t, 0.8 + Math.random() * 0.8, 0.22 + Math.random() * 0.2, PK, 1); }
+    const dA = Math.exp(-dk * 2.1), dB = Math.exp(-dk * 3.4), dC = Math.exp(-dk * 2.2), kE = Math.min(1, dk * 8);
+    g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); g.clearRect(0, 0, W, H); g.lineCap = 'round'; g.globalCompositeOperation = 'lighter';
+    if (killFl > 0.01) { spr(T_RED, jcx, jcy, Math.max(W, H) * 1.3, killFl * 0.35); killFl *= Math.exp(-dk * 1.8); }
+    if (auraEl) { const tx = J.pointer.nx * 16, ty = J.pointer.ny * 10; ax += (tx - ax) * Math.min(1, dk * 2.5); ay += (ty - ay) * Math.min(1, dk * 2.5); if (Math.abs(ax - lax) + Math.abs(ay - lay) > 0.08) { lax = ax; lay = ay; auraEl.style.transform = 'translate3d(' + ax.toFixed(1) + 'px,' + ay.toFixed(1) + 'px,0)'; } }
+    /* pointer: soft spotlight, nearby edges + nodes light up */
+    const inside = mx > -1000; hov += ((inside ? 1 : 0) - hov) * Math.min(1, dk * 7);
+    if (hov > 0.02) {
+      const PR = M ? 70 : 118, R2 = PR * PR; spr(PK, mx, my, PR * 2.6, hov * 0.32); let cnt = 0; g.lineWidth = 1.2; const rp = BRAMP[PK];
+      for (let i = 0; i < EN && cnt < 150; i++) {
+        const vx = ex1[i] - ex0[i], vy = ey1[i] - ey0[i]; let u = ((mx - ex0[i]) * vx + (my - ey0[i]) * vy) / e2[i]; u = u < 0 ? 0 : u > 1 ? 1 : u;
+        const dx = ex0[i] + u * vx - mx, dy = ey0[i] + u * vy - my, d2 = dx * dx + dy * dy; if (d2 > R2) continue;
+        cnt++; const k = 1 - Math.sqrt(d2) / PR; g.strokeStyle = rp[((0.16 + 0.7 * k * k) * hov * 32) | 0]; strokeLive(g, i);
+      }
+      for (let i = 0; i < NN; i++) { const dx = nx[i] - mx, dy = ny[i] - my, d2 = dx * dx + dy * dy; if (d2 < R2) { const k = 1 - Math.sqrt(d2) / PR; spr(PK, nx[i], ny[i], (M ? 12 : 16) + 18 * k, k * 0.95 * hov); } }
+    }
+    /* idle shimmer + wave beams */
+    for (let b = 0; b < BN; b++) {
+      const dur = bDur[b]; if (dur === 0) continue;
+      const u = (t - bT0[b]) / dur; if (u < 0) continue;
+      const e = bE[b], amb = bAmb[b], span = Math.min(0.75, Math.max(0.16, (amb ? 56 : 120) / (elen[e] + 1)));
+      if (u >= 1 && !bDone[b]) { bDone[b] = 1; arrive(b, e); }
+      if (u >= 1 + span) { bDur[b] = 0; continue; }
+      const hu = u > 1 ? 1 : u, tu = u - span < 0 ? 0 : u - span, w = bW[b] * (u > 1 ? 1 - (u - 1) / span : 1), R = BRAMP[bTint[b]];
+      ep(e, tu); const x0 = PX, y0 = PY; ep(e, hu); const x3 = PX, y3 = PY;
+      if (amb) { g.lineWidth = 1; g.strokeStyle = R[(w * 0.55 * 32) | 0]; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x3, y3); g.stroke(); spr(bTint[b], x3, y3, 7, w * 0.8); continue; }
+      const sp = hu - tu; ep(e, tu + sp * 0.45); const x1 = PX, y1 = PY; ep(e, tu + sp * 0.78); const x2 = PX, y2 = PY;
+      g.lineWidth = M ? 1.3 : 1.6; g.strokeStyle = R[(w * 0.34 * 32) | 0]; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+      g.lineWidth = M ? 1.7 : 2.1; g.strokeStyle = R[(w * 0.7 * 32) | 0]; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+      g.lineWidth = M ? 2.1 : 2.8; g.strokeStyle = R[(w * 32) | 0]; g.beginPath(); g.moveTo(x2, y2); g.lineTo(x3, y3); g.stroke();
+      spr(bTint[b], x3, y3, (M ? 11 : 15) + 14 * w, w); spr(T_WHT, x3, y3, 5 + 6 * w, w);
+    }
+    /* main cable pulse (thick, white-hot) */
+    if (cableS >= 0) {
+      const s = (t - cableT0) / 0.62; if (s > 1.3) cableS = -1; else {
+        const hs = Math.min(1, s), ts = Math.max(0, s - 0.3), fa = s > 1 ? 1 - (s - 1) / 0.3 : 1, R = BRAMP[cableTint], i0 = (ts * 48) | 0, i1 = (hs * 48) | 0;
+        for (let pass = 0; pass < 3; pass++) {
+          g.lineWidth = [M ? 6 : 9, M ? 3 : 4.5, M ? 1.4 : 1.8][pass]; g.strokeStyle = pass === 2 ? RAMP[T_WHT][(fa * 0.9 * 32) | 0] : R[(fa * [0.2, 0.55][pass] * 32) | 0];
+          g.beginPath(); g.moveTo(cabX[i0], cabY[i0]); for (let i = i0 + 1; i <= i1; i++) g.lineTo(cabX[i], cabY[i]); g.stroke();
+        }
+        spr(cableTint, cabX[i1], cabY[i1], (M ? 30 : 46), fa); spr(T_WHT, cabX[i1], cabY[i1], (M ? 10 : 14), fa);
+      }
+    }
+    /* node flashes */
+    for (let i = 0; i < NN; i++) {
+      const f = nfl[i]; if (f < 0.03) continue; nfl[i] = f * dB; const l = nL[i];
+      if (l === 7) continue;
+      spr(PK, nx[i], ny[i], l === 5 ? (M ? 18 + 18 * f : 34 + 40 * f) : l === 6 ? 16 + 14 * f : l === 0 ? 18 + 16 * f : (M ? 9 : 11) + 14 * f, f);
+    }
+    /* state rows that matter */
+    const pst = P[0];
+    for (let i = 0; i < 15; i++) {
+      const v = stLit[i], nb = v > 0.3 ? 1 : 0; if (nb !== stBr[i]) { stBr[i] = nb; txtDirty = true; } if (v < 0.02) continue; stLit[i] = v * dA;
+      g.globalAlpha = 1; g.fillStyle = RAMP[PK][(v * 0.16 * 32) | 0]; g.fillRect(pst.x + 3, ny[i] - spitch / 2 + 1, pst.w - 6, spitch - 2);
+      spr(PK, nx[i], ny[i], 22 + 12 * v, v * 0.95);
+    }
+    /* questions */
+    for (let q = 0; q < 3; q++) { const f = qFl[q], o = qOn[q]; if (o > 0.01) { spr(PK, nx[LS[5] + q], ny[LS[5] + q], M ? qr * 2 + 8 + 16 * f : qr * 2 + 22 + 40 * f, 0.34 * o + 0.6 * f); qFl[q] = f * dB; } }
+    /* answers: row glow */
+    const pa = P[4]; g.globalAlpha = 1;
+    for (let r = 0; r < 11; r++) {
+      aSel[r] += (aSelT[r] - aSel[r]) * kE; const s = aSel[r], h = aHot[r]; if (h > 0.01) aHot[r] = h * dC;
+      if (s > 0.02 || h > 0.02) { g.globalAlpha = Math.min(1, s * 0.5 + h * 0.6); g.drawImage(BND[PK], pa.x + 3, rowY[r] - pitch * 0.62, pa.w - 6, pitch * 1.24); }
+    }
+    /* code acts: pulse + ripples */
+    for (let k = 0; k < 3; k++) {
+      const p = cPulse[k], c = CARDS[k]; if (p < 0.02) continue; cPulse[k] = p * Math.exp(-dk * 2.1);
+      g.globalAlpha = Math.min(1, p * 0.95); g.drawImage(SOFT[cTint[k]], c.x - c.w * 0.45, c.y - c.h * 0.9, c.w * 1.9, c.h * 2.8); g.globalAlpha = 1; g.fillStyle = RAMP[cTint[k]][(p * 0.3 * 32) | 0]; rr(g, c.x, c.y, c.w, c.h, M ? 5 : 8); g.fill();
+    }
+    g.lineWidth = 1.5;
+    for (let i = 0; i < RIPN; i++) {
+      const age = t - ripT[i]; if (age < 0 || age > 0.85) continue; const k = age / 0.85, c = CARDS[ripK[i]], e = 1 - (1 - k) * (1 - k), gx = (M ? 12 : 22) * e, gy = (M ? 8 : 16) * e;
+      g.strokeStyle = RAMP[ripC[i]][((1 - k) * 0.85 * 32) | 0]; rr(g, c.x - gx, c.y - gy, c.w + gx * 2, c.h + gy * 2, (M ? 5 : 8) + gx * 0.6); g.stroke();
+    }
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    /* ---- bars + text (slow-changing text is cached in an offscreen canvas and blitted by sub-rect) ---- */
+    g.textBaseline = 'middle';
+    const bw = bx1 - bx0;
+    for (let r = 0; r < 11; r++) {
+      aVal[r] += (aTg[r] - aVal[r]) * kE; const v = aVal[r], s = aSel[r], y = rowY[r], by = M ? y + 2.5 : y - barH / 2, w = Math.max(0, v * bw);
+      g.fillStyle = RAMP[PK][((0.42 + 0.58 * s) * 32) | 0]; g.fillRect(bx0, by, w, barH);
+      if (s > 0.04) { g.globalAlpha = s; g.fillStyle = '#fff'; g.fillRect(bx0 + w - 2, by - 1, 2, barH + 2); g.globalAlpha = 1; }
+      const pv = Math.round(v * 100); if (pv !== aTxtV[r]) { aTxtV[r] = pv; aTxt[r] = pv + '%'; txtDirty = true; }
+    }
+    for (let k = 0; k < 3; k++) if (cCV[k] !== cCount[k]) { cCV[k] = cCount[k]; cTxt[k] = J.fmt(cCount[k]); txtDirty = true; }
+    if (txtDirty) renderTxt();
+    blit(g, pst.x + 4, pst.y + hdrH, pst.w - 8, 15 * spitch);
+    blit(g, pa.x + 4, rowY[0] - pitch * 0.5, pa.w - 8, rowY[10] - rowY[0] + pitch);
+    { const c0 = CARDS[0], c2 = CARDS[2]; blit(g, c0.x - 1, c0.y - 1, c0.w + 2, c2.y + c2.h - c0.y + 2); }
+    g.font = '500 ' + FS + 'px ' + FF;
+    for (let r = 0; r < 11; r++) { const s = aSel[r]; if (s < 0.04) continue; const y = rowY[r]; g.globalAlpha = 1; g.fillStyle = RAMP[PK][(s * 32) | 0]; g.fillRect(pa.x + 2, y - pitch * 0.38, 2, pitch * 0.76); }
+    /* floor + confidence tick on the choice group */
+    { const gy0 = rowY[0] - pitch * 0.5, gy1 = rowY[4] + pitch * 0.5, fx = bx0 + floorV * bw;
+      g.strokeStyle = 'rgba(255,193,61,.9)'; g.lineWidth = 1; g.setLineDash(DASH); g.beginPath(); g.moveTo(fx, gy0); g.lineTo(fx, gy1); g.stroke(); g.setLineDash(NODASH);
+      g.textAlign = 'right'; g.font = '700 ' + (M ? 7 : 8) + 'px ' + FF; g.fillStyle = '#ffc13d'; g.fillText(floorTxt, pa.x + pa.w - (M ? 4 : 8), grpY[0] + 3);
+      confA += (1 - confA) * Math.min(1, dk * 9); conf += (confTg - conf) * kE;
+      if (confA > 0.02) {
+        const cx = bx0 + conf * bw, ry = rowY[confRow], hh = pitch * (M ? 0.5 : 0.46), col = confOk ? '#2ee6a6' : '#ffc13d', yy = M ? ry + 2.5 : ry;
+        g.globalAlpha = confA; g.fillStyle = col; g.beginPath();
+        if (confRow === 0) { g.fillRect(cx - 1, yy - hh * 0.55, 2, hh * 1.55); g.moveTo(cx - 3.5, yy + hh + 4.5); g.lineTo(cx + 3.5, yy + hh + 4.5); g.lineTo(cx, yy + hh - 0.5); }
+        else { g.fillRect(cx - 1, yy - hh, 2, hh * 2); g.moveTo(cx - 3.5, yy - hh - 4.5); g.lineTo(cx + 3.5, yy - hh - 4.5); g.lineTo(cx, yy - hh + 0.5); }
+        g.closePath(); g.fill();
+        if (!M) { const cv = Math.round(conf * 100); if (cv !== confV) { confV = cv; confTxt = (cv / 100).toFixed(2); } g.textAlign = 'center'; g.font = '700 8px ' + FF; g.fillText(confTxt, cx, confRow === 0 ? yy + hh + 14 : yy - hh - 9); }
+        g.globalAlpha = 1;
+      }
+    }
+    /* typed question results */
+    const pq = P[3];
+    for (let q = 0; q < 3; q++) {
+      const o = qOn[q]; if (o < 0.02 || !qTxt[q]) continue; g.globalAlpha = Math.min(1, o); g.fillStyle = '#ff9cc4'; g.font = '700 ' + (M ? 7 : 9) + 'px ' + FF;
+      if (M) { g.textAlign = 'center'; g.fillText(qTxt[q], pq.x + pq.w / 2, qy[q] + qr + 34); } else { g.textAlign = 'left'; g.fillText(qLab[q], pq.x + 26 + qr + 8, qy[q] + 19); }
+      g.globalAlpha = 1;
+    }
+    if (killed) {
+      const p = P[5]; g.fillStyle = 'rgba(9,4,15,.96)'; g.fillRect(p.x + 2, p.y + (M ? 14 : 21), p.w - 4, M ? 8 : 11);
+      g.globalAlpha = 0.65 + 0.35 * Math.sin(t * 7); g.fillStyle = '#ff4d5e'; g.font = '700 ' + (M ? 7 : 8) + 'px ' + FF; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillText(M ? 'halted' : 'halted · all to review', p.x + (M ? 3 : 10), p.y + (M ? 18 : 27)); g.globalAlpha = 1;
+    }
+    g.textBaseline = 'middle';
+  }
+
+  /* ---------- build / resize ---------- */
+  function rebuild() {
+    const a = J.fit(cs), b = J.fit(cl); gs = a.g; gl = b.g; W = a.W; H = a.H; M = W < 700; txtCv.width = cl.width; txtCv.height = cl.height; gt = txtCv.getContext('2d'); txtDirty = true;
+    const dens = M ? 0 : W < 1000 ? 1 : 2; if (dens !== topoMode) buildTopo(dens);
+    layout(); stVals = !M && P[0].w >= 128; drawStatic(); if (!J.reduce || !lastRun) frame(performance.now() / 1000, 0.016); else frame(lastRun, 0.016);
+  }
+  J.watch(net, rebuild);
+  if (document.fonts) { document.fonts.ready.then(() => W && rebuild()).catch(() => {}); if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => W && rebuild()); }
+
+  /* ---------- events ---------- */
+  function snap(d, demo) {
+    const w = startWave(d, demo); while (w.st < 8) runStage(w, w.st++);
+    aVal.set(aTg); aSel.set(aSelT); qFl.fill(0); aHot.fill(0); stLit.forEach((v, i) => (stLit[i] = w.lit[i] ? 0.6 : 0)); cPulse.fill(0); nfl.fill(0); bDur.fill(0); cableS = -1; conf = confTg; confA = 1;
+  }
+  J.bus.on('decision', (d) => { if (J.reduce) { snap(d, false); frame(performance.now() / 1000, 0.016); } else startWave(d, false); });
+  J.bus.on('kill', (k) => { killed = !!k; PK = killed ? T_RED : T_PINK; killFl = 1; });
+  J.bus.on('floor', (f) => { floorV = f; floorTxt = 'floor ' + f.toFixed(2); });
+  const fire = () => { const t = performance.now(); if (t - (fire.t || 0) > 160) { fire.t = t; J.fire(); } };
+  const setP = (e) => { const r = cl.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; };
+  cl.addEventListener('pointermove', setP, { passive: true }); cl.addEventListener('pointerdown', setP, { passive: true });
+  cl.addEventListener('pointerleave', () => { mx = my = -9999; }); cl.addEventListener('pointercancel', () => { mx = my = -9999; });
+  cl.addEventListener('click', fire);
+  const fb = J.$('#hero-fire'); if (fb) fb.addEventListener('click', fire);
+
+  /* intro: once the boot overlay has left (or on first view), the network wipes in left -> right and the title decodes */
+  stage.classList.add('hero-pre');
+  J.onView(stage, () => {
+    let n = 0;
+    const go = () => {
+      const b = document.getElementById('fx-boot');
+      if (!b || b.classList.contains('fx-out') || ++n > 80) {
+        stage.classList.remove('hero-pre');
+        if (titleEl) J.scramble(titleEl, 'JEV DECIDES', 1100);
+      } else setTimeout(go, 100);
+    };
+    go();
+  }, { threshold: 0.2 });
+
+  /* seed with the latest decision so the diagram is populated from the first frame */
+  { const d0 = J.recent[0] || J.makeDecision(); snap(d0, true); }
+  J.task(stage, frame);
+});
 
 </script>
 <script>/* ---- main.js ---- */
