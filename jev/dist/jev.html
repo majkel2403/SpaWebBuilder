@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>JEV Desk — Hermes writes · Jev decides · code acts</title>
+<meta name="description" content="A cinematic trading console: Hermes writes the strategy, Jev decides with typed answers, code sends the orders. Simulation only.">
+<meta name="theme-color" content="#05030a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;600;700&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" media="print" onload="this.media='all'">
+<style>
+/* ---- base.css ---- */
+/* ===== JEV base — tokens + shared primitives. Modules add their own css/<module>.css and never edit this file. ===== */
+:root {
+  --bg: #05030a; --bg2: #0b0711; --ink: #f4eef6; --mut: #8d8499; --dim: #5a5365;
+  --pink: #ff2e6e; --pink2: #ff7ab3; --green: #2ee6a6; --blue: #4d8dff; --amber: #ffc13d; --violet: #a66bff;
+  --orange: #ff8a3d; --cyan: #3be0ff; --red: #ff4d5e; --up: #2ee6a6; --dn: #ff4d5e;
+  --line: rgba(255, 255, 255, .08); --line2: rgba(255, 255, 255, .14);
+  --panel: linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .016));
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+  --sans: 'Space Grotesk', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: 'Fraunces', 'Playfair Display', 'Iowan Old Style', Georgia, serif;
+  --gut: clamp(12px, 3vw, 32px);
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; color-scheme: dark; scroll-padding-top: 64px; }
+body { background: var(--bg); color: var(--ink); font: 400 12.5px/1.55 var(--mono); overflow-x: hidden; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+::selection { background: var(--pink); color: #fff; }
+canvas { display: block; }
+.wrap { max-width: 1380px; margin: 0 auto; padding: 0 var(--gut); position: relative; }
+.sec { position: relative; padding: clamp(46px, 7vw, 100px) 0; }
+.hide-s { } .show-s { display: none; }
+@media (max-width: 700px) { .hide-s { display: none !important; } .show-s { display: initial; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mut { color: var(--mut); } .dim { color: var(--dim); } .hot { color: var(--pink); } .up { color: var(--up); } .dn { color: var(--dn); }
+.sans { font-family: var(--sans); } .serif { font-family: var(--serif); } .num { font-variant-numeric: tabular-nums; }
+
+/* accent hook: <el data-c="pink|gray|green|blue|yellow|violet|orange|cyan|red"> exposes --cc / --cc-rgb */
+[data-c="pink"] { --cc: #ff6fa6; --cc-rgb: 255,111,166; } [data-c="gray"] { --cc: #b8b2c2; --cc-rgb: 184,178,194; }
+[data-c="green"] { --cc: #35e0a8; --cc-rgb: 53,224,168; } [data-c="blue"] { --cc: #5a8cff; --cc-rgb: 90,140,255; }
+[data-c="yellow"] { --cc: #ffc53d; --cc-rgb: 255,197,61; } [data-c="violet"] { --cc: #a66bff; --cc-rgb: 166,107,255; }
+[data-c="orange"] { --cc: #ff8a3d; --cc-rgb: 255,138,61; } [data-c="cyan"] { --cc: #3be0ff; --cc-rgb: 59,224,255; }
+[data-c="red"] { --cc: #ff4d5e; --cc-rgb: 255,77,94; }
+
+/* ----- section heading kit ----- */
+.sec-head { margin-bottom: clamp(22px, 3.4vw, 44px); }
+.eb { display: flex; align-items: center; gap: 12px; font-size: 10px; letter-spacing: .26em; text-transform: uppercase; color: var(--pink); margin-bottom: 14px; }
+.eb::before { content: ''; width: 34px; height: 1px; background: linear-gradient(90deg, transparent, var(--pink)); box-shadow: 0 0 10px var(--pink); }
+.eb i { font-style: normal; color: var(--mut); letter-spacing: .2em; }
+.h2 { font: 700 clamp(26px, 4.6vw, 60px)/1.02 var(--sans); letter-spacing: -.02em; max-width: 22ch; text-wrap: balance; }
+.h2 em { font-style: normal; color: var(--pink); text-shadow: 0 0 28px rgba(255, 46, 110, .55); }
+.lede { color: var(--mut); max-width: 66ch; margin-top: 14px; font-size: 12.5px; }
+
+/* ----- cards with a pointer-lit border (fx sets --mx/--my on pointermove) ----- */
+.card { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); overflow: hidden; }
+.card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0; transition: opacity .35s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 70, 130, .95), rgba(255, 70, 130, 0) 60%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.card::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s; background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 60, 120, .07), transparent 70%); }
+.card:hover::before, .card:hover::after { opacity: 1; }
+.ph { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 14px 0; font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--mut); }
+.ph b { color: var(--ink); font-weight: 700; } .ph .pk { color: var(--pink); }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 99px; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; border: 1px solid var(--line2); color: var(--mut); background: rgba(255, 255, 255, .03); }
+.lamp { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green), 0 0 18px var(--green); animation: lampPulse 1.6s ease-in-out infinite; vertical-align: middle; }
+.lamp.pink { background: var(--pink); box-shadow: 0 0 8px var(--pink), 0 0 18px var(--pink); } .lamp.amber { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+@keyframes lampPulse { 50% { opacity: .35; transform: scale(.8); } }
+
+/* ----- toggle switch: <div class="sw on" data-c="orange"><i class="tg"></i></div> ----- */
+.tg { display: inline-block; width: 46px; height: 24px; border-radius: 99px; position: relative; background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .14); transition: background .45s var(--ease), border-color .45s, box-shadow .45s; flex: none; }
+.tg::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #7a7285; transition: left .45s var(--ease), background .45s, box-shadow .45s; }
+.on > .tg, .tg.on { background: rgba(var(--cc-rgb, 255, 46, 110), .22); border-color: var(--cc, var(--pink)); box-shadow: 0 0 16px rgba(var(--cc-rgb, 255, 46, 110), .5); }
+.on > .tg::after, .tg.on::after { left: 25px; background: var(--cc, var(--pink)); box-shadow: 0 0 10px var(--cc, var(--pink)); }
+
+/* ----- mascot orb (Jev family): <span class="orb pink" style="--s:90px"><i class="e l"></i><i class="e r"></i></span> ----- */
+.orb { --s: 90px; --c1: #8fbcff; --c2: #2a5cff; --g: rgba(80, 140, 255, .6); position: relative; display: inline-block; width: var(--s); height: var(--s); border-radius: 50%; flex: none;
+  background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, .95) 0 5%, var(--c1) 24%, var(--c2) 68%, rgba(0, 0, 0, .55) 108%);
+  box-shadow: 0 0 calc(var(--s) * .55) var(--g), inset -6px -10px 18px rgba(0, 0, 0, .38), inset 4px 6px 12px rgba(255, 255, 255, .22); }
+.orb .e { position: absolute; top: 37%; width: 14%; height: 29%; border-radius: 99px; background: #0a0710; translate: var(--ex, 0) var(--ey, 0); animation: orbBlink 5.5s infinite; }
+.orb .e.l { left: 30%; rotate: -13deg; } .orb .e.r { right: 30%; rotate: 13deg; animation-delay: .06s; }
+@keyframes orbBlink { 0%, 93%, 100% { scale: 1 1; } 96% { scale: 1 .08; } }
+.orb.pink { --c1: #ff9cc4; --c2: #ff1f75; --g: rgba(255, 46, 120, .65); } .orb.blue { --c1: #8fbcff; --c2: #2a5cff; }
+.orb.white { --c1: #ffffff; --c2: #d9d2e6; --g: rgba(255, 255, 255, .45); } .orb.amber { --c1: #ffe08a; --c2: #ff9f1a; --g: rgba(255, 180, 40, .6); }
+.orb.green { --c1: #8ff5cf; --c2: #12b57e; --g: rgba(46, 230, 166, .55); } .orb.violet { --c1: #cdaaff; --c2: #7a3df0; --g: rgba(166, 107, 255, .6); }
+.orb.red { --c1: #ffa08f; --c2: #f0401f; --g: rgba(255, 90, 50, .6); } .orb.orange { --c1: #ffc08f; --c2: #ff6a0f; --g: rgba(255, 138, 61, .6); }
+.orb.cyan { --c1: #a6f1ff; --c2: #18a8d8; --g: rgba(59, 224, 255, .55); }
+
+/* ----- glitch wordmark: <span class="glitch" data-text="JEV">JEV</span> ----- */
+.glitch { position: relative; display: inline-block; }
+.glitch::before, .glitch::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; opacity: 0; mix-blend-mode: screen; }
+.glitch::before { color: #00f0ff; animation: gl1 7s infinite steps(1); } .glitch::after { color: #ff2e6e; animation: gl2 7s infinite steps(1); }
+@keyframes gl1 { 0%, 92%, 100% { opacity: 0; transform: none; } 93% { opacity: .9; transform: translate(-4px, 1px); clip-path: inset(8% 0 62% 0); } 95% { opacity: .9; transform: translate(3px, -2px); clip-path: inset(56% 0 10% 0); } 97% { opacity: .9; transform: translate(-2px, 0); clip-path: inset(30% 0 40% 0); } }
+@keyframes gl2 { 0%, 92%, 100% { opacity: 0; transform: none; } 94% { opacity: .9; transform: translate(4px, -1px); clip-path: inset(52% 0 14% 0); } 96% { opacity: .9; transform: translate(-3px, 2px); clip-path: inset(12% 0 58% 0); } 98% { opacity: .9; transform: translate(2px, 0); clip-path: inset(40% 0 30% 0); } }
+
+/* ----- scroll reveal (fx adds .in when visible) ----- */
+.rv { opacity: 0; transform: translateY(26px) scale(.985); filter: blur(7px); transition: opacity .9s var(--ease), transform .9s var(--ease), filter .9s var(--ease); transition-delay: calc(var(--i, 0) * 70ms); }
+.rv.in, .no-js .rv { opacity: 1; transform: none; filter: none; }
+
+/* ----- HUD ----- */
+.hud { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: clamp(8px, 2vw, 26px); padding: 8px var(--gut); background: linear-gradient(180deg, rgba(5, 3, 10, .94), rgba(5, 3, 10, .62)); backdrop-filter: blur(14px) saturate(1.5); -webkit-backdrop-filter: blur(14px) saturate(1.5); border-bottom: 1px solid rgba(255, 46, 110, .22); }
+.hud::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: linear-gradient(90deg, transparent, var(--pink), #fff, var(--pink), transparent) no-repeat; background-size: 28% 100%; animation: hudScan 5.5s linear infinite; opacity: .85; }
+@keyframes hudScan { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+.logo { display: flex; align-items: center; gap: 9px; flex: none; }
+.logo b { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; font: 800 19px/1 var(--sans); color: #fff; background: linear-gradient(145deg, #ff4f8d, #e0155a); box-shadow: 0 0 22px rgba(255, 46, 110, .6), inset 0 1px 0 rgba(255, 255, 255, .4); }
+.logo span { font: 700 15px/1 var(--sans); letter-spacing: .12em; }
+.mets { display: flex; gap: clamp(12px, 2.2vw, 32px); flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; align-items: center; }
+.mets::-webkit-scrollbar { display: none; }
+.m { flex: none; } .m label { display: block; font-size: 8px; letter-spacing: .22em; color: var(--dim); text-transform: uppercase; }
+.m b { display: block; font-size: 14px; font-weight: 700; letter-spacing: .02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nav { display: flex; gap: 2px; flex: none; }
+.nav a { padding: 6px 10px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--mut); border-radius: 7px; transition: color .25s, background .25s; }
+.nav a:hover { color: #fff; background: rgba(255, 46, 110, .16); }
+@media (max-width: 1050px) { .nav { display: none; } }
+.kill { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 99px; font-size: 10px; font-weight: 700; letter-spacing: .16em; border: 1px solid rgba(46, 230, 166, .45); color: var(--green); background: rgba(46, 230, 166, .07); transition: .3s; }
+.kill i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: lampPulse 1.6s infinite; }
+.kill:hover { background: rgba(46, 230, 166, .16); }
+body.killed .kill { border-color: var(--red); color: var(--red); background: rgba(255, 77, 94, .12); } body.killed .kill i { background: var(--red); box-shadow: 0 0 12px var(--red); animation-duration: .5s; }
+body.killed .hud { border-bottom-color: rgba(255, 77, 94, .6); }
+body.killed::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 80; box-shadow: inset 0 0 140px rgba(255, 60, 80, .32); animation: killPulse 1.4s ease-in-out infinite; }
+@keyframes killPulse { 50% { box-shadow: inset 0 0 200px rgba(255, 60, 80, .5); } }
+
+/* ----- desk grid: fragments are <div class="card span-4"> etc. ----- */
+.dk-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; }
+.dk-grid > * { grid-column: 1 / -1; min-width: 0; }
+@media (min-width: 960px) { .dk-grid > .span-4 { grid-column: span 4; } .dk-grid > .span-5 { grid-column: span 5; } .dk-grid > .span-6 { grid-column: span 6; } .dk-grid > .span-7 { grid-column: span 7; } .dk-grid > .span-8 { grid-column: span 8; } }
+
+/* ----- footer ----- */
+.foot { position: relative; padding: 0 0 40px; overflow: hidden; border-top: 1px solid var(--line); }
+.marq { display: flex; overflow: hidden; border-bottom: 1px solid var(--line); background: rgba(255, 46, 110, .05); }
+.marq > div { display: flex; flex: none; gap: 42px; padding: 11px 21px; white-space: nowrap; font-size: 10px; letter-spacing: .22em; color: var(--mut); text-transform: uppercase; animation: marq 40s linear infinite; }
+.marq b { color: var(--pink); font-weight: 700; }
+@keyframes marq { to { transform: translateX(-100%); } }
+.foot p { max-width: 900px; margin: 28px auto 0; padding: 0 var(--gut); text-align: center; color: var(--dim); font-size: 10.5px; line-height: 1.8; letter-spacing: .04em; }
+.foot p b { color: var(--mut); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  .rv { opacity: 1; transform: none; filter: none; }
+}
+
+</style>
+</head>
+<body>
+<!-- 05-hud.html -->
+<header class="hud" id="hud">
+  <a class="logo" href="#hero" aria-label="JEV home"><b>J</b><span class="hide-s">JEV</span></a>
+  <div class="mets">
+    <div class="m"><label>Model</label><b>jev-1.13.0</b></div>
+    <div class="m hide-s"><label>Agent</label><b>hermes</b></div>
+    <div class="m"><label>Decisions</label><b id="mDec" class="hot num">1,892</b></div>
+    <div class="m"><label>Cost</label><b id="mCost" class="num">$0.046</b></div>
+    <div class="m"><label>Median</label><b id="mMed" class="num">3.2 ms</b></div>
+    <div class="m hide-s"><label>Floor</label><b id="mFloor" class="num">0.85</b></div>
+  </div>
+  <nav class="nav" aria-label="Sections">
+    <a href="#hero">01 decides</a><a href="#builds">02 builds</a><a href="#hour">03 hour</a><a href="#desk">04 desk</a><a href="#lab">05 lab</a>
+  </nav>
+  <button class="kill" id="killBtn" type="button" aria-pressed="false" title="Kill switch — halts every order, routes all to human review"><i></i><span id="killTxt">ARMED</span></button>
+</header>
+
+<!-- 50-desk-open.html -->
+<section class="sec" id="desk">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="eb">04 <i>·</i> the desk</div>
+      <h2 class="h2">Six agents, one book — and <em>one</em> gate between them and the exchange</h2>
+      <p class="lede">Every ticket is a typed question. The agents propose, Jev answers with a choice, a size and a yes-or-no, and only what clears the floor reaches the venue. Everything below is simulated and ticks live.</p>
+    </div>
+    <div class="dk-grid">
+
+<!-- 59-desk-close.html -->
+    </div>
+  </div>
+</section>
+
+<!-- 99-footer.html -->
+<footer class="foot" id="foot">
+  <div class="marq" aria-hidden="true">
+    <div><span><b>hermes</b> writes</span><span><b>jev</b> decides</span><span><b>code</b> acts</span><span>floor 0.85</span><span>daily loss cap $2,000</span><span>max position 4%</span><span>kill switch armed</span><span>typed answers only</span><span><b>simulation</b> · no real orders</span></div>
+    <div><span><b>hermes</b> writes</span><span><b>jev</b> decides</span><span><b>code</b> acts</span><span>floor 0.85</span><span>daily loss cap $2,000</span><span>max position 4%</span><span>kill switch armed</span><span>typed answers only</span><span><b>simulation</b> · no real orders</span></div>
+  </div>
+  <p><b>simulation · illustrative values · no real orders are placed.</b> prices, P&amp;L, backtests and latencies on this page are generated in your browser for demonstration.
+    the decision head is a small hand-tuned heuristic, not a trained model, and the code panes illustrate the pattern: the LLM writes, Jev decides, code acts.
+    this is not financial advice — a backtest is not a promise, and the stop is a line in a file.</p>
+</footer>
+
+<script>/* ---- engine.js ---- */
+/* JEV trading decision engine — pure JS, no DOM. Loaded before core.js.
+ * A small hand-tuned scoring head: numeric market/risk state in, typed answers out.
+ * It is a DEMO heuristic (not a trained model, not financial advice); all values are simulated. */
+(function (root) {
+  'use strict';
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+  const sig = (x) => 1 / (1 + Math.exp(-x));
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = (a) => a[(Math.random() * a.length) | 0];
+
+  const RULES = { floor: 0.85, lossCap: 2000, maxPos: 4 }; // gate floor · daily loss cap (USD) · max position (% of capital)
+  const ACTIONS = ['buy', 'sell', 'hold', 'close', 'flatten'];
+  const SIZES = [0.5, 1, 2, 4]; // % of capital, "how much?" buckets
+  const STATE_KEYS = ['symbol', 'price', 'vwap_dist_bps', 'spread_bps', 'imbalance', 'funding_bps', 'vol_1h',
+    'edge_bps', 'position_pct', 'daily_pnl', 'drawdown_pct', 'latency_ms', 'signal_age_s', 'venue', 'regime'];
+
+  function softmax(lg, T) {
+    const ks = Object.keys(lg), mx = Math.max.apply(null, ks.map((k) => lg[k]));
+    const ex = ks.map((k) => Math.exp((lg[k] - mx) / T)), z = ex.reduce((a, b) => a + b, 0), p = {};
+    ks.forEach((k, i) => (p[k] = ex[i] / z));
+    return p;
+  }
+  const argmax = (p) => Object.keys(p).reduce((a, b) => (p[a] >= p[b] ? a : b));
+
+  /* state: edge_bps, imbalance(-1..1), spread_bps, vol(annualised %), position_pct(signed), daily_pnl(USD),
+   *        drawdown_pct, latency_ms, signal_age_s    opt: {floor, killed}                                      */
+  function decide(s, opt) {
+    opt = opt || {};
+    const floor = opt.floor != null ? opt.floor : RULES.floor, killed = !!opt.killed;
+    const edge = s.edge_bps, imb = s.imbalance, spr = s.spread_bps, vol = s.vol != null ? s.vol : s.vol_1h;
+    const pos = s.position_pct, dd = s.drawdown_pct, pnl = s.daily_pnl, lat = s.latency_ms, age = s.signal_age_s;
+    const stale = clamp((age - 20) / 50, 0, 1);
+    const room = clamp((RULES.maxPos - Math.abs(pos)) / RULES.maxPos, 0, 1);
+    const cost = spr * 0.6 + 2; // fees + slippage, bps
+    const net = Math.sign(edge) * Math.max(0, Math.abs(edge) - cost); // edge net of costs, sign kept
+    const lossUse = clamp(-pnl / RULES.lossCap, 0, 1.5);
+    const stress = Math.max(0, dd - 5) * 0.45 + Math.max(0, vol - 115) * 0.035 + Math.max(0, lossUse - 0.7) * 5;
+    const opp = Math.abs(pos) > 0.2 ? 2.2 : 0; // trading against an open position is "close", not buy/sell
+    const lg = {
+      buy: 0.14 * net + 1.3 * imb - 1.8 * stale + 0.9 * (room - 0.4) - 0.5 * stress - (pos < -0.2 ? opp : 0),
+      sell: -0.14 * net - 1.3 * imb - 1.8 * stale + 0.9 * (room - 0.4) - 0.5 * stress - (pos > 0.2 ? opp : 0),
+      hold: 0.7 + 0.05 * spr + 1.7 * stale - 0.1 * Math.abs(net) - 0.9 * Math.abs(imb) - 0.4 * stress,
+      close: Math.abs(pos) > 0.2 ? 0.2 * (-Math.sign(pos) * net) + 1.2 * (-Math.sign(pos) * imb) - 0.4 + 0.5 * (1 - room) - 0.2 * stress : -4,
+      flatten: -2.6 + 1.0 * stress + (Math.abs(pos) > 0.2 ? 0.4 : -2),
+    };
+    const p = softmax(lg, 0.55), action = argmax(p), conf = p[action];
+
+    // how much? — score bucket, never beyond the room left under the position cap
+    const raw = clamp(Math.abs(net) / 32, 0, 1) * (1 - clamp(vol - 40, 0, 140) / 220) * (1 - clamp(dd / 12, 0, 0.9));
+    const maxSize = Math.max(0.5, RULES.maxPos - Math.abs(pos));
+    let sizeIdx = raw < 0.14 ? 0 : raw < 0.34 ? 1 : raw < 0.62 ? 2 : 3;
+    while (sizeIdx > 0 && SIZES[sizeIdx] > maxSize) sizeIdx--;
+    const sizeP = softmax({ s0: -Math.abs(raw - 0.07) * 9, s1: -Math.abs(raw - 0.24) * 9, s2: -Math.abs(raw - 0.48) * 9, s3: -Math.abs(raw - 0.8) * 9 }, 0.6);
+    const sizes = [sizeP.s0, sizeP.s1, sizeP.s2, sizeP.s3];
+
+    // yes or no? — is it safe to send
+    const riskOk = spr <= 8 && lat <= 300 && age <= 45 && lossUse < 0.8 && dd < 8 && vol < 160 && !killed;
+    const pRisk = sig(2.4 - 0.22 * spr - 0.006 * lat - 0.04 * age - 3 * lossUse - 0.3 * dd - 0.015 * Math.max(0, vol - 90) - (killed ? 8 : 0));
+
+    let dest, reason;
+    if (action === 'hold') { dest = 'skip'; reason = 'hold'; }
+    else if (killed) { dest = 'review'; reason = 'kill switch'; }
+    else if (!riskOk && action !== 'flatten' && action !== 'close') { dest = 'review'; reason = 'risk flag'; }
+    else if (conf < floor) { dest = 'review'; reason = 'conf ' + conf.toFixed(2) + ' < ' + floor.toFixed(2); }
+    else { dest = 'execute'; reason = 'ok'; }
+
+    return { action, p, conf, sizeIdx, size: SIZES[sizeIdx], sizes, sizeRaw: raw, riskOk, pRisk, dest, reason,
+      net, floor, killed, ms: +(2 + Math.random() * 3).toFixed(1) };
+  }
+
+  const ARCH = [
+    { w: 3.2, name: 'trend-up', regime: 'trend', f: () => ({ edge_bps: rnd(14, 36), imbalance: rnd(0.28, 0.72), spread_bps: rnd(0.5, 3), vol: rnd(32, 80), position_pct: pick([0, 0, 0, 0.5, 1]), drawdown_pct: rnd(0, 3), daily_pnl: rnd(-300, 900), latency_ms: rnd(10, 90), signal_age_s: rnd(1, 14) }) },
+    { w: 3.2, name: 'trend-dn', regime: 'trend', f: () => ({ edge_bps: -rnd(14, 36), imbalance: -rnd(0.28, 0.72), spread_bps: rnd(0.5, 3), vol: rnd(32, 80), position_pct: pick([0, 0, 0, -0.5, -1]), drawdown_pct: rnd(0, 3), daily_pnl: rnd(-300, 900), latency_ms: rnd(10, 90), signal_age_s: rnd(1, 14) }) },
+    { w: 2, name: 'flat', regime: 'range', f: () => ({ edge_bps: rnd(-4, 4), imbalance: rnd(-0.15, 0.15), spread_bps: rnd(0.6, 3), vol: rnd(20, 50), position_pct: pick([0, 0, 0.5, -0.5]), drawdown_pct: rnd(0, 2), daily_pnl: rnd(-200, 400), latency_ms: rnd(10, 90), signal_age_s: rnd(1, 20) }) },
+    { w: 1.3, name: 'wide', regime: 'thin book', f: () => ({ edge_bps: pick([-1, 1]) * rnd(18, 32), imbalance: pick([-1, 1]) * rnd(0.3, 0.6), spread_bps: rnd(9, 18), vol: rnd(50, 110), position_pct: 0, drawdown_pct: rnd(0, 3), daily_pnl: rnd(-300, 500), latency_ms: rnd(40, 200), signal_age_s: rnd(2, 20) }) },
+    { w: 1, name: 'stale', regime: 'stale feed', f: () => ({ edge_bps: pick([-1, 1]) * rnd(10, 28), imbalance: rnd(-0.3, 0.3), spread_bps: rnd(1, 4), vol: rnd(30, 70), position_pct: 0, drawdown_pct: rnd(0, 3), daily_pnl: rnd(-200, 500), latency_ms: rnd(200, 520), signal_age_s: rnd(55, 110) }) },
+    { w: 1.5, name: 'exit', regime: 'reversal', f: () => { const sgn = pick([-1, 1]); return { edge_bps: -sgn * rnd(14, 30), imbalance: -sgn * rnd(0.2, 0.55), spread_bps: rnd(0.6, 3), vol: rnd(35, 85), position_pct: sgn * rnd(1.5, 3.5), drawdown_pct: rnd(1, 4), daily_pnl: rnd(-500, 700), latency_ms: rnd(10, 90), signal_age_s: rnd(1, 14) }; } },
+    { w: 0.8, name: 'stress', regime: 'stress', f: () => ({ edge_bps: rnd(-8, 8), imbalance: rnd(-0.4, 0.4), spread_bps: rnd(3, 9), vol: rnd(125, 190), position_pct: pick([-1, 1]) * rnd(1.5, 3.8), drawdown_pct: rnd(7, 12), daily_pnl: -rnd(1500, 2300), latency_ms: rnd(40, 250), signal_age_s: rnd(2, 20) }) },
+    { w: 1.1, name: 'mixed', regime: 'conflict', f: () => { const sgn = pick([-1, 1]); return { edge_bps: sgn * rnd(7, 15), imbalance: -sgn * rnd(0.2, 0.5), spread_bps: rnd(1.5, 5), vol: rnd(40, 90), position_pct: 0, drawdown_pct: rnd(0, 4), daily_pnl: rnd(-300, 400), latency_ms: rnd(20, 120), signal_age_s: rnd(2, 25) }; } },
+  ];
+  function sampleState(priceOf) {
+    const tw = ARCH.reduce((a, b) => a + b.w, 0);
+    let r = Math.random() * tw, a = ARCH[0];
+    for (const x of ARCH) { r -= x.w; if (r <= 0) { a = x; break; } }
+    const s = a.f();
+    s.vwap_dist_bps = s.edge_bps * 0.35 + rnd(-6, 6);
+    s.funding_bps = rnd(-2.5, 4.5);
+    s.regime = a.regime;
+    s.symbol = pick(['BTC-PERP', 'BTC-PERP', 'ETH-PERP', 'SOL-PERP']);
+    const base = { 'BTC-PERP': 1, 'ETH-PERP': 1 / 24.6, 'SOL-PERP': 1 / 560 };
+    s.price = +(priceOf() * base[s.symbol]).toFixed(s.symbol === 'SOL-PERP' ? 2 : 1);
+    s.venue = pick(['binance', 'okx', 'bybit', 'hyperliquid', 'coinbase', 'kraken']);
+    s.vol_1h = s.vol;
+    return { state: s, arch: a.name };
+  }
+
+  root.JEVEngine = { RULES, ACTIONS, SIZES, STATE_KEYS, decide, sampleState, clamp, sig };
+  if (typeof module !== 'undefined' && module.exports) module.exports = root.JEVEngine;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>/* ---- core.js ---- */
+/* JEV core — shared runtime for every module. Exposes window.JEV. Loaded after engine.js, before modules. */
+(function () {
+  'use strict';
+  const J = (window.JEV = {});
+  const E = window.JEVEngine;
+
+  /* ---------- tiny utils ---------- */
+  J.$ = (s, r) => (r || document).querySelector(s);
+  J.$$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  J.TAU = Math.PI * 2;
+  J.clamp = E.clamp;
+  J.lerp = (a, b, t) => a + (b - a) * t;
+  J.rnd = (a, b) => (b === undefined ? Math.random() * (a === undefined ? 1 : a) : a + Math.random() * (b - a));
+  J.ri = (a, b) => Math.floor(J.rnd(a, b + 1));
+  J.pick = (a) => a[(Math.random() * a.length) | 0];
+  J.gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(J.TAU * v); };
+  J.rng = (seed) => { let a = seed | 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+  J.fmt = (n, d) => n.toLocaleString('en-US', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
+  J.usd = (n, d) => (n < 0 ? '-$' : '$') + J.fmt(Math.abs(n), d || 0);
+  J.sgn = (n, d) => (n >= 0 ? '+' : '-') + J.fmt(Math.abs(n), d == null ? 1 : d);
+  J.DPR = Math.min(window.devicePixelRatio || 1, 2);
+  J.reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  J.narrow = () => window.innerWidth < 700;
+  J.C = { pink: '#ff2e6e', pink2: '#ff7ab3', green: '#2ee6a6', blue: '#4d8dff', amber: '#ffc13d', violet: '#a66bff', orange: '#ff8a3d', cyan: '#3be0ff', red: '#ff4d5e', ink: '#f4eef6', mut: '#8d8499', dim: '#5a5365', bg: '#05030a' };
+  J.rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; };
+
+  /* ---------- event bus: 'decision' · 'tick' · 'kill' · 'floor' ---------- */
+  const L = {};
+  J.bus = {
+    on(n, f) { (L[n] || (L[n] = [])).push(f); return () => J.bus.off(n, f); },
+    off(n, f) { const a = L[n]; if (a) { const i = a.indexOf(f); if (i >= 0) a.splice(i, 1); } },
+    emit(n, d) { (L[n] || []).slice().forEach((f) => { try { f(d); } catch (e) { console.error('[bus:' + n + ']', e); } }); },
+  };
+
+  /* ---------- pointer ---------- */
+  J.pointer = { x: -9999, y: -9999, nx: 0, ny: 0, down: false };
+  window.addEventListener('pointermove', (e) => {
+    const p = J.pointer; p.x = e.clientX; p.y = e.clientY; p.nx = (e.clientX / innerWidth) * 2 - 1; p.ny = (e.clientY / innerHeight) * 2 - 1;
+  }, { passive: true });
+  window.addEventListener('pointerdown', () => (J.pointer.down = true), { passive: true });
+  window.addEventListener('pointerup', () => (J.pointer.down = false), { passive: true });
+  /** pointer position relative to an element's top-left (CSS px); x/y are -9999 when far away */
+  J.rel = (el) => { const r = el.getBoundingClientRect(); return { x: J.pointer.x - r.left, y: J.pointer.y - r.top, w: r.width, h: r.height }; };
+
+  /* ---------- frame loop: J.task(el, fn(t,dt)) runs only while `el` is on screen ---------- */
+  const tasks = new Set();
+  const io = new IntersectionObserver((es) => {
+    for (const e of es) (e.target.__jevTasks || []).forEach((k) => (k.vis = e.isIntersecting));
+  }, { rootMargin: '160px 0px' });
+  J.task = (el, fn) => {
+    const k = { el, fn, vis: !el, n: 0 };
+    if (el) { (el.__jevTasks || (el.__jevTasks = [])).push(k); io.observe(el); }
+    tasks.add(k);
+    return { stop() { tasks.delete(k); } };
+  };
+  J.time = 0;
+  let last = 0;
+  function frame(ms) {
+    requestAnimationFrame(frame);
+    const t = ms / 1000, dt = Math.min(0.05, t - last || 0.016);
+    last = t; J.time = t;
+    for (const k of tasks) {
+      if (!k.vis) continue;
+      if (J.reduce && k.n >= 3) continue; // reduced motion: render a few frames then freeze
+      k.n++;
+      try { k.fn(t, dt); } catch (e) { console.error('[task]', e); tasks.delete(k); }
+    }
+  }
+  requestAnimationFrame(frame);
+
+  /* ---------- canvas helpers ---------- */
+  /** size a canvas' backing store to its CSS box × DPR; returns {g, W, H} in CSS px with the transform applied */
+  J.fit = (c) => {
+    const r = c.getBoundingClientRect();
+    const W = Math.max(1, Math.round(r.width)), H = Math.max(1, Math.round(r.height));
+    const w = Math.round(W * J.DPR), h = Math.round(H * J.DPR);
+    if (c.width !== w) c.width = w;
+    if (c.height !== h) c.height = h;
+    const g = c.getContext('2d');
+    g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0);
+    return { g, W, H };
+  };
+  /** call cb(rect) now and whenever el resizes (coalesced to one rAF) */
+  J.watch = (el, cb) => {
+    let raf = 0;
+    const run = () => { raf = 0; cb(el.getBoundingClientRect()); };
+    const ro = new ResizeObserver(() => { if (!raf) raf = requestAnimationFrame(run); });
+    ro.observe(el); run(); return ro;
+  };
+  J.onView = (el, cb, o) => {
+    o = o || {};
+    const i2 = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { cb(e); if (o.once !== false) i2.disconnect(); } }), { threshold: o.threshold == null ? 0.15 : o.threshold, rootMargin: o.rootMargin || '0px' });
+    i2.observe(el); return i2;
+  };
+
+  /* ---------- text fx ---------- */
+  J.countTo = (el, to, o) => {
+    o = o || {}; const from = o.from || 0, dur = (o.dur || 1400) / (J.reduce ? 1000 : 1), f = o.fmt || ((v) => J.fmt(Math.round(v)));
+    const t0 = performance.now();
+    const step = (now) => { const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3); el.textContent = f(from + (to - from) * e); if (p < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  };
+  const SC = '▓▒░<>/\\|—_+*#@%&01';
+  J.scramble = (el, text, ms) => {
+    text = text == null ? el.textContent : text; ms = (ms || 900) / (J.reduce ? 1000 : 1);
+    const t0 = performance.now(), n = text.length;
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / ms); let s = '';
+      for (let i = 0; i < n; i++) { const c = text[i]; s += c === ' ' || i < p * n * 1.15 - 2 ? c : SC[(Math.random() * SC.length) | 0]; }
+      el.textContent = s; if (p < 1) requestAnimationFrame(step); else el.textContent = text;
+    };
+    requestAnimationFrame(step);
+  };
+
+  /* ---------- global state, rules, kill switch ---------- */
+  J.RULES = E.RULES; J.ACTIONS = E.ACTIONS; J.SIZES = E.SIZES; J.STATE_KEYS = E.STATE_KEYS;
+  const S = (J.S = { killed: false, floor: E.RULES.floor, count: 1892, cost: 0.046, ms: [3.1, 3.4, 2.9, 3.2, 3.6], counts: { choice: 1934, flag: 1102, score: 600 }, dest: { execute: 0, review: 0, skip: 0 } });
+  J.setFloor = (v) => { S.floor = J.clamp(+v, 0.5, 0.99); E.RULES.floor = S.floor; J.bus.emit('floor', S.floor); hud(); };
+  J.setKilled = (v) => { S.killed = !!v; document.body.classList.toggle('killed', S.killed); J.bus.emit('kill', S.killed); hud(); };
+
+  /* ---------- shared catalogues (modules read, never mutate) ---------- */
+  /** ten builds — all are the same decision layer asking typed questions (choice | score | flag) */
+  J.BUILDS = [
+    { key: 'entry', name: 'entry gate', tag: 'ENTER', col: 'pink', prim: 'choice', k1: 'picks', v1: 'buy · sell · hold', ms: 3.2 },
+    { key: 'sizer', name: 'position sizer', tag: 'SIZE', col: 'gray', prim: 'score', k1: 'picks', v1: '0.5% → 4%', ms: 2.8 },
+    { key: 'guard', name: 'risk guard', tag: 'RISK', col: 'pink', prim: 'flag', k1: 'asks', v1: 'risk_ok?', ms: 2.1 },
+    { key: 'router', name: 'venue router', tag: 'ROUTE', col: 'gray', prim: 'choice', k1: 'picks', v1: 'which venue', ms: 4.4 },
+    { key: 'exit', name: 'exit manager', tag: 'EXIT', col: 'pink', prim: 'choice', k1: 'picks', v1: 'close · hold', ms: 3.6 },
+    { key: 'funding', name: 'funding carry', tag: 'CARRY', col: 'gray', prim: 'score', k1: 'scores', v1: 'basis · funding', ms: 5.1 },
+    { key: 'news', name: 'headline filter', tag: 'NEWS', col: 'pink', prim: 'flag', k1: 'asks', v1: 'trade or ignore', ms: 6.3 },
+    { key: 'mm', name: 'quote skew', tag: 'MAKER', col: 'gray', prim: 'score', k1: 'scores', v1: 'widen · tighten', ms: 2.6 },
+    { key: 'liq', name: 'liquidation guard', tag: 'FLATTEN', col: 'pink', prim: 'flag', k1: 'asks', v1: 'flatten now?', ms: 1.9 },
+    { key: 'rebal', name: 'rebalancer', tag: 'ALLOC', col: 'gray', prim: 'choice', k1: 'picks', v1: 'which asset', ms: 7.8 },
+  ];
+  /** the six desk agents (screenshot: prior · kelly · closer · spotter · edge · taker) */
+  J.AGENTS = [
+    { key: 'spotter', name: 'SPOTTER', role: 'scans books and venues', col: '#2ee6a6' },
+    { key: 'prior', name: 'PRIOR', role: 'prior from history', col: '#ffc13d' },
+    { key: 'edge', name: 'EDGE', role: 'fair value vs market', col: '#ff2e6e' },
+    { key: 'kelly', name: 'KELLY', role: 'sizes the ticket', col: '#a66bff' },
+    { key: 'taker', name: 'TAKER', role: 'crosses the spread', col: '#4d8dff' },
+    { key: 'closer', name: 'CLOSER', role: 'takes profit / stops', col: '#ff8a3d' },
+  ];
+  /** the three heads of the build (screenshot 1): Hermes writes · Dots feeds · Jev decides */
+  J.TRIO = [
+    { key: 'hermes', name: 'HERMES', line: 'writes the strategy and the risk rules', sub: 'hermes agent · strategy.yaml', col: '#ff8a3d' },
+    { key: 'dots', name: 'DOTS', line: 'pulls and cleans four years of data', sub: 'the data side', col: '#4d8dff' },
+    { key: 'jev', name: 'JEV', line: 'backtests, caps and arms it', sub: 'the gate · cap · kill switch · orders', col: '#ff2e6e' },
+  ];
+
+  /* ---------- simulated market (4 Hz) ---------- */
+  const M = (J.market = { price: 84722, open: 84722, hist: [], vol: 0.00016 });
+  setInterval(() => {
+    const dp = M.price * (J.gauss() * M.vol + (84722 - M.price) * 1e-6);
+    M.price = Math.max(1000, M.price + dp);
+    M.hist.push(M.price); if (M.hist.length > 1200) M.hist.shift();
+    J.bus.emit('tick', { price: M.price, dp });
+  }, 250);
+  for (let i = 0; i < 300; i++) { M.price += M.price * J.gauss() * M.vol; M.hist.push(M.price); }
+
+  /* ---------- live decision stream (real engine on sampled states) ---------- */
+  J.recent = [];
+  let seq = 0;
+  function pickBuild(d) {
+    if (d.action === 'buy' || d.action === 'sell') return J.pick(['entry', 'entry', 'entry', 'router', 'sizer', 'guard']);
+    if (d.action === 'close') return J.pick(['exit', 'exit', 'guard']);
+    if (d.action === 'flatten') return J.pick(['liq', 'liq', 'guard']);
+    return J.pick(['news', 'mm', 'funding', 'rebal', 'guard']);
+  }
+  J.decide = (state, o) => E.decide(state, Object.assign({ floor: S.floor, killed: S.killed }, o));
+  J.makeDecision = () => {
+    const sm = E.sampleState(() => M.price);
+    const d = J.decide(sm.state);
+    // display confidence: slight organic jitter on top of the engine output
+    d.conf = J.clamp(d.conf * (0.965 + Math.random() * 0.035), 0.3, 0.995);
+    if (d.dest === 'execute' && d.conf < S.floor) { d.dest = 'review'; d.reason = 'conf ' + d.conf.toFixed(2) + ' < ' + S.floor.toFixed(2); }
+    d.id = (++seq).toString(16).padStart(4, '0') + Math.random().toString(16).slice(2, 6);
+    d.state = sm.state; d.arch = sm.arch; d.build = pickBuild(d);
+    d.symbol = sm.state.symbol; d.venue = sm.state.venue;
+    d.line = d.symbol + ' edge ' + J.sgn(sm.state.edge_bps) + 'bps imb ' + J.sgn(sm.state.imbalance, 2) + ' spr ' + sm.state.spread_bps.toFixed(1);
+    return d;
+  };
+  /** emit one decision now (counters + bus). Used by the live stream and by manual triggers (clicks). */
+  J.fire = () => {
+    const d = J.makeDecision();
+    S.count++; S.cost += 0.00003; S.ms.push(d.ms); if (S.ms.length > 41) S.ms.shift();
+    S.counts.choice++; if (Math.random() < 0.55) S.counts.flag++; if (Math.random() < 0.3) S.counts.score++;
+    S.dest[d.dest]++;
+    J.recent.unshift(d); if (J.recent.length > 40) J.recent.pop();
+    J.bus.emit('decision', d); hud();
+    return d;
+  };
+  function loop() { J.fire(); setTimeout(loop, 700 + Math.random() * 650); }
+  J.start = () => setTimeout(loop, 400);
+
+  /* ---------- HUD (header metrics + kill switch) ---------- */
+  function median(a) { const s = a.slice().sort((x, y) => x - y); return s[(s.length / 2) | 0]; }
+  function hud() {
+    const set = (id, v) => { const el = document.getElementById(id); if (el && el.textContent !== v) el.textContent = v; };
+    set('mDec', J.fmt(S.count)); set('mCost', '$' + S.cost.toFixed(3));
+    set('mMed', median(S.ms).toFixed(1) + ' ms'); set('mFloor', S.floor.toFixed(2));
+    const k = document.getElementById('killBtn');
+    if (k) { k.setAttribute('aria-pressed', String(S.killed)); const t = document.getElementById('killTxt'); if (t) t.textContent = S.killed ? 'HALTED' : 'ARMED'; }
+  }
+  J.hud = hud;
+
+  /* ---------- module registry: JEV.mod(name, init) — each module is a closure, no globals ---------- */
+  const mods = [];
+  J.mod = (name, init) => mods.push({ name, init });
+  J.boot = () => {
+    const kb = document.getElementById('killBtn');
+    if (kb) kb.addEventListener('click', () => J.setKilled(!S.killed));
+    hud();
+    for (const m of mods) {
+      const t0 = performance.now();
+      try { m.init(); } catch (e) { console.error('[module:' + m.name + ']', e); }
+      J.bootLog = (J.bootLog || []); J.bootLog.push(m.name + ' ' + (performance.now() - t0).toFixed(1) + 'ms');
+    }
+    J.start();
+    document.documentElement.classList.add('ready');
+  };
+})();
+
+</script>
+<script>/* ---- main.js ---- */
+/* last script: boots every registered module (each isolated by try/catch inside JEV.boot) */
+(function () {
+  if (!window.JEV) return;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', window.JEV.boot);
+  else window.JEV.boot();
+})();
+
+</script>
+</body>
+</html>
