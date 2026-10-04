@@ -62,9 +62,9 @@ JEV.mod('code', () => {
     panes[k] = P;
     return P;
   };
-  const D = mk('desk', { cps: 150, delay: 0, base: 9.3, hop: { ask: 9, gate: 11, skip: 13, write: 18 }, rest: 18, tab: 'desk' });
-  const S = mk('state', { cps: 130, delay: 0.18, base: 9.4, hop: { id: 1, action: 13, size: 14, risk: 15, dest: 17 }, rest: 17, tab: 'state' });
-  const Q = mk('q', { cps: 150, delay: 0.38, base: 9.3, hop: { action: 5, size: 6, risk: 7, floor: 10, cap: 11, kill: 13, gate: 15 }, rest: 15, tab: 'q' });
+  const D = mk('desk', { cps: 190, delay: 0, base: 9.3, hop: { ask: 9, gate: 11, skip: 13, write: 18 }, rest: 18, tab: 'desk' });
+  const S = mk('state', { cps: 160, delay: 0.18, base: 9.4, hop: { id: 1, action: 13, size: 14, risk: 15, dest: 17 }, rest: 17, tab: 'state' });
+  const Q = mk('q', { cps: 190, delay: 0.38, base: 9.3, hop: { action: 5, size: 6, risk: 7, floor: 10, cap: 11, kill: 13, gate: 15 }, rest: 15, tab: 'q' });
 
   function build(P, models) {
     const d = P.doc;
@@ -87,7 +87,7 @@ JEV.mod('code', () => {
     applyScroll(P); band(P, 0);
   }
   function fillAll(P) {
-    for (const L of P.lines) { L.on = L.done = true; L.el.classList.add('on'); for (const k of L.toks) k.el.textContent = k.t; }
+    for (const L of P.lines) { L.on = L.done = true; L.el.classList.add('on'); for (const k of L.toks) { k.el.textContent = k.t; cls(k); } }
     P.mode = 'idle'; P.el.classList.remove('code-typing');
     P.caretEnd = -2; band(P, P.rest); mm(P);
   }
@@ -227,7 +227,7 @@ JEV.mod('code', () => {
   function retype(d, t) {
     setModel(S, stateModel(d));
     lastRetype = t;
-    start(S, { rt: true, cps: 200 });
+    start(S, { rt: true, cps: 230 });
   }
 
   /* ---- start / restart when a pane scrolls into view ---- */
@@ -266,7 +266,8 @@ JEV.mod('code', () => {
     else if (r === 'kill switch') L.push([['td', '> '], ['t-warn', 'kill switch -> human review']]);
     else if (r === 'risk flag') L.push([['td', '> '], ['t-warn', 'risk_ok=false -> human review']]);
     else if (d.dest === 'review') L.push([['td', '> '], ['t-warn', 'below ' + d.floor.toFixed(2) + ' -> human review']]);
-    L.push([['tx', 'Saved handoff: '], ['td', 'queue/'], ['t-dest', d.dest], ['td', '/'], ['tx', d.id + '.json']]);
+    const sv = [['tx', 'Saved handoff: '], ['td', 'queue/'], ['t-dest', d.dest], ['td', '/'], ['tx', d.id + '.json']]; sv.fx = d.dest;
+    L.push(sv);
     if (++Z.ndec % 20 === 0) {
       L.push([['t-ps', '$ '], ['t-cmd', 'ls queue/']]);
       L.push([['t-ok', 'execute/ '], ['t-conf', 'review/ '], ['t-warn', 'skip/']]);
@@ -282,6 +283,7 @@ JEV.mod('code', () => {
     while (zout.childNodes.length > 40) zout.removeChild(zout.firstChild);
     Z.hist.push(e.toks); if (Z.hist.length > 60) Z.hist.shift();
     Z.n++; Z.dirty = true; Z.lastPrint = J.time;
+    if (e.toks.fx && !instant && !e.seed && !reduce) land(e.toks.fx);
     if (!instant && !e.seed && !reduce) Z.off = Math.min(Z.off + Z.lh, Z.lh * 3);
   }
   const ZC = { 't-buy': '#2ee6a6', 't-sell': '#ff4d5e', 't-hold': '#b6aec2', 't-close': '#ff8a3d', 't-flatten': '#a66bff', 't-conf': '#ffc13d', 't-ok': '#2ee6a6', 't-no': '#ff4d5e', 't-dest': '#ff7ab3', 't-warn': '#ff7ab3', 't-ps': '#ff2e6e', 't-cmd': '#f4eef6', 'tx': '#cfc6d8', 'td': '#6f6680', 'tm': '#8d8499', 't-kill': '#ff4d5e', 't-arm': '#2ee6a6' };
@@ -297,15 +299,15 @@ JEV.mod('code', () => {
     zmmV.style.transform = 'translate3d(0,' + top + 'px,0)'; zmmV.style.height = (Math.min(n, Z.rows) * 4 + 2) + 'px';
   }
   J.watch(zmmW, () => { Z.gm = J.fit(zmmC); zMm(); });
-  J.watch(zbody, () => { const cs = getComputedStyle(win); Z.lh = parseFloat(cs.getPropertyValue('--code-lh')) || 19; Z.rows = parseFloat(cs.getPropertyValue('--code-rows')) || 14; });
+  J.watch(zbody, () => { const cs = getComputedStyle(win); Z.lh = parseFloat(cs.getPropertyValue('--code-lh')) || 19; Z.rows = parseFloat(cs.getPropertyValue('--code-rows')) || 14; Z.cw = (parseFloat(cs.getPropertyValue('--code-fs')) || 12) * 0.6; });
   // seed: the prompt, then whatever the engine already decided
   zPush([[['t-ps', '$ '], ['t-cmd', 'jev watch queue/ --sim']], [['td', 'floor ' + J.S.floor.toFixed(2) + ' - cap $' + J.fmt(J.RULES.lossCap) + ' - max ' + J.RULES.maxPos + '% - listening']]], 0, true);
   for (const d of J.recent.slice(0, 3).reverse()) zPush(zFormat(d), 0, true);
   { const first = Z.q.splice(0); first.forEach((e) => zPrint(e, true)); Z.off = 0; }
   if (zel) {
     const fine = (e) => e.pointerType === 'mouse';
-    zel.addEventListener('pointerenter', (e) => { if (fine(e)) { Z.hold = true; Z.tag.hidden = false; } });
-    zel.addEventListener('pointerleave', (e) => { if (fine(e)) { Z.hold = false; Z.tag.hidden = true; } });
+    zbody.addEventListener('pointerenter', (e) => { if (fine(e)) { Z.hold = true; Z.tag.hidden = false; } }); // hover the log to freeze it; the header (and the run button) never freeze it
+    zbody.addEventListener('pointerleave', (e) => { if (fine(e)) { Z.hold = false; Z.tag.hidden = true; } });
     $('.code-run', zel).addEventListener('click', () => { J.fire(); });
   }
   function zFlush(t, dt) {
@@ -324,9 +326,17 @@ JEV.mod('code', () => {
   for (const el of J.$$('.code-tab', win)) tabs[el.dataset.t] = { el, until: 0, on: false };
   function tab(k) { const o = tabs[k]; if (!o) return; o.until = J.time + 0.75; if (!o.on) { o.on = true; o.el.classList.add('hot'); } }
   function pop(el) { if (!reduce && el.animate) el.animate([{ transform: 'scale(1.9)' }, { transform: 'none' }], { duration: 480, easing: 'cubic-bezier(.2,.8,.2,1)' }); }
+  const fnodes = J.$$('.code-fn', root).map((el) => ({ el, until: 0, on: false, b: el.querySelector('b'), d: el.dataset.d || '' }));
+  function fnode(i, d) {
+    const o = fnodes[i]; if (!o) return;
+    if (d) { o.b.textContent = d.dest; if (o.d !== d.dest) { o.d = d.dest; o.el.setAttribute('data-d', d.dest); } }
+    o.until = J.time + 0.8; if (!o.on) { o.on = true; o.el.classList.add('on'); }
+  }
   const hops = []; let lastHop = -9, eqAct = 0;
   function planHops(d, t0) {
     eqAct = Math.min(1, eqAct + 0.7);
+    if (hops.length > 40) hops.splice(0, hops.length - 12); // nobody is looking (section off screen): never let the plan grow
+    hops.push({ at: t0, flow: 0 }, { at: t0 + 0.2, flow: 1 }, { at: t0 + 0.5, flow: 2 }, { at: t0 + DELAY, flow: 3, d });
     if (t0 - lastHop < 2.0) return; lastHop = t0;
     hops.push({ at: t0, P: D, i: D.hop.ask, tab: 'desk' }, { at: t0 + 0.12, P: Q, i: Q.hop.action }, { at: t0 + 0.2, P: S, i: S.hop.action }, { at: t0 + 0.3, P: Q, i: Q.hop.size },
       { at: t0 + 0.45, P: D, i: D.hop.gate }, { at: t0 + 0.48, P: Q, i: Q.hop.risk }, { at: t0 + 0.6, P: S, i: S.hop.dest });
@@ -337,6 +347,8 @@ JEV.mod('code', () => {
     for (let i = hops.length - 1; i >= 0; i--) {
       const h = hops[i]; if (h.at > t) continue;
       hops.splice(i, 1);
+      if (t - h.at > 1.5) continue; // stale (frame stall / tab was hidden): skip instead of replaying
+      if (h.flow != null) { fnode(h.flow, h.d); continue; }
       if (h.P.mode === 'idle' && !h.P.out) { band(h.P, h.i); pop(h.P.dot); }
       if (h.tab) tab(h.tab);
     }
@@ -382,17 +394,106 @@ JEV.mod('code', () => {
     }
   });
 
+
+  /* =====================================================================
+   * 4b. handoff packets: every "Saved handoff" line sends a burst of light into its queue/ counter (additive sprites on a small canvas)
+   * ===================================================================== */
+  const fxc = $('#code-fx'), qEls = { execute: $('.code-q-x', win), review: $('.code-q-r', win), skip: $('.code-q-s', win) };
+  const SPR = {}, SC = { execute: ['#ff9cc4', '#ff2e6e'], review: ['#ffe08a', '#ffa21a'], skip: ['#e4dff0', '#9b92a8'] };
+  for (const k in SC) { // pre-rendered glow sprites (no shadowBlur in the frame loop)
+    const c = doc.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'), r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    r.addColorStop(0, '#fff'); r.addColorStop(0.1, '#fff'); r.addColorStop(0.2, SC[k][0]); r.addColorStop(0.5, SC[k][1] + 'cc'); r.addColorStop(1, SC[k][1] + '00'); g.fillStyle = r; g.fillRect(0, 0, 32, 32); SPR[k] = c;
+  }
+  let fg = null, fW = 0, fH = 0;
+  if (fxc) J.watch(fxc, () => { const f = J.fit(fxc); fg = f.g; fW = f.W; fH = f.H; });
+  const PN = 40, pts = [];
+  for (let i = 0; i < PN; i++) pts.push({ on: false, k: 'execute', t: 0, sp: 1, x0: 0, y0: 0, cx: 0, cy: 0, x1: 0, y1: 0, s: 1, hit: false });
+  const ring = { execute: 0, review: 0, skip: 0, x: { execute: 0, review: 0, skip: 0 }, y: { execute: 0, review: 0, skip: 0 } };
+  let alive = 0;
+  function land(dest) {
+    if (!fg || !qEls[dest]) return;
+    const cr = fxc.getBoundingClientRect(), tr = $('i', qEls[dest]).getBoundingClientRect(), br = zbody.getBoundingClientRect();
+    if (cr.width < 2) return;
+    const cw = Z.cw || 7.2;
+    const x0 = br.left - cr.left + 14 + 38 * cw + 4, y0 = br.bottom - cr.top - 17, x1 = tr.left - cr.left + tr.width / 2, y1 = tr.top - cr.top + tr.height / 2;
+    ring.x[dest] = x1; ring.y[dest] = y1;
+    const n = J.narrow() ? 7 : 11; let made = 0;
+    for (const p of pts) {
+      if (p.on) continue;
+      p.on = true; p.hit = false; p.k = dest; p.t = -Math.random() * 0.18; p.sp = 1 / (0.55 + Math.random() * 0.35); p.s = 0.55 + Math.random() * 0.7;
+      p.x0 = x0 + (Math.random() - 0.5) * 6; p.y0 = y0 + (Math.random() - 0.5) * 6; p.x1 = x1 + (Math.random() - 0.5) * 3; p.y1 = y1 + (Math.random() - 0.5) * 2;
+      p.cx = p.x0 - 14 - Math.random() * 46; p.cy = Math.min(y1 + 5 + Math.random() * 8, fH - 5); // drops out of the log line, then runs along the bottom gutter into the counter
+      alive++; if (++made >= n) break;
+    }
+  }
+  function drawFx(dt) {
+    if (!fg) return;
+    if (!alive && !ring.execute && !ring.review && !ring.skip) return;
+    fg.clearRect(0, 0, fW, fH);
+    fg.globalCompositeOperation = 'lighter';
+    for (const p of pts) {
+      if (!p.on) continue;
+      p.t += dt * p.sp;
+      if (p.t >= 1) {
+        p.on = false; alive--;
+        if (!p.hit) { p.hit = true; ring[p.k] = 1; const el = qEls[p.k]; if (el && el.animate && !reduce) el.animate([{ transform: 'translateY(-2px) scale(1.12)' }, { transform: 'none' }], { duration: 360, easing: 'cubic-bezier(.2,.8,.2,1)' }); }
+        continue;
+      }
+      if (p.t < 0) continue;
+      const spr = SPR[p.k];
+      for (let j = 0; j < 4; j++) { // comet: head + 3 trail samples
+        const u = Math.max(0, p.t - j * 0.035), e = u * u * (3 - 2 * u), a = 1 - e * 0.15, m = 1 - e;
+        const x = m * m * p.x0 + 2 * m * e * p.cx + e * e * p.x1, y = m * m * p.y0 + 2 * m * e * p.cy + e * e * p.y1;
+        const sz = (11 - j * 2.2) * p.s;
+        fg.globalAlpha = (1 - j * 0.24) * a; fg.drawImage(spr, x - sz, y - sz, sz * 2, sz * 2);
+      }
+    }
+    for (const k in SPR) { // arrival flare
+      if (ring[k] <= 0.01) { ring[k] = 0; continue; }
+      const r = ring[k], sz = 30 * (1.4 - r * 0.7);
+      fg.globalAlpha = r * 0.9; fg.drawImage(SPR[k], ring.x[k] - sz, ring.y[k] - sz, sz * 2, sz * 2);
+      ring[k] *= Math.exp(-dt * 6);
+    }
+    fg.globalAlpha = 1; fg.globalCompositeOperation = 'source-over';
+    if (!alive && !ring.execute && !ring.review && !ring.skip) fg.clearRect(0, 0, fW, fH);
+  }
+
+  /* pointer tilt (fine pointers only): the whole window leans a degree or two toward the cursor */
+  const stage = $('.code-stage', root), fineP = !!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
+  const tilt = { rx: 0, ry: 0, tx: 0, ty: 0, r: null, dirty: true, on: false };
+  if (fineP && !reduce && stage) {
+    stage.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      if (tilt.dirty || !tilt.r) { tilt.r = stage.getBoundingClientRect(); tilt.dirty = false; }
+      const r = tilt.r; tilt.tx = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1) * 1.5; tilt.ty = -clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1) * 1.1; tilt.on = true;
+    }, { passive: true });
+    stage.addEventListener('pointerleave', () => { tilt.tx = tilt.ty = 0; });
+    window.addEventListener('scroll', () => { tilt.dirty = true; }, { passive: true });
+    window.addEventListener('resize', () => { tilt.dirty = true; }, { passive: true });
+  }
+  function tiltStep(dt) {
+    if (!tilt.on) return;
+    const k = 1 - Math.exp(-dt * 6);
+    tilt.rx += (tilt.ty - tilt.rx) * k; tilt.ry += (tilt.tx - tilt.ry) * k;
+    if (!tilt.tx && !tilt.ty && Math.abs(tilt.rx) < 0.01 && Math.abs(tilt.ry) < 0.01) { tilt.rx = tilt.ry = 0; tilt.on = false; stage.style.transform = ''; return; }
+    stage.style.transform = 'perspective(1500px) rotateX(' + tilt.rx.toFixed(3) + 'deg) rotateY(' + tilt.ry.toFixed(3) + 'deg)';
+  }
+
   /* =====================================================================
    * 5. master tick (runs only while #code is on screen)
    * ===================================================================== */
-  let lastMeta = 0;
-  J.task(root, (t, dt) => {
-    for (const P of [D, S, Q]) { type(P, dt); scroll(P, dt); }
+  const PANES = [D, S, Q];
+  let lastMeta = 0, lastT = 0;
+  J.task(root, (t) => {
+    const dt = Math.min(0.3, t - lastT || 0.016); lastT = t; // wall-clock dt: typing keeps its pace even on a slow frame rate
+    for (let i = 0; i < 3; i++) { type(PANES[i], dt); scroll(PANES[i], dt); }
     if (S.mode === 'idle' && latest && !S.out && t - lastRetype >= 5 && latest.id !== S.last) { S.last = latest.id; retype(latest, t); }
     runHops(t);
     zFlush(t, dt);
+    drawFx(dt); tiltStep(dt);
     for (const k in tabs) { const o = tabs[k]; if (o.on && t > o.until) { o.on = false; o.el.classList.remove('hot'); } }
-    if (t - lastMeta > 0.25) { lastMeta = t; for (const P of [D, S, Q]) meta(P, t); zMeta(t); status(); }
+    for (const o of fnodes) if (o.on && t > o.until) { o.on = false; o.el.classList.remove('on'); }
+    if (t - lastMeta > 0.25) { lastMeta = t; for (let i = 0; i < 3; i++) meta(PANES[i], t); zMeta(t); status(); }
   });
 
   /* =====================================================================
