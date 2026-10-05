@@ -25,7 +25,10 @@
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; color-scheme: dark; scroll-padding-top: 64px; }
-body { background: var(--bg); color: var(--ink); font: 400 12.5px/1.55 var(--mono); overflow-x: hidden; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+body { background: var(--bg); color: var(--ink); font: 400 12.5px/1.55 var(--mono); overflow-x: hidden; -webkit-font-smoothing: antialiased; min-height: 100vh; min-height: 100svh; }
+main { display: block; }
+.skip { position: fixed; left: 12px; top: -60px; z-index: 200; padding: 10px 14px; border-radius: 8px; background: var(--pink); color: #fff; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; font-size: 11px; transition: top .15s; }
+.skip:focus { top: 10px; outline: 2px solid #fff; outline-offset: 2px; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 ::selection { background: var(--pink); color: #fff; }
@@ -118,7 +121,7 @@ canvas { display: block; }
 .rv.in, .no-js .rv { opacity: 1; transform: none; filter: none; }
 
 /* ----- HUD ----- */
-.hud { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: clamp(8px, 2vw, 26px); padding: 8px var(--gut); background: linear-gradient(180deg, rgba(5, 3, 10, .94), rgba(5, 3, 10, .62)); backdrop-filter: blur(14px) saturate(1.5); -webkit-backdrop-filter: blur(14px) saturate(1.5); border-bottom: 1px solid rgba(255, 46, 110, .22); }
+.hud { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: clamp(8px, 2vw, 26px); padding: 8px max(var(--gut), env(safe-area-inset-right)) 8px max(var(--gut), env(safe-area-inset-left)); background: linear-gradient(180deg, rgba(5, 3, 10, .94), rgba(5, 3, 10, .62)); backdrop-filter: blur(14px) saturate(1.5); -webkit-backdrop-filter: blur(14px) saturate(1.5); border-bottom: 1px solid rgba(255, 46, 110, .22); }
 .hud-scan { position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; overflow: hidden; pointer-events: none; opacity: .85; }
 .hud-scan::after { content: ''; position: absolute; left: 0; top: 0; width: 28%; height: 100%; background: linear-gradient(90deg, transparent, var(--pink), #fff, var(--pink), transparent); animation: hudScan 5.5s linear infinite; } /* compositor-only (was a background-position loop) */
 @keyframes hudScan { from { transform: translateX(-103%); } to { transform: translateX(360%); } }
@@ -135,7 +138,8 @@ canvas { display: block; }
 .nav a i { font-style: normal; }
 @media (max-width: 1239px) { .nav a { padding: 6px 8px; } .nav a i { display: none; } } /* compact: drop the 01-05 numerals before dropping the nav */
 @media (max-width: 999px) { .nav { display: none; } } /* below this the metrics would start to clip */
-@media (pointer: coarse) { .nav a { display: inline-flex; align-items: center; min-height: 40px; } }
+@media (pointer: coarse) { .nav a { display: inline-flex; align-items: center; min-height: 40px; } .kill { min-height: 40px; } .logo { min-height: 40px; min-width: 40px; } .m label { font-size: 10px; } }
+@media (max-width: 400px) { .hide-xs { display: none; } } /* keep Cost inside the metric strip on 360px phones */
 .kill { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 99px; font-size: 10px; font-weight: 700; letter-spacing: .16em; border: 1px solid rgba(46, 230, 166, .45); color: var(--green); background: rgba(46, 230, 166, .07); transition: .3s; }
 .kill i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: lampPulse 1.6s infinite; }
 .kill:hover { background: rgba(46, 230, 166, .16); }
@@ -155,7 +159,7 @@ body.killed::after { content: ''; position: fixed; inset: 0; pointer-events: non
 .marq > div { display: flex; flex: none; gap: 42px; padding: 11px 21px; white-space: nowrap; font-size: 10px; letter-spacing: .22em; color: var(--mut); text-transform: uppercase; animation: marq 40s linear infinite; }
 .marq b { color: var(--pink); font-weight: 700; }
 @keyframes marq { to { transform: translateX(-100%); } }
-.foot p { max-width: 900px; margin: 28px auto 0; padding: 0 var(--gut); text-align: center; color: var(--dim); font-size: 10.5px; line-height: 1.8; letter-spacing: .04em; }
+.foot p { max-width: 900px; margin: 28px auto 0; padding: 0 max(var(--gut), env(safe-area-inset-right)) 0 max(var(--gut), env(safe-area-inset-left)); text-align: center; color: var(--dim); font-size: 10.5px; line-height: 1.8; letter-spacing: .04em; }
 .foot p b { color: var(--ink); font-weight: 500; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -391,7 +395,7 @@ body.killed .bld-or.stop { --bc: var(--red); } body.killed .bld-or.stop em { col
 
 /* ---- code.css ---- */
 /* ===== code — "jev-starter" editor window: light / hot-pink / light / dark-terminal panes (prefix code-) ===== */
-#code { position: relative; overflow-x: clip; padding-top: clamp(40px, 6vw, 84px); padding-bottom: clamp(46px, 7vw, 96px); }
+#code { position: relative; overflow-x: clip; padding-top: clamp(40px, 6vw, 84px); }
 .code-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px 40px; align-items: end; margin-bottom: clamp(18px, 2.6vw, 30px); }
 @media (min-width: 1100px) { .code-head { grid-template-columns: minmax(0, 1fr) auto; } }
 .code-ht { min-width: 0; }
@@ -564,7 +568,7 @@ body.killed .code-bar::after { background: linear-gradient(90deg, transparent, #
 @media (max-width: 760px) {
   .code-view::before, .code-view::after { right: 22px; }
   .code-fn { min-width: 0; padding: 8px 9px; } .code-fn small { display: none; } .code-fn b { font-size: 11px; margin-top: 0; } .code-fw { width: clamp(10px, 4vw, 22px); }
-  .code-win { --code-fs: 10.5px; --code-lh: 17px; --code-rows: 12; border-radius: 13px; }
+  .code-win { --code-fs: 10.5px; --code-lh: 17px; --code-rows: 10; border-radius: 13px; }
   .code-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 8px; }
   .code-bar { height: 42px; padding: 0 12px; gap: 10px; font-size: 12px; }
   .code-eq { width: 56px; }
@@ -576,7 +580,7 @@ body.killed .code-bar::after { background: linear-gradient(90deg, transparent, #
   .code-qbar { width: 46px; }
   .code-meta { font-size: 9.5px; }
 }
-@media (max-width: 440px) { .code-qbar { display: none; } .code-q i { margin-right: 4px; } .code-st-q { gap: 8px; } }
+@media (max-width: 440px) { .code-win { --code-rows: 9; } .code-qbar { display: none; } .code-q i { margin-right: 4px; } .code-st-q { gap: 8px; } }
 @media (prefers-reduced-motion: reduce) { .code-bar::after, .code-hot::before { animation: none; } .code-caret { animation: none; } .code-band { transition: none; } }
 
 /* ---- desk-bottom.css ---- */
@@ -864,6 +868,11 @@ button.dkt-chip:focus-visible { outline: 2px solid var(--pink2); outline-offset:
   .dkt-lg { padding: 8px 14px 11px; }
   .dkt-lgx { margin-left: 0; flex-basis: 100%; }
 }
+@media (max-width: 389px) {
+  .dkt-top { gap: 8px; }
+  .dkt-clk i { display: none; }
+  .dkt-clk b { font-size: 19px; letter-spacing: 0; }
+}
 @media (pointer: coarse), (max-width: 700px) {
   button.dkt-chip { min-height: 40px; }
   .dkt-chip.dkt-st { min-height: 40px; }
@@ -894,9 +903,9 @@ body.killed .dkw-world { border-color: rgba(255, 77, 94, .45); }
 .dkw-cv { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 .dkw-feeds, .dkw-tix { position: relative; z-index: 3; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .dkw-ch { white-space: nowrap; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dkw-ink); padding: 2px 2px 0; font-weight: 700; }
-.dkw-ch > span { display: inline-flex; align-items: center; gap: 8px; }
+.dkw-ch > span { min-width: 0; display: inline-flex; align-items: center; gap: 8px; }
 .dkw-ch > span::before { content: ''; width: 14px; height: 1px; background: linear-gradient(90deg, transparent, var(--cyan)); box-shadow: 0 0 8px var(--cyan); }
-.dkw-ch i { font-style: normal; font-weight: 500; letter-spacing: .08em; color: var(--dkw-k); text-transform: lowercase; white-space: nowrap; }
+.dkw-ch i { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; font-style: normal; font-weight: 500; letter-spacing: .08em; color: var(--dkw-k); text-transform: lowercase; white-space: nowrap; }
 .dkw-ch i b { color: var(--cyan); font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* oracle tile */
@@ -1278,7 +1287,7 @@ body.killed #hero-static { filter: hue-rotate(15deg) saturate(1.25) brightness(1
 .hero-aura { left: var(--hero-jx, 38%); top: var(--hero-jy, 50%); width: min(1100px, 130%); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; mix-blend-mode: screen; opacity: .85;
   background: conic-gradient(from 0deg, transparent 0, rgba(255, 46, 110, .26) 8%, transparent 26%, rgba(166, 107, 255, .14) 44%, transparent 60%, rgba(255, 46, 110, .2) 78%, transparent 100%);
   -webkit-mask: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, .55) 45%, transparent 100%); mask: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, .55) 45%, transparent 100%);
-  animation: heroSpin 46s linear infinite; will-change: transform; }
+  animation: heroSpin 46s linear infinite; }
 @keyframes heroSpin { to { rotate: 360deg; } }
 .hero-grid { inset: 0; opacity: .5; background-image: radial-gradient(rgba(255, 120, 170, .22) 1px, transparent 1.3px); background-size: 26px 26px; background-position: 13px 13px;
   -webkit-mask: radial-gradient(70% 62% at 50% 48%, #000 0, transparent 100%); mask: radial-gradient(70% 62% at 50% 48%, #000 0, transparent 100%); }
@@ -1361,6 +1370,9 @@ body.killed .hero-aura { filter: hue-rotate(14deg) saturate(1.2); }
 }
 @media (prefers-reduced-motion: reduce) { .hero-pre .hero-net canvas { clip-path: inset(0 0 0 0); opacity: 1; } .hero-pre .hero-card, .hero-pre .hero-chip, .hero-pre .hero-fig, .hero-pre .hero-legend { opacity: 1; transform: none; } .hero-aura, .hero-scan, .hero-rule::after { animation: none; } .hero-bg > .hero-scan { display: none; } }
 
+/* keyboard path: the visually hidden fire button becomes a visible chip while focused */
+#hero-fire:focus-visible { clip: auto; width: auto; height: auto; overflow: visible; left: 12px; top: 104px; z-index: 6; padding: 7px 12px; font: 600 11px/1 var(--mono, monospace); letter-spacing: .08em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .92); border: 1px solid #ff6fa6; border-radius: 4px; outline: 2px solid #ff6fa6; outline-offset: 2px; cursor: pointer; }
+
 /* ---- hour.css ---- */
 /* ===== hour — "three agents, sixty minutes, one bot": build · hour · backtest · arithmetic · honest part (prefix hr-) ===== */
 .hr { position: relative; overflow-x: clip; --hr-k: #aaa1b8; --hr-t: #e9e3ef; --hr-line: rgba(255, 255, 255, .085);
@@ -1427,7 +1439,7 @@ body.killed .hero-aura { filter: hue-rotate(14deg) saturate(1.2); }
 .hr-ant { animation: hrAnt 1.4s steps(1) infinite; }
 @keyframes hrRot { to { transform: rotate(1turn); } }
 @keyframes hrBlink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
-@keyframes hrAnt { 50% { fill: #ff8a3d; } }
+@keyframes hrAnt { 50% { opacity: 0; } }
 .hr-an { font: 800 clamp(14px, 1.45vw, 18px)/1 var(--sans); letter-spacing: .14em; color: var(--cc); text-shadow: 0 0 20px rgba(var(--cc-rgb), .65); margin-bottom: 7px; }
 .hr-al { font-size: 11.5px; line-height: 1.45; color: var(--hr-t); max-width: 30ch; }
 .hr-as { margin-top: 3px; font-size: 10px; line-height: 1.45; color: var(--hr-k); max-width: 32ch; }
@@ -2008,9 +2020,10 @@ body.killed .lab-gt-hz { display: block; }
 </style>
 </head>
 <body>
+<a class="skip" href="#lab">skip to lab</a>
 <!-- 00-fx.html -->
 <!-- fx: page atmosphere (webgl plasma, grain, scanlines, vignette, cursor light) · kill theatre · toasts · boot overlay -->
-<noscript><style>#fx-boot{display:none!important}</style></noscript>
+<noscript><style>#fx-boot{display:none!important}.rv{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}</style></noscript>
 <div id="fx-bgf" aria-hidden="true"></div>
 <canvas id="fx-bg" aria-hidden="true"></canvas>
 <div class="fx-ov fx-spotwrap" id="fx-spotwrap" aria-hidden="true"><i id="fx-spot"></i></div>
@@ -2034,8 +2047,8 @@ body.killed .lab-gt-hz { display: block; }
 <!-- 05-hud.html -->
 <header class="hud" id="hud">
   <a class="logo" href="#hero" aria-label="JEV home"><b>J</b><span class="hide-s">JEV</span></a>
-  <div class="mets">
-    <div class="m"><label>Model</label><b>jev-1.13.0</b></div>
+  <div class="mets" tabindex="-1">
+    <div class="m hide-xs"><label>Model</label><b>jev-1.13.0</b></div>
     <div class="m hide-s"><label>Agent</label><b>hermes</b></div>
     <div class="m"><label>Decisions</label><b id="mDec" class="hot num">1,892</b></div>
     <div class="m"><label>Cost</label><b id="mCost" class="num">$0.046</b></div>
@@ -2045,9 +2058,10 @@ body.killed .lab-gt-hz { display: block; }
   <nav class="nav" aria-label="Sections">
     <a href="#hero"><i>01</i> decides</a><a href="#builds"><i>02</i> builds</a><a href="#hour"><i>03</i> hour</a><a href="#desk"><i>04</i> desk</a><a href="#lab"><i>05</i> lab</a>
   </nav>
-  <button class="kill" id="killBtn" type="button" aria-pressed="false" title="Kill switch — halts every order, routes all to human review"><i></i><span id="killTxt">ARMED</span></button>
+  <button class="kill" id="killBtn" type="button" aria-pressed="false" aria-label="Kill switch" title="Kill switch: every order goes to human review, holds still skip"><i></i><span id="killTxt">ARMED</span></button>
   <i class="hud-scan" aria-hidden="true"></i>
 </header>
+<main id="main">
 
 <!-- 10-hero.html -->
 <section id="hero" class="hero" aria-label="Jev decides: state, encode, typed questions, answers, code acts (simulation)">
@@ -2121,7 +2135,8 @@ from questions import QUESTIONS, FLOOR, gate
 # hermes wrote the intent. jev answers it. code decides.
 def desk(intent, state):
     answer = jev.ask(state, questions=QUESTIONS)
-    ok = answer.confidence &gt;= FLOOR and answer.risk_ok
+    reduces = answer.choice in ("close", "flatten")
+    ok = answer.confidence &gt;= FLOOR and (answer.risk_ok or reduces)
     dest = "execute" if ok and gate(answer) else "review"
     if answer.choice == "hold":
         dest = "skip"
@@ -2188,10 +2203,10 @@ QUESTIONS = {
 FLOOR = 0.85                  # below this a human looks first
 DAILY_LOSS_CAP = 2000         # usd, then the desk stops
 MAX_POSITION = 0.04           # 4% of capital
-KILL = Path("KILL").exists()  # one file halts the desk
+KILL_FILE = Path("KILL")      # one file halts the desk
 
 def gate(answer):
-    if KILL or answer.daily_pnl &lt;= -DAILY_LOSS_CAP:
+    if KILL_FILE.exists() or answer.daily_pnl &lt;= -DAILY_LOSS_CAP:
         return False
     return answer.size / 100 &lt;= MAX_POSITION</pre></div>
               </div>
@@ -2439,6 +2454,7 @@ def gate(answer):
                   <path fill="#e8681c" d="M11 4h1v6h-1zM10 10h1v1h-1zM2 10h8v1H2z"/>
                   <path fill="#5a2208" d="M4 9h6v1H4z"/>
                   <path fill="#ffd23d" d="M0 5h1v4H0zM13 5h1v4h-1z"/>
+                  <rect x="6" y="0" width="2" height="1" fill="#ff8a3d"/>
                   <rect class="hr-ant" x="6" y="0" width="2" height="1" fill="#fff1b8"/>
                   <rect class="hr-eye" x="4" y="6" width="2" height="2" fill="#14080a"/>
                   <rect class="hr-eye" x="8" y="6" width="2" height="2" fill="#14080a"/>
@@ -2485,8 +2501,8 @@ def gate(answer):
 
         <div class="hr-stats hr-st4" id="hr-a-stats">
           <div><b id="hr-s-time" data-to="480">08:00</b><span>to armed</span></div>
-          <div><b id="hr-s-trades" data-to="210">210</b><span>backtested trades</span></div>
-          <div><b id="hr-s-year" data-to="4">4%</b><span>backtest, a year <em>(illustrative)</em></span></div>
+          <div><b id="hr-s-trades" data-to="1840">1,840</b><span>backtested trades</span></div>
+          <div><b id="hr-s-year" data-to="31">31%</b><span>backtest, a year <em>(illustrative)</em></span></div>
           <div><b class="hot" id="hr-s-cost" data-to="0.9">$0.90</b><span>the llm side</span></div>
         </div>
         <p class="hr-foot">the cap, the stop and the kill switch were written before the first order, not after the first loss</p>
@@ -2606,7 +2622,7 @@ def gate(answer):
               </g>
               <circle cx="160" cy="140" r="13" fill="#0a0610" stroke="#ff2e6e" stroke-width="3"/>
               <circle cx="160" cy="140" r="4.5" fill="#ff7ab3"/>
-              <text id="hr-gtag" x="160" y="140" class="hr-gtag" text-anchor="middle">31%</text>
+              <text id="hr-gtag" x="160" y="178" class="hr-gtag" text-anchor="middle">31%</text>
             </svg>
             <div class="hr-knob" id="hr-knob" aria-hidden="true"></div>
           </div>
@@ -2746,7 +2762,7 @@ def gate(answer):
       <div class="dkt-pb"><span>size</span><div class="dkt-pbar" id="dkt-pb3"><i style="--c:#cdaaff;--w:31%"></i><i style="--c:#b07dff;--w:36%"></i><i style="--c:#8f50ff;--w:22%"></i><i style="--c:#6a2dd9;--w:11%"></i></div><b id="dkt-pv3">.5 · 1 · 2 · 4 %</b></div>
     </div>
     <div class="dkt-stats">
-      <div><label>tickets</label><b id="dkt-s-tix" class="num">14,882</b></div>
+      <div title="lifetime desk figures (simulated), not this session"><label>tickets</label><b id="dkt-s-tix" class="num">14,882</b></div>
       <div><label>win rate</label><b id="dkt-s-win" class="num">55.0%</b><i class="dkt-ring" id="dkt-ring" style="--p:55" aria-hidden="true"></i></div>
       <div><label>avg edge</label><b id="dkt-s-edge" class="num">+1.78bp</b></div>
       <div><label>max dd</label><b id="dkt-s-dd" class="num">0.40%</b></div>
@@ -2774,7 +2790,7 @@ def gate(answer):
 <!-- ===== desk-world: the world (globe · global feeds · ticket in flight) + six-agent strip (prefix dkw-) — direct children of .dk-grid ===== -->
 <div class="card dkw-world rv" id="dkw-world" role="region" aria-label="the world: eight venues, one oracle, one book, six agents in orbit (simulated)">
   <div class="ph dkw-ph">
-    <span class="dkw-pt"><b class="pk">◆</b> <b>the world</b> <i class="dkw-ph-s">— every venue on earth · one oracle · one book · jev in orbit</i></span>
+    <span class="dkw-pt"><b class="pk">◆</b> <b>the world</b> <i class="dkw-ph-s">— eight simulated venues · one oracle · one book · jev in orbit</i></span>
     <span class="dkw-stg"><span class="hide-s">sizing the ticket · </span>stage <b id="dkw-stn">01</b>/06 · <b id="dkw-stv">scan</b> · loop #<b id="dkw-loop">14</b></span>
   </div>
 
@@ -2783,7 +2799,7 @@ def gate(answer):
 
     <!-- left: global feeds -->
     <aside class="dkw-feeds" id="dkw-feeds" aria-label="global feeds">
-      <div class="dkw-ch"><span>global feeds</span><i title="spread across the 8 books"><b id="dkw-disp">0.9</b>bp spread</i></div>
+      <div class="dkw-ch"><span>global feeds</span><i title="spread across the 8 simulated books"><b id="dkw-disp">0.9</b>bp spread</i></div>
       <div class="dkw-or">
         <div class="dkw-orh"><span>oracle · <b>btc-perp</b></span><em class="dkw-orm">mid of 8</em></div>
         <div class="dkw-orp"><sup>$</sup><b id="dkw-op">84,722</b><u id="dkw-opd">.4</u><span class="dkw-orc up" id="dkw-oc">▲ 0.00%</span></div>
@@ -2963,13 +2979,13 @@ def gate(answer):
 
           <div class="lab-sub"><span>scenario</span><i></i></div>
           <div class="lab-presets" id="lab-presets" role="group" aria-label="scenario presets">
-            <button class="lab-sc" type="button" data-p="trend">trend</button>
-            <button class="lab-sc" type="button" data-p="mean-revert">mean-revert</button>
-            <button class="lab-sc" type="button" data-p="wide book">wide book</button>
-            <button class="lab-sc" type="button" data-p="stale feed">stale feed</button>
-            <button class="lab-sc" type="button" data-p="reversal">reversal</button>
-            <button class="lab-sc" type="button" data-p="stress">stress</button>
-            <button class="lab-sc lab-sc-r" type="button" data-p="random">random</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="trend">trend</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="mean-revert">mean-revert</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="wide book">wide book</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="stale feed">stale feed</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="reversal">reversal</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="stress">stress</button>
+            <button class="lab-sc lab-sc-r" type="button" aria-pressed="false" data-p="random">random</button>
           </div>
 
           <div class="lab-sub"><span>inputs</span><i></i><em><u class="lab-dzk"></u>red band trips risk_ok</em></div>
@@ -3096,7 +3112,7 @@ def gate(answer):
               <pre class="lab-js" id="lab-js" aria-label="typed handoff from jev to code"></pre>
             </figure>
             <div class="lab-tree" id="lab-tree" role="group" aria-label="queue directory"></div>
-            <div class="lab-dest" id="lab-dest" data-c="green" role="status">
+            <div class="lab-dest" id="lab-dest" data-c="green" aria-live="off">
               <i class="lab-dest-r" aria-hidden="true"></i>
               <b class="lab-dest-t glitch" id="lab-dest-t" data-text="EXECUTE">EXECUTE</b>
               <small id="lab-dest-s">order &rarr; venue</small>
@@ -3112,10 +3128,11 @@ def gate(answer):
 </section>
 
 <!-- 99-footer.html -->
+</main>
 <footer class="foot" id="foot">
   <div class="marq" aria-hidden="true">
-    <div><span><b>hermes</b> writes</span><span><b>jev</b> decides</span><span><b>code</b> acts</span><span>floor 0.85</span><span>daily loss cap $2,000</span><span>max position 4%</span><span>kill switch armed</span><span>typed answers only</span><span><b>simulation</b> · no real orders</span></div>
-    <div><span><b>hermes</b> writes</span><span><b>jev</b> decides</span><span><b>code</b> acts</span><span>floor 0.85</span><span>daily loss cap $2,000</span><span>max position 4%</span><span>kill switch armed</span><span>typed answers only</span><span><b>simulation</b> · no real orders</span></div>
+    <div><span><b>hermes</b> writes</span><span><b>jev</b> decides</span><span><b>code</b> acts</span><span class="foot-fl">floor 0.85</span><span>daily loss cap $2,000</span><span>max position 4%</span><span>kill switch armed</span><span>typed answers only</span><span><b>simulation</b> · no real orders</span></div>
+    <div><span><b>hermes</b> writes</span><span><b>jev</b> decides</span><span><b>code</b> acts</span><span class="foot-fl">floor 0.85</span><span>daily loss cap $2,000</span><span>max position 4%</span><span>kill switch armed</span><span>typed answers only</span><span><b>simulation</b> · no real orders</span></div>
   </div>
   <p><b>simulation · illustrative values · no real orders are placed.</b> prices, P&amp;L, backtests and latencies on this page are generated in your browser for demonstration.
     the decision head is a small hand-tuned heuristic, not a trained model, and the code panes illustrate the pattern: the LLM writes, Jev decides, code acts.
@@ -3151,7 +3168,7 @@ def gate(answer):
    *        drawdown_pct, latency_ms, signal_age_s    opt: {floor, killed}                                      */
   function decide(s, opt) {
     opt = opt || {};
-    const floor = opt.floor != null ? opt.floor : RULES.floor, killed = !!opt.killed;
+    const floor = Number.isFinite(+opt.floor) && opt.floor != null ? +opt.floor : RULES.floor, killed = !!opt.killed;
     const edge = s.edge_bps, imb = s.imbalance, spr = s.spread_bps, vol = s.vol != null ? s.vol : s.vol_1h;
     const pos = s.position_pct, dd = s.drawdown_pct, pnl = s.daily_pnl, lat = s.latency_ms, age = s.signal_age_s;
     const stale = clamp((age - 20) / 50, 0, 1);
@@ -3177,6 +3194,10 @@ def gate(answer):
     while (sizeIdx > 0 && SIZES[sizeIdx] > maxSize) sizeIdx--;
     const sizeP = softmax({ s0: -Math.abs(raw - 0.07) * 9, s1: -Math.abs(raw - 0.24) * 9, s2: -Math.abs(raw - 0.48) * 9, s3: -Math.abs(raw - 0.8) * 9 }, 0.6);
     const sizes = [sizeP.s0, sizeP.s1, sizeP.s2, sizeP.s3];
+    // keep the p(size) bars consistent with the answer: nothing above the chosen (room-capped) bucket, and it is the argmax
+    for (let i = sizeIdx + 1; i < 4; i++) sizes[i] = 0;
+    sizes[sizeIdx] = Math.max.apply(null, sizes);
+    const sz = sizes.reduce((a, b) => a + b, 0); for (let i = 0; i < 4; i++) sizes[i] /= sz;
 
     // yes or no? — is it safe to send
     const riskOk = spr <= 8 && lat <= 300 && age <= 45 && lossUse < 0.8 && dd < 8 && vol < 160 && !killed;
@@ -3186,7 +3207,9 @@ def gate(answer):
     if (action === 'hold') { dest = 'skip'; reason = 'hold'; }
     else if (killed) { dest = 'review'; reason = 'kill switch'; }
     else if (!riskOk && action !== 'flatten' && action !== 'close') { dest = 'review'; reason = 'risk flag'; }
-    else if (conf < floor) { dest = 'review'; reason = 'conf ' + conf.toFixed(2) + ' < ' + floor.toFixed(2); }
+    else if ((action === 'buy' && pos > 0 || action === 'sell' && pos < 0) && Math.abs(pos) + SIZES[sizeIdx] > RULES.maxPos + 1e-9) { dest = 'review'; reason = 'position cap'; } // adding to a book already at the cap; opposite-side orders reduce exposure
+    else if (!Number.isFinite(conf) || !Number.isFinite(net)) { dest = 'review'; reason = 'bad input'; } // fail closed on NaN / Infinity
+    else if (!(conf >= floor)) { dest = 'review'; reason = 'conf ' + conf.toFixed(2) + ' < ' + floor.toFixed(2); }
     else { dest = 'execute'; reason = 'ok'; }
 
     return { action, p, conf, sizeIdx, size: SIZES[sizeIdx], sizes, sizeRaw: raw, riskOk, pRisk, dest, reason,
@@ -3299,7 +3322,7 @@ def gate(answer):
       if (!k.vis) continue;
       if (J.reduce && k.n >= 3) continue; // reduced motion: render a few frames then freeze
       busy = true; k.n++;
-      try { k.fn(t, dt); } catch (e) { console.error('[task]', e); tasks.delete(k); }
+      try { k.fn(t, dt); k.err = 0; } catch (e) { console.error('[task]', e); if ((k.err = (k.err || 0) + 1) >= 5) tasks.delete(k); } // drop a task only after 5 failures in a row
     }
     if (busy) wake();
   }
@@ -3307,7 +3330,7 @@ def gate(answer):
 
   /* ---------- off-screen pause: sections / cards / stages far outside the viewport get .is-off → base.css pauses their CSS animations ---------- */
   /* (every running CSS animation costs a style invalidation per frame whether or not it is visible; ~220 of them run on this page) */
-  const OFF_SEL = 'body > section, body > footer, .card, [class*="-stage"]';
+  const OFF_SEL = 'body > section, body > footer, main > section, .card, [class*="-stage"]';
   const offIo = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
     for (const e of es) e.target.classList.toggle('is-off', !e.isIntersecting);
   }, { rootMargin: '200px 0px' }) : null;
@@ -3382,7 +3405,7 @@ def gate(answer):
   /* ---------- global state, rules, kill switch ---------- */
   J.RULES = E.RULES; J.ACTIONS = E.ACTIONS; J.SIZES = E.SIZES; J.STATE_KEYS = E.STATE_KEYS;
   const S = (J.S = { killed: false, floor: E.RULES.floor, count: 1892, cost: 0.046, ms: [3.1, 3.4, 2.9, 3.2, 3.6], counts: { choice: 1934, flag: 1102, score: 600 }, dest: { execute: 0, review: 0, skip: 0 } });
-  J.setFloor = (v) => { S.floor = J.clamp(+v, 0.5, 0.99); E.RULES.floor = S.floor; J.bus.emit('floor', S.floor); hud(); };
+  J.setFloor = (v) => { if (!isFinite(+v) || v === null || v === '') return; S.floor = J.clamp(+v, 0.5, 0.99); E.RULES.floor = S.floor; J.bus.emit('floor', S.floor); hud(); };
   J.setKilled = (v) => { S.killed = !!v; document.body.classList.toggle('killed', S.killed); J.bus.emit('kill', S.killed); hud(); };
 
   /* ---------- shared catalogues (modules read, never mutate) ---------- */
@@ -3452,6 +3475,7 @@ def gate(answer):
     // display confidence: slight organic jitter on top of the engine output
     d.conf = J.clamp(d.conf * (0.965 + Math.random() * 0.035), 0.3, 0.995);
     if (d.dest === 'execute' && d.conf < S.floor) { d.dest = 'review'; d.reason = 'conf ' + d.conf.toFixed(2) + ' < ' + S.floor.toFixed(2); }
+    else if (d.reason.indexOf('conf ') === 0) d.reason = 'conf ' + d.conf.toFixed(2) + ' < ' + S.floor.toFixed(2); // reason quotes the displayed (jittered) confidence
     d.id = (++seq).toString(16).padStart(4, '0') + Math.random().toString(16).slice(2, 6);
     d.state = sm.state; d.arch = sm.arch; d.build = pickBuild(d);
     d.symbol = sm.state.symbol; d.venue = sm.state.venue;
@@ -3469,7 +3493,7 @@ def gate(answer):
     return d;
   };
   let loopT = 0, started = false;
-  function loop() { loopT = 0; if (document.hidden) return; J.fire(); loopT = setTimeout(loop, 700 + Math.random() * 650); }
+  function loop() { loopT = 0; if (document.hidden) return; try { J.fire(); } catch (e) { console.error('[loop]', e); } loopT = setTimeout(loop, 700 + Math.random() * 650); }
   J.start = () => { started = true; if (!document.hidden && !loopT) loopT = setTimeout(loop, 400); };
   document.addEventListener('visibilitychange', () => {
     const on = !document.hidden;
@@ -3486,6 +3510,7 @@ def gate(answer):
     set('mDec', J.fmt(S.count)); set('mCost', '$' + S.cost.toFixed(3));
     set('mMed', median(S.ms).toFixed(1) + ' ms'); set('mFloor', S.floor.toFixed(2));
     set('secExec', J.fmt(S.dest.execute)); set('secRev', J.fmt(S.dest.review)); set('secSkip', J.fmt(S.dest.skip)); // desk header: live gate tally (this session)
+    if (hudEls.fl !== S.floor) { hudEls.fl = S.floor; document.querySelectorAll('.foot-fl').forEach((el) => (el.textContent = 'floor ' + S.floor.toFixed(2))); }
     const k = hudEls.killBtn || (hudEls.killBtn = document.getElementById('killBtn'));
     if (k) { k.setAttribute('aria-pressed', String(S.killed)); const t = hudEls.killTxt || (hudEls.killTxt = document.getElementById('killTxt')); if (t && t.textContent !== (S.killed ? 'HALTED' : 'ARMED')) t.textContent = S.killed ? 'HALTED' : 'ARMED'; }
   }
@@ -3890,8 +3915,8 @@ JEV.mod('builds', () => {
 
   /* ---------- timeline of one decision through the hub ---------- */
   const Q = [];
-  const later = (ms, f) => { if (reduce) { f(); return; } if (Q.length > 60) Q.shift().f(); Q.push({ at: performance.now() + ms, f }); };
-  function runQ() { if (!Q.length) return; const now = performance.now(); for (let i = 0; i < Q.length;) { if (Q[i].at <= now) { const q = Q.splice(i, 1)[0]; q.f(); } else i++; } }
+  const later = (ms, f) => { if (reduce) { f(); return; } if (J.hidden()) return; if (Q.length > 60) Q.shift().f(); Q.push({ at: performance.now() + ms, f }); };
+  function runQ() { if (!Q.length) return; if (J.hidden()) { Q.length = 0; return; } const now = performance.now(); for (let i = 0; i < Q.length;) { if (Q[i].at <= now) { const q = Q.splice(i, 1)[0]; q.f(); } else i++; } }
 
   const DEC_FROM = [[0, 2], [1], [0], [0, 2], [2]]; // which primitives feed enter / size / route / exit / flatten
   function activeDecs(d) {
@@ -4187,7 +4212,7 @@ JEV.mod('code', () => {
     panes[k] = P;
     return P;
   };
-  const D = mk('desk', { cps: 190, delay: 0, base: 9.3, hop: { ask: 9, gate: 11, skip: 13, write: 18 }, rest: 18, tab: 'desk' });
+  const D = mk('desk', { cps: 190, delay: 0, base: 9.3, hop: { ask: 9, gate: 12, skip: 14, write: 19 }, rest: 19, tab: 'desk' });
   const S = mk('state', { cps: 160, delay: 0.18, base: 9.4, hop: { id: 1, action: 13, size: 14, risk: 15, dest: 17 }, rest: 17, tab: 'state' });
   const Q = mk('q', { cps: 190, delay: 0.38, base: 9.3, hop: { action: 5, size: 6, risk: 7, floor: 10, cap: 11, kill: 13, gate: 15 }, rest: 15, tab: 'q' });
 
@@ -5412,7 +5437,7 @@ JEV.mod('desk-top', () => {
   function pop(txt, dir) {
     if (reduce || !bigEl || popN > 3) return;
     const e = document.createElement('i'); e.className = 'dkt-pop'; e.textContent = txt; e.style.color = dir > 0 ? C.green : C.red;
-    e.style.right = (Math.random() * 20).toFixed(0) + 'px'; e.style.top = '10px';
+    e.style.right = (Math.random() * 20).toFixed(0) + 'px'; e.style.top = innerWidth < 420 ? '-15px' : '10px';   // narrow: float above the numeral, never over its digits
     bigEl.appendChild(e);
     const a = J.animate(e, [{ opacity: 0, transform: 'translateY(16px) scale(.85)' }, { opacity: 1, transform: 'translateY(0) scale(1)', offset: .16 }, { opacity: 1, offset: .62 }, { opacity: 0, transform: 'translateY(-26px) scale(1)' }], { duration: 1800, easing: 'cubic-bezier(.2,.8,.2,1)' });
     if (!a) { e.remove(); return; }                                // hidden tab / no WAAPI: never leave an unfinishable animation behind
@@ -6494,7 +6519,7 @@ JEV.mod('desk-world', () => {
     // eyes follow the globe (≤4 Hz) + countdown text
     for (let i = 0; i < OB.length; i++) {
       const o = OB[i], dx = OB_X - o.x, dy = OB_Y - o.y, dl = Math.hypot(dx, dy) || 1, ex = Math.round((dx / dl) * 3) / 2, ey = Math.round((dy / dl) * 3) / 2;
-      if (ex !== o.ex || ey !== o.ey) { o.ex = ex; o.ey = ey; o.orb.style.setProperty('--ex', ex + 'px'); o.orb.style.setProperty('--ey', ey + 'px'); }
+      if (J.reduce && (ex !== o.ex || ey !== o.ey)) { o.ex = ex; o.ey = ey; o.orb.style.setProperty('--ex', ex + 'px'); o.orb.style.setProperty('--ey', ey + 'px'); }
     }
     tickCd();
   }
@@ -7956,7 +7981,7 @@ JEV.mod('hero', () => {
     let n = 0;
     const go = () => {
       const b = document.getElementById('fx-boot');
-      if (!b || b.classList.contains('fx-out') || ++n > 80) {
+      if (!b || b.classList.contains('fx-out') || ++n > 30) {
         stage.classList.remove('hero-pre');
         if (titleEl) J.scramble(titleEl, 'JEV DECIDES', 1100);
       } else setTimeout(go, 100);
@@ -8618,7 +8643,7 @@ JEV.mod('hour', () => {
   function renderG(dt) {
     const u = clamp(G.u, 0, 1), ang = GA + GS * u;
     gNeedle.setAttribute('transform', 'rotate(' + (ang - 270).toFixed(2) + ' ' + CX + ' ' + CY + ')');
-    const tg = polar(u, 62); gTag.setAttribute('x', tg[0].toFixed(1)); gTag.setAttribute('y', (tg[1] + 4.5).toFixed(1));
+    
     const rem = RR * u * GS * Math.PI / 180;
     for (let i = 0; i < 3; i++) {
       const start = RR * SEG[i][0] * GS * Math.PI / 180, l = clamp(rem - start, 0, segLen[i]), d = l.toFixed(1) + ' 999';
@@ -8668,7 +8693,7 @@ JEV.mod('hour', () => {
       G.v += d * k * dt; G.v *= Math.exp(-c * dt); G.u += G.v * dt; G.rest = false; renderG(dt);
     } else if (!G.rest || Math.abs(G.capT - G.cap) > 0) { G.u = G.uT; G.v = 0; G.rest = true; renderG(dt); }
   });
-  J.onView(gaugeEl, () => { if (!reduce) { setU(1, true); renderG(0); G.cap = ANNUAL / (u2r(1) / 100); setTimeout(() => setU(r2u(31)), 450); } }, { threshold: 0.5 });
+  J.onView(gaugeEl, () => { if (!reduce) { setU(1, true); renderG(0); G.cap = ANNUAL / (u2r(1) / 100); setTimeout(() => { if (!knob.classList.contains('used')) setU(r2u(31)); }, 450); } }, { threshold: 0.5 });
   renderG(0);
 
   /* =====================================================================
@@ -8726,6 +8751,7 @@ JEV.mod('hour', () => {
 
   /* ---------- bus: kill switch + decisions ---------- */
   J.bus.on('kill', (v) => showKill(v));
+  J.bus.on('floor', armText);
   showKill(S.killed);
   if (reduce) { mode = 'static'; renderB(true, 0); updArm(); }
   else { mode = 'static'; }

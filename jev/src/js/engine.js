@@ -26,7 +26,7 @@
    *        drawdown_pct, latency_ms, signal_age_s    opt: {floor, killed}                                      */
   function decide(s, opt) {
     opt = opt || {};
-    const floor = opt.floor != null ? opt.floor : RULES.floor, killed = !!opt.killed;
+    const floor = Number.isFinite(+opt.floor) && opt.floor != null ? +opt.floor : RULES.floor, killed = !!opt.killed;
     const edge = s.edge_bps, imb = s.imbalance, spr = s.spread_bps, vol = s.vol != null ? s.vol : s.vol_1h;
     const pos = s.position_pct, dd = s.drawdown_pct, pnl = s.daily_pnl, lat = s.latency_ms, age = s.signal_age_s;
     const stale = clamp((age - 20) / 50, 0, 1);
@@ -52,6 +52,10 @@
     while (sizeIdx > 0 && SIZES[sizeIdx] > maxSize) sizeIdx--;
     const sizeP = softmax({ s0: -Math.abs(raw - 0.07) * 9, s1: -Math.abs(raw - 0.24) * 9, s2: -Math.abs(raw - 0.48) * 9, s3: -Math.abs(raw - 0.8) * 9 }, 0.6);
     const sizes = [sizeP.s0, sizeP.s1, sizeP.s2, sizeP.s3];
+    // keep the p(size) bars consistent with the answer: nothing above the chosen (room-capped) bucket, and it is the argmax
+    for (let i = sizeIdx + 1; i < 4; i++) sizes[i] = 0;
+    sizes[sizeIdx] = Math.max.apply(null, sizes);
+    const sz = sizes.reduce((a, b) => a + b, 0); for (let i = 0; i < 4; i++) sizes[i] /= sz;
 
     // yes or no? — is it safe to send
     const riskOk = spr <= 8 && lat <= 300 && age <= 45 && lossUse < 0.8 && dd < 8 && vol < 160 && !killed;
@@ -61,7 +65,9 @@
     if (action === 'hold') { dest = 'skip'; reason = 'hold'; }
     else if (killed) { dest = 'review'; reason = 'kill switch'; }
     else if (!riskOk && action !== 'flatten' && action !== 'close') { dest = 'review'; reason = 'risk flag'; }
-    else if (conf < floor) { dest = 'review'; reason = 'conf ' + conf.toFixed(2) + ' < ' + floor.toFixed(2); }
+    else if ((action === 'buy' && pos > 0 || action === 'sell' && pos < 0) && Math.abs(pos) + SIZES[sizeIdx] > RULES.maxPos + 1e-9) { dest = 'review'; reason = 'position cap'; } // adding to a book already at the cap; opposite-side orders reduce exposure
+    else if (!Number.isFinite(conf) || !Number.isFinite(net)) { dest = 'review'; reason = 'bad input'; } // fail closed on NaN / Infinity
+    else if (!(conf >= floor)) { dest = 'review'; reason = 'conf ' + conf.toFixed(2) + ' < ' + floor.toFixed(2); }
     else { dest = 'execute'; reason = 'ok'; }
 
     return { action, p, conf, sizeIdx, size: SIZES[sizeIdx], sizes, sizeRaw: raw, riskOk, pRisk, dest, reason,

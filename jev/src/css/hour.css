@@ -63,7 +63,7 @@
 .hr-ant { animation: hrAnt 1.4s steps(1) infinite; }
 @keyframes hrRot { to { transform: rotate(1turn); } }
 @keyframes hrBlink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
-@keyframes hrAnt { 50% { fill: #ff8a3d; } }
+@keyframes hrAnt { 50% { opacity: 0; } }
 .hr-an { font: 800 clamp(14px, 1.45vw, 18px)/1 var(--sans); letter-spacing: .14em; color: var(--cc); text-shadow: 0 0 20px rgba(var(--cc-rgb), .65); margin-bottom: 7px; }
 .hr-al { font-size: 11.5px; line-height: 1.45; color: var(--hr-t); max-width: 30ch; }
 .hr-as { margin-top: 3px; font-size: 10px; line-height: 1.45; color: var(--hr-k); max-width: 32ch; }

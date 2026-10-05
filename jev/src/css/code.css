@@ -1,5 +1,5 @@
 /* ===== code — "jev-starter" editor window: light / hot-pink / light / dark-terminal panes (prefix code-) ===== */
-#code { position: relative; overflow-x: clip; padding-top: clamp(40px, 6vw, 84px); padding-bottom: clamp(46px, 7vw, 96px); }
+#code { position: relative; overflow-x: clip; padding-top: clamp(40px, 6vw, 84px); }
 .code-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px 40px; align-items: end; margin-bottom: clamp(18px, 2.6vw, 30px); }
 @media (min-width: 1100px) { .code-head { grid-template-columns: minmax(0, 1fr) auto; } }
 .code-ht { min-width: 0; }
@@ -172,7 +172,7 @@ body.killed .code-bar::after { background: linear-gradient(90deg, transparent, #
 @media (max-width: 760px) {
   .code-view::before, .code-view::after { right: 22px; }
   .code-fn { min-width: 0; padding: 8px 9px; } .code-fn small { display: none; } .code-fn b { font-size: 11px; margin-top: 0; } .code-fw { width: clamp(10px, 4vw, 22px); }
-  .code-win { --code-fs: 10.5px; --code-lh: 17px; --code-rows: 12; border-radius: 13px; }
+  .code-win { --code-fs: 10.5px; --code-lh: 17px; --code-rows: 10; border-radius: 13px; }
   .code-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 8px; }
   .code-bar { height: 42px; padding: 0 12px; gap: 10px; font-size: 12px; }
   .code-eq { width: 56px; }
@@ -184,5 +184,5 @@ body.killed .code-bar::after { background: linear-gradient(90deg, transparent, #
   .code-qbar { width: 46px; }
   .code-meta { font-size: 9.5px; }
 }
-@media (max-width: 440px) { .code-qbar { display: none; } .code-q i { margin-right: 4px; } .code-st-q { gap: 8px; } }
+@media (max-width: 440px) { .code-win { --code-rows: 9; } .code-qbar { display: none; } .code-q i { margin-right: 4px; } .code-st-q { gap: 8px; } }
 @media (prefers-reduced-motion: reduce) { .code-bar::after, .code-hot::before { animation: none; } .code-caret { animation: none; } .code-band { transition: none; } }

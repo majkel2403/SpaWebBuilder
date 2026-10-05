@@ -19,7 +19,7 @@ body.killed #hero-static { filter: hue-rotate(15deg) saturate(1.25) brightness(1
 .hero-aura { left: var(--hero-jx, 38%); top: var(--hero-jy, 50%); width: min(1100px, 130%); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; mix-blend-mode: screen; opacity: .85;
   background: conic-gradient(from 0deg, transparent 0, rgba(255, 46, 110, .26) 8%, transparent 26%, rgba(166, 107, 255, .14) 44%, transparent 60%, rgba(255, 46, 110, .2) 78%, transparent 100%);
   -webkit-mask: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, .55) 45%, transparent 100%); mask: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, .55) 45%, transparent 100%);
-  animation: heroSpin 46s linear infinite; will-change: transform; }
+  animation: heroSpin 46s linear infinite; }
 @keyframes heroSpin { to { rotate: 360deg; } }
 .hero-grid { inset: 0; opacity: .5; background-image: radial-gradient(rgba(255, 120, 170, .22) 1px, transparent 1.3px); background-size: 26px 26px; background-position: 13px 13px;
   -webkit-mask: radial-gradient(70% 62% at 50% 48%, #000 0, transparent 100%); mask: radial-gradient(70% 62% at 50% 48%, #000 0, transparent 100%); }
@@ -101,3 +101,6 @@ body.killed .hero-aura { filter: hue-rotate(14deg) saturate(1.2); }
   .hero-grid { background-size: 20px 20px; }
 }
 @media (prefers-reduced-motion: reduce) { .hero-pre .hero-net canvas { clip-path: inset(0 0 0 0); opacity: 1; } .hero-pre .hero-card, .hero-pre .hero-chip, .hero-pre .hero-fig, .hero-pre .hero-legend { opacity: 1; transform: none; } .hero-aura, .hero-scan, .hero-rule::after { animation: none; } .hero-bg > .hero-scan { display: none; } }
+
+/* keyboard path: the visually hidden fire button becomes a visible chip while focused */
+#hero-fire:focus-visible { clip: auto; width: auto; height: auto; overflow: visible; left: 12px; top: 104px; z-index: 6; padding: 7px 12px; font: 600 11px/1 var(--mono, monospace); letter-spacing: .08em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .92); border: 1px solid #ff6fa6; border-radius: 4px; outline: 2px solid #ff6fa6; outline-offset: 2px; cursor: pointer; }

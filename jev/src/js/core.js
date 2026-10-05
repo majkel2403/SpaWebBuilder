@@ -72,7 +72,7 @@
       if (!k.vis) continue;
       if (J.reduce && k.n >= 3) continue; // reduced motion: render a few frames then freeze
       busy = true; k.n++;
-      try { k.fn(t, dt); } catch (e) { console.error('[task]', e); tasks.delete(k); }
+      try { k.fn(t, dt); k.err = 0; } catch (e) { console.error('[task]', e); if ((k.err = (k.err || 0) + 1) >= 5) tasks.delete(k); } // drop a task only after 5 failures in a row
     }
     if (busy) wake();
   }
@@ -80,7 +80,7 @@
 
   /* ---------- off-screen pause: sections / cards / stages far outside the viewport get .is-off → base.css pauses their CSS animations ---------- */
   /* (every running CSS animation costs a style invalidation per frame whether or not it is visible; ~220 of them run on this page) */
-  const OFF_SEL = 'body > section, body > footer, .card, [class*="-stage"]';
+  const OFF_SEL = 'body > section, body > footer, main > section, .card, [class*="-stage"]';
   const offIo = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
     for (const e of es) e.target.classList.toggle('is-off', !e.isIntersecting);
   }, { rootMargin: '200px 0px' }) : null;
@@ -155,7 +155,7 @@
   /* ---------- global state, rules, kill switch ---------- */
   J.RULES = E.RULES; J.ACTIONS = E.ACTIONS; J.SIZES = E.SIZES; J.STATE_KEYS = E.STATE_KEYS;
   const S = (J.S = { killed: false, floor: E.RULES.floor, count: 1892, cost: 0.046, ms: [3.1, 3.4, 2.9, 3.2, 3.6], counts: { choice: 1934, flag: 1102, score: 600 }, dest: { execute: 0, review: 0, skip: 0 } });
-  J.setFloor = (v) => { S.floor = J.clamp(+v, 0.5, 0.99); E.RULES.floor = S.floor; J.bus.emit('floor', S.floor); hud(); };
+  J.setFloor = (v) => { if (!isFinite(+v) || v === null || v === '') return; S.floor = J.clamp(+v, 0.5, 0.99); E.RULES.floor = S.floor; J.bus.emit('floor', S.floor); hud(); };
   J.setKilled = (v) => { S.killed = !!v; document.body.classList.toggle('killed', S.killed); J.bus.emit('kill', S.killed); hud(); };
 
   /* ---------- shared catalogues (modules read, never mutate) ---------- */
@@ -225,6 +225,7 @@
     // display confidence: slight organic jitter on top of the engine output
     d.conf = J.clamp(d.conf * (0.965 + Math.random() * 0.035), 0.3, 0.995);
     if (d.dest === 'execute' && d.conf < S.floor) { d.dest = 'review'; d.reason = 'conf ' + d.conf.toFixed(2) + ' < ' + S.floor.toFixed(2); }
+    else if (d.reason.indexOf('conf ') === 0) d.reason = 'conf ' + d.conf.toFixed(2) + ' < ' + S.floor.toFixed(2); // reason quotes the displayed (jittered) confidence
     d.id = (++seq).toString(16).padStart(4, '0') + Math.random().toString(16).slice(2, 6);
     d.state = sm.state; d.arch = sm.arch; d.build = pickBuild(d);
     d.symbol = sm.state.symbol; d.venue = sm.state.venue;
@@ -242,7 +243,7 @@
     return d;
   };
   let loopT = 0, started = false;
-  function loop() { loopT = 0; if (document.hidden) return; J.fire(); loopT = setTimeout(loop, 700 + Math.random() * 650); }
+  function loop() { loopT = 0; if (document.hidden) return; try { J.fire(); } catch (e) { console.error('[loop]', e); } loopT = setTimeout(loop, 700 + Math.random() * 650); }
   J.start = () => { started = true; if (!document.hidden && !loopT) loopT = setTimeout(loop, 400); };
   document.addEventListener('visibilitychange', () => {
     const on = !document.hidden;
@@ -259,6 +260,7 @@
     set('mDec', J.fmt(S.count)); set('mCost', '$' + S.cost.toFixed(3));
     set('mMed', median(S.ms).toFixed(1) + ' ms'); set('mFloor', S.floor.toFixed(2));
     set('secExec', J.fmt(S.dest.execute)); set('secRev', J.fmt(S.dest.review)); set('secSkip', J.fmt(S.dest.skip)); // desk header: live gate tally (this session)
+    if (hudEls.fl !== S.floor) { hudEls.fl = S.floor; document.querySelectorAll('.foot-fl').forEach((el) => (el.textContent = 'floor ' + S.floor.toFixed(2))); }
     const k = hudEls.killBtn || (hudEls.killBtn = document.getElementById('killBtn'));
     if (k) { k.setAttribute('aria-pressed', String(S.killed)); const t = hudEls.killTxt || (hudEls.killTxt = document.getElementById('killTxt')); if (t && t.textContent !== (S.killed ? 'HALTED' : 'ARMED')) t.textContent = S.killed ? 'HALTED' : 'ARMED'; }
   }

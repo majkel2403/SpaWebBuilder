@@ -62,7 +62,7 @@ JEV.mod('code', () => {
     panes[k] = P;
     return P;
   };
-  const D = mk('desk', { cps: 190, delay: 0, base: 9.3, hop: { ask: 9, gate: 11, skip: 13, write: 18 }, rest: 18, tab: 'desk' });
+  const D = mk('desk', { cps: 190, delay: 0, base: 9.3, hop: { ask: 9, gate: 12, skip: 14, write: 19 }, rest: 19, tab: 'desk' });
   const S = mk('state', { cps: 160, delay: 0.18, base: 9.4, hop: { id: 1, action: 13, size: 14, risk: 15, dest: 17 }, rest: 17, tab: 'state' });
   const Q = mk('q', { cps: 190, delay: 0.38, base: 9.3, hop: { action: 5, size: 6, risk: 7, floor: 10, cap: 11, kill: 13, gate: 15 }, rest: 15, tab: 'q' });
 

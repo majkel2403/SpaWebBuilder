@@ -378,8 +378,8 @@ JEV.mod('builds', () => {
 
   /* ---------- timeline of one decision through the hub ---------- */
   const Q = [];
-  const later = (ms, f) => { if (reduce) { f(); return; } if (Q.length > 60) Q.shift().f(); Q.push({ at: performance.now() + ms, f }); };
-  function runQ() { if (!Q.length) return; const now = performance.now(); for (let i = 0; i < Q.length;) { if (Q[i].at <= now) { const q = Q.splice(i, 1)[0]; q.f(); } else i++; } }
+  const later = (ms, f) => { if (reduce) { f(); return; } if (J.hidden()) return; if (Q.length > 60) Q.shift().f(); Q.push({ at: performance.now() + ms, f }); };
+  function runQ() { if (!Q.length) return; if (J.hidden()) { Q.length = 0; return; } const now = performance.now(); for (let i = 0; i < Q.length;) { if (Q[i].at <= now) { const q = Q.splice(i, 1)[0]; q.f(); } else i++; } }
 
   const DEC_FROM = [[0, 2], [1], [0], [0, 2], [2]]; // which primitives feed enter / size / route / exit / flatten
   function activeDecs(d) {

@@ -645,7 +645,7 @@ JEV.mod('hour', () => {
   function renderG(dt) {
     const u = clamp(G.u, 0, 1), ang = GA + GS * u;
     gNeedle.setAttribute('transform', 'rotate(' + (ang - 270).toFixed(2) + ' ' + CX + ' ' + CY + ')');
-    const tg = polar(u, 62); gTag.setAttribute('x', tg[0].toFixed(1)); gTag.setAttribute('y', (tg[1] + 4.5).toFixed(1));
+    
     const rem = RR * u * GS * Math.PI / 180;
     for (let i = 0; i < 3; i++) {
       const start = RR * SEG[i][0] * GS * Math.PI / 180, l = clamp(rem - start, 0, segLen[i]), d = l.toFixed(1) + ' 999';
@@ -695,7 +695,7 @@ JEV.mod('hour', () => {
       G.v += d * k * dt; G.v *= Math.exp(-c * dt); G.u += G.v * dt; G.rest = false; renderG(dt);
     } else if (!G.rest || Math.abs(G.capT - G.cap) > 0) { G.u = G.uT; G.v = 0; G.rest = true; renderG(dt); }
   });
-  J.onView(gaugeEl, () => { if (!reduce) { setU(1, true); renderG(0); G.cap = ANNUAL / (u2r(1) / 100); setTimeout(() => setU(r2u(31)), 450); } }, { threshold: 0.5 });
+  J.onView(gaugeEl, () => { if (!reduce) { setU(1, true); renderG(0); G.cap = ANNUAL / (u2r(1) / 100); setTimeout(() => { if (!knob.classList.contains('used')) setU(r2u(31)); }, 450); } }, { threshold: 0.5 });
   renderG(0);
 
   /* =====================================================================
@@ -753,6 +753,7 @@ JEV.mod('hour', () => {
 
   /* ---------- bus: kill switch + decisions ---------- */
   J.bus.on('kill', (v) => showKill(v));
+  J.bus.on('floor', armText);
   showKill(S.killed);
   if (reduce) { mode = 'static'; renderB(true, 0); updArm(); }
   else { mode = 'static'; }

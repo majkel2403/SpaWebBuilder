@@ -24,13 +24,13 @@
 
           <div class="lab-sub"><span>scenario</span><i></i></div>
           <div class="lab-presets" id="lab-presets" role="group" aria-label="scenario presets">
-            <button class="lab-sc" type="button" data-p="trend">trend</button>
-            <button class="lab-sc" type="button" data-p="mean-revert">mean-revert</button>
-            <button class="lab-sc" type="button" data-p="wide book">wide book</button>
-            <button class="lab-sc" type="button" data-p="stale feed">stale feed</button>
-            <button class="lab-sc" type="button" data-p="reversal">reversal</button>
-            <button class="lab-sc" type="button" data-p="stress">stress</button>
-            <button class="lab-sc lab-sc-r" type="button" data-p="random">random</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="trend">trend</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="mean-revert">mean-revert</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="wide book">wide book</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="stale feed">stale feed</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="reversal">reversal</button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="stress">stress</button>
+            <button class="lab-sc lab-sc-r" type="button" aria-pressed="false" data-p="random">random</button>
           </div>
 
           <div class="lab-sub"><span>inputs</span><i></i><em><u class="lab-dzk"></u>red band trips risk_ok</em></div>
@@ -157,7 +157,7 @@
               <pre class="lab-js" id="lab-js" aria-label="typed handoff from jev to code"></pre>
             </figure>
             <div class="lab-tree" id="lab-tree" role="group" aria-label="queue directory"></div>
-            <div class="lab-dest" id="lab-dest" data-c="green" role="status">
+            <div class="lab-dest" id="lab-dest" data-c="green" aria-live="off">
               <i class="lab-dest-r" aria-hidden="true"></i>
               <b class="lab-dest-t glitch" id="lab-dest-t" data-text="EXECUTE">EXECUTE</b>
               <small id="lab-dest-s">order &rarr; venue</small>

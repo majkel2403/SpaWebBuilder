@@ -143,6 +143,11 @@ button.dkt-chip:focus-visible { outline: 2px solid var(--pink2); outline-offset:
   .dkt-lg { padding: 8px 14px 11px; }
   .dkt-lgx { margin-left: 0; flex-basis: 100%; }
 }
+@media (max-width: 389px) {
+  .dkt-top { gap: 8px; }
+  .dkt-clk i { display: none; }
+  .dkt-clk b { font-size: 19px; letter-spacing: 0; }
+}
 @media (pointer: coarse), (max-width: 700px) {
   button.dkt-chip { min-height: 40px; }
   .dkt-chip.dkt-st { min-height: 40px; }

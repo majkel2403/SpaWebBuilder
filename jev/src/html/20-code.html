@@ -39,7 +39,8 @@ from questions import QUESTIONS, FLOOR, gate
 # hermes wrote the intent. jev answers it. code decides.
 def desk(intent, state):
     answer = jev.ask(state, questions=QUESTIONS)
-    ok = answer.confidence &gt;= FLOOR and answer.risk_ok
+    reduces = answer.choice in ("close", "flatten")
+    ok = answer.confidence &gt;= FLOOR and (answer.risk_ok or reduces)
     dest = "execute" if ok and gate(answer) else "review"
     if answer.choice == "hold":
         dest = "skip"
@@ -106,10 +107,10 @@ QUESTIONS = {
 FLOOR = 0.85                  # below this a human looks first
 DAILY_LOSS_CAP = 2000         # usd, then the desk stops
 MAX_POSITION = 0.04           # 4% of capital
-KILL = Path("KILL").exists()  # one file halts the desk
+KILL_FILE = Path("KILL")      # one file halts the desk
 
 def gate(answer):
-    if KILL or answer.daily_pnl &lt;= -DAILY_LOSS_CAP:
+    if KILL_FILE.exists() or answer.daily_pnl &lt;= -DAILY_LOSS_CAP:
         return False
     return answer.size / 100 &lt;= MAX_POSITION</pre></div>
               </div>

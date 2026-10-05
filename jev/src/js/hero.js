@@ -629,7 +629,7 @@ JEV.mod('hero', () => {
     let n = 0;
     const go = () => {
       const b = document.getElementById('fx-boot');
-      if (!b || b.classList.contains('fx-out') || ++n > 80) {
+      if (!b || b.classList.contains('fx-out') || ++n > 30) {
         stage.classList.remove('hero-pre');
         if (titleEl) J.scramble(titleEl, 'JEV DECIDES', 1100);
       } else setTimeout(go, 100);

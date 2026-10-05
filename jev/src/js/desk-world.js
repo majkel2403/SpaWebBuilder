@@ -563,7 +563,7 @@ JEV.mod('desk-world', () => {
     // eyes follow the globe (≤4 Hz) + countdown text
     for (let i = 0; i < OB.length; i++) {
       const o = OB[i], dx = OB_X - o.x, dy = OB_Y - o.y, dl = Math.hypot(dx, dy) || 1, ex = Math.round((dx / dl) * 3) / 2, ey = Math.round((dy / dl) * 3) / 2;
-      if (ex !== o.ex || ey !== o.ey) { o.ex = ex; o.ey = ey; o.orb.style.setProperty('--ex', ex + 'px'); o.orb.style.setProperty('--ey', ey + 'px'); }
+      if (J.reduce && (ex !== o.ex || ey !== o.ey)) { o.ex = ex; o.ey = ey; o.orb.style.setProperty('--ex', ex + 'px'); o.orb.style.setProperty('--ey', ey + 'px'); }
     }
     tickCd();
   }

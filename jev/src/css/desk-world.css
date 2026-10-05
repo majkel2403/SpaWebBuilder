@@ -14,9 +14,9 @@ body.killed .dkw-world { border-color: rgba(255, 77, 94, .45); }
 .dkw-cv { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 .dkw-feeds, .dkw-tix { position: relative; z-index: 3; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .dkw-ch { white-space: nowrap; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dkw-ink); padding: 2px 2px 0; font-weight: 700; }
-.dkw-ch > span { display: inline-flex; align-items: center; gap: 8px; }
+.dkw-ch > span { min-width: 0; display: inline-flex; align-items: center; gap: 8px; }
 .dkw-ch > span::before { content: ''; width: 14px; height: 1px; background: linear-gradient(90deg, transparent, var(--cyan)); box-shadow: 0 0 8px var(--cyan); }
-.dkw-ch i { font-style: normal; font-weight: 500; letter-spacing: .08em; color: var(--dkw-k); text-transform: lowercase; white-space: nowrap; }
+.dkw-ch i { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; font-style: normal; font-weight: 500; letter-spacing: .08em; color: var(--dkw-k); text-transform: lowercase; white-space: nowrap; }
 .dkw-ch i b { color: var(--cyan); font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* oracle tile */

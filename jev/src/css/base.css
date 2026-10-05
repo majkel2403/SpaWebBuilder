@@ -13,7 +13,10 @@
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; color-scheme: dark; scroll-padding-top: 64px; }
-body { background: var(--bg); color: var(--ink); font: 400 12.5px/1.55 var(--mono); overflow-x: hidden; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+body { background: var(--bg); color: var(--ink); font: 400 12.5px/1.55 var(--mono); overflow-x: hidden; -webkit-font-smoothing: antialiased; min-height: 100vh; min-height: 100svh; }
+main { display: block; }
+.skip { position: fixed; left: 12px; top: -60px; z-index: 200; padding: 10px 14px; border-radius: 8px; background: var(--pink); color: #fff; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; font-size: 11px; transition: top .15s; }
+.skip:focus { top: 10px; outline: 2px solid #fff; outline-offset: 2px; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 ::selection { background: var(--pink); color: #fff; }
@@ -106,7 +109,7 @@ canvas { display: block; }
 .rv.in, .no-js .rv { opacity: 1; transform: none; filter: none; }
 
 /* ----- HUD ----- */
-.hud { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: clamp(8px, 2vw, 26px); padding: 8px var(--gut); background: linear-gradient(180deg, rgba(5, 3, 10, .94), rgba(5, 3, 10, .62)); backdrop-filter: blur(14px) saturate(1.5); -webkit-backdrop-filter: blur(14px) saturate(1.5); border-bottom: 1px solid rgba(255, 46, 110, .22); }
+.hud { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: clamp(8px, 2vw, 26px); padding: 8px max(var(--gut), env(safe-area-inset-right)) 8px max(var(--gut), env(safe-area-inset-left)); background: linear-gradient(180deg, rgba(5, 3, 10, .94), rgba(5, 3, 10, .62)); backdrop-filter: blur(14px) saturate(1.5); -webkit-backdrop-filter: blur(14px) saturate(1.5); border-bottom: 1px solid rgba(255, 46, 110, .22); }
 .hud-scan { position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; overflow: hidden; pointer-events: none; opacity: .85; }
 .hud-scan::after { content: ''; position: absolute; left: 0; top: 0; width: 28%; height: 100%; background: linear-gradient(90deg, transparent, var(--pink), #fff, var(--pink), transparent); animation: hudScan 5.5s linear infinite; } /* compositor-only (was a background-position loop) */
 @keyframes hudScan { from { transform: translateX(-103%); } to { transform: translateX(360%); } }
@@ -123,7 +126,8 @@ canvas { display: block; }
 .nav a i { font-style: normal; }
 @media (max-width: 1239px) { .nav a { padding: 6px 8px; } .nav a i { display: none; } } /* compact: drop the 01-05 numerals before dropping the nav */
 @media (max-width: 999px) { .nav { display: none; } } /* below this the metrics would start to clip */
-@media (pointer: coarse) { .nav a { display: inline-flex; align-items: center; min-height: 40px; } }
+@media (pointer: coarse) { .nav a { display: inline-flex; align-items: center; min-height: 40px; } .kill { min-height: 40px; } .logo { min-height: 40px; min-width: 40px; } .m label { font-size: 10px; } }
+@media (max-width: 400px) { .hide-xs { display: none; } } /* keep Cost inside the metric strip on 360px phones */
 .kill { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 99px; font-size: 10px; font-weight: 700; letter-spacing: .16em; border: 1px solid rgba(46, 230, 166, .45); color: var(--green); background: rgba(46, 230, 166, .07); transition: .3s; }
 .kill i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: lampPulse 1.6s infinite; }
 .kill:hover { background: rgba(46, 230, 166, .16); }
@@ -143,7 +147,7 @@ body.killed::after { content: ''; position: fixed; inset: 0; pointer-events: non
 .marq > div { display: flex; flex: none; gap: 42px; padding: 11px 21px; white-space: nowrap; font-size: 10px; letter-spacing: .22em; color: var(--mut); text-transform: uppercase; animation: marq 40s linear infinite; }
 .marq b { color: var(--pink); font-weight: 700; }
 @keyframes marq { to { transform: translateX(-100%); } }
-.foot p { max-width: 900px; margin: 28px auto 0; padding: 0 var(--gut); text-align: center; color: var(--dim); font-size: 10.5px; line-height: 1.8; letter-spacing: .04em; }
+.foot p { max-width: 900px; margin: 28px auto 0; padding: 0 max(var(--gut), env(safe-area-inset-right)) 0 max(var(--gut), env(safe-area-inset-left)); text-align: center; color: var(--dim); font-size: 10.5px; line-height: 1.8; letter-spacing: .04em; }
 .foot p b { color: var(--ink); font-weight: 500; }
 
 @media (prefers-reduced-motion: reduce) {
