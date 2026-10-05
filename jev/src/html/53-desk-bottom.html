@@ -47,7 +47,7 @@
   </div>
   <div class="dkb-bh dkb-dh">
     <div class="dkb-big dkb-cap">
-      <label>P(profit)</label>
+      <label>P(profit) · n=<span id="dkb-tr">44</span></label>
       <div class="dkb-bv"><span id="dkb-pp" class="num">91.4</span><small>%</small></div>
     </div>
     <div class="dkb-kv">
@@ -57,11 +57,12 @@
   </div>
   <div class="dkb-cvw" id="dkb-dw">
     <canvas id="dkb-ds" aria-hidden="true"></canvas>
-    <canvas id="dkb-dp" aria-hidden="true"></canvas>
+    <canvas id="dkb-dp" data-dpr="1.5" aria-hidden="true"></canvas>
+    <canvas id="dkb-dq" data-dpr="1.5" aria-hidden="true"></canvas>
     <canvas id="dkb-do" title="move up and down to read how many paths sit above a level" role="img" aria-label="one hundred and forty simulated random-walk equity curves with a small positive drift fanning out left to right, with a live histogram of their values on the right edge"></canvas>
   </div>
   <div class="dkb-df">
-    <span class="dkb-gr" aria-hidden="true"><i>below drift</i><u></u><i>above</i></span>
+    <span class="dkb-gr" aria-hidden="true"><i>loss</i><u></u><i>profit</i></span>
     <span class="dkb-lk"><em class="dkb-kd" aria-hidden="true"></em>drift<em class="dkb-kn" aria-hidden="true"></em>±2σ noise</span>
     <span class="dkb-pool">pooled <b id="dkb-pool" class="num">91.6%</b> over <b id="dkb-runs" class="num">1 run</b></span>
   </div>

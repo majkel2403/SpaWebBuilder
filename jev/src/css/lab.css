@@ -20,7 +20,7 @@
   .lab-grid { grid-template-columns: minmax(390px, 436px) minmax(0, 1fr); gap: 18px; }
   .lab-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .lab-ctl, .lab-pipe, .lab-tape { order: 0; }
-  .lab-ctl { flex: 1 1 auto; }
+  .lab-left { align-self: start; position: sticky; top: 76px; }
 }
 
 /* ---------- shared glass ---------- */

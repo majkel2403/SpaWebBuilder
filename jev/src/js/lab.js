@@ -419,7 +419,7 @@ JEV.mod('lab', () => {
       });
     }
     function resize() {
-      const a = J.fit(c0), b = J.fit(c1);
+      const a = J.fit(c0, 1.5), b = J.fit(c1, 1); // soft glow + hairlines: capped ratio (tall canvas, ~3x less backing store)
       g0 = a.g; g1 = b.g; W = a.W; H = a.H;
       measure(); drawStatic();
     }
@@ -736,4 +736,7 @@ JEV.mod('lab', () => {
   J.task(ctl, tweenStep);
   J.task(pipe, (t, dt) => { fx.frame(t, dt); tickNums(); });
   J.watch(pipe, () => fx.resize());
+  // desktop: the controls column is sticky; if it is taller than the viewport, pin it by its bottom edge so STATE + hard rules + tape stay reachable
+  const left = $('.lab-left');
+  if (left) { const stick = () => { const h = left.offsetHeight; left.style.top = (h ? Math.min(76, innerHeight - h - 16) : 76) + 'px'; }; J.watch(left, stick); addEventListener('resize', stick, { passive: true }); }
 });

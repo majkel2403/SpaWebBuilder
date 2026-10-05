@@ -73,7 +73,7 @@ JEV.mod('code', () => {
       const el = doc.createElement('div'), no = doc.createElement('span');
       el.className = 'code-ln'; no.className = 'code-no'; no.textContent = String(i + 1); el.appendChild(no);
       if (P.hop.kill === i) el.setAttribute('data-kill', '');
-      const tk = toks.map((m) => { const s = doc.createElement('span'); s.className = 'code-' + m.c + (m.x ? ' ' + m.x : ''); el.appendChild(s); return { el: s, c: m.c, t: m.t, live: !!m.live, x: m.x || '' }; });
+      const tk = toks.map((m) => { const s = doc.createElement('span'), tn = doc.createTextNode(''); s.className = 'code-' + m.c + (m.x ? ' ' + m.x : ''); s.appendChild(tn); el.appendChild(s); return { el: s, tn, c: m.c, t: m.t, live: !!m.live, x: m.x || '' }; });
       d.appendChild(el);
       return { el, no, toks: tk, on: false, done: false };
     });
@@ -82,12 +82,12 @@ JEV.mod('code', () => {
   const cls = (k) => { k.el.className = 'code-' + k.c + (k.x ? ' ' + k.x : ''); };
   function setModel(P, m) { m.forEach((toks, i) => toks.forEach((tk, j) => { const k = P.lines[i].toks[j]; k.t = tk.t; k.x = tk.x || ''; })); }
   function blank(P) {
-    for (const L of P.lines) { L.on = L.done = false; L.el.classList.remove('on'); for (const k of L.toks) { k.el.textContent = ''; cls(k); } }
+    for (const L of P.lines) { L.on = L.done = false; L.el.classList.remove('on'); for (const k of L.toks) { k.tn.nodeValue = ''; cls(k); } }
     P.cur = 0; P.sy = P.ty = 0; P.li = P.ti = P.ci = 0; P.began = false; P.carry = 0;
     applyScroll(P); band(P, 0);
   }
   function fillAll(P) {
-    for (const L of P.lines) { L.on = L.done = true; L.el.classList.add('on'); for (const k of L.toks) { k.el.textContent = k.t; cls(k); } }
+    for (const L of P.lines) { L.on = L.done = true; L.el.classList.add('on'); for (const k of L.toks) { k.tn.nodeValue = k.t; cls(k); } }
     P.mode = 'idle'; P.el.classList.remove('code-typing');
     P.caretEnd = -2; band(P, P.rest); mm(P);
   }
@@ -144,7 +144,7 @@ JEV.mod('code', () => {
     el.animate([{ backgroundColor: '#ffffff', boxShadow: '0 0 0 3px #fff, 0 0 22px 6px rgba(255,255,255,.95)' }], { duration: 950, easing: 'ease-out' });
   }
   function beginLine(P, L) {
-    if (P.rt) for (const k of L.toks) { k.el.textContent = ''; cls(k); }
+    if (P.rt) for (const k of L.toks) { k.tn.nodeValue = ''; cls(k); }
     L.on = true; L.done = false; L.el.classList.add('on');
     P.cur = P.li; P.band.style.transform = 'translate3d(0,' + (P.li * P.lh) + 'px,0)';
     L.el.insertBefore(P.caret, L.no.nextSibling); P.caretEnd = -1;
@@ -173,10 +173,10 @@ JEV.mod('code', () => {
       if (!P.began) beginLine(P, L);
       const k = L.toks[P.ti];
       if (!k) { endLine(P, L); if (P.pause > 0) break; continue; }
-      if (k.live) { k.el.textContent = k.t; flash(k.el); L.el.insertBefore(P.caret, k.el.nextSibling); P.ti++; P.ci = 0; n -= 3; continue; }
-      if (!k.t.trim()) { k.el.textContent = k.t; P.ti++; P.ci = 0; continue; } // indentation is free
+      if (k.live) { k.tn.nodeValue = k.t; flash(k.el); L.el.insertBefore(P.caret, k.el.nextSibling); P.ti++; P.ci = 0; n -= 3; continue; }
+      if (!k.t.trim()) { k.tn.nodeValue = k.t; P.ti++; P.ci = 0; continue; } // indentation is free
       const take = Math.min(n, k.t.length - P.ci);
-      P.ci += take; n -= take; k.el.textContent = k.t.slice(0, P.ci);
+      P.ci += take; n -= take; k.tn.nodeValue = k.t.slice(0, P.ci);
       if (P.ci >= k.t.length) { P.ti++; P.ci = 0; L.el.insertBefore(P.caret, k.el.nextSibling); }
     }
     if (P.mode === 'type' && P.lines[P.li] && P.lines[P.li].toks.length === 0 && P.began) endLine(P, P.lines[P.li]);
@@ -404,18 +404,26 @@ JEV.mod('code', () => {
     const c = doc.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'), r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
     r.addColorStop(0, '#fff'); r.addColorStop(0.1, '#fff'); r.addColorStop(0.2, SC[k][0]); r.addColorStop(0.5, SC[k][1] + 'cc'); r.addColorStop(1, SC[k][1] + '00'); g.fillStyle = r; g.fillRect(0, 0, 32, 32); SPR[k] = c;
   }
-  let fg = null, fW = 0, fH = 0;
-  if (fxc) J.watch(fxc, () => { const f = J.fit(fxc); fg = f.g; fW = f.W; fH = f.H; });
+  let fg = null, fW = 0, fH = 0, geoDirty = true;
+  if (fxc) J.watch(fxc, () => { const f = J.fit(fxc); fg = f.g; fW = f.W; fH = f.H; geoDirty = true; });
   const PN = 40, pts = [];
   for (let i = 0; i < PN; i++) pts.push({ on: false, k: 'execute', t: 0, sp: 1, x0: 0, y0: 0, cx: 0, cy: 0, x1: 0, y1: 0, s: 1, hit: false });
   const ring = { execute: 0, review: 0, skip: 0, x: { execute: 0, review: 0, skip: 0 }, y: { execute: 0, review: 0, skip: 0 } };
   let alive = 0;
+  const geo = { x0: 0, y0: 0 }; // landing geometry relative to the fx canvas, cached: measured on resize, never inside a decision's DOM writes
+  function measure() {
+    geoDirty = false;
+    const cr = fxc.getBoundingClientRect(), br = zbody.getBoundingClientRect();
+    geo.x0 = br.left - cr.left; geo.y0 = br.bottom - cr.top;
+    for (const k in qEls) { const i = qEls[k] && $('i', qEls[k]); if (!i) continue; const tr = i.getBoundingClientRect(); geo[k] = { x: tr.left - cr.left + tr.width / 2, y: tr.top - cr.top + tr.height / 2 }; }
+  }
+  if (fxc) { J.watch(zbody, () => { geoDirty = true; }); J.watch(win, () => { geoDirty = true; }); }
   function land(dest) {
     if (!fg || !qEls[dest]) return;
-    const cr = fxc.getBoundingClientRect(), tr = $('i', qEls[dest]).getBoundingClientRect(), br = zbody.getBoundingClientRect();
-    if (cr.width < 2) return;
+    if (geoDirty) measure();
+    const g = geo[dest]; if (!g || fW < 2) return;
     const cw = Z.cw || 7.2;
-    const x0 = br.left - cr.left + 14 + 38 * cw + 4, y0 = br.bottom - cr.top - 17, x1 = tr.left - cr.left + tr.width / 2, y1 = tr.top - cr.top + tr.height / 2;
+    const x0 = geo.x0 + 14 + 38 * cw + 4, y0 = geo.y0 - 17, x1 = g.x, y1 = g.y;
     ring.x[dest] = x1; ring.y[dest] = y1;
     const n = J.narrow() ? 7 : 11; let made = 0;
     for (const p of pts) {

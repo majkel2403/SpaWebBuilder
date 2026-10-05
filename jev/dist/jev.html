@@ -629,6 +629,7 @@ body.killed .dkb-bayes .dkb-big { --rc: var(--red); --rc-rgb: 255, 77, 94; }
 .dkb-cvw { position: relative; flex: 1 1 auto; min-height: 232px; margin: 6px 8px 0; }
 .dkb-cvw canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 .dkb-cvw canvas:last-child { cursor: crosshair; touch-action: pan-y; }
+#dkb-dq { opacity: 0; } /* the second path layer: a run dissolves in here while the finished one dissolves out */
 
 /* ---------- bayes legend ---------- */
 .dkb-lg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; margin-top: 4px; padding: 9px 14px 13px; border-top: 1px solid var(--line); }
@@ -699,7 +700,7 @@ body.killed .dkb-bayes .dkb-big { --rc: var(--red); --rc-rgb: 255, 77, 94; }
 .dkb-df { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; margin-top: 4px; padding: 10px 14px 13px; border-top: 1px solid var(--line); font-size: 9.5px; letter-spacing: .06em; color: var(--dkb-k); }
 .dkb-gr { display: inline-flex; align-items: center; gap: 7px; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
 .dkb-gr i { font-style: normal; }
-.dkb-gr u { width: 62px; height: 4px; border-radius: 4px; background: linear-gradient(90deg, #a66bff, #ff8a3d 55%, #fff); box-shadow: 0 0 10px rgba(255, 138, 61, .5); }
+.dkb-gr u { width: 62px; height: 4px; border-radius: 4px; background: linear-gradient(90deg, #ff2e6e, #a66bff 17%, #4d8dff 32%, #5ce1ff 45%, #2ee6a6 57%, #ffc13d 73%, #ffe2aa); box-shadow: 0 0 10px rgba(92, 225, 255, .35); }
 .dkb-lk { display: inline-flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: .12em; font-size: 9px; }
 .dkb-kd, .dkb-kn { display: inline-block; width: 16px; height: 0; border-top: 1px dashed rgba(255, 255, 255, .7); margin-left: 4px; }
 .dkb-kn { border-top: 1px dotted rgba(255, 255, 255, .5); }
@@ -1673,7 +1674,7 @@ body.killed .hr-arm-a b { text-shadow: 0 0 20px rgba(255, 77, 94, .95), 0 0 56px
   .lab-grid { grid-template-columns: minmax(390px, 436px) minmax(0, 1fr); gap: 18px; }
   .lab-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .lab-ctl, .lab-pipe, .lab-tape { order: 0; }
-  .lab-ctl { flex: 1 1 auto; }
+  .lab-left { align-self: start; position: sticky; top: 76px; }
 }
 
 /* ---------- shared glass ---------- */
@@ -2909,7 +2910,7 @@ def gate(answer):
   </div>
   <div class="dkb-bh dkb-dh">
     <div class="dkb-big dkb-cap">
-      <label>P(profit)</label>
+      <label>P(profit) · n=<span id="dkb-tr">44</span></label>
       <div class="dkb-bv"><span id="dkb-pp" class="num">91.4</span><small>%</small></div>
     </div>
     <div class="dkb-kv">
@@ -2919,11 +2920,12 @@ def gate(answer):
   </div>
   <div class="dkb-cvw" id="dkb-dw">
     <canvas id="dkb-ds" aria-hidden="true"></canvas>
-    <canvas id="dkb-dp" aria-hidden="true"></canvas>
+    <canvas id="dkb-dp" data-dpr="1.5" aria-hidden="true"></canvas>
+    <canvas id="dkb-dq" data-dpr="1.5" aria-hidden="true"></canvas>
     <canvas id="dkb-do" title="move up and down to read how many paths sit above a level" role="img" aria-label="one hundred and forty simulated random-walk equity curves with a small positive drift fanning out left to right, with a live histogram of their values on the right edge"></canvas>
   </div>
   <div class="dkb-df">
-    <span class="dkb-gr" aria-hidden="true"><i>below drift</i><u></u><i>above</i></span>
+    <span class="dkb-gr" aria-hidden="true"><i>loss</i><u></u><i>profit</i></span>
     <span class="dkb-lk"><em class="dkb-kd" aria-hidden="true"></em>drift<em class="dkb-kn" aria-hidden="true"></em>±2σ noise</span>
     <span class="dkb-pool">pooled <b id="dkb-pool" class="num">91.6%</b> over <b id="dkb-runs" class="num">1 run</b></span>
   </div>
@@ -4196,7 +4198,7 @@ JEV.mod('code', () => {
       const el = doc.createElement('div'), no = doc.createElement('span');
       el.className = 'code-ln'; no.className = 'code-no'; no.textContent = String(i + 1); el.appendChild(no);
       if (P.hop.kill === i) el.setAttribute('data-kill', '');
-      const tk = toks.map((m) => { const s = doc.createElement('span'); s.className = 'code-' + m.c + (m.x ? ' ' + m.x : ''); el.appendChild(s); return { el: s, c: m.c, t: m.t, live: !!m.live, x: m.x || '' }; });
+      const tk = toks.map((m) => { const s = doc.createElement('span'), tn = doc.createTextNode(''); s.className = 'code-' + m.c + (m.x ? ' ' + m.x : ''); s.appendChild(tn); el.appendChild(s); return { el: s, tn, c: m.c, t: m.t, live: !!m.live, x: m.x || '' }; });
       d.appendChild(el);
       return { el, no, toks: tk, on: false, done: false };
     });
@@ -4205,12 +4207,12 @@ JEV.mod('code', () => {
   const cls = (k) => { k.el.className = 'code-' + k.c + (k.x ? ' ' + k.x : ''); };
   function setModel(P, m) { m.forEach((toks, i) => toks.forEach((tk, j) => { const k = P.lines[i].toks[j]; k.t = tk.t; k.x = tk.x || ''; })); }
   function blank(P) {
-    for (const L of P.lines) { L.on = L.done = false; L.el.classList.remove('on'); for (const k of L.toks) { k.el.textContent = ''; cls(k); } }
+    for (const L of P.lines) { L.on = L.done = false; L.el.classList.remove('on'); for (const k of L.toks) { k.tn.nodeValue = ''; cls(k); } }
     P.cur = 0; P.sy = P.ty = 0; P.li = P.ti = P.ci = 0; P.began = false; P.carry = 0;
     applyScroll(P); band(P, 0);
   }
   function fillAll(P) {
-    for (const L of P.lines) { L.on = L.done = true; L.el.classList.add('on'); for (const k of L.toks) { k.el.textContent = k.t; cls(k); } }
+    for (const L of P.lines) { L.on = L.done = true; L.el.classList.add('on'); for (const k of L.toks) { k.tn.nodeValue = k.t; cls(k); } }
     P.mode = 'idle'; P.el.classList.remove('code-typing');
     P.caretEnd = -2; band(P, P.rest); mm(P);
   }
@@ -4267,7 +4269,7 @@ JEV.mod('code', () => {
     el.animate([{ backgroundColor: '#ffffff', boxShadow: '0 0 0 3px #fff, 0 0 22px 6px rgba(255,255,255,.95)' }], { duration: 950, easing: 'ease-out' });
   }
   function beginLine(P, L) {
-    if (P.rt) for (const k of L.toks) { k.el.textContent = ''; cls(k); }
+    if (P.rt) for (const k of L.toks) { k.tn.nodeValue = ''; cls(k); }
     L.on = true; L.done = false; L.el.classList.add('on');
     P.cur = P.li; P.band.style.transform = 'translate3d(0,' + (P.li * P.lh) + 'px,0)';
     L.el.insertBefore(P.caret, L.no.nextSibling); P.caretEnd = -1;
@@ -4296,10 +4298,10 @@ JEV.mod('code', () => {
       if (!P.began) beginLine(P, L);
       const k = L.toks[P.ti];
       if (!k) { endLine(P, L); if (P.pause > 0) break; continue; }
-      if (k.live) { k.el.textContent = k.t; flash(k.el); L.el.insertBefore(P.caret, k.el.nextSibling); P.ti++; P.ci = 0; n -= 3; continue; }
-      if (!k.t.trim()) { k.el.textContent = k.t; P.ti++; P.ci = 0; continue; } // indentation is free
+      if (k.live) { k.tn.nodeValue = k.t; flash(k.el); L.el.insertBefore(P.caret, k.el.nextSibling); P.ti++; P.ci = 0; n -= 3; continue; }
+      if (!k.t.trim()) { k.tn.nodeValue = k.t; P.ti++; P.ci = 0; continue; } // indentation is free
       const take = Math.min(n, k.t.length - P.ci);
-      P.ci += take; n -= take; k.el.textContent = k.t.slice(0, P.ci);
+      P.ci += take; n -= take; k.tn.nodeValue = k.t.slice(0, P.ci);
       if (P.ci >= k.t.length) { P.ti++; P.ci = 0; L.el.insertBefore(P.caret, k.el.nextSibling); }
     }
     if (P.mode === 'type' && P.lines[P.li] && P.lines[P.li].toks.length === 0 && P.began) endLine(P, P.lines[P.li]);
@@ -4527,18 +4529,26 @@ JEV.mod('code', () => {
     const c = doc.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'), r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
     r.addColorStop(0, '#fff'); r.addColorStop(0.1, '#fff'); r.addColorStop(0.2, SC[k][0]); r.addColorStop(0.5, SC[k][1] + 'cc'); r.addColorStop(1, SC[k][1] + '00'); g.fillStyle = r; g.fillRect(0, 0, 32, 32); SPR[k] = c;
   }
-  let fg = null, fW = 0, fH = 0;
-  if (fxc) J.watch(fxc, () => { const f = J.fit(fxc); fg = f.g; fW = f.W; fH = f.H; });
+  let fg = null, fW = 0, fH = 0, geoDirty = true;
+  if (fxc) J.watch(fxc, () => { const f = J.fit(fxc); fg = f.g; fW = f.W; fH = f.H; geoDirty = true; });
   const PN = 40, pts = [];
   for (let i = 0; i < PN; i++) pts.push({ on: false, k: 'execute', t: 0, sp: 1, x0: 0, y0: 0, cx: 0, cy: 0, x1: 0, y1: 0, s: 1, hit: false });
   const ring = { execute: 0, review: 0, skip: 0, x: { execute: 0, review: 0, skip: 0 }, y: { execute: 0, review: 0, skip: 0 } };
   let alive = 0;
+  const geo = { x0: 0, y0: 0 }; // landing geometry relative to the fx canvas, cached: measured on resize, never inside a decision's DOM writes
+  function measure() {
+    geoDirty = false;
+    const cr = fxc.getBoundingClientRect(), br = zbody.getBoundingClientRect();
+    geo.x0 = br.left - cr.left; geo.y0 = br.bottom - cr.top;
+    for (const k in qEls) { const i = qEls[k] && $('i', qEls[k]); if (!i) continue; const tr = i.getBoundingClientRect(); geo[k] = { x: tr.left - cr.left + tr.width / 2, y: tr.top - cr.top + tr.height / 2 }; }
+  }
+  if (fxc) { J.watch(zbody, () => { geoDirty = true; }); J.watch(win, () => { geoDirty = true; }); }
   function land(dest) {
     if (!fg || !qEls[dest]) return;
-    const cr = fxc.getBoundingClientRect(), tr = $('i', qEls[dest]).getBoundingClientRect(), br = zbody.getBoundingClientRect();
-    if (cr.width < 2) return;
+    if (geoDirty) measure();
+    const g = geo[dest]; if (!g || fW < 2) return;
     const cw = Z.cw || 7.2;
-    const x0 = br.left - cr.left + 14 + 38 * cw + 4, y0 = br.bottom - cr.top - 17, x1 = tr.left - cr.left + tr.width / 2, y1 = tr.top - cr.top + tr.height / 2;
+    const x0 = geo.x0 + 14 + 38 * cw + 4, y0 = geo.y0 - 17, x1 = g.x, y1 = g.y;
     ring.x[dest] = x1; ring.y[dest] = y1;
     const n = J.narrow() ? 7 : 11; let made = 0;
     for (const p of pts) {
@@ -5065,19 +5075,26 @@ JEV.mod('desk-bottom', () => {
    * 3) DRIFT VS NOISE
    * ===================================================================================================== */
   const initDrift = () => {
-    const wrap = $('#dkb-dw'), cs = $('#dkb-ds'), cp = $('#dkb-dp'), co = $('#dkb-do');
-    if (!wrap || !cs || !cp || !co) return;
-    const ePP = $('#dkb-pp'), ePool = $('#dkb-pool'), eRuns = $('#dkb-runs');
-    const N = 140, T = 220, NB = 12, NBIN = 30, RATE = T / 7.2, HOLD = 3.2, FADE = 0.85, MU0 = 0.8, SG0 = 8.6;
-    const X = new Float32Array(N), VM = new Float32Array(N), PY = new Float32Array(N), NY = new Float32Array(N), BI = new Uint8Array(N), CNT = new Uint16Array(NB);
-    const HB = new Float32Array(NBIN), HC = new Uint16Array(NBIN);
-    // violet -> orange -> white ramp, bucketed so a whole bucket strokes in one call
-    const ramp = (u) => { const lo = u < 0.5, a = lo ? [166, 107, 255] : [255, 138, 61], b = lo ? [255, 138, 61] : [255, 255, 255], f = lo ? u * 2 : (u - 0.5) * 2; return [(a[0] + (b[0] - a[0]) * f) | 0, (a[1] + (b[1] - a[1]) * f) | 0, (a[2] + (b[2] - a[2]) * f) | 0]; };
-    const CORE = [], HALO = [], BAR = [];
-    for (let b = 0; b < NB; b++) { const c = ramp((b + 0.5) / NB), s = c[0] + ',' + c[1] + ',' + c[2]; CORE[b] = 'rgba(' + s + ',.36)'; HALO[b] = 'rgba(' + s + ',.032)'; BAR[b] = 'rgba(' + s + ',.85)'; }
-    let W = 0, H = 0, gs = null, gp = null, go = null, ok = false, lw = 0, lh = 0;
-    let padL = 36, padT = 24, padB = 22, hx0 = 0, hx1 = 0, histW = 52, px0 = 0, px1 = 0, pw = 0, ph = 0, dx = 1, lo = 0, hi = 1, y0 = 0, invR = 1;
-    let mu = MU0, sg = SG0, step = 0, phase = 0, phT = 0, acc = 0, lastFinal = 0.916, poolW = 0, poolN = 0, runs = 0, domT = 9, my = 0, meanStr = '+0';
+    const wrap = $('#dkb-dw'), cs = $('#dkb-ds'), cA = $('#dkb-dp'), cB = $('#dkb-dq'), co = $('#dkb-do');
+    if (!wrap || !cs || !cA || !cB || !co) return;
+    const ePP = $('#dkb-pp'), eTr = $('#dkb-tr'), ePool = $('#dkb-pool'), eRuns = $('#dkb-runs');
+    const N = 140, T = 220, S1 = T + 1, NB = 14, NBIN = 30, RATE = T / 7.2, HOLD = 3.2, XF = 0.9, PRE = 44, MU0 = 0.8, SG0 = 8.6, VMIN = -150, VSTEP = 600 / NB;
+    // the whole run is drawn up front (PX = equity of path i at step k), so a path can be coloured by where it ENDS and a resize re-draws the same run instead of re-rolling it
+    const PX = new Float32Array(N * S1), MN = new Float32Array(S1), BKI = new Uint8Array(N), BKS = new Uint16Array(NB + 1), BKP = new Uint16Array(NB);
+    const HB = new Float32Array(NBIN), HC = new Uint16Array(NBIN), CV = [cA, cB], CG = [null, null];
+    // colour = where a path ENDS (bps): hot pink (loss) -> violet -> blue -> cyan -> green -> amber (big win); bucketed so a whole bucket strokes in one call
+    const STOPS = [[-150, 255, 46, 110], [-50, 166, 107, 255], [40, 77, 141, 255], [120, 92, 225, 255], [190, 46, 230, 166], [290, 255, 193, 61], [420, 255, 226, 170]];
+    const ramp = (v) => {
+      let i = 1; while (i < STOPS.length - 1 && v > STOPS[i][0]) i++;
+      const a = STOPS[i - 1], b = STOPS[i], f = clamp((v - a[0]) / (b[0] - a[0]), 0, 1);
+      return ((a[1] + (b[1] - a[1]) * f) | 0) + ',' + ((a[2] + (b[2] - a[2]) * f) | 0) + ',' + ((a[3] + (b[3] - a[3]) * f) | 0);
+    };
+    const CORE = [], HALO = [], BAR = [], HEAD = [];
+    for (let q = 0; q < NB; q++) { const s = ramp(VMIN + (q + 0.5) * VSTEP); CORE[q] = 'rgba(' + s + ',.34)'; HALO[q] = 'rgba(' + s + ',.035)'; BAR[q] = 'rgba(' + s + ',.85)'; HEAD[q] = 'rgba(' + s + ',.9)'; }
+    const bk = (v) => clamp(Math.floor((v - VMIN) / VSTEP), 0, NB - 1);
+    let W = 0, H = 0, gs = null, go = null, ok = false, lw = 0, lh = 0, have = false, snap = true;
+    let padL = 36, padT = 24, padB = 22, hx0 = 0, hx1 = 0, histW = 52, px0 = 0, px1 = 0, pw = 0, ph = 0, dx = 1, lo = 0, hi = 1, invR = 1;
+    let mu = MU0, sg = SG0, step = 0, phase = 0, phT = 0, acc = 0, cur = 0, xf = XF, poolW = 0, poolN = 0, runs = 0, domT = 9, my = 0, meanStr = '+0';
     const yPx = (v) => padT + ph - (v - lo) * invR * ph;
     const meanCv = document.createElement('canvas'), haltCv = document.createElement('canvas'); let meanW = 40;
     // pointer probe: a horizontal threshold line — the label says what share of the 140 paths sits above it
@@ -5086,9 +5103,10 @@ JEV.mod('desk-bottom', () => {
     co.addEventListener('pointerleave', () => { PRD.on = false; });
     co.addEventListener('pointercancel', () => { PRD.on = false; });
     const bakeMean = () => { meanW = meanStr.length * 5.6 + 12; bake(meanCv, meanStr, meanW, 15, 'rgba(10,6,16,.88)', 'rgba(255,255,255,.55)', '#fff', F_TAG); };
+    const bakeHalt = () => bake(haltCv, 'HALTED · NO ORDERS, NO WALK', 168, 22, 'rgba(40,6,12,.86)', 'rgba(255,77,94,.8)', '#ff9aa4', F_HALT);
 
     // the first run is pre-resolved from the endpoint distribution so the caption never starts empty
-    { let w = 0; for (let i = 0; i < N; i++) if (MU0 * T + SG0 * Math.sqrt(T) * gauss() > 0) w++; lastFinal = w / N; poolW = w; poolN = N; runs = 1; }
+    { let w = 0; for (let i = 0; i < N; i++) if (MU0 * T + SG0 * Math.sqrt(T) * gauss() > 0) w++; poolW = w; poolN = N; runs = 1; }
 
     const drawStatic = () => {
       const g = gs; g.clearRect(0, 0, W, H); g.lineWidth = 1; g.font = '9px ' + MONO; g.textBaseline = 'alphabetic';
@@ -5113,99 +5131,103 @@ JEV.mod('desk-bottom', () => {
       g.textAlign = 'right'; g.fillStyle = 'rgba(170,161,184,.9)'; g.fillText('end values', hx1, 12);
     };
 
-    const reseed = () => {
+    /** roll a whole run (140 walks) once, sort the paths into colour buckets by their end value, and cache the sample mean per step */
+    const gen = () => {
       mu = MU0 * (0.94 + Math.random() * 0.12); sg = SG0 * (0.97 + Math.random() * 0.06);
-      y0 = yPx(0);
-      for (let i = 0; i < N; i++) { X[i] = 0; VM[i] = 0.82 + Math.random() * 0.36; PY[i] = y0; }
-      step = 0; acc = 0; HB.fill(0);
-      if (gp) { gp.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); gp.globalCompositeOperation = 'source-over'; gp.clearRect(0, 0, W, H); }
+      MN.fill(0);
+      for (let i = 0; i < N; i++) {
+        const o = i * S1, vs = sg * (0.82 + Math.random() * 0.36); let x = 0; PX[o] = 0;
+        for (let k = 1; k < S1; k++) { x += mu + vs * gauss(); PX[o + k] = x; MN[k] += x; }
+      }
+      for (let k = 1; k < S1; k++) MN[k] /= N;
+      BKS.fill(0);
+      for (let i = 0; i < N; i++) BKS[bk(PX[i * S1 + T]) + 1]++;
+      for (let q = 0; q < NB; q++) BKS[q + 1] += BKS[q];
+      BKP.set(BKS.subarray(0, NB));
+      for (let i = 0; i < N; i++) BKI[BKP[bk(PX[i * S1 + T])]++] = i;
+    };
+    /** draw steps a..b of the current run: ONE stroke per colour bucket per layer, however many steps (a frame, the head start, or a whole re-draw after a resize) */
+    const paint = (g, a, b) => {
+      if (b <= a) return;
+      const xa = px0 + a * dx;
+      g.globalCompositeOperation = 'lighter'; g.lineJoin = 'round'; g.lineCap = 'butt';
+      for (let pass = 0; pass < 2; pass++) {
+        g.lineWidth = pass ? 1 : 3.2;
+        for (let q = 0; q < NB; q++) {
+          const s0 = BKS[q], s1 = BKS[q + 1]; if (s0 === s1) continue;
+          g.strokeStyle = pass ? CORE[q] : HALO[q]; g.beginPath();
+          for (let j = s0; j < s1; j++) { const o = BKI[j] * S1; g.moveTo(xa, yPx(PX[o + a])); for (let k = a + 1; k <= b; k++) g.lineTo(px0 + k * dx, yPx(PX[o + k])); }
+          g.stroke();
+        }
+      }
+      // the sample mean: the bright spine of the cloud
+      g.beginPath(); g.moveTo(xa, yPx(MN[a])); for (let k = a + 1; k <= b; k++) g.lineTo(px0 + k * dx, yPx(MN[k]));
+      g.lineWidth = 4; g.strokeStyle = 'rgba(255,255,255,.09)'; g.stroke();
+      g.lineWidth = 1.5; g.strokeStyle = 'rgba(255,255,255,.92)'; g.stroke();
+      g.globalCompositeOperation = 'source-over';
+    };
+    /** a fresh run on the active layer, already `pre` steps in — the cloud is never empty */
+    const newRun = (pre) => {
+      gen(); const g = CG[cur]; g.clearRect(0, 0, W, H);
+      step = 0; acc = 0; paint(g, 0, pre); step = pre;
+    };
+    /** crossfade: the finished run dissolves out on its layer while the new one dissolves in on the other */
+    const fade = () => {
+      const k = Math.min(1, xf / XF), e = k * k * (3 - 2 * k);
+      CV[cur].style.opacity = e >= 1 ? '1' : e.toFixed(3); CV[cur ^ 1].style.opacity = e >= 1 ? '0' : (1 - e).toFixed(3);
     };
 
     const lay = () => {
-      const a = J.fit(cs), b = J.fit(cp), c = J.fit(co);
+      const a = J.fit(cs), b = J.fit(cA), b2 = J.fit(cB), c = J.fit(co);
+      CG[0] = b.g; CG[1] = b2.g; gs = a.g; go = c.g;
       if (a.W === lw && a.H === lh && ok) return;
-      W = a.W; H = a.H; gs = a.g; gp = b.g; go = c.g; lw = W; lh = H;
+      W = a.W; H = a.H; lw = W; lh = H;
       ok = W > 150 && H > 150;
       if (!ok) return;
       histW = W < 340 ? 36 : 52; padL = 36; padT = 24; padB = 22;
       hx1 = W - 6; hx0 = hx1 - histW; px0 = padL; pw = hx0 - 12 - px0; px1 = px0 + pw; ph = H - padT - padB; dx = pw / T;
       const m = MU0 * T, s = SG0 * Math.sqrt(T); lo = m - 3.1 * s; hi = m + 3.0 * s; invR = 1 / (hi - lo);
-      drawStatic(); reseed(); phase = 0; phT = 0; my = yPx(0); bakeMean(); bake(haltCv, 'HALTED · NO ORDERS, NO WALK', 168, 22, 'rgba(40,6,12,.86)', 'rgba(255,77,94,.8)', '#ff9aa4', F_HALT);
-    };
-    J.watch(wrap, lay); afterReveal(drc, lay);
-    onFonts.push(() => { if (!ok) return; drawStatic(); bakeMean(); bake(haltCv, 'HALTED · NO ORDERS, NO WALK', 168, 22, 'rgba(40,6,12,.86)', 'rgba(255,77,94,.8)', '#ff9aa4', F_HALT); });
-
-    // ---- one batch of walk steps, drawn incrementally onto the persistent canvas ----
-    const advance = (n) => {
-      const g = gp;
-      g.globalCompositeOperation = 'lighter'; g.lineCap = 'round';
-      for (let s = 0; s < n; s++) {
-        step++;
-        const xp = px0 + (step - 1) * dx, xn = px0 + step * dx, mean = mu * step, isd = 1 / (sg * Math.sqrt(step));
-        CNT.fill(0);
-        for (let i = 0; i < N; i++) {
-          X[i] += mu + sg * VM[i] * gauss();
-          const z = (X[i] - mean) * isd, bk = clamp(Math.floor(((z + 2.3) / 4.6) * NB), 0, NB - 1);
-          BI[i] = bk; CNT[bk]++; NY[i] = yPx(X[i]);
-        }
-        g.lineWidth = 3.2;
-        for (let b = 0; b < NB; b++) { if (!CNT[b]) continue; g.strokeStyle = HALO[b]; g.beginPath(); for (let i = 0; i < N; i++) if (BI[i] === b) { g.moveTo(xp, PY[i]); g.lineTo(xn, NY[i]); } g.stroke(); }
-        g.lineWidth = 1;
-        for (let b = 0; b < NB; b++) { if (!CNT[b]) continue; g.strokeStyle = CORE[b]; g.beginPath(); for (let i = 0; i < N; i++) if (BI[i] === b) { g.moveTo(xp, PY[i]); g.lineTo(xn, NY[i]); } g.stroke(); }
-        for (let i = 0; i < N; i++) PY[i] = NY[i];
+      drawStatic(); my = yPx(0); bakeMean(); bakeHalt();
+      if (!have) { have = true; newRun(J.reduce ? T : PRE); if (J.reduce) { phase = 1; xf = XF; } }
+      else { // same run, new geometry (the resize cleared the layers)
+        CG[cur ^ 1].clearRect(0, 0, W, H); CG[cur].clearRect(0, 0, W, H); paint(CG[cur], 0, step);
+        xf = XF; fade();
       }
-      g.globalCompositeOperation = 'source-over';
+      snap = true; if (J.reduce) overlay(0, 0.016, S.killed);
     };
-    const wins = () => { let w = 0; for (let i = 0; i < N; i++) if (X[i] > 0) w++; return w; };
-    const finish = () => { const w = wins(); lastFinal = w / N; poolW += w; poolN += N; runs++; };
+    onFonts.push(() => { if (!ok) return; drawStatic(); bakeMean(); bakeHalt(); });
 
-    const frame = (t, dt) => {
-      if (!ok) return;
-      const killed = S.killed;
-      if (J.reduce) { if (step < T) { advance(T - step); finish(); phase = 1; } }
-      else if (phase === 0) {
-        if (!killed) { acc += dt * RATE; const n = Math.min(Math.floor(acc), T - step); if (n > 0) { acc -= n; advance(n); } }
-        if (step >= T) { phase = 1; phT = 0; finish(); }
-      } else if (phase === 1) {
-        if (!killed) phT += dt;
-        if (phT > HOLD) { phase = 2; phT = 0; }
-      } else {
-        phT += dt;
-        gp.globalCompositeOperation = 'destination-out'; gp.fillStyle = 'rgba(0,0,0,.13)'; gp.fillRect(0, 0, W, H); gp.globalCompositeOperation = 'source-over';
-        if (phT > FADE) { reseed(); phase = 0; phT = 0; }
-      }
+    const wins = () => { let w = 0; for (let i = 0; i < N; i++) if (PX[i * S1 + step] > 0) w++; return w; };
+    const finish = () => { poolW += wins(); poolN += N; runs++; };
+    let mv = 0;
 
-      // ---- overlay: histogram, heads, mean tag ----
+    /** overlay layer: histogram of the current values, run heads, sample-mean tag, probe, kill banner */
+    const overlay = (t, dt, killed) => {
       const g = go; g.clearRect(0, 0, W, H);
-      const fa = phase === 2 ? Math.max(0, 1 - phT / FADE) : 1;
-      g.globalAlpha = fa;
-      const xf = px0 + step * dx;
-      // histogram of the current values, bars coloured like the segments that produced them
+      const xh = px0 + step * dx, o = step;
       HC.fill(0);
-      for (let i = 0; i < N; i++) { const v = (X[i] - lo) * invR * NBIN; if (v >= 0 && v < NBIN) HC[v | 0]++; }
-      const binH = ph / NBIN, tt = Math.max(step, 6), isd = 1 / (sg * Math.sqrt(tt)), mean = mu * tt;
+      for (let i = 0; i < N; i++) { const v = (PX[i * S1 + o] - lo) * invR * NBIN; if (v >= 0 && v < NBIN) HC[v | 0]++; }
+      const sn = snap || J.reduce, binH = ph / NBIN, kb = sn ? 1 : 1 - Math.exp(-dt * 14);
       g.globalCompositeOperation = 'lighter';
       for (let b = 0; b < NBIN; b++) {
-        HB[b] += (Math.min(1, HC[b] * (1 / (N * 0.1))) - HB[b]) * 0.22;
+        HB[b] += (Math.min(1, HC[b] * (1 / (N * 0.1))) - HB[b]) * kb;
         const w = HB[b] * (histW - 5); if (w < 0.7) continue;
-        const v = lo + ((b + 0.5) / NBIN) * (hi - lo), z = (v - mean) * isd, bk = clamp(Math.floor(((z + 2.3) / 4.6) * NB), 0, NB - 1);
-        g.fillStyle = BAR[bk]; g.fillRect(hx1 - 1 - w, padT + ph - (b + 1) * binH + 0.6, w, Math.max(1, binH - 1.2));
+        g.fillStyle = BAR[bk(lo + ((b + 0.5) / NBIN) * (hi - lo))]; g.fillRect(hx1 - 1 - w, padT + ph - (b + 1) * binH + 0.6, w, Math.max(1, binH - 1.2));
       }
+      snap = false;
       g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(hx1 - 1, padT, 1, ph);
-      // frontier line + heads
-      if (step > 0 && step < T) { g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(xf - 0.5, padT, 1, ph); }
-      g.fillStyle = 'rgba(255,238,250,.6)';
-      for (let i = 0; i < N; i++) g.fillRect(xf - 1, PY[i] - 1, 2, 2);
+      // frontier line + heads (each head wears its path's colour)
+      if (step > 0 && step < T) { g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(xh - 0.5, padT, 1, ph); }
+      for (let q = 0; q < NB; q++) { const s0 = BKS[q], s1 = BKS[q + 1]; if (s0 === s1) continue; g.fillStyle = HEAD[q]; for (let j = s0; j < s1; j++) g.fillRect(xh - 1, yPx(PX[BKI[j] * S1 + o]) - 1, 2, 2); }
       g.globalCompositeOperation = 'source-over';
       // mean tag riding the histogram
-      let mv = 0; for (let i = 0; i < N; i++) mv += X[i]; mv /= N;
-      my += (yPx(mv) - my) * 0.2;
-      g.setLineDash(DOT); g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 1; g.beginPath(); g.moveTo(xf, my + 0.5); g.lineTo(hx0 - 2, my + 0.5); g.stroke(); g.setLineDash(NODASH);
+      mv = MN[o];
+      my += (yPx(mv) - my) * (sn ? 1 : 1 - Math.exp(-dt * 13));
+      g.setLineDash(DOT); g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 1; g.beginPath(); g.moveTo(xh, my + 0.5); g.lineTo(hx0 - 2, my + 0.5); g.stroke(); g.setLineDash(NODASH);
       g.drawImage(meanCv, hx0 - 4 - meanW, my - 7.5, meanW, 15);
-      g.globalAlpha = 1;
       if (PRD.on && PRD.y > padT && PRD.y < padT + ph) {
         const thr = lo + (1 - (PRD.y - padT) / ph) * (hi - lo); let above = 0;
-        for (let i = 0; i < N; i++) if (X[i] > thr) above++;
+        for (let i = 0; i < N; i++) if (PX[i * S1 + o] > thr) above++;
         g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(hx0 + 1, padT, histW - 2, PRD.y - padT);
         g.setLineDash(NODASH); g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,.65)'; g.beginPath(); g.moveTo(px0, Math.round(PRD.y) + 0.5); g.lineTo(hx1, Math.round(PRD.y) + 0.5); g.stroke();
         if (t - PRD.t > 0.08) {
@@ -5218,17 +5240,32 @@ JEV.mod('desk-bottom', () => {
         g.fillStyle = 'rgba(255,60,80,.07)'; g.fillRect(px0, padT, hx1 - px0, ph);
         g.drawImage(haltCv, px0 + pw / 2 - 84, padT + ph / 2 - 11, 168, 22);
       }
+    };
+
+    const frame = (t, dt) => {
+      if (!ok) return;
+      const killed = S.killed;
+      if (J.reduce) { if (step < T) { paint(CG[cur], step, T); step = T; finish(); phase = 1; xf = XF; fade(); } }
+      else if (!killed) {
+        if (phase === 0) {
+          acc += dt * RATE; const n = Math.min(Math.floor(acc), T - step);
+          if (n > 0) { acc -= n; paint(CG[cur], step, step + n); step += n; }
+          if (step >= T) { phase = 1; phT = 0; finish(); }
+        } else { phT += dt; if (phT > HOLD) { cur ^= 1; newRun(PRE); phase = 0; xf = 0; fade(); } }
+        if (xf < XF) { xf = Math.min(XF, xf + dt); fade(); }
+      }
+      overlay(t, dt, killed);
 
       // ---- DOM at 4 Hz ----
       domT += dt;
       if (domT >= 0.25 || J.reduce) {
         domT = 0;
-        const p = step < 12 ? lastFinal : wins() / N;
-        setT(ePP, (p * 100).toFixed(1));
+        setT(ePP, ((wins() / N) * 100).toFixed(1)); setT(eTr, String(step));
         const ms = sgn(mv, 0); if (ms !== meanStr) { meanStr = ms; bakeMean(); }
         setT(ePool, ((poolW / poolN) * 100).toFixed(1) + '%'); setT(eRuns, runs + (runs === 1 ? ' run' : ' runs'));
       }
     };
+    J.watch(wrap, lay); afterReveal(drc, lay);
     J.task(drc, frame);
   };
 
@@ -9117,7 +9154,7 @@ JEV.mod('lab', () => {
       });
     }
     function resize() {
-      const a = J.fit(c0), b = J.fit(c1);
+      const a = J.fit(c0, 1.5), b = J.fit(c1, 1); // soft glow + hairlines: capped ratio (tall canvas, ~3x less backing store)
       g0 = a.g; g1 = b.g; W = a.W; H = a.H;
       measure(); drawStatic();
     }
@@ -9434,6 +9471,9 @@ JEV.mod('lab', () => {
   J.task(ctl, tweenStep);
   J.task(pipe, (t, dt) => { fx.frame(t, dt); tickNums(); });
   J.watch(pipe, () => fx.resize());
+  // desktop: the controls column is sticky; if it is taller than the viewport, pin it by its bottom edge so STATE + hard rules + tape stay reachable
+  const left = $('.lab-left');
+  if (left) { const stick = () => { const h = left.offsetHeight; left.style.top = (h ? Math.min(76, innerHeight - h - 16) : 76) + 'px'; }; J.watch(left, stick); addEventListener('resize', stick, { passive: true }); }
 });
 
 </script>
