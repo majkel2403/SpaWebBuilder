@@ -459,26 +459,43 @@ JEV.mod('fx', () => {
   }
 
   /* =====================================================================
-   * 6. orbs: pupils follow the pointer (cached centres, low-rate refresh), idle wander otherwise
+   * 6. orbs: pupils follow the pointer, idle wander otherwise.
+   *    - geometry comes from IntersectionObserver entries: the browser computes their rects after layout, so this module never
+   *      forces a layout of its own (the old 1.4 s getBoundingClientRect poll did, mid-frame, after other tasks had dirtied the tree).
+   *      Re-observing an orb re-delivers its rect: done on scroll/resize end and every 1.5 s for the visible ones (orbiting agents move).
+   *    - eye offsets are quantised to 0.25 px and written straight to the two eyes only when a step is crossed (was: two custom
+   *      properties per orb per frame). Inline `translate` also keeps this module the single driver of the pupils.
    * ===================================================================== */
   const tick = $('#fx-tick');
   if (tick && !reduce) {
-    let orbs = [], lastRef = -9, lpx = -1, lpy = -1, still = 0;
-    const refreshOrbs = () => {
-      const old = new Map(orbs.map((o) => [o.el, o]));
-      orbs = [];
+    const orbs = [], byEl = new Map();
+    let lpx = -1, lpy = -1, still = 0, lastRe = 0;
+    const geo = (o, r, on) => { // r: viewport rect of the orb, on: inside the viewport +-400px
+      o.cx = r.left + r.width / 2; o.cy = r.top + r.height / 2 + scrollY; o.max = clamp(r.width * 0.045, 1.2, 3); o.vis = on && r.width >= 6;
+    };
+    const oio = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
+      for (const e of es) { const o = byEl.get(e.target); if (o) geo(o, e.boundingClientRect, e.isIntersecting); }
+    }, { rootMargin: '400px 0px' }) : null;
+    const scanOrbs = () => {
       for (const el of $$('.orb')) {
-        const r = el.getBoundingClientRect();
-        if (r.width < 6 || r.bottom < -400 || r.top > winH + 400) { const o = old.get(el); if (o) { o.cx = r.left + r.width / 2; o.cy = r.top + r.height / 2 + scrollY; o.vis = false; orbs.push(o); } continue; }
-        const o = old.get(el) || { el, x: 0, y: 0, ph: Math.random() * 6.28 };
-        o.cx = r.left + r.width / 2; o.cy = r.top + r.height / 2 + scrollY; o.max = clamp(r.width * 0.045, 1.2, 3); o.vis = true;
-        orbs.push(o);
+        if (byEl.has(el)) continue;
+        const eyes = $$('.e', el); if (!eyes.length) continue;
+        const o = { el, eyes, x: 0, y: 0, qx: 0, qy: 0, ph: Math.random() * 6.28, cx: 0, cy: 0, max: 1.2, vis: false };
+        byEl.set(el, o); orbs.push(o);
+        if (oio) oio.observe(el); else geo(o, el.getBoundingClientRect(), true); // no IntersectionObserver: measure once, then on scroll / resize end
       }
     };
-    onScrollEnd.push(refreshOrbs); onResizeEnd.push(refreshOrbs);
-    refreshOrbs();
+    const remeasure = (all) => {
+      scanOrbs();
+      for (const o of orbs) {
+        if (oio) { if (all || o.vis) { oio.unobserve(o.el); oio.observe(o.el); } }
+        else geo(o, o.el.getBoundingClientRect(), true);
+      }
+    };
+    onScrollEnd.push(() => remeasure(true)); onResizeEnd.push(() => remeasure(true));
+    scanOrbs();
     J.task(tick, (t, dt) => {
-      if (t - lastRef > 1.4) { lastRef = t; refreshOrbs(); }
+      if (oio && t - lastRe > 1.5) { lastRe = t; remeasure(false); }
       const p = J.pointer;
       if (Math.abs(p.x - lpx) + Math.abs(p.y - lpy) > 0.5) { lpx = p.x; lpy = p.y; still = 0; } else still += dt;
       const idle = p.x < -1000 || still > 3.5;
@@ -493,10 +510,12 @@ JEV.mod('fx', () => {
           const dx = p.x - o.cx, dy = p.y - oy, d = Math.sqrt(dx * dx + dy * dy) || 1, s = Math.min(1, d / 170);
           tx = (dx / d) * o.max * s; ty = (dy / d) * o.max * s;
         }
-        const nx = o.x + (tx - o.x) * k, ny = o.y + (ty - o.y) * k;
-        if (Math.abs(nx - o.x) + Math.abs(ny - o.y) < 0.012) continue;
-        o.x = nx; o.y = ny;
-        o.el.style.setProperty('--ex', nx.toFixed(2) + 'px'); o.el.style.setProperty('--ey', ny.toFixed(2) + 'px');
+        o.x += (tx - o.x) * k; o.y += (ty - o.y) * k;
+        const qx = Math.round(o.x * 4) / 4, qy = Math.round(o.y * 4) / 4;
+        if (qx === o.qx && qy === o.qy) continue;
+        o.qx = qx; o.qy = qy;
+        const v = qx + 'px ' + qy + 'px';
+        for (let j = 0; j < o.eyes.length; j++) o.eyes[j].style.translate = v;
       }
     });
   }

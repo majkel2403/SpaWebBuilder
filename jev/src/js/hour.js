@@ -167,18 +167,23 @@ JEV.mod('hour', () => {
 
   /* live decisions: a packet rides dots -> jev, jev's head flashes and shows the typed answer */
   const DEST_HEX = { execute: C.green, review: C.amber, skip: '#b8b2c2' };
+  let flip = false;
   function landDecision(d) {
     const narrow = J.narrow();
     setT(lastT, narrow ? d.action + ' > ' + d.dest : d.action + ' ' + d.symbol.split('-')[0] + ' ' + d.conf.toFixed(2) + ' > ' + d.dest);
     lastEl.dataset.d = d.dest;
-    lastEl.classList.remove('hr-fl'); void lastEl.offsetWidth; lastEl.classList.add('hr-fl');
-    jevAv.classList.remove('hr-flash'); void jevAv.offsetWidth; jevAv.classList.add('hr-flash');
+    /* restart the pulse by swapping between two classes that name identical keyframes (a new animation-name restarts it)
+       — no `void el.offsetWidth` forced layout per decision */
+    flip = !flip;
+    lastEl.classList.toggle('hr-fl-a', flip); lastEl.classList.toggle('hr-fl-b', !flip);
+    jevAv.classList.toggle('hr-flash-a', flip); jevAv.classList.toggle('hr-flash-b', !flip);
   }
   J.bus.on('decision', (d) => { if (reduce) { landDecision(d); return; } if (A.ready && A.g) spawnPacket(1, killed ? C.red : DEST_HEX[d.dest] || C.pink, 0.95, () => landDecision(d)); });
 
   /* ---------- candle replay tape (seeded, endless) ---------- */
   const tapeCv = $('#hr-tape');
   const T = { g: null, W: 0, H: 0, pitch: 10, bw: 6, playX: 0, pos: 0, hi: 106, lo: 94, bg: null, ok: false };
+  const GREEN = C.green, RED = C.red; // declared before layoutT can run (reduced motion draws one frame from inside J.watch)
   const RN = 512, tO = new Float32Array(RN), tH = new Float32Array(RN), tL = new Float32Array(RN), tC = new Float32Array(RN);
   const tr = J.rng(4100), trades = [];
   const tg = () => { let u = 0, v = 0; while (!u) u = tr(); while (!v) v = tr(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(TAU * v); };
@@ -224,7 +229,6 @@ JEV.mod('hour', () => {
   }
   J.watch(tapeCv, layoutT);
 
-  const GREEN = C.green, RED = C.red;
   function drawT(t, dt) {
     const g = T.g; if (!g || !T.ok) return;
     const W = T.W, H = T.H, pitch = T.pitch, px = T.playX;
@@ -488,9 +492,10 @@ JEV.mod('hour', () => {
   };
 
   const btBox = $('#hr-btbox'), btCv = $('#hr-btc'), tip = $('#hr-bt-tip');
-  const BT = { g: null, W: 0, H: 0, off: null, e: reduce ? 1 : 0, go: reduce, t0: -1, hx: -1, dirty: true, sweep: -1, nextSweep: 9, ey: null, padL: 38, cw: 100, last: -1 };
+  const BT = { g: null, W: 0, H: 0, off: null, e: reduce ? 1 : 0, go: reduce, t0: -1, hx: -1, dirty: true, sweep: -1, nextSweep: 9, ey: null, padL: 38, cw: 100, last: -1, left: 0, rl: true, tipX: -1, tipDone: -1 };
   const X = (v) => '×' + v.toFixed(2);
   function layoutC() {
+    BT.rl = true; // box moved / resized: re-read its left edge on the next hover
     if (!bt) return;
     const f = fitC(btCv); BT.g = f.g; BT.W = f.W; BT.H = f.H;
     const W = f.W, H = f.H, narrow = W < 420, dpr = J.DPR;
@@ -557,9 +562,18 @@ JEV.mod('hour', () => {
     const w = BT.W, left = x < w * 0.55;
     tip.style.transform = 'translateX(' + (left ? Math.round(x + 14) + 'px' : 'calc(' + Math.round(x - 14) + 'px - 100%)') + ')';
   }
-  btBox.addEventListener('pointermove', (e) => { const r = btBox.getBoundingClientRect(); BT.hx = clamp(e.clientX - r.left, BT.padL, BT.W - 10); BT.dirty = true; setTip(BT.hx); });
-  btBox.addEventListener('pointerleave', () => { BT.hx = -1; BT.dirty = true; setTip(-1); });
-  btBox.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') { const r = btBox.getBoundingClientRect(); BT.hx = clamp(e.clientX - r.left, BT.padL, BT.W - 10); BT.dirty = true; setTip(BT.hx); } });
+  /* hover: the box's left edge is cached (re-read once per hover, and after a resize / reveal via layoutC), so pointermove does no layout read and no DOM write;
+     the tip text + transform are written by the frame task (renderC), at most once per frame. (reduced motion freezes the task, so it flushes inline there) */
+  const hoverAt = (e) => {
+    if (BT.rl) { BT.left = btBox.getBoundingClientRect().left; BT.rl = false; }
+    BT.hx = clamp(e.clientX - BT.left, BT.padL, BT.W - 10); BT.dirty = true; BT.tipX = BT.hx;
+    if (reduce) { flushTip(); renderC(J.time, 0); }
+  };
+  const flushTip = () => { if (BT.tipX !== BT.tipDone) { BT.tipDone = BT.tipX; setTip(BT.tipX); } };
+  btBox.addEventListener('pointerenter', () => { BT.rl = true; });
+  btBox.addEventListener('pointermove', hoverAt);
+  btBox.addEventListener('pointerleave', () => { BT.hx = -1; BT.dirty = true; BT.tipX = -1; if (reduce) { flushTip(); renderC(J.time, 0); } });
+  btBox.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') { BT.rl = true; hoverAt(e); } });
 
   const statFmtC = { pct: (v) => Math.round(v) + '%', int: (v) => fmt(Math.round(v)) };
   J.onView(btBox, () => {
@@ -571,6 +585,7 @@ JEV.mod('hour', () => {
 
   const renderC = (t, dt) => {
     const g = BT.g; if (!g || !BT.off) return;
+    flushTip();
     let need = BT.dirty;
     if (BT.go && BT.e < 1) { if (BT.t0 < 0) BT.t0 = t; const p = clamp((t - BT.t0) / 2.6, 0, 1); BT.e = 1 - Math.pow(1 - p, 3); need = true; if (p >= 1) BT.nextSweep = t + 3; }
     else if (BT.e >= 1 && !reduce) { if (BT.sweep < 0 && t > BT.nextSweep) BT.sweep = 0; if (BT.sweep >= 0) { BT.sweep += dt / 1.5; need = true; if (BT.sweep > 1) { BT.sweep = -1; BT.nextSweep = t + 8; } } }
@@ -652,23 +667,28 @@ JEV.mod('hour', () => {
     if (cs !== G.lastCap) { G.lastCap = cs; setT(capEl, cs); setT(badgeD, cs); }
   }
   function setU(u, snap) { G.uT = clamp(u, 0, 1); G.rest = false; if (snap) { G.u = G.uT; G.v = 0; } }
-  function ptrU(e) {
-    const r = gsvg.getBoundingClientRect(), s = r.width / 320;
+  /* the gauge rect is cached for the length of a drag (re-read on pointerdown, after a resize, and after any scroll) instead of once per pointermove */
+  let gRect = null;
+  const dropRect = () => { gRect = null; };
+  function ptrU(e, fresh) {
+    if (fresh || !gRect) gRect = gsvg.getBoundingClientRect();
+    const r = gRect, s = r.width / 320;
     let a = Math.atan2(e.clientY - r.top - CY * s, e.clientX - r.left - CX * s) * 180 / Math.PI; if (a < 0) a += 360;
     const d = (a - GA + 360) % 360;
     return d <= GS ? d / GS : d < GS + (360 - GS) / 2 ? 1 : 0;
   }
-  knob.addEventListener('pointerdown', (e) => { G.drag = true; knob.setPointerCapture(e.pointerId); knob.classList.add('drag', 'used'); setU(ptrU(e)); e.preventDefault(); });
+  const beginDrag = () => { G.drag = true; window.addEventListener('scroll', dropRect, { passive: true }); };
+  knob.addEventListener('pointerdown', (e) => { beginDrag(); knob.setPointerCapture(e.pointerId); knob.classList.add('drag', 'used'); setU(ptrU(e, true)); e.preventDefault(); });
   knob.addEventListener('pointermove', (e) => { if (G.drag) setU(ptrU(e)); });
-  const endDrag = () => { G.drag = false; knob.classList.remove('drag'); };
+  const endDrag = () => { G.drag = false; knob.classList.remove('drag'); window.removeEventListener('scroll', dropRect); };
   knob.addEventListener('pointerup', endDrag); knob.addEventListener('pointercancel', endDrag); knob.addEventListener('lostpointercapture', endDrag);
-  gsvg.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && e.button === 0) { G.drag = true; gsvg.setPointerCapture(e.pointerId); knob.classList.add('used'); setU(ptrU(e)); } });
+  gsvg.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && e.button === 0) { beginDrag(); gsvg.setPointerCapture(e.pointerId); knob.classList.add('used'); setU(ptrU(e, true)); } });
   gsvg.addEventListener('pointermove', (e) => { if (G.drag && e.pointerType === 'mouse') setU(ptrU(e)); });
   gsvg.addEventListener('pointerup', endDrag); gsvg.addEventListener('pointercancel', endDrag);
-  gsvg.addEventListener('click', (e) => { if (e.pointerType === 'mouse') return; knob.classList.add('used'); setU(ptrU(e)); });
+  gsvg.addEventListener('click', (e) => { if (e.pointerType === 'mouse') return; knob.classList.add('used'); setU(ptrU(e, true)); });
   rangeEl.addEventListener('input', () => { knob.classList.add('used'); setU(+rangeEl.value / 1000); });
   $$('.hr-pb').forEach((b) => b.addEventListener('click', () => { knob.classList.add('used'); setU(r2u(+b.dataset.r)); if (reduce) { G.u = G.uT; renderG(0); } }));
-  J.watch(gaugeEl, () => { G.scale = gsvg.clientWidth / 320; renderG(0); });
+  J.watch(gaugeEl, () => { gRect = null; G.scale = gsvg.clientWidth / 320; renderG(0); });
   J.task(gaugeEl, (t, dt) => {
     const k = G.drag ? 620 : 175, c = G.drag ? 46 : 17, d = G.uT - G.u;
     if (Math.abs(d) > 1e-4 || Math.abs(G.v) > 1e-3) {

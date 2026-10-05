@@ -2,6 +2,7 @@
  * state -> encode -> jev system one -> typed questions -> answers -> code acts.  Two canvases:
  *   #hero-static  cached mesh (panels, ~1100 additive edges, nodes, labels) — redrawn only on resize / fonts
  *   #hero-live    per-frame: beams (white-hot head, pink tail), flashes, bars, counters, pointer glow
+ *   + four small offscreen text canvases (state values, answer %, code cards, typed-question labels) blitted on top, each re-drawn only when its text changes
  * Everything is simulated; decisions come from the shared JEV bus. */
 JEV.mod('hero', () => {
   'use strict';
@@ -34,6 +35,12 @@ JEV.mod('hero', () => {
     gr.addColorStop(0.6, 'rgba(' + c.join(',') + ',.13)'); gr.addColorStop(1, 'rgba(' + c.join(',') + ',0)');
     x.fillStyle = gr; x.fillRect(0, 0, 96, 96); return s;
   });
+
+  /* wave-beam head = tint glow + white-hot core, baked into ONE sprite per tint (was two drawImage calls per live beam; the core is ~0.36 of the glow's width on desktop, ~0.43 on phone) */
+  const SPRH = [0.36, 0.43].map((k) => SPR.map((sp) => {
+    const s = document.createElement('canvas'); s.width = s.height = 96; const x = s.getContext('2d'), c = 96 * k;
+    x.drawImage(sp, 0, 0); x.globalCompositeOperation = 'lighter'; x.drawImage(SPR[T_WHT], 48 - c / 2, 48 - c / 2, c, c); return s;
+  }));
 
   const SOFT = RGB.map((c) => {
     const s = document.createElement('canvas'); s.width = s.height = 64; const x = s.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -89,21 +96,22 @@ JEV.mod('hero', () => {
   }
 
   /* ---------- layout (recomputed on resize only) ---------- */
-  let W = 0, H = 0, M = false, gs = null, gl = null, FS = 9, FS2 = 8;
+  let W = 0, H = 0, M = false, gs = null, gl = null, FS = 9, FS2 = 9, FSS = 9, QX = 0, qFS = 9, qFS2 = 9, cFS = 9, cFS2 = 9, fFS = 9, kFS = 8, confW = 26;
+  const HALO = 'rgba(8,4,13,.88)';
   const P = [0, 1, 2, 3, 4, 5].map(() => ({ x: 0, y: 0, w: 0, h: 0 }));
-  const CARDS = [0, 1, 2].map(() => ({ x: 0, y: 0, w: 0, h: 0 }));
+  const CARDS = [0, 1, 2].map(() => ({ x: 0, y: 0, w: 0, h: 0 })), QP = [0, 1, 2].map(() => ({ x: 0, y: 0, w: 0, h: 0 })); // QP: dark label plates behind the typed-question text
   const rowY = new Float32Array(11), grpY = new Float32Array(3), qy = new Float32Array(3);
   let pitch = 28, bx0 = 0, bx1 = 0, barH = 5, qr = 14, hdrH = 40, spitch = 28;
   const cabX = new Float32Array(49), cabY = new Float32Array(49);
   let jcx = 0, jcy = 0;
 
   function layout() {
-    const m = M, top = m ? 52 : 64, bot = H - (m ? 26 : 36), ah = bot - top;
+    const m = M, top = m ? 52 : 64, bot = H - (m ? 30 : 36), ah = bot - top;
     let pad, w, gp;
     if (m) { const k = W / 390; pad = 5 * k; w = [14, 22, 100, 44, 88, 54].map((v) => v * k); gp = [14, 12, 12, 10, 8].map((v) => v * k); }
     else {
-      const cmp = W < 1000; pad = clamp(W * 0.02, 14, 30);
-      w = cmp ? [92, 38, clamp(W * 0.2, 140, 230), 92, 110, 88] : [clamp(W * 0.095, 132, 150), clamp(W * 0.04, 48, 64), clamp(W * 0.225, 212, 330), clamp(W * 0.085, 104, 128), clamp(W * 0.145, 140, 212), clamp(W * 0.103, 104, 152)];
+      const cmp = W < 1000, kw = clamp(W / 1440, 1, 1.4); pad = clamp(W * 0.02, 14, 30); // kw: past 1440 the column caps grow with the stage, so the type can grow with it
+      w = cmp ? [92, 38, clamp(W * 0.2, 140, 230), 124, 110, 88] : [clamp(W * 0.095, 132, 150 * kw), clamp(W * 0.046, 54, 68 * kw), clamp(W * 0.225, 212, 330 * kw), clamp(W * 0.095, 124, 148 * kw), clamp(W * 0.145, 140, 212 * kw), clamp(W * 0.103, 104, 152 * kw)];
       const rem = W - 2 * pad - w.reduce((a, b) => a + b, 0), wt = [1, 1.15, 1.2, 1, 0.7];
       gp = wt.map((v) => Math.max(16, rem * v / 5.05));
     }
@@ -111,7 +119,8 @@ JEV.mod('hero', () => {
     let cardT = 1e9, cardRt = -1;
     if (!m && cardEl) { cardT = cardEl.offsetTop; cardRt = cardEl.offsetLeft + cardEl.offsetWidth; }
     const colBot = (i) => (X[i] < cardRt + 6 ? Math.min(bot, cardT - 14) : bot);
-    FS = m ? 7 : 9; FS2 = m ? 7 : 8; hdrH = m ? 24 : 40;
+    // type scales with the stage (>= 9px on desktop, 12px at 1800+); phone: 8px answer rows, 7px elsewhere
+    FS = m ? 8 : W < 1000 ? 9 : clamp(Math.round(W / 75) / 2, 9, 12); FS2 = m ? 7 : W < 1000 ? 8.5 : Math.max(9, FS - 0.5); FSS = m ? 7 : W < 1000 ? 8.5 : Math.max(9, FS2 - 1); hdrH = m ? 24 : 40; // FS2: titles, group names, floor/conf tags · FSS: the small grey sub-lines
     // STATE
     let p = P[0], av = colBot(0) - top;
     spitch = Math.min(m ? 22 : 30, (av - hdrH - 12) / 15);
@@ -133,6 +142,11 @@ JEV.mod('hero', () => {
     p = P[3]; p.x = X[3]; p.w = w[3];
     for (let i = 0; i < 3; i++) { qy[i] = mid + (i - 1) * qs; nx[LS[5] + i] = p.x + (m ? p.w / 2 : 26); ny[LS[5] + i] = qy[i]; }
     p.y = qy[0] - qr - (m ? 30 : 46); p.h = qy[2] + qr + (m ? 44 : 44) - p.y;
+    if (!m) { // label block right of each node: fonts shrink to the card, a dark plate keeps the wires from striking through it
+      QX = p.x + 26 + qr + 8; qFS = fitSz(gs, 'which action?', 700, Math.min(FS, 11), 0, p.x + p.w - 6 - QX, 7.5); qFS2 = Math.min(FSS, qFS);
+      const pw = Math.min(p.x + p.w - 4 - (QX - 6), Math.ceil(13 * 0.6 * qFS) + 12);
+      for (let i = 0; i < 3; i++) { const q = QP[i]; q.x = QX - 6; q.y = qy[i] - 15; q.w = pw; q.h = 42; }
+    }
     // ANSWERS (11 rows, 3 groups)
     const gh = m ? 12 : 16, gg = m ? 6 : 11;
     pitch = clamp((ah - 6 - hdrH - 3 * gh - 2 * gg - 12) / 11, 16, m ? 24 : 31);
@@ -142,7 +156,9 @@ JEV.mod('hero', () => {
       for (let g = 0; g < 3; g++) { grpY[g] = y + gh * 0.62; y += gh; for (let r = GFIRST[g]; r <= GLAST[g]; r++) { rowY[r] = y + pitch / 2; y += pitch; } y += gg; }
       for (let r = 0; r < 11; r++) { nx[LS[6] + r] = p.x + (m ? 6 : 10); ny[LS[6] + r] = rowY[r]; } }
     barH = m ? 3.5 : 5;
-    bx0 = m ? p.x + 14 : p.x + 22 + 42; bx1 = m ? p.x + p.w - 5 : p.x + p.w - 34;
+    // the bar track starts after the longest row label ("flatten") and stops before a 2-digit percentage
+    bx0 = m ? p.x + 14 : p.x + 22 + Math.ceil(4.2 * FS) + 8; bx1 = m ? p.x + p.w - 5 : p.x + p.w - 9 - Math.ceil(1.8 * FS) - 4;
+    confW = Math.ceil(2.4 * FS2) + 10; // plate behind the confidence tick's "0.93"
     // CODE ACTS (3 glowing cards)
     p = P[5]; p.x = X[5]; p.w = w[5]; p.h = spanH; p.y = P[4].y;
     const ch = m ? 48 : clamp(pitch * 2.3, 56, 76), fr = [0.17, 0.5, 0.83];
@@ -150,6 +166,8 @@ JEV.mod('hero', () => {
       const c = CARDS[k]; c.w = p.w - (m ? 9 : 16); c.h = ch; c.x = p.x + (m ? 4.5 : 8); c.y = p.y + hdrH + (spanH - hdrH - 8) * fr[k] - ch / 2;
       nx[LS[7] + k] = c.x; ny[LS[7] + k] = c.y + ch / 2;
     }
+    cFS = m ? 7 : fitSz(gs, 'orders/execute', 700, Math.min(FS, 11), 0.6, CARDS[0].w - 16, 7); cFS2 = m ? 7 : fitSz(gs, 'send the order', 500, FSS, 0, CARDS[0].w - 16, 7);
+    fFS = m ? 7 : FS2; kFS = m ? 7 : fitSz(gs, 'halted \u00b7 all to review', 700, FS2, 0, P[5].w - 14, 7.5); // floor / confidence / halted labels
     // main cable (catmull-rom through the middle of the tower, bottom-left -> top-right like the reference)
     const jp = P[2], pts = [[P[1].x + P[1].w, cE], [jp.x, jcy + jp.h * 0.1], [nx[LS[2] + 9], jcy + jp.h * 0.06], [jcx, jcy - jp.h * 0.01], [nx[LS[4] + 9], jcy - jp.h * 0.13], [jp.x + jp.w, jcy - jp.h * 0.21], [P[3].x, qy[1]]];
     let ci = 0;
@@ -174,6 +192,17 @@ JEV.mod('hero', () => {
   /* ---------- static layer: bloom, panels, additive mesh, nodes, labels, cards ---------- */
   function rr(g, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
   function T(g, s, x, y, ls) { if (ls && hasLS) { g.letterSpacing = ls + 'px'; g.fillText(s, x, y); g.letterSpacing = '0px'; } else g.fillText(s, x, y); }
+  /* halo text: a dark outline under the glyphs so a wire that crosses a label never reads as a strike-through */
+  function TH(g, s, x, y, ls, lw) {
+    const sp = ls && hasLS; if (sp) g.letterSpacing = ls + 'px';
+    g.lineJoin = 'round'; g.lineWidth = lw || 3; g.strokeStyle = HALO; g.strokeText(s, x, y); g.fillText(s, x, y);
+    if (sp) g.letterSpacing = '0px';
+  }
+  /* largest font size <= sz (weight wt, letter-spacing ls) whose text fits maxW; never below min. Sets g.font as a side effect. */
+  function fitSz(g, str, wt, sz, ls, maxW, min) {
+    const sp = hasLS && ls ? ls * str.length : 0; let s = sz;
+    for (;;) { g.font = wt + ' ' + s + 'px ' + FF; if (s <= min || g.measureText(str).width + sp <= maxW) return s; s = Math.max(min, s - 0.25); }
+  }
   function panel(g, p, title, sub, hot) {
     rr(g, p.x, p.y, p.w, p.h, M ? 5 : 9);
     if (hot) { const gr = g.createLinearGradient(0, p.y, 0, p.y + p.h); gr.addColorStop(0, 'rgba(38,8,32,.9)'); gr.addColorStop(0.5, 'rgba(52,8,40,.84)'); gr.addColorStop(1, 'rgba(18,5,22,.9)'); g.fillStyle = gr; }
@@ -182,8 +211,8 @@ JEV.mod('hero', () => {
     g.save(); if (hot) { g.shadowColor = 'rgba(255,46,110,.75)'; g.shadowBlur = 26; }
     g.lineWidth = 1; g.strokeStyle = hot ? 'rgba(255,96,152,.66)' : 'rgba(255,70,140,.26)'; g.stroke(); g.restore();
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-    g.fillStyle = hot ? '#ffd0e2' : '#e9dff0'; g.font = '700 ' + (M ? 7 : 8.5) + 'px ' + FF; T(g, title, p.x + (M ? 3 : 10), p.y + (M ? 12 : 17), M ? 0.5 : 1.6);
-    if (sub && !M) { g.fillStyle = '#9c91a8'; g.font = '500 8px ' + FF; T(g, sub, p.x + 10, p.y + 29, 0.4); }
+    const ts = M ? 7 : FS2, tl = M ? 0.5 : 1.6; g.fillStyle = hot ? '#ffd0e2' : '#e9dff0'; if (M) g.font = '700 7px ' + FF; else fitSz(g, title, 700, ts, tl, p.w - 18, 7); T(g, title, p.x + (M ? 3 : 10), p.y + (M ? 12 : 17), tl);
+    if (sub && !M) { g.fillStyle = '#a095ac'; fitSz(g, sub, 500, FSS, 0.4, p.w - 13, 7); T(g, sub, p.x + 10, p.y + 29, 0.4); }
   }
   function strokeEdge(g, i) {
     g.beginPath(); g.moveTo(ex0[i], ey0[i]);
@@ -240,27 +269,18 @@ JEV.mod('hero', () => {
       const y = rowY[r], gx = nx[LS[6] + r];
       g.beginPath(); g.arc(gx, y, M ? 2.4 : 3.2, 0, J.TAU); g.fillStyle = '#0b0610'; g.fill(); g.strokeStyle = 'rgba(255,110,170,.85)'; g.lineWidth = 1; g.stroke();
       g.textAlign = 'left'; g.fillStyle = '#b0a5bb'; g.font = '500 ' + FS + 'px ' + FF;
-      g.fillText(ROW[r], pa.x + (M ? 14 : 22), M ? y - 3.5 : y + 0.5);
+      TH(g, ROW[r], pa.x + (M ? 14 : 22), M ? y - 3.5 : y + 0.5, 0, M ? 2 : 3);
       g.fillStyle = 'rgba(255,255,255,.075)'; g.fillRect(bx0, M ? y + 2.5 : y - barH / 2, bx1 - bx0, barH);
     }
-    g.textBaseline = 'alphabetic'; g.font = '600 ' + (M ? 7 : 8) + 'px ' + FF; g.textAlign = 'left';
+    g.textBaseline = 'alphabetic'; g.textAlign = 'left';
     const GN = ['choice', 'score', 'flag'], GR = ['', 'of capital', 'risk_ok'];
     for (let q = 0; q < 3; q++) {
-      g.fillStyle = '#ff9cc4'; T(g, GN[q], pa.x + (M ? 5 : 10), grpY[q] + 3, 0.8);
-      if (GR[q] && !M) { g.fillStyle = '#8d8499'; g.textAlign = 'right'; g.font = '500 8px ' + FF; g.fillText(GR[q], pa.x + pa.w - 8, grpY[q] + 3); g.textAlign = 'left'; g.font = '600 8px ' + FF; }
+      g.font = '600 ' + (M ? 7 : FS2) + 'px ' + FF; g.textAlign = 'left'; g.fillStyle = '#ff9cc4'; T(g, GN[q], pa.x + (M ? 5 : 10), grpY[q] + 3, 0.8);
+      if (GR[q] && !M) { g.fillStyle = '#a095ac'; g.textAlign = 'right'; g.font = '500 ' + FS2 + 'px ' + FF; g.fillText(GR[q], pa.x + pa.w - 8, grpY[q] + 3); g.textAlign = 'left'; }
       g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 1; g.beginPath(); g.moveTo(pa.x + 5, grpY[q] + (M ? 6 : 8)); g.lineTo(pa.x + pa.w - 5, grpY[q] + (M ? 6 : 8)); g.stroke();
     }
-    // typed questions
-    const pq = P[3], QN = ['which action?', 'how much?', 'risk ok?'], QT = ['choice', 'score', 'flag'], QM = [['which', 'action?'], ['how', 'much?'], ['risk', 'ok?']];
-    for (let i = 0; i < 3; i++) {
-      if (M) {
-        g.textAlign = 'center'; g.fillStyle = '#f4eef6'; g.font = '600 7px ' + FF; g.fillText(QM[i][0], pq.x + pq.w / 2, qy[i] + qr + 9); g.fillText(QM[i][1], pq.x + pq.w / 2, qy[i] + qr + 17);
-        g.fillStyle = '#ff9cc4'; g.font = '500 7px ' + FF; g.fillText(QT[i], pq.x + pq.w / 2, qy[i] + qr + 25);
-      } else {
-        const tx = pq.x + 26 + qr + 8; g.textAlign = 'left'; g.fillStyle = '#f4eef6'; g.font = '700 9px ' + FF; g.fillText(QN[i], tx, qy[i] - 5);
-        g.fillStyle = '#ff9cc4'; g.font = '500 8px ' + FF; T(g, QT[i], tx, qy[i] + 6, 0.8);
-      }
-    }
+    // typed questions: a dark glass plate under each label block (the wires run behind it); the text itself lives in the cached text layer, above the beams
+    if (!M) for (let i = 0; i < 3; i++) { const q = QP[i]; rr(g, q.x, q.y, q.w, q.h, 7); g.fillStyle = 'rgba(8,4,13,.9)'; g.fill(); g.lineWidth = 1; g.strokeStyle = 'rgba(255,90,150,.2)'; g.stroke(); }
     // code cards
     const CN = ['execute', 'review', 'skip'];
     for (let k = 0; k < 3; k++) {
@@ -278,18 +298,19 @@ JEV.mod('hero', () => {
   const aTxt = new Array(11).fill('0%'), aTxtV = new Int16Array(11).fill(-1);
   const qFl = new Float32Array(3), qOn = new Float32Array(3), qTxt = ['', '', ''], qLab = ['', '', ''];
   const cPulse = new Float32Array(3), cCount = [J.S.dest.execute, J.S.dest.review, J.S.dest.skip], cTint = [T_PINK, T_AMB, T_DIM], cTxt = ['0', '0', '0'], cCV = [-1, -1, -1];
-  let confV = -1, confTxt = '', conf = 0.9, confTg = 0.9, confA = 0, confOk = true, confRow = 0;
+  let confV = -1, confTxt = '', confA = 0, confOk = true, confRow = 0;
   let floorV = J.S.floor, floorTxt = 'floor ' + floorV.toFixed(2), killed = J.S.killed, PK = killed ? T_RED : T_PINK, killFl = 0;
   let mx = -9999, my = -9999, hov = 0, now = 0, lastRun = 0, cableS = -1, cableT0 = 0, cableTint = 0;
   const RIPN = 8, ripT = new Float32Array(RIPN).fill(-9), ripK = new Uint8Array(RIPN), ripC = new Uint8Array(RIPN); let ripI = 0;
 
   /* beams: ring buffer, struct-of-arrays */
   const BN = 520, bE = new Int16Array(BN), bT0 = new Float32Array(BN), bDur = new Float32Array(BN), bW = new Float32Array(BN), bTint = new Uint8Array(BN), bAmb = new Uint8Array(BN), bDone = new Uint8Array(BN);
-  let bi = 0;
-  function beam(e, t0, dur, w, tint, amb) { const b = bi; bi = (bi + 1) % BN; bE[b] = e; bT0[b] = t0; bDur[b] = dur; bW[b] = w > 1 ? 1 : w; bTint[b] = tint; bAmb[b] = amb; bDone[b] = 0; }
+  /* ambient shimmer is capped: nAmb live beams at most (AMB_CAP, scaled by the cost governor ambK), so the arrive() chain can never snowball */
+  let bi = 0, nAmb = 0, ambK = 1; const AMB_CAP = () => Math.round((M ? 22 : 40) * ambK);
+  function beam(e, t0, dur, w, tint, amb) { const b = bi; bi = (bi + 1) % BN; if (bDur[b] !== 0 && bAmb[b]) nAmb--; if (amb) nAmb++; bE[b] = e; bT0[b] = t0; bDur[b] = dur; bW[b] = w > 1 ? 1 : w; bTint[b] = tint; bAmb[b] = amb; bDone[b] = 0; }
   function arrive(b, e) {
     const d = edst[e]; nfl[d] = Math.min(1, nfl[d] + (bAmb[b] ? 0.32 : 0.55 + 0.45 * bW[b]));
-    if (bAmb[b] && eTr[e] < 4 && noutN[d] > 0 && Math.random() < 0.72) beam(nout0[d] + ((Math.random() * noutN[d]) | 0), now, bDur[b] * 0.92, bW[b] * 0.92, bTint[b], 1);
+    if (bAmb[b] && eTr[e] < 4 && noutN[d] > 0 && nAmb < AMB_CAP() && Math.random() < 0.72) beam(nout0[d] + ((Math.random() * noutN[d]) | 0), now, bDur[b] * 0.92, bW[b] * 0.92, bTint[b], 1);
   }
 
   /* waves: one per decision, ~1.1 s, overlapping */
@@ -298,12 +319,11 @@ JEV.mod('hero', () => {
   const SAL = [null, null,
     (s) => Math.abs(s.vwap_dist_bps) / 14, (s) => s.spread_bps / 10, (s) => Math.abs(s.imbalance) / 0.55, (s) => Math.abs(s.funding_bps) / 6, (s) => s.vol_1h / 140,
     (s) => Math.abs(s.edge_bps) / 26, (s) => Math.abs(s.position_pct) / 2.5, (s) => -s.daily_pnl / 1600 + 0.15, (s) => s.drawdown_pct / 8, (s) => s.latency_ms / 260, (s) => s.signal_age_s / 50];
-  const ABBR = { 'thin book': 'thin bk', 'stale feed': 'stale', hyperliquid: 'hyperliq' };
   function stateText(s) {
-    const t = stTxt; t[0] = s.symbol.replace('-PERP', '-P'); t[1] = s.price >= 1000 ? J.fmt(s.price, 0) : J.fmt(s.price, s.price < 100 ? 2 : 1);
+    const t = stTxt; t[0] = s.symbol; t[1] = s.price >= 1000 ? J.fmt(s.price, 0) : J.fmt(s.price, s.price < 100 ? 2 : 1);
     t[2] = J.sgn(s.vwap_dist_bps, 1); t[3] = s.spread_bps.toFixed(1); t[4] = J.sgn(s.imbalance, 2); t[5] = J.sgn(s.funding_bps, 1); t[6] = Math.round(s.vol_1h) + '';
     t[7] = J.sgn(s.edge_bps, 1); t[8] = J.sgn(s.position_pct, 1); t[9] = J.sgn(s.daily_pnl, 0); t[10] = s.drawdown_pct.toFixed(1); t[11] = Math.round(s.latency_ms) + '';
-    t[12] = s.signal_age_s.toFixed(1); t[13] = ABBR[s.venue] || s.venue; t[14] = ABBR[s.regime] || s.regime; txtDirty = true;
+    t[12] = s.signal_age_s.toFixed(1); t[13] = s.venue; t[14] = s.regime; txD[0] = 1;
   }
   function pushT(w, l, n) { const o = l * 40; for (let i = 0; i < w.tn[l]; i++) if (w.tg[o + i] === n) return; if (w.tn[l] < 40) w.tg[o + w.tn[l]++] = n; }
   function startWave(d, demo) {
@@ -337,16 +357,18 @@ JEV.mod('hero', () => {
     } else if (k === 5) {
       const q0 = LS[5];
       for (let q = 0; q < 3; q++) { qFl[q] = 1; qOn[q] = 1; nfl[q0 + q] = 1; }
-      qTxt[0] = d.action; qTxt[1] = (d.size < 1 ? '0.5' : d.size) + '%'; qTxt[2] = d.riskOk ? 'go' : 'no-go'; for (let q = 0; q < 3; q++) qLab[q] = '= ' + qTxt[q];
+      qTxt[0] = d.action; qTxt[1] = (d.size < 1 ? '0.5' : d.size) + '%'; qTxt[2] = d.riskOk ? 'go' : 'no-go'; for (let q = 0; q < 3; q++) qLab[q] = '= ' + qTxt[q]; txD[3] = 1;
       const pr = [d.p.buy, d.p.sell, d.p.hold, d.p.close, d.p.flatten, d.sizes[0], d.sizes[1], d.sizes[2], d.sizes[3], d.pRisk, 1 - d.pRisk];
       for (let q = 0; q < 3; q++) for (let r = GFIRST[q]; r <= GLAST[q]; r++) beam(nout0[q0 + q] + (r - GFIRST[q]), t0, 0.17, 0.3 + 0.7 * Math.min(1, pr[r] * 1.3), PK, 0);
     } else if (k === 6) {
+      const rA = ACTS.indexOf(d.action), rS = 5 + d.sizeIdx, rK = d.riskOk ? 9 : 10, cs = confShown(d);
       aTg[0] = d.p.buy; aTg[1] = d.p.sell; aTg[2] = d.p.hold; aTg[3] = d.p.close; aTg[4] = d.p.flatten;
       for (let i = 0; i < 4; i++) aTg[5 + i] = d.sizes[i]; aTg[9] = d.pRisk; aTg[10] = 1 - d.pRisk;
-      const rA = ACTS.indexOf(d.action), rS = 5 + d.sizeIdx, rK = d.riskOk ? 9 : 10;
-      aSelT.fill(0); aSelT[rA] = 1; aSelT[rS] = 1; aSelT[rK] = 1; aHot[rA] = 1; aHot[rS] = 1; aHot[rK] = 1; txtDirty = true;
-      conf = confTg; confTg = d.conf; confOk = d.conf >= d.floor; confRow = rA; confA = 0;
-      updateChip(d);
+      aTg[rA] = cs; // the chosen action's bar IS the confidence (see confShown)
+      aSelT.fill(0); aSelT[rA] = 1; aSelT[rS] = 1; aSelT[rK] = 1; aHot[rA] = 1; aHot[rS] = 1; aHot[rK] = 1; txD[1] = 1;
+      confOk = cs >= d.floor; confRow = rA; confA = 0;
+      // the readout chip waits until the chosen row's percentage has landed (the bars ease; the chip must never lead them)
+      chipD = d; chipCs = cs; chipRow = rA; chipPc = pct(aTg[rA]); chipT0 = w.t0 + ST[6];
       const dk = DEST[d.dest], tint = d.dest === 'skip' ? T_DIM : d.dest === 'review' ? (killed ? T_RED : T_AMB) : PK, bw = d.dest === 'skip' ? 0.5 : 1;
       w.dk = dk;
       [rA, rS, rK].forEach((r, i) => beam(nout0[LS[6] + r] + dk, w.t0 + 0.86 + i * 0.02, 0.22, bw, tint, 0));
@@ -357,45 +379,99 @@ JEV.mod('hero', () => {
       w.on = false;
     }
   }
-  function updateChip(d) {
-    CH.sym.textContent = d.symbol; CH.act.textContent = d.action; CH.conf.textContent = d.conf.toFixed(2);
-    CH.size.textContent = d.action === 'hold' ? '—' : (d.size < 1 ? '0.5' : d.size) + '%'; CH.risk.textContent = d.riskOk ? 'ok' : 'flag';
-    CH.dest.textContent = d.dest; CH.dest.setAttribute('data-d', d.dest); CH.ms.textContent = d.ms.toFixed(1); CH.why.textContent = d.reason === 'ok' ? '' : d.reason;
-    if (chipEl.animate && !J.reduce) chipEl.animate([{ borderColor: 'rgba(255,255,255,.95)', boxShadow: '0 0 46px rgba(255,46,110,.95), inset 0 0 18px rgba(255,120,170,.35)' }, {}], { duration: 560, easing: 'ease-out' });
+  /* one number everywhere: the bar, the tick and the chip all show the probability of the chosen action. core.makeDecision jitters d.conf by up to 3.5% below it,
+     so d.conf is used only when that jitter alone pushed a decision under the floor (p >= floor but d.conf < floor, ~0.3% of decisions) and the printed reason must stay true. */
+  const pct = (v) => Math.min(99, Math.round(v * 100));
+  function confShown(d) { const pa = d.p[d.action]; return d.reason.indexOf('conf') === 0 && pa >= d.floor ? Math.min(pa, d.conf) : pa; }
+  function whyText(d, cs) {
+    if (d.reason === 'ok') return ''; if (d.reason.indexOf('conf') !== 0) return d.reason;
+    const f = d.floor.toFixed(2); let c = (pct(cs) / 100).toFixed(2); if (c === f) c = (Math.floor(cs * 1000 + 1e-9) / 1000).toFixed(3); return 'conf ' + c + ' < ' + f;
+  }
+  let chipD = null, chipCs = 0, chipRow = 0, chipPc = 0, chipT0 = 0;
+  const chipV = {}; // last text written per readout field: an unchanged field costs no DOM write
+  function setC(k, v) { if (chipV[k] !== v) { chipV[k] = v; CH[k].textContent = v; } }
+  function updateChip(d, pc, cs) {
+    setC('sym', d.symbol); setC('act', d.action); setC('conf', (pc / 100).toFixed(2));
+    setC('size', d.action === 'hold' ? '—' : (d.size < 1 ? '0.5' : d.size) + '%'); setC('risk', d.riskOk ? 'ok' : 'flag');
+    if (chipV.dest !== d.dest) CH.dest.setAttribute('data-d', d.dest); setC('dest', d.dest); setC('ms', d.ms.toFixed(1)); setC('why', whyText(d, cs));
+    if (!J.reduce) J.animate(chipEl, [{ borderColor: 'rgba(255,255,255,.95)', boxShadow: '0 0 46px rgba(255,46,110,.95), inset 0 0 18px rgba(255,120,170,.35)' }, {}], { duration: 560, easing: 'ease-out' });
   }
 
   /* ---------- per-frame ---------- */
   function spr(t, x, y, s, a) { gl.globalAlpha = a > 1 ? 1 : a; gl.drawImage(SPR[t], x - s / 2, y - s / 2, s, s); }
+  function sprh(t, x, y, s, a) { gl.globalAlpha = a > 1 ? 1 : a; gl.drawImage(SPRH[M ? 1 : 0][t], x - s / 2, y - s / 2, s, s); }
   function strokeLive(g, i) { g.beginPath(); g.moveTo(ex0[i], ey0[i]); if (ec[i]) { const m = (ex0[i] + ex1[i]) / 2; g.bezierCurveTo(m, ey0[i], m, ey1[i], ex1[i], ey1[i]); } else g.lineTo(ex1[i], ey1[i]); g.stroke(); }
-  /* cached text layer: state values, answer percentages, code-card tags + counters (re-rendered only when one changes) */
-  const txtCv = document.createElement('canvas'); let gt = null, txtDirty = true, stVals = false; const stBr = new Uint8Array(15);
-  function blit(g, x, y, w, h) { const D = J.DPR; g.drawImage(txtCv, x * D, y * D, w * D, h * D, x, y, w, h); }
-  function renderTxt() {
-    const g = gt; if (!g) return; g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); g.clearRect(0, 0, W, H); g.textBaseline = 'middle';
-    const pst = P[0], pa = P[4];
-    g.font = '500 ' + FS + 'px ' + FF;
+  /* cached text layer: four small offscreen canvases, one per region that holds changing text (state values · answer percentages · code-card tags + counters ·
+     typed-question labels), each with its own dirty flag and sized to just its rect (device-pixel aligned, so a blit is a 1:1 copy). The old single full-size layer
+     (cl.width x cl.height) was cleared and re-drawn whole whenever one percentage ticked. */
+  const TXN = 4, txCv = [], txG = [], txR = [], txD = new Uint8Array(TXN); let stVals = false, tAns = -1; const stBr = new Uint8Array(15);
+  for (let i = 0; i < TXN; i++) { txCv.push(document.createElement('canvas')); txG.push(null); txR.push({ x: 0, y: 0, w: 0, h: 0 }); }
+  function txSize(i, x, y, w, h) {
+    const D = J.DPR, r = txR[i], c = txCv[i];
+    r.x = Math.floor(x * D) / D; r.y = Math.floor(y * D) / D; r.w = Math.ceil((x + w) * D) / D - r.x; r.h = Math.ceil((y + h) * D) / D - r.y;
+    c.width = Math.max(1, Math.round(r.w * D)); c.height = Math.max(1, Math.round(r.h * D)); txG[i] = c.getContext('2d'); txD[i] = 1;
+  }
+  function txLayout() {
+    const pst = P[0], pa = P[4], pq = P[3], c0 = CARDS[0], c2 = CARDS[2];
+    txSize(0, pst.x + 4, pst.y + hdrH, pst.w - 8, 15 * spitch);
+    txSize(1, pa.x + 4, rowY[0] - pitch * 0.5, pa.w - 8, rowY[10] - rowY[0] + pitch);
+    txSize(2, c0.x - 1, c0.y - 1, c0.w + 2, c2.y + c2.h - c0.y + 2);
+    if (M) txSize(3, pq.x + 1, qy[0] + qr, pq.w - 2, qy[2] - qy[0] + 44); else txSize(3, QP[0].x - 1, QP[0].y - 1, QP[0].w + 2, QP[2].y + QP[2].h - QP[0].y + 2);
+    tAns = -1;
+  }
+  function txBegin(i) { const g = txG[i], r = txR[i], D = J.DPR; g.setTransform(D, 0, 0, D, -r.x * D, -r.y * D); g.clearRect(r.x, r.y, r.w, r.h); g.textBaseline = 'middle'; txD[i] = 0; return g; }
+  function blit(g, i) { const r = txR[i]; g.drawImage(txCv[i], r.x, r.y, r.w, r.h); }
+  function txState() {
+    const g = txBegin(0), pst = P[0]; g.font = '500 ' + FS + 'px ' + FF;
     if (stVals) { g.textAlign = 'left'; for (let i = 0; i < 15; i++) { g.fillStyle = stBr[i] ? '#fff' : '#8f859b'; g.fillText(stTxt[i], pst.x + 9, ny[i] + 0.5); } }
     if (!M) { g.textAlign = 'right'; g.fillStyle = '#fff'; for (let i = 0; i < 15; i++) if (stBr[i]) g.fillText(KEYS[i], nx[i] - 10, ny[i] + 0.5); }
+  }
+  function txAns() { // percentages (+ the selected rows' names) carry a halo: the wires from the answer ports to the code cards run straight through this column
+    const g = txBegin(1), pa = P[4], lw = M ? 2 : 3, px = pa.x + pa.w - (M ? 4 : 9); g.font = '500 ' + FS + 'px ' + FF; g.lineJoin = 'round'; g.lineWidth = lw; g.strokeStyle = HALO;
     for (let r = 0; r < 11; r++) {
       const sel = aSelT[r] > 0.5, ty = M ? rowY[r] - 3.5 : rowY[r] + 0.5;
-      g.textAlign = 'right'; g.fillStyle = sel ? '#fff' : '#a89db3'; g.fillText(aTxt[r], pa.x + pa.w - (M ? 4 : 9), ty);
-      if (sel) { g.textAlign = 'left'; g.fillStyle = '#fff'; g.fillText(ROW[r], pa.x + (M ? 14 : 22), ty); }
+      g.textAlign = 'right'; g.fillStyle = sel ? '#fff' : '#a89db3'; g.strokeText(aTxt[r], px, ty); g.fillText(aTxt[r], px, ty);
+      if (sel) { g.textAlign = 'left'; g.fillStyle = '#fff'; g.strokeText(ROW[r], pa.x + (M ? 14 : 22), ty); g.fillText(ROW[r], pa.x + (M ? 14 : 22), ty); }
     }
-    const CN = ['execute', 'review', 'skip']; g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+  }
+  function txCards() {
+    const g = txBegin(2), CN = ['execute', 'review', 'skip']; g.textBaseline = 'alphabetic'; g.textAlign = 'left';
     for (let k = 0; k < 3; k++) {
-      const c = CARDS[k]; g.font = '700 ' + (M ? 7 : 8.5) + 'px ' + FF; g.fillStyle = '#fff'; T(g, M || c.w < 116 ? CN[k] : 'orders/' + CN[k], c.x + (M ? 5 : 10), c.y + (M ? 12 : 17), M ? 0.2 : 0.6);
-      if (!M) { g.font = '500 8px ' + FF; g.fillStyle = '#ffc7dc'; g.fillText(DSUB[k], c.x + 10, c.y + 29); }
+      const c = CARDS[k]; g.font = '700 ' + cFS + 'px ' + FF; g.fillStyle = '#fff'; T(g, M || c.w < 116 ? CN[k] : 'orders/' + CN[k], c.x + (M ? 5 : 10), c.y + (M ? 12 : 17), M ? 0.2 : 0.6);
+      if (!M) { g.font = '500 ' + cFS2 + 'px ' + FF; g.fillStyle = '#ffc7dc'; g.fillText(DSUB[k], c.x + 10, c.y + 29); }
       g.font = '700 ' + (M ? 11 : 25) + 'px ' + SF; g.fillStyle = '#fff'; g.fillText(cTxt[k], c.x + (M ? 5 : 10), c.y + c.h - (M ? 7 : 11));
     }
-    txtDirty = false;
   }
-  let ambAcc = 0, ax = 0, ay = 0, lax = 0, lay = 0; const auraEl = J.$('.hero-aura', stage);
+  function txQ() { // typed-question labels: name · primitive · "= answer" (desktop: on the static plates; phone: centred under the node)
+    const g = txBegin(3), pq = P[3], QN = ['which action?', 'how much?', 'risk ok?'], QT = ['choice', 'score', 'flag'], QM = [['which', 'action?'], ['how', 'much?'], ['risk', 'ok?']];
+    for (let i = 0; i < 3; i++) {
+      if (M) {
+        const cx = pq.x + pq.w / 2; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillStyle = '#f4eef6'; g.font = '600 7px ' + FF; g.fillText(QM[i][0], cx, qy[i] + qr + 9); g.fillText(QM[i][1], cx, qy[i] + qr + 17);
+        g.fillStyle = '#ff9cc4'; g.font = '500 7px ' + FF; g.fillText(QT[i], cx, qy[i] + qr + 25);
+        if (qTxt[i]) { g.textBaseline = 'middle'; g.font = '700 7px ' + FF; g.fillText(qTxt[i], cx, qy[i] + qr + 34); }
+      } else {
+        g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillStyle = '#f4eef6'; g.font = '700 ' + qFS + 'px ' + FF; g.fillText(QN[i], QX, qy[i] - 4.5);
+        g.fillStyle = '#ff9cc4'; g.font = '500 ' + qFS2 + 'px ' + FF; T(g, QT[i], QX, qy[i] + 7, 0.8);
+        if (qLab[i]) { g.textBaseline = 'middle'; g.font = '700 ' + qFS + 'px ' + FF; g.fillText(qLab[i], QX, qy[i] + 20); }
+      }
+    }
+  }
+  let ambAcc = 0, ax = 0, ay = 0, lax = 0, lay = 0, prevT = 0; const auraEl = J.$('.hero-aura', stage);
+  /* ambient beams are stroked in batches: every beam with the same colour ramp step shares one path (the ramp only has 8 reachable steps at ambient strength) */
+  const aX0 = new Float32Array(BN), aY0 = new Float32Array(BN), aX1 = new Float32Array(BN), aY1 = new Float32Array(BN), aKey = new Uint8Array(BN), aPres = new Uint8Array(40);
+  /* cost governor (as in builds.js): when the 90-frame average JS cost per frame is over 4.5 ms the ambient shimmer thins out, and it comes back when the device recovers */
+  let gCost = 0, gN = 0;
   function frame(t, dt) {
+    const a0 = performance.now(); draw(t, dt); gCost += performance.now() - a0;
+    if (++gN === 90) { const avg = gCost / gN; if (avg > 4.5 && ambK > 0.4) ambK = Math.max(0.4, ambK * 0.8); else if (avg < 2.2 && ambK < 1) ambK = Math.min(1, ambK * 1.15); gCost = 0; gN = 0; }
+  }
+  function draw(t, dt) {
     const g = gl; if (!g || !W) return;
     now = t; lastRun = t; const dk = dt || 0.016;
     for (let i = 0; i < WV.length; i++) { const w = WV[i]; if (!w.on) continue; while (w.st < 8 && t >= w.t0 + ST[w.st]) runStage(w, w.st++); }
-    ambAcc += dk * (M ? 8 : 15); while (ambAcc >= 1) { ambAcc -= 1; const e = lES[1] + ((Math.random() * (lES[5] - lES[1])) | 0); beam(e, t, 0.8 + Math.random() * 0.8, 0.22 + Math.random() * 0.2, PK, 1); }
-    const dA = Math.exp(-dk * 2.1), dB = Math.exp(-dk * 3.4), dC = Math.exp(-dk * 2.2), kE = Math.min(1, dk * 8);
+    ambAcc += dk * (M ? 8 : 15) * ambK; const cap = AMB_CAP(); while (ambAcc >= 1) { ambAcc -= 1; if (nAmb >= cap) continue; const e = lES[1] + ((Math.random() * (lES[5] - lES[1])) | 0); beam(e, t, 0.8 + Math.random() * 0.8, 0.22 + Math.random() * 0.2, PK, 1); }
+    // value tweens (bars, row glow) follow the wall clock, not the dt that core caps at 50 ms: on a slow GPU they still land ~0.5 s after the wave reaches them (the readout waits for them)
+    const dA = Math.exp(-dk * 2.1), dB = Math.exp(-dk * 3.4), dC = Math.exp(-dk * 2.2), kE = Math.min(1, Math.max(dk, Math.min(0.3, t - prevT)) * 8); prevT = t;
     g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); g.clearRect(0, 0, W, H); g.lineCap = 'round'; g.globalCompositeOperation = 'lighter';
     if (killFl > 0.01) { spr(T_RED, jcx, jcy, Math.max(W, H) * 1.3, killFl * 0.35); killFl *= Math.exp(-dk * 1.8); }
     if (auraEl) { const tx = J.pointer.nx * 16, ty = J.pointer.ny * 10; ax += (tx - ax) * Math.min(1, dk * 2.5); ay += (ty - ay) * Math.min(1, dk * 2.5); if (Math.abs(ax - lax) + Math.abs(ay - lay) > 0.08) { lax = ax; lay = ay; auraEl.style.transform = 'translate3d(' + ax.toFixed(1) + 'px,' + ay.toFixed(1) + 'px,0)'; } }
@@ -411,20 +487,25 @@ JEV.mod('hero', () => {
       for (let i = 0; i < NN; i++) { const dx = nx[i] - mx, dy = ny[i] - my, d2 = dx * dx + dy * dy; if (d2 < R2) { const k = 1 - Math.sqrt(d2) / PR; spr(PK, nx[i], ny[i], (M ? 12 : 16) + 18 * k, k * 0.95 * hov); } }
     }
     /* idle shimmer + wave beams */
+    let aN = 0;
     for (let b = 0; b < BN; b++) {
       const dur = bDur[b]; if (dur === 0) continue;
       const u = (t - bT0[b]) / dur; if (u < 0) continue;
       const e = bE[b], amb = bAmb[b], span = Math.min(0.75, Math.max(0.16, (amb ? 56 : 120) / (elen[e] + 1)));
       if (u >= 1 && !bDone[b]) { bDone[b] = 1; arrive(b, e); }
-      if (u >= 1 + span) { bDur[b] = 0; continue; }
+      if (u >= 1 + span) { bDur[b] = 0; if (amb) nAmb--; continue; }
       const hu = u > 1 ? 1 : u, tu = u - span < 0 ? 0 : u - span, w = bW[b] * (u > 1 ? 1 - (u - 1) / span : 1), R = BRAMP[bTint[b]];
       ep(e, tu); const x0 = PX, y0 = PY; ep(e, hu); const x3 = PX, y3 = PY;
-      if (amb) { g.lineWidth = 1; g.strokeStyle = R[(w * 0.55 * 32) | 0]; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x3, y3); g.stroke(); spr(bTint[b], x3, y3, 7, w * 0.8); continue; }
+      if (amb) { const ri = (w * 0.55 * 32) | 0; if (ri > 0) { aX0[aN] = x0; aY0[aN] = y0; aX1[aN] = x3; aY1[aN] = y3; aKey[aN++] = bTint[b] * 8 + (ri > 7 ? 7 : ri); } if (w > 0.1) spr(bTint[b], x3, y3, 7, w * 0.8); continue; }
       const sp = hu - tu; ep(e, tu + sp * 0.45); const x1 = PX, y1 = PY; ep(e, tu + sp * 0.78); const x2 = PX, y2 = PY;
       g.lineWidth = M ? 1.3 : 1.6; g.strokeStyle = R[(w * 0.34 * 32) | 0]; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
       g.lineWidth = M ? 1.7 : 2.1; g.strokeStyle = R[(w * 0.7 * 32) | 0]; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
       g.lineWidth = M ? 2.1 : 2.8; g.strokeStyle = R[(w * 32) | 0]; g.beginPath(); g.moveTo(x2, y2); g.lineTo(x3, y3); g.stroke();
-      spr(bTint[b], x3, y3, (M ? 11 : 15) + 14 * w, w); spr(T_WHT, x3, y3, 5 + 6 * w, w);
+      sprh(bTint[b], x3, y3, (M ? 11 : 15) + 14 * w, w);
+    }
+    if (aN) { // one stroke per (tint, ramp step) instead of one per beam
+      g.lineWidth = 1; g.globalAlpha = 1; aPres.fill(0); for (let j = 0; j < aN; j++) aPres[aKey[j]] = 1;
+      for (let k = 0; k < 40; k++) if (aPres[k]) { g.strokeStyle = BRAMP[k >> 3][k & 7]; g.beginPath(); for (let j = 0; j < aN; j++) if (aKey[j] === k) { g.moveTo(aX0[j], aY0[j]); g.lineTo(aX1[j], aY1[j]); } g.stroke(); }
     }
     /* main cable pulse (thick, white-hot) */
     if (cableS >= 0) {
@@ -446,7 +527,7 @@ JEV.mod('hero', () => {
     /* state rows that matter */
     const pst = P[0];
     for (let i = 0; i < 15; i++) {
-      const v = stLit[i], nb = v > 0.3 ? 1 : 0; if (nb !== stBr[i]) { stBr[i] = nb; txtDirty = true; } if (v < 0.02) continue; stLit[i] = v * dA;
+      const v = stLit[i], nb = v > 0.3 ? 1 : 0; if (nb !== stBr[i]) { stBr[i] = nb; txD[0] = 1; } if (v < 0.02) continue; stLit[i] = v * dA;
       g.globalAlpha = 1; g.fillStyle = RAMP[PK][(v * 0.16 * 32) | 0]; g.fillRect(pst.x + 3, ny[i] - spitch / 2 + 1, pst.w - 6, spitch - 2);
       spr(PK, nx[i], ny[i], 22 + 12 * v, v * 0.95);
     }
@@ -473,52 +554,55 @@ JEV.mod('hero', () => {
     g.textBaseline = 'middle';
     const bw = bx1 - bx0;
     for (let r = 0; r < 11; r++) {
-      aVal[r] += (aTg[r] - aVal[r]) * kE; const v = aVal[r], s = aSel[r], y = rowY[r], by = M ? y + 2.5 : y - barH / 2, w = Math.max(0, v * bw);
+      let v = aVal[r]; const tg = aTg[r]; v += (tg - v) * kE; if (v - tg < 0.002 && tg - v < 0.002) v = tg; aVal[r] = v; // settle (no endless asymptote)
+      const s = aSel[r], y = rowY[r], by = M ? y + 2.5 : y - barH / 2, w = Math.max(0, v * bw);
       g.fillStyle = RAMP[PK][((0.42 + 0.58 * s) * 32) | 0]; g.fillRect(bx0, by, w, barH);
       if (s > 0.04) { g.globalAlpha = s; g.fillStyle = '#fff'; g.fillRect(bx0 + w - 2, by - 1, 2, barH + 2); g.globalAlpha = 1; }
-      const pv = Math.round(v * 100); if (pv !== aTxtV[r]) { aTxtV[r] = pv; aTxt[r] = pv + '%'; txtDirty = true; }
+      const pv = pct(v); if (pv !== aTxtV[r]) { aTxtV[r] = pv; aTxt[r] = pv + '%'; txD[1] = 1; }
     }
-    for (let k = 0; k < 3; k++) if (cCV[k] !== cCount[k]) { cCV[k] = cCount[k]; cTxt[k] = J.fmt(cCount[k]); txtDirty = true; }
-    if (txtDirty) renderTxt();
-    blit(g, pst.x + 4, pst.y + hdrH, pst.w - 8, 15 * spitch);
-    blit(g, pa.x + 4, rowY[0] - pitch * 0.5, pa.w - 8, rowY[10] - rowY[0] + pitch);
-    { const c0 = CARDS[0], c2 = CARDS[2]; blit(g, c0.x - 1, c0.y - 1, c0.w + 2, c2.y + c2.h - c0.y + 2); }
-    g.font = '500 ' + FS + 'px ' + FF;
+    for (let k = 0; k < 3; k++) if (cCV[k] !== cCount[k]) { cCV[k] = cCount[k]; cTxt[k] = J.fmt(cCount[k]); txD[2] = 1; }
+    { const fx = bx0 + floorV * bw; g.strokeStyle = 'rgba(255,193,61,.9)'; g.lineWidth = 1; g.setLineDash(DASH); g.beginPath(); g.moveTo(fx, rowY[0] - pitch * 0.5); g.lineTo(fx, rowY[4] + pitch * 0.5); g.stroke(); g.setLineDash(NODASH); } // floor line sits under the text layer
+    if (txD[0]) txState();
+    if (txD[1] && (t - tAns >= 0.04 || J.reduce)) { tAns = t; txAns(); } // percentages tick at <= 25 Hz
+    if (txD[2]) txCards();
+    if (txD[3]) txQ();
+    for (let i = 0; i < TXN; i++) blit(g, i);
+    if (chipD && (aTxtV[chipRow] === chipPc || t - chipT0 > 1.6)) { const cd = chipD; chipD = null; updateChip(cd, chipPc, chipCs); } // the readout lands with the bars
     for (let r = 0; r < 11; r++) { const s = aSel[r]; if (s < 0.04) continue; const y = rowY[r]; g.globalAlpha = 1; g.fillStyle = RAMP[PK][(s * 32) | 0]; g.fillRect(pa.x + 2, y - pitch * 0.38, 2, pitch * 0.76); }
-    /* floor + confidence tick on the choice group */
-    { const gy0 = rowY[0] - pitch * 0.5, gy1 = rowY[4] + pitch * 0.5, fx = bx0 + floorV * bw;
-      g.strokeStyle = 'rgba(255,193,61,.9)'; g.lineWidth = 1; g.setLineDash(DASH); g.beginPath(); g.moveTo(fx, gy0); g.lineTo(fx, gy1); g.stroke(); g.setLineDash(NODASH);
-      g.textAlign = 'right'; g.font = '700 ' + (M ? 7 : 8) + 'px ' + FF; g.fillStyle = '#ffc13d'; g.fillText(floorTxt, pa.x + pa.w - (M ? 4 : 8), grpY[0] + 3);
-      confA += (1 - confA) * Math.min(1, dk * 9); conf += (confTg - conf) * kE;
+    /* floor + confidence tick on the choice group. The tick sits on the tip of the chosen bar (same eased value, so it can never disagree with the bar or the
+       percentage); its "0.93" label lives on a dark plate in the row's own gap, clear of the neighbouring rows' bars and percentages. */
+    {
+      g.textAlign = 'right'; g.font = '700 ' + fFS + 'px ' + FF; g.fillStyle = '#ffc13d'; g.fillText(floorTxt, pa.x + pa.w - (M ? 4 : 8), grpY[0] + 3);
+      confA += (1 - confA) * Math.min(1, dk * 9);
       if (confA > 0.02) {
-        const cx = bx0 + conf * bw, ry = rowY[confRow], hh = pitch * (M ? 0.5 : 0.46), col = confOk ? '#2ee6a6' : '#ffc13d', yy = M ? ry + 2.5 : ry;
+        const cx = bx0 + aVal[confRow] * bw, ry = rowY[confRow], hh = M ? pitch * 0.5 : Math.min(9, pitch * 0.3), col = confOk ? '#2ee6a6' : '#ffc13d', yy = M ? ry + 2.5 : ry, dn = confRow === 0 ? -1 : 1; // dn: +1 = marker above the bar
         g.globalAlpha = confA; g.fillStyle = col; g.beginPath();
-        if (confRow === 0) { g.fillRect(cx - 1, yy - hh * 0.55, 2, hh * 1.55); g.moveTo(cx - 3.5, yy + hh + 4.5); g.lineTo(cx + 3.5, yy + hh + 4.5); g.lineTo(cx, yy + hh - 0.5); }
-        else { g.fillRect(cx - 1, yy - hh, 2, hh * 2); g.moveTo(cx - 3.5, yy - hh - 4.5); g.lineTo(cx + 3.5, yy - hh - 4.5); g.lineTo(cx, yy - hh + 0.5); }
-        g.closePath(); g.fill();
-        if (!M) { const cv = Math.round(conf * 100); if (cv !== confV) { confV = cv; confTxt = (cv / 100).toFixed(2); } g.textAlign = 'center'; g.font = '700 8px ' + FF; g.fillText(confTxt, cx, confRow === 0 ? yy + hh + 14 : yy - hh - 9); }
+        if (M) {
+          if (confRow === 0) { g.fillRect(cx - 1, yy - hh * 0.55, 2, hh * 1.55); g.moveTo(cx - 3.5, yy + hh + 4.5); g.lineTo(cx + 3.5, yy + hh + 4.5); g.lineTo(cx, yy + hh - 0.5); }
+          else { g.fillRect(cx - 1, yy - hh, 2, hh * 2); g.moveTo(cx - 3.5, yy - hh - 4.5); g.lineTo(cx + 3.5, yy - hh - 4.5); g.lineTo(cx, yy - hh + 0.5); }
+          g.closePath(); g.fill();
+        } else {
+          g.fillRect(cx - 1, yy - hh, 2, hh * 2); const ty = yy - dn * hh; g.moveTo(cx - 3.5, ty - dn * 4.5); g.lineTo(cx + 3.5, ty - dn * 4.5); g.lineTo(cx, ty + dn * 0.5); g.closePath(); g.fill();
+          const cvp = aTxtV[confRow]; if (cvp !== confV) { confV = cvp; confTxt = (cvp / 100).toFixed(2); }
+          const ph = fFS + 3, pcy = ty - dn * (4.5 + 1 + ph / 2), plx = clamp(cx, bx0 + confW / 2, pa.x + pa.w - 6 - confW / 2);
+          rr(g, plx - confW / 2, pcy - ph / 2, confW, ph, 4); g.fillStyle = 'rgba(8,4,13,.94)'; g.fill(); g.lineWidth = 1; g.strokeStyle = col; g.globalAlpha = confA * 0.55; g.stroke(); g.globalAlpha = confA;
+          g.fillStyle = col; g.textAlign = 'center'; g.font = '700 ' + fFS + 'px ' + FF; g.fillText(confTxt, plx, pcy + 0.5);
+        }
         g.globalAlpha = 1;
       }
     }
-    /* typed question results */
-    const pq = P[3];
-    for (let q = 0; q < 3; q++) {
-      const o = qOn[q]; if (o < 0.02 || !qTxt[q]) continue; g.globalAlpha = Math.min(1, o); g.fillStyle = '#ff9cc4'; g.font = '700 ' + (M ? 7 : 9) + 'px ' + FF;
-      if (M) { g.textAlign = 'center'; g.fillText(qTxt[q], pq.x + pq.w / 2, qy[q] + qr + 34); } else { g.textAlign = 'left'; g.fillText(qLab[q], pq.x + 26 + qr + 8, qy[q] + 19); }
-      g.globalAlpha = 1;
-    }
     if (killed) {
       const p = P[5]; g.fillStyle = 'rgba(9,4,15,.96)'; g.fillRect(p.x + 2, p.y + (M ? 14 : 21), p.w - 4, M ? 8 : 11);
-      g.globalAlpha = 0.65 + 0.35 * Math.sin(t * 7); g.fillStyle = '#ff4d5e'; g.font = '700 ' + (M ? 7 : 8) + 'px ' + FF; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillText(M ? 'halted' : 'halted · all to review', p.x + (M ? 3 : 10), p.y + (M ? 18 : 27)); g.globalAlpha = 1;
+      g.globalAlpha = 0.65 + 0.35 * Math.sin(t * 7); g.fillStyle = '#ff4d5e'; g.font = '700 ' + kFS + 'px ' + FF; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillText(M ? 'halted' : 'halted · all to review', p.x + (M ? 3 : 10), p.y + (M ? 18 : 27)); g.globalAlpha = 1;
     }
     g.textBaseline = 'middle';
   }
 
   /* ---------- build / resize ---------- */
   function rebuild() {
-    const a = J.fit(cs), b = J.fit(cl); gs = a.g; gl = b.g; W = a.W; H = a.H; M = W < 700; txtCv.width = cl.width; txtCv.height = cl.height; gt = txtCv.getContext('2d'); txtDirty = true;
+    const a = J.fit(cs), b = J.fit(cl); gs = a.g; gl = b.g; W = a.W; H = a.H; M = W < 700;
     const dens = M ? 0 : W < 1000 ? 1 : 2; if (dens !== topoMode) buildTopo(dens);
-    layout(); stVals = !M && P[0].w >= 128; drawStatic(); if (!J.reduce || !lastRun) frame(performance.now() / 1000, 0.016); else frame(lastRun, 0.016);
+    layout(); stVals = !M && P[0].w >= 128; txLayout(); drawStatic(); if (!J.reduce || !lastRun) frame(performance.now() / 1000, 0.016); else frame(lastRun, 0.016);
   }
   J.watch(net, rebuild);
   if (document.fonts) { document.fonts.ready.then(() => W && rebuild()).catch(() => {}); if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => W && rebuild()); }
@@ -526,7 +610,8 @@ JEV.mod('hero', () => {
   /* ---------- events ---------- */
   function snap(d, demo) {
     const w = startWave(d, demo); while (w.st < 8) runStage(w, w.st++);
-    aVal.set(aTg); aSel.set(aSelT); qFl.fill(0); aHot.fill(0); stLit.forEach((v, i) => (stLit[i] = w.lit[i] ? 0.6 : 0)); cPulse.fill(0); nfl.fill(0); bDur.fill(0); cableS = -1; conf = confTg; confA = 1;
+    aVal.set(aTg); aSel.set(aSelT); qFl.fill(0); aHot.fill(0); stLit.forEach((v, i) => (stLit[i] = w.lit[i] ? 0.6 : 0)); cPulse.fill(0); nfl.fill(0); bDur.fill(0); nAmb = 0; cableS = -1; confA = 1;
+    if (chipD) { const cd = chipD; chipD = null; updateChip(cd, chipPc, chipCs); }
   }
   J.bus.on('decision', (d) => { if (J.reduce) { snap(d, false); frame(performance.now() / 1000, 0.016); } else startWave(d, false); });
   J.bus.on('kill', (k) => { killed = !!k; PK = killed ? T_RED : T_PINK; killFl = 1; });

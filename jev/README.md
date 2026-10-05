@@ -32,7 +32,13 @@ Section ids (HUD nav links to them): `#hero #builds #hour #desk #lab` (the code 
 * **Own your files only.** If you need a change in `core.js`/`base.css`/`engine.js`, do not edit — describe it in your final report.
 * JS: `JEV.mod('name', () => { … })` — everything inside the closure, **no globals**, no `window.x =` (except via `JEV.*` helpers already provided).
 * Animation: **`JEV.task(el, (t, dt) => …)`** (frame loop gated by visibility of `el`). Never run an ungated `requestAnimationFrame` loop.
-  Canvases: `JEV.fit(canvas)` (DPR-aware, returns `{g, W, H}` in CSS px) inside `JEV.watch(el, cb)` (resize). Cache layout rects on resize, never per frame.
+  Canvases: `JEV.fit(canvas)` (DPR-aware, returns `{g, W, H, dpr}` in CSS px) inside `JEV.watch(el, cb)` (resize). Cache layout rects on resize, never per frame.
+  `fit` measures the *layout* box (`clientWidth/Height`), so a canvas inside a `.rv` reveal (mid `scale(.985)`) is still sized right; `watch` re-runs `cb` once when an enclosing `.rv` reveal finishes.
+  Memory: glow-only canvases may cap their ratio with `data-dpr="1.5"` (or `JEV.fit(c, 1.5)` / `{dpr, maxPx}`); a capped canvas must draw through the returned `g` / `dpr`, never `JEV.DPR`.
+* Hidden tab: the market tick and the decision stream stop while `document.hidden` (a hidden tab gets no frames, so WAAPI animations started by handlers could never finish and would pile up) and resume without catch-up.
+  Fire-and-forget flashes: use `JEV.animate(el, keyframes, opts)` (no-op while hidden) instead of `el.animate(...)`.
+* Off-screen CSS animations: core toggles `.is-off` on `body > section`, `body > footer`, `.card` and `[class*="-stage"]` when they are > 200px outside the viewport; `base.css` pauses every CSS animation inside.
+  (Each running animation costs a style invalidation per frame.) Prefer compositor-only properties (`transform`, `opacity`) for infinite loops; `background-position` / `clip-path` / `box-shadow` loops run on the main thread.
 * Perf budget ≈ 2 ms/frame per module on a laptop: pre-render static layers to a second/offscreen canvas, glow with pre-rendered sprites + `globalCompositeOperation='lighter'`
   (no `shadowBlur`/`filter: blur()` inside per-frame loops), cap particle counts, update DOM text at ≤ 4 Hz.
 * Responsive: must look **intentional** at 390×844 (touch), 768×1024, 1440×900. No horizontal page overflow (`scrollWidth ≤ innerWidth`). Touch targets ≥ 40 px.
@@ -48,10 +54,10 @@ Section ids (HUD nav links to them): `#hero #builds #hour #desk #lab` (the code 
 ## `window.JEV` API (core.js)
 ```
 JEV.$ / $$(sel, root)          JEV.TAU  clamp  lerp  rnd(a,b)  ri(a,b)  pick(arr)  gauss()  rng(seed)→()=>0..1
-JEV.fmt(n,d)  usd(n,d)  sgn(n,d)  rgba('#rrggbb', a)   JEV.C = palette {pink,pink2,green,blue,amber,violet,orange,cyan,red,ink,mut,dim,bg}
-JEV.DPR  reduce(bool)  narrow()(<700px)
+JEV.fmt(n,d) (cached Intl.NumberFormat)  usd(n,d)  sgn(n,d)  rgba('#rrggbb', a)   JEV.C = palette {pink,pink2,green,blue,amber,violet,orange,cyan,red,ink,mut,dim,bg}
+JEV.DPR (≤ 2; lowered, never below 1, only when a viewport-sized canvas would exceed ~8.4 MP of backing store)  reduce(bool)  narrow()(<700px)  hidden()  animate(el,kf,opts)
 JEV.bus.on(name, fn) → off()   .off  .emit      events: 'decision'(d) · 'tick'({price,dp}, 4 Hz) · 'kill'(bool) · 'floor'(number)
-JEV.task(el, fn(t,dt))         JEV.fit(canvas)→{g,W,H}    JEV.watch(el, cb(rect))    JEV.onView(el, cb, {once,threshold,rootMargin})
+JEV.task(el, fn(t,dt))         JEV.fit(canvas[,dpr|{dpr,maxPx}])→{g,W,H,dpr}    JEV.watch(el, cb(rect))    JEV.onView(el, cb, {once,threshold,rootMargin})
 JEV.rel(el)→{x,y,w,h}          JEV.pointer {x,y,nx,ny,down}   (viewport px / -1..1)
 JEV.countTo(el, to, {from,dur,fmt})    JEV.scramble(el, text, ms)
 JEV.S      live state {killed, floor, count, cost, ms[], counts{choice,flag,score}, dest{execute,review,skip}}
@@ -71,6 +77,11 @@ d.size 0.5|1|2|4 (% of capital)  d.sizeIdx  d.sizes[4] (probabilities)          
 d.dest 'execute'|'review'|'skip'   d.reason ('ok'|'hold'|'kill switch'|'risk flag'|'conf 0.71 < 0.85')   d.ms (typed-question latency)   d.floor  d.killed  d.net (edge net of costs, bps)
 ```
 Gate semantics (same everywhere): hold → `skip`; kill switch → `review`; failed risk flag → `review` (except close/flatten, which reduce risk); `conf < floor` → `review`; else `execute`.
+
+## Section kit (base.css)
+`.sec` (tight vertical rhythm), `.sec-head` > `.eb` + `.h2` + `.lede`. From 1100px a plain `.sec-head` is a grid: headline left, lede right (bottom-aligned, pink hairline) — wrap the lede in `.sec-aside`
+to add a live slot under it (`.sec-live`, see the `#desk` head: gate tally from `JEV.S.dest`, ids `secExec/secRev/secSkip`, updated by the HUD). Module heads that bring their own layout (`.bld-head`, `.code-head`) are left alone;
+the kit uses `:where()` so any module rule overrides it. HUD: the section nav shows from 1000px (numerals dropped below 1240px), `--dim` is ≥ 4.5:1 on `--bg` and on the card panels.
 
 ## The three primitives ("typed questions")
 `choice` — *which one?* (buy · sell · hold · close · flatten) · `score` — *how much?* (0.5% · 1% · 2% · 4% of capital) · `flag` — *yes or no?* (`risk_ok`).

@@ -130,14 +130,15 @@ JEV.mod('desk-top', () => {
   /* =====================================================================================
    * events: tick → mark-to-market, decision → tickets / jumps / markers
    * ===================================================================================== */
-  const bigEl = $('#dkt-big');
+  const bigEl = $('#dkt-big'); let popN = 0;
   function pop(txt, dir) {
-    if (reduce || !bigEl || !bigEl.animate || bigEl.querySelectorAll('.dkt-pop').length > 3) return;
+    if (reduce || !bigEl || popN > 3) return;
     const e = document.createElement('i'); e.className = 'dkt-pop'; e.textContent = txt; e.style.color = dir > 0 ? C.green : C.red;
     e.style.right = (Math.random() * 20).toFixed(0) + 'px'; e.style.top = '10px';
     bigEl.appendChild(e);
-    const a = e.animate([{ opacity: 0, transform: 'translateY(16px) scale(.85)' }, { opacity: 1, transform: 'translateY(0) scale(1)', offset: .16 }, { opacity: 1, offset: .62 }, { opacity: 0, transform: 'translateY(-26px) scale(1)' }], { duration: 1800, easing: 'cubic-bezier(.2,.8,.2,1)' });
-    a.onfinish = () => e.remove();
+    const a = J.animate(e, [{ opacity: 0, transform: 'translateY(16px) scale(.85)' }, { opacity: 1, transform: 'translateY(0) scale(1)', offset: .16 }, { opacity: 1, offset: .62 }, { opacity: 0, transform: 'translateY(-26px) scale(1)' }], { duration: 1800, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    if (!a) { e.remove(); return; }                                // hidden tab / no WAAPI: never leave an unfinishable animation behind
+    popN++; a.onfinish = a.oncancel = () => { popN--; e.remove(); };
   }
   function setBal(v) {
     sim.bal = v;
@@ -259,22 +260,36 @@ JEV.mod('desk-top', () => {
   const balEl = $('#dkt-bal'), balSr = $('#dkt-bal-sr'), runEl = $('#dkt-run'), dvEl = $('#dkt-dv'), dpcEl = $('#dkt-dpc'), darEl = $('#dkt-dar'), subEl = $('#dkt-sub'), liveEl = $('#dkt-live');
   const sTix = $('#dkt-s-tix'), sWin = $('#dkt-s-win'), sEdge = $('#dkt-s-edge'), sDd = $('#dkt-s-dd'), ringEl = $('#dkt-ring');
   let digs = [], srT = 0;
-  function digitFlash(sp, dir) {
-    if (reduce || !sp.animate) return;
-    sp.animate([{ color: dir > 0 ? '#e6fff6' : '#ffe3e6', textShadow: '0 0 30px ' + (dir > 0 ? C.green : C.red), transform: 'translateY(' + (dir > 0 ? '14%' : '-14%') + ') scale(1.06)' }], { duration: 760, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  /* flashes: the glow is a static text-shadow on a child overlay (.dkt-gl, rasterised once); only its opacity (and the digit's transform) animate,
+   * so a flash is compositor-only - the old color + textShadow(30px) animations repainted blurred glyphs on the main thread every frame. One flash per host per 420 ms. */
+  const FLASH_MS = 420, GLOW_KF = [{ opacity: 1 }, { opacity: .55, offset: .3 }, { opacity: 0 }];
+  function glowFlash(host, txt, cls) {
+    if (reduce) return null;
+    let gl = host._gl;
+    if (!gl) { gl = host._gl = document.createElement('i'); gl.setAttribute('aria-hidden', 'true'); gl.textContent = txt; host.appendChild(gl); }
+    else if (gl.textContent !== txt) gl.textContent = txt;           // a still-fading overlay always mirrors the current text (never a ghost of the old digit)
+    const t = nowMs(); if (t - (host._ft || -1e9) < FLASH_MS) return null;
+    const a = J.animate(gl, GLOW_KF, { duration: 780, easing: 'cubic-bezier(.2,.7,.3,1)' }); if (!a) return null;
+    host._ft = t; gl.className = 'dkt-gl ' + cls;
+    return a;
+  }
+  function digitFlash(sp, ch, dir) {
+    if (!glowFlash(sp, ch, dir > 0 ? 'u' : 'd')) return;
+    J.animate(sp, [{ transform: 'translateY(' + (dir > 0 ? '14%' : '-14%') + ') scale(1.06)' }, { transform: 'none' }], { duration: 760, easing: 'cubic-bezier(.2,.8,.2,1)' });
   }
   function setBalText(s, dir) {
     if (digs.length !== s.length) {
       balEl.textContent = ''; digs = [];
-      for (let i = 0; i < s.length; i++) { const sp = document.createElement('span'); sp.className = s[i] === ',' ? 'dkt-cm' : 'dkt-dg'; sp.textContent = s[i]; balEl.appendChild(sp); digs.push(sp); }
+      for (let i = 0; i < s.length; i++) { const sp = document.createElement('span'); sp.className = s[i] === ',' ? 'dkt-cm' : 'dkt-dg'; sp.appendChild(document.createTextNode(s[i])); balEl.appendChild(sp); digs.push(sp); }
       return;
     }
-    for (let i = 0; i < s.length; i++) { const sp = digs[i]; if (sp.textContent !== s[i]) { sp.textContent = s[i]; digitFlash(sp, dir); } }
+    for (let i = 0; i < s.length; i++) { const sp = digs[i], tn = sp.firstChild; if (tn.data !== s[i]) { tn.data = s[i]; if (sp.className === 'dkt-dg') digitFlash(sp, s[i], dir); } }
   }
-  const flashStat = (el, txt) => { if (el.textContent === txt) return; el.textContent = txt; if (!reduce && el.animate) el.animate([{ color: C.pink2, textShadow: '0 0 14px ' + C.pink }], { duration: 800, easing: 'ease-out' }); };
+  /** stat value with a flash overlay: text lives in firstChild so the overlay survives text updates */
+  const flashStat = (el, txt) => { const tn = el.firstChild; if (tn.data === txt) return; tn.data = txt; glowFlash(el, txt, 's'); };
   const setW = (el, pct) => { const v = pct.toFixed(1) + '%'; if (el.style.getPropertyValue('--w') !== v) el.style.setProperty('--w', v); };
   const segs = (id) => $$('#' + id + ' i');
-  const pb1 = segs('dkt-pb1'), pb2 = segs('dkt-pb2'), pb3 = segs('dkt-pb3');
+  const pb1 = segs('dkt-pb1'), pb2 = segs('dkt-pb2'), pb3 = segs('dkt-pb3'), pv1 = $('#dkt-pv1'), pv2 = $('#dkt-pv2'), pv3 = $('#dkt-pv3');
   function flushPnl() {
     const bal = sim.bal, delta = bal - sim.open, pos = delta >= 0, pct = delta / sim.open * 100;
     if (pnl.classList.contains('dkt-neg') === pos) pnl.classList.toggle('dkt-neg', !pos);
@@ -291,70 +306,92 @@ JEV.mod('desk-top', () => {
     const ae = sim.sumBps / sim.nBps; flashStat(sEdge, (ae >= 0 ? '+' : '-') + Math.abs(ae).toFixed(2) + 'bp');
     setT(sDd, (sim.dd * 100).toFixed(2) + '%');
     // proportion bars
-    setW(pb1[0], wr); setW(pb1[1], 100 - wr); setT($('#dkt-pv1'), Math.round(wr) + '% up · ' + Math.round(100 - wr) + '% down');
+    setW(pb1[0], wr); setW(pb1[1], 100 - wr); const up = Math.round(wr); setT(pv1, up + '% up · ' + (100 - up) + '% down');
     const dx = S.dest, a = 38 + dx.execute, b = 24 + dx.review, c = 38 + dx.skip, tt = a + b + c;
     setW(pb2[0], a / tt * 100); setW(pb2[1], b / tt * 100); setW(pb2[2], c / tt * 100);
-    setT($('#dkt-pv2'), Math.round(a / tt * 100) + ' go · ' + Math.round(b / tt * 100) + ' rev · ' + Math.round(c / tt * 100) + ' skip');
+    const pa = Math.round(a / tt * 100), pbb = Math.round(b / tt * 100); setT(pv2, pa + ' go · ' + pbb + ' rev · ' + (100 - pa - pbb) + ' skip');   // always sums to 100
     const sz = sim.sizeN, st = sz[0] + sz[1] + sz[2] + sz[3];
     for (let i = 0; i < 4; i++) setW(pb3[i], sz[i] / st * 100);
-    setT($('#dkt-pv3'), '.5 · 1 · 2 · 4 %');
+    setT(pv3, '.5 · 1 · 2 · 4 %');
   }
 
-  /* p&l canvases */
+  /* p&l canvases.
+   * The line + area + labels + the end tag only change when the balance series moves (a 4 Hz tick or a decision), the y-range is still easing or the kill switch flips, so they are
+   * rendered into offscreen layers ONLY then (one Path2D shared by the fill, the glow stroke and the line) and every frame just blits them and draws the live end dot / ripple.
+   * No `ctx.font` is assigned on the visible canvas per frame: that assignment forces a style+layout update whenever anything dirtied style (measured ~2.6 ms per frame here). */
   const pcv = $('#dkt-pc'), wcv = $('#dkt-wl');
-  const pc = { g: null, W: 0, H: 0, yMin: 0, yMax: 1, init: false, gG: null, gR: null };
+  const pc = { g: null, W: 0, H: 0, ax: 64, yMin: 0, yMax: 1, init: false, gG: null, gR: null, off: document.createElement('canvas'), og: null, dirty: true,
+    tag: document.createElement('canvas'), tg: null, tw: 55, dpr: 1, rKill: false, rHh: -1, rBal: NaN, tMin: 0, tMax: 1, lo: 0, hi: 0, rMin: 0, rMax: 0, yEnd: 0, ty: 0, up: true, fs: 9.5 };
+  const tfs = (w) => clamp(w / 110, 9.5, 10.5);                // canvas text never below 9.5px, grows gently with the panel width
   const wl = { g: null, W: 0, H: 0 };
-  const pys = new Float32Array(HN);
   J.watch(pcv.parentNode, () => {
-    const r = J.fit(pcv); pc.g = r.g; pc.W = r.W; pc.H = r.H;
-    pc.gG = r.g.createLinearGradient(0, 0, 0, r.H); pc.gG.addColorStop(0, cG(0.5)); pc.gG.addColorStop(1, cG(0));
-    pc.gR = r.g.createLinearGradient(0, 0, 0, r.H); pc.gR.addColorStop(0, cR(0)); pc.gR.addColorStop(1, cR(0.5));
+    const r = J.fit(pcv); pc.g = r.g; pc.W = r.W; pc.H = r.H; pc.ax = r.W < 300 ? 54 : 64; pc.fs = tfs(r.W); pc.dpr = r.dpr; pc.tw = pc.ax - 9;
+    pc.off.width = pcv.width; pc.off.height = pcv.height; const og = pc.og = pc.off.getContext('2d'); og.setTransform(pcv.width / r.W, 0, 0, pcv.height / r.H, 0, 0);
+    pc.tag.width = Math.max(1, Math.round(pc.tw * r.dpr)); pc.tag.height = Math.max(1, Math.round(16 * r.dpr)); const tg2 = pc.tg = pc.tag.getContext('2d'); tg2.setTransform(r.dpr, 0, 0, r.dpr, 0, 0);
+    pc.gG = og.createLinearGradient(0, 0, 0, r.H); pc.gG.addColorStop(0, cG(0.5)); pc.gG.addColorStop(1, cG(0));
+    pc.gR = og.createLinearGradient(0, 0, 0, r.H); pc.gR.addColorStop(0, cR(0)); pc.gR.addColorStop(1, cR(0.5));
+    pc.dirty = true;
   });
-  J.watch(wcv, () => { const r = J.fit(wcv); wl.g = r.g; wl.W = r.W; wl.H = r.H; sim.stripDirty = true; });
-  function drawPnl(t, dt) {
-    const g = pc.g; if (!g) return;
-    const W = pc.W, H = pc.H, narrowC = W < 300, ax = narrowC ? 54 : 64, x0 = 8, x1 = W - ax, y0 = 16, y1 = H - 10;
-    g.clearRect(0, 0, W, H);
-    let lo = sim.open, hi = sim.open;
-    for (let i = 0; i < HN; i++) { const v = hist[i]; if (v < lo) lo = v; if (v > hi) hi = v; }
-    if (sim.bal < lo) lo = sim.bal; if (sim.bal > hi) hi = sim.bal;
-    const pad = Math.max((hi - lo) * 0.16, 30), tMin = lo - pad, tMax = hi + pad;
-    if (!pc.init) { pc.yMin = tMin; pc.yMax = tMax; pc.init = true; } else { const k = 1 - Math.exp(-dt * 4); pc.yMin += (tMin - pc.yMin) * k; pc.yMax += (tMax - pc.yMax) * k; }
-    const ys = (y1 - y0) / (pc.yMax - pc.yMin), yMin = pc.yMin;
-    const Yp = (v) => y1 - (v - yMin) * ys;
-    // faint grid
-    g.strokeStyle = 'rgba(255,255,255,.045)'; g.lineWidth = 1; g.beginPath();
-    for (let i = 0; i < 4; i++) { const y = Math.round(y0 + (y1 - y0) * i / 3) + 0.5; g.moveTo(x0, y); g.lineTo(x1 + 6, y); }
-    g.stroke();
-    const dx = (x1 - x0) / HN;
-    for (let i = 0; i < HN; i++) pys[i] = Yp(hat(i));
-    const yEnd = Yp(sim.bal), by = clamp(Yp(sim.open), y0, y1);
-    const trace = () => { g.beginPath(); g.moveTo(x0, pys[0]); for (let i = 1; i < HN; i++) g.lineTo(x0 + i * dx, pys[i]); g.lineTo(x1, yEnd); };
+  J.watch(wcv, () => { const r = J.fit(wcv); wl.g = r.g; wl.W = r.W; wl.H = r.H; wl.fs = tfs(r.W); sim.stripDirty = true; });
+  const PY0 = 16, PX0 = 8;
+  /** the cached layer: grid, above/below-open fill, glow + line, open baseline, axis labels */
+  function renderPnl() {
+    const og = pc.og, W = pc.W, H = pc.H, x0 = PX0, x1 = W - pc.ax, y0 = PY0, y1 = H - 10, yMin = pc.yMin;
+    const ys = (y1 - y0) / (pc.yMax - yMin), Yp = (v) => y1 - (v - yMin) * ys;
+    pc.rMin = pc.yMin; pc.rMax = pc.yMax; pc.rKill = S.killed;
+    og.clearRect(0, 0, W, H);
+    og.strokeStyle = 'rgba(255,255,255,.045)'; og.lineWidth = 1; og.beginPath();       // faint grid
+    for (let i = 0; i < 4; i++) { const y = Math.round(y0 + (y1 - y0) * i / 3) + 0.5; og.moveTo(x0, y); og.lineTo(x1 + 6, y); }
+    og.stroke();
+    const dx = (x1 - x0) / HN, yEnd = Yp(sim.bal), by = clamp(Yp(sim.open), y0, y1);
+    const line = new Path2D(); line.moveTo(x0, Yp(hat(0)));
+    for (let i = 1; i < HN; i++) line.lineTo(x0 + i * dx, Yp(hat(i)));
+    line.lineTo(x1, yEnd);
+    const area = new Path2D(line); area.lineTo(x1, by); area.lineTo(x0, by); area.closePath();
     for (let side = 0; side < 2; side++) {                       // above the open line = green, below = red
       const up = side === 0, top = up ? 0 : by, hgt = up ? by : H - by; if (hgt <= 0) continue;
-      g.save(); g.beginPath(); g.rect(0, top, W, hgt); g.clip();
-      trace(); g.lineTo(x1, by); g.lineTo(x0, by); g.closePath(); g.fillStyle = up ? pc.gG : pc.gR; g.fill();
-      g.globalCompositeOperation = 'lighter'; g.lineJoin = 'round';
-      g.lineWidth = 6; g.strokeStyle = up ? cG(0.13) : cR(0.13); trace(); g.stroke();
-      g.lineWidth = 2; g.strokeStyle = up ? cG(1) : cR(1); trace(); g.stroke();
-      g.restore();
+      og.save(); og.beginPath(); og.rect(0, top, W, hgt); og.clip();
+      og.fillStyle = up ? pc.gG : pc.gR; og.fill(area);
+      og.globalCompositeOperation = 'lighter'; og.lineJoin = 'round';
+      og.lineWidth = 6; og.strokeStyle = up ? cG(0.13) : cR(0.13); og.stroke(line);
+      og.lineWidth = 2; og.strokeStyle = up ? cG(1) : cR(1); og.stroke(line);
+      og.restore();
     }
     // open baseline + axis
-    g.setLineDash([2, 4]); g.strokeStyle = 'rgba(255,255,255,.28)'; g.beginPath(); g.moveTo(x0, by + 0.5); g.lineTo(x1 + 4, by + 0.5); g.stroke(); g.setLineDash([]);
-    g.font = '500 9px ' + MONO; g.textBaseline = 'middle'; g.textAlign = 'left';
-    g.fillStyle = '#9d94ab'; g.fillText('open', x1 + 8, clamp(by, y0 + 6, y1 - 6));
-    g.fillStyle = '#b9b0c6'; g.fillText(fmt(Math.round(hi)), x1 + 8, y0 - 3); g.fillText(fmt(Math.round(lo)), x1 + 8, y1 + 1);
+    og.setLineDash([2, 4]); og.strokeStyle = 'rgba(255,255,255,.28)'; og.beginPath(); og.moveTo(x0, by + 0.5); og.lineTo(x1 + 4, by + 0.5); og.stroke(); og.setLineDash([]);
+    og.font = '500 ' + pc.fs + 'px ' + MONO; og.textBaseline = 'middle'; og.textAlign = 'left';
+    og.fillStyle = '#b4abc2'; og.fillText('open', x1 + 8, clamp(by, y0 + 6, y1 - 6));
+    og.fillStyle = '#cfc6dc'; og.fillText(fmt(Math.round(pc.hi)), x1 + 8, y0 - 3); og.fillText(fmt(Math.round(pc.lo)), x1 + 8, y1 + 1);
+    if (S.killed) { og.fillStyle = cR(0.9); og.font = '700 ' + pc.fs + 'px ' + MONO; og.fillText('halted · tickets go to review', x0 + 2, y0 + 2); }
+    pc.yEnd = yEnd; pc.ty = clamp(yEnd, y0 + 9, y1 - 9); pc.up = sim.bal >= sim.open;
+    // end tag (own tiny layer: drawn after the live glow so the glow never tints it)
+    const tg2 = pc.tg; tg2.clearRect(0, 0, pc.tw, 16); rr(tg2, 0, 0, pc.tw, 16, 4); tg2.fillStyle = pc.up ? C.green : C.red; tg2.fill();
+    tg2.fillStyle = '#0a0710'; tg2.font = '700 ' + pc.fs + 'px ' + MONO; tg2.textBaseline = 'middle'; tg2.textAlign = 'left'; tg2.fillText(fmt(Math.round(sim.bal)), 4, 8.5);
+  }
+  function drawPnl(t, dt) {
+    const g = pc.g; if (!g) return;
+    const W = pc.W, H = pc.H, ax = pc.ax, x1 = W - ax, y0 = PY0, y1 = H - 10;
+    pc.frames++;
+    let fresh = pc.dirty || pc.rKill !== S.killed;
+    if (pc.rHh !== hh || pc.rBal !== sim.bal) {                  // series moved: new y-range targets (hist scan only here, not every frame)
+      pc.rHh = hh; pc.rBal = sim.bal; fresh = true;
+      let lo = sim.open, hi = sim.open;
+      for (let i = 0; i < HN; i++) { const v = hist[i]; if (v < lo) lo = v; if (v > hi) hi = v; }
+      if (sim.bal < lo) lo = sim.bal; if (sim.bal > hi) hi = sim.bal;
+      const pad = Math.max((hi - lo) * 0.16, 30); pc.lo = lo; pc.hi = hi; pc.tMin = lo - pad; pc.tMax = hi + pad;
+    }
+    if (!pc.init) { pc.yMin = pc.tMin; pc.yMax = pc.tMax; pc.init = true; } else { const k = 1 - Math.exp(-dt * 4); pc.yMin += (pc.tMin - pc.yMin) * k; pc.yMax += (pc.tMax - pc.yMax) * k; }
+    const ys = (y1 - y0) / (pc.yMax - pc.yMin);
+    if (fresh || Math.abs(pc.yMin - pc.rMin) * ys > 0.12 || Math.abs(pc.yMax - pc.rMax) * ys > 0.12) { renderPnl(); pc.dirty = false; }
+    g.clearRect(0, 0, W, H); g.drawImage(pc.off, 0, 0, W, H);
     // end tag + live dot
-    const col = sim.bal >= sim.open ? C.green : C.red, rgb = sim.bal >= sim.open ? SP.g : SP.r;
-    const ty = clamp(yEnd, y0 + 9, y1 - 9);
+    const yEnd = pc.yEnd, rgb = pc.up ? SP.g : SP.r;
     g.globalCompositeOperation = 'lighter'; glow(g, rgb, x1, yEnd, 14 + Math.sin(t * 4) * 3, 0.9);
     const age = (nowMs() - sim.jumpT) / 1000;
     if (age < 1.1) { g.strokeStyle = sim.jump >= 0 ? cG(1 - age / 1.1) : cR(1 - age / 1.1); g.lineWidth = 1.5; g.beginPath(); g.arc(x1, yEnd, 5 + age * 34, 0, TAU); g.stroke(); }
     g.globalCompositeOperation = 'source-over';
     g.fillStyle = '#fff'; g.beginPath(); g.arc(x1, yEnd, 2.6, 0, TAU); g.fill();
-    rr(g, x1 + 7, ty - 8, ax - 9, 16, 4); g.fillStyle = col; g.fill();
-    g.fillStyle = '#0a0710'; g.font = '700 9.5px ' + MONO; g.fillText(fmt(Math.round(sim.bal)), x1 + 11, ty + 0.5);
-    if (S.killed) { g.fillStyle = cR(0.9); g.font = '700 9px ' + MONO; g.textAlign = 'left'; g.fillText('halted · tickets go to review', x0 + 2, y0 + 2); }
+    g.drawImage(pc.tag, x1 + 7, pc.ty - 8, pc.tw, 16);
   }
   function drawStrip() {
     const g = wl.g; if (!g) return;
@@ -366,7 +403,7 @@ JEV.mod('desk-top', () => {
     g.fillStyle = cR(0.95);
     for (let i = st; i < o.length; i++) if (o[i] < 0) { const h = Math.max(1.5, -o[i] / mx * (mid - 2)); g.fillRect(x0 + (i - st) * slot, mid + 0.5, bw, h); }
     g.fillStyle = 'rgba(255,255,255,.16)'; g.fillRect(x0 - 4, Math.round(mid), W - x0 + 4, 1);
-    g.font = '500 8.5px ' + MONO; g.textBaseline = 'middle'; g.textAlign = 'left';
+    g.font = '500 ' + wl.fs + 'px ' + MONO; g.textBaseline = 'middle'; g.textAlign = 'left';
     g.fillStyle = '#7fe9c4'; g.fillText('win', 0, mid - 8); g.fillStyle = '#ff8b97'; g.fillText('loss', 0, mid + 8);
     sim.stripDirty = false;
   }
@@ -383,10 +420,10 @@ JEV.mod('desk-top', () => {
   const L = { vwap: true, bands: true, book: true };
   const hv = { on: false, x: 0, y: 0 };
   const tg = { gArea: null, g: null, W: 0, H: 0, bf: 0.225, bfT: 0.225, bfMax: 0.225, px: M.price, yMin: 0, yMax: 1, ys: 1, init: false, slide: 0, n: 0, nar: false,
-    x0: 8, x1: 100, y0: 12, y1: 100, cw: 100, bw: 0, axW: 60, slot: 8, nVis: 70, volH: 40, timeH: 16 };
+    x0: 8, x1: 100, y0: 12, y1: 100, cw: 100, bw: 0, axW: 60, slot: 8, nVis: 70, volH: 40, timeH: 16, fs: 9.5 };
   function layout() {
     const W = tg.W, H = tg.H, nar = W < 520;
-    tg.nar = nar; tg.bfMax = nar ? 0.285 : 0.225; if (L.book) tg.bfT = tg.bfMax; else tg.bfT = 0;
+    tg.nar = nar; tg.fs = tfs(W); tg.bfMax = nar ? 0.285 : 0.225; if (L.book) tg.bfT = tg.bfMax; else tg.bfT = 0;
     tg.bw = Math.round(W * tg.bf); tg.cw = W - tg.bw; tg.axW = nar ? 46 : 62;
     tg.x0 = 8; tg.x1 = tg.cw - tg.axW; tg.y0 = 14; tg.timeH = 16;
     tg.volH = Math.round((H - tg.y0 - tg.timeH) * 0.14); tg.y1 = H - tg.timeH - tg.volH - 8;
@@ -420,11 +457,12 @@ JEV.mod('desk-top', () => {
     const rh = (H - headH - spH - imbH - 4) / (NB * 2), yS = headH + NB * rh, cmx = Math.max(sa, sb, 1);
     g.save(); g.globalAlpha = al;
     g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(cw + 1, 0, 1, H);
-    g.font = '700 8.5px ' + MONO; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = '#b9b0c6';
+    const fs = tg.fs;
+    g.font = '700 ' + fs + 'px ' + MONO; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = '#d6cde2';
     g.fillText(nar ? 'BOOK' : 'ORDER BOOK', bx0, 12);
-    g.textAlign = 'right'; g.fillStyle = '#9d94ab'; g.font = '500 8.5px ' + MONO; g.fillText('10 × 10', bx1 - (nar ? 0 : 12), 12);
+    g.textAlign = 'right'; g.fillStyle = '#b4abc2'; g.font = '500 ' + fs + 'px ' + MONO; g.fillText('10 × 10', bx1 - (nar ? 0 : 12), 12);
     if (!nar) { g.fillStyle = C.green; g.beginPath(); g.arc(bx1 - 2, 12, 2 + 0.6 * Math.sin(t * 5), 0, TAU); g.fill(); }
-    const fz = nar ? 8.5 : 9;
+    const fz = fs;
     for (let side = 0; side < 2; side++) {
       const ask = side === 0, bk = ask ? bkA : bkB, fl = ask ? fA : fB, lb = ask ? lblA : lblB; let cum = 0;
       for (let kk = 0; kk < NB; kk++) {
@@ -436,19 +474,19 @@ JEV.mod('desk-top', () => {
         g.fillStyle = ask ? cR(0.95) : cG(0.95); g.fillRect(bx1 - w, y, 1.5, h);
         if (fl[kk] > 0.02) { g.fillStyle = 'rgba(255,255,255,' + (fl[kk] * 0.34).toFixed(3) + ')'; g.fillRect(bx1 - w, y, w, h); }
         g.font = '600 ' + fz + 'px ' + MONO; g.textAlign = 'right'; g.fillStyle = '#fff'; g.fillText(bk[kk].toFixed(2), bx1 - 3, y + h / 2 + 0.5);
-        if (!nar) { g.font = '500 ' + fz + 'px ' + MONO; g.textAlign = 'left'; g.fillStyle = ask ? '#ff8b97' : '#6df0c3'; g.fillText(lb[kk], bx0 + 1, y + h / 2 + 0.5); }
+        if (!nar) { g.font = '500 ' + fz + 'px ' + MONO; g.textAlign = 'left'; g.fillStyle = ask ? '#ff9ca6' : '#7af3cb'; g.fillText(lb[kk], bx0 + 1, y + h / 2 + 0.5); }
       }
     }
     // spread row
     g.fillStyle = 'rgba(255,255,255,.045)'; g.fillRect(bx0 - 6, yS, bwid + 14, spH);
     g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(bx0 - 6, yS, bwid + 14, 1); g.fillRect(bx0 - 6, yS + spH - 1, bwid + 14, 1);
-    g.textAlign = 'left'; g.fillStyle = book.up ? C.green : C.red; g.font = '700 ' + (nar ? 10 : 12) + 'px ' + MONO;
+    g.textAlign = 'left'; g.fillStyle = book.up ? C.green : C.red; g.font = '700 ' + (nar ? 10.5 : 12) + 'px ' + MONO;
     g.fillText((book.up ? '▲ ' : '▼ ') + book.mid, bx0, yS + 10);
-    g.fillStyle = '#b9b0c6'; g.font = '500 8.5px ' + MONO; g.fillText(nar ? 'spr ' + book.sprBps.toFixed(1) + 'bp' : 'spread ' + book.spr, bx0, yS + 22);
+    g.fillStyle = '#cfc6dc'; g.font = '500 ' + fs + 'px ' + MONO; g.fillText(nar ? 'spr ' + book.sprBps.toFixed(1) + 'bp' : 'spread ' + book.spr, bx0, yS + 22);
     // imbalance meter
     const yi = H - imbH + 5, share = sb / (sa + sb || 1);
-    g.textAlign = 'left'; g.fillStyle = '#b9b0c6'; g.font = '500 8.5px ' + MONO; g.fillText('imbalance', bx0, yi + 3);
-    g.textAlign = 'right'; g.fillStyle = book.imb >= 0 ? C.green : C.red; g.font = '700 9.5px ' + MONO; g.fillText((book.imb >= 0 ? '+' : '-') + Math.abs(book.imb).toFixed(2), bx1, yi + 3);
+    g.textAlign = 'left'; g.fillStyle = '#cfc6dc'; g.font = '500 ' + fs + 'px ' + MONO; g.fillText(bwid < 92 ? 'imb' : 'imbalance', bx0, yi + 3);                  // 'imbalance' + the value need ~80 px at 9.5 px mono
+    g.textAlign = 'right'; g.fillStyle = book.imb >= 0 ? C.green : C.red; g.font = '700 ' + fs + 'px ' + MONO; g.fillText((book.imb >= 0 ? '+' : '-') + Math.abs(book.imb).toFixed(2), bx1, yi + 3);
     const bw1 = Math.round(bwid * share);
     g.fillStyle = cG(0.9); g.fillRect(bx0, yi + 11, bw1 - 1, 6); g.fillStyle = cR(0.9); g.fillRect(bx0 + bw1 + 1, yi + 11, bwid - bw1 - 1, 6);
     g.globalCompositeOperation = 'lighter'; g.fillStyle = cG(0.16); g.fillRect(bx0, yi + 8, bw1, 12); g.fillStyle = cR(0.16); g.fillRect(bx0 + bw1, yi + 8, bwid - bw1, 12); g.globalCompositeOperation = 'source-over';
@@ -480,9 +518,10 @@ JEV.mod('desk-top', () => {
     const every = nar ? 10 : 12, lastCid = cur.cid;
     for (let i = 0; i < n; i++) { const c = cands[st + i]; if (c.cid % every !== 0) continue; const x = Math.round(X(i)) + 0.5; g.moveTo(x, y0); g.lineTo(x, H - tg.timeH); }
     g.stroke();
-    g.font = '500 9px ' + MONO; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = '#a79eb6';
+    const fs = tg.fs;
+    g.font = '500 ' + fs + 'px ' + MONO; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = '#bdb4cb';
     for (let p = Math.ceil(yMin / step) * step; p < yMax; p += step) { const y = Y(p); if (y < y0 + 2 || y > y1 - 2) continue; g.fillText(f0(p), x1 + 10, y); }
-    g.textAlign = 'center'; g.fillStyle = '#8f869f';
+    g.textAlign = 'center'; g.fillStyle = '#a79eb6';
     for (let i = 0; i < n; i++) { const c = cands[st + i]; if (c.cid % every !== 0) continue; const x = X(i); if (x < x0 + 14 || x > x1 - 10) continue; g.fillText(lastCid === c.cid ? 'now' : '-' + (lastCid - c.cid) + 'm', x, H - 7); }
 
     // everything below is clipped to the plot
@@ -539,7 +578,7 @@ JEV.mod('desk-top', () => {
       g.globalCompositeOperation = 'source-over';
     }
     // high / low flags
-    g.font = '500 8.5px ' + MONO; g.textAlign = 'center'; g.fillStyle = '#c9c0d6';
+    g.font = '500 ' + fs + 'px ' + MONO; g.textAlign = 'center'; g.fillStyle = '#d6cde2';
     if (iHi >= 0 && iHi < n - 1) g.fillText(f0(hi), clamp(X(iHi), x0 + 22, x1 - 22), Y(hi) - 8);
     if (iLo >= 0 && iLo < n - 1) g.fillText(f0(lo), clamp(X(iLo), x0 + 22, x1 - 22), Y(lo) + 9);
     // fired tickets
@@ -561,7 +600,7 @@ JEV.mod('desk-top', () => {
           glow(g, isB ? SP.g : isS ? SP.r : SP.a, x, y, 12 + age * 12, 0.9 * (1 - age / 3.2));
           g.strokeStyle = isB ? cG(1 - age / 1.4) : isS ? cR(1 - age / 1.4) : 'rgba(' + AMB + ',' + (1 - age / 1.4) + ')'; if (age < 1.4) { g.lineWidth = 1.4; g.beginPath(); g.arc(x, y, r + age * 16, 0, TAU); g.stroke(); }
           g.globalCompositeOperation = 'source-over';
-          if (m.txt && !nar) { g.globalAlpha = Math.min(1, (3.2 - age) / 1.2); g.font = '700 9px ' + MONO; g.textAlign = 'right'; g.fillStyle = isB ? '#7ff5cf' : isS ? '#ff9aa4' : '#ffd77a'; g.fillText(m.txt, x - r - 5, y + 0.5); g.globalAlpha = 1; }
+          if (m.txt && !nar) { g.globalAlpha = Math.min(1, (3.2 - age) / 1.2); g.font = '700 ' + fs + 'px ' + MONO; g.textAlign = 'right'; g.fillStyle = isB ? '#7ff5cf' : isS ? '#ff9aa4' : '#ffd77a'; g.fillText(m.txt, x - r - 5, y + 0.5); g.globalAlpha = 1; }
         }
       }
     }

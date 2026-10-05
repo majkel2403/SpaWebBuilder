@@ -18,6 +18,13 @@ body.killed #fx-bgf { background:
 #fx-bg { z-index: -2; opacity: 0; transition: opacity 1s ease; }
 html.fx-gl #fx-bg { opacity: 1; }
 
+/* ---------- 1b. no-widening safety net ----------
+ * a transformed box that pokes out of the viewport (a sweeping glow, a ::after hopping on a transform, a fixed overlay) leaves a
+ * stale wider scrollable overflow in chromium (scrollWidth up to ~1.7x the viewport for seconds; on touch the layout viewport widens and
+ * the page pans / zooms out). `clip` (not `hidden`) on both html and body keeps the body from becoming a scroll container,
+ * which would break `position: sticky` on the hud. browsers without overflow: clip keep base.css' body{overflow-x:hidden}. */
+@supports (overflow: clip) { html, body { overflow-x: clip; } }
+
 /* ---------- 2. overlays (all pointer-events:none, all below the hud z-index 60) ---------- */
 .fx-ov { position: fixed; inset: 0; pointer-events: none; }
 
@@ -28,8 +35,11 @@ body.killed .fx-scan i { background: linear-gradient(180deg, transparent, rgba(2
 @keyframes fxRoll { to { transform: translateY(130vh); } }
 @media (hover: none), (pointer: coarse) { .fx-scan { opacity: .26; } }
 
-/* film grain: sparse light specks from an inline svg turbulence tile, hopped around in steps (transform only) */
-.fx-grain { inset: -120px; z-index: 56; opacity: .05; will-change: transform; animation: fxGrain .8s steps(1) infinite; background-size: 256px 256px;
+/* film grain: sparse light specks from an inline svg turbulence tile, hopped around in steps (transform only).
+ * the oversized, animated tile lives inside a viewport-sized clipping host: a fixed box that pokes out of the viewport
+ * (it was inset:-120px + translate up to 64px) widens the document's scrollWidth, up to ~1.2x the viewport */
+.fx-grainhost { z-index: 56; overflow: hidden; contain: paint; }
+.fx-grain { position: absolute; inset: -120px; opacity: .05; will-change: transform; animation: fxGrain .8s steps(1) infinite; background-size: 256px 256px;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .96  0 0 0 0 .86  0 0 0 0 1  0 0 0 5 -3.15'/></filter><rect width='256' height='256' filter='url(%23n)'/></svg>"); }
 @keyframes fxGrain {
   0% { transform: translate(0, 0); } 12% { transform: translate(-37px, 23px); } 25% { transform: translate(29px, -51px); } 37% { transform: translate(-61px, -17px); }

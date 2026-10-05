@@ -11,7 +11,7 @@
 .hr-pill .lamp { width: 6px; height: 6px; }
 
 /* ---------- grid ---------- */
-.hr-grid { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 14px; }
+.hr-grid { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 14px; container-type: inline-size; container-name: hrg; }
 .hr-grid > * { grid-column: 1 / -1; min-width: 0; }
 @media (min-width: 900px) { .hr-grid > .hr-b { grid-column: span 11; } .hr-grid > .hr-c { grid-column: span 9; } .hr-grid > .hr-d, .hr-grid > .hr-e { grid-column: span 10; } }
 
@@ -73,10 +73,13 @@
 .hr-last i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #8d8499; transition: background .3s, box-shadow .3s; }
 .hr-last[data-d="execute"] { border-color: rgba(46, 230, 166, .55); background: rgba(46, 230, 166, .08); } .hr-last[data-d="execute"] i { background: var(--green); box-shadow: 0 0 9px var(--green); }
 .hr-last[data-d="review"] { border-color: rgba(255, 193, 61, .55); background: rgba(255, 193, 61, .08); } .hr-last[data-d="review"] i { background: var(--amber); box-shadow: 0 0 9px var(--amber); }
-.hr-last.hr-fl { animation: hrLast .6s var(--ease); }
-@keyframes hrLast { 0% { transform: scale(1.08); } 100% { transform: scale(1); } }
-.hr-av.hr-flash::after { animation: hrFlash .9s var(--ease); }
-@keyframes hrFlash { 0% { box-shadow: 0 0 0 0 rgba(255, 46, 110, .9), inset 0 0 26px rgba(255, 46, 110, .7); } 100% { box-shadow: 0 0 0 22px rgba(255, 46, 110, 0), inset 0 0 0 rgba(255, 46, 110, 0); } }
+/* landDecision() alternates -a / -b (identical keyframes under two names) so the pulse restarts with no forced layout */
+.hr-last.hr-fl-a { animation: hrLastA .6s var(--ease); } .hr-last.hr-fl-b { animation: hrLastB .6s var(--ease); }
+@keyframes hrLastA { 0% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes hrLastB { 0% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.hr-av.hr-flash-a::after { animation: hrFlashA .9s var(--ease); } .hr-av.hr-flash-b::after { animation: hrFlashB .9s var(--ease); }
+@keyframes hrFlashA { 0% { box-shadow: 0 0 0 0 rgba(255, 46, 110, .9), inset 0 0 26px rgba(255, 46, 110, .7); } 100% { box-shadow: 0 0 0 22px rgba(255, 46, 110, 0), inset 0 0 0 rgba(255, 46, 110, 0); } }
+@keyframes hrFlashB { 0% { box-shadow: 0 0 0 0 rgba(255, 46, 110, .9), inset 0 0 26px rgba(255, 46, 110, .7); } 100% { box-shadow: 0 0 0 22px rgba(255, 46, 110, 0), inset 0 0 0 rgba(255, 46, 110, 0); } }
 .hr-lbl { position: absolute; z-index: 3; left: 33.3%; top: 26px; transform: translate(-50%, -100%); font-size: 10px; letter-spacing: .04em; font-weight: 700; color: var(--cc); text-shadow: 0 0 12px rgba(var(--cc-rgb), .7); white-space: nowrap; pointer-events: none; }
 #hr-l2 { left: 66.6%; }
 .hr-lbl-r { top: auto; bottom: 14px; left: 50%; transform: translate(-50%, 50%); padding: 3px 12px; border-radius: 99px; background: #0b0610; border: 1px solid rgba(255, 46, 110, .55); font-weight: 600; color: var(--pink2); }
@@ -168,6 +171,16 @@ body.killed .hr-arm-a b { text-shadow: 0 0 20px rgba(255, 77, 94, .95), 0 0 56px
 .hr-bt-tip { position: absolute; top: 8px; left: 0; z-index: 2; padding: 5px 9px; border-radius: 7px; font-size: 10px; line-height: 1.5; color: #fff; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .18s; background: rgba(8, 4, 14, .94); border: 1px solid rgba(143, 180, 255, .5); box-shadow: 0 6px 20px rgba(0, 0, 0, .5); will-change: transform; }
 .hr-bt-tip.on { opacity: 1; } .hr-bt-tip b { color: var(--amber); font-weight: 700; } .hr-bt-tip .dn { color: var(--red); }
 .hr-strip { margin-top: 12px; padding: 7px 12px; border-radius: 8px; text-align: center; font-size: 10.5px; color: var(--green); border: 1px solid rgba(46, 230, 166, .4); background: rgba(46, 230, 166, .05); }
+/* 2-column grid while the hour card is stacked (dial above the switches; grid 846-1260px wide): that card is ~230px taller than at 1440, and the backtest card
+   shares its row, so the chart used to stretch to 485x539 / 381x508. Keep it a strip (~4:3 at most) and give the spare height to the stat row, which turns into 2x2 tiles. */
+@container hrg (min-width: 846px) and (max-width: 1260px) {
+  .hr-bt { flex: 0 0 auto; }
+  .hr-bt-cv { flex: 0 0 auto; height: clamp(240px, 74cqw, 370px); }
+  .hr-c .hr-st4 { flex: 1 1 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; }
+  .hr-c .hr-st4 > div { display: flex; flex-direction: column; justify-content: center; padding: 10px 6px; border-radius: 10px; border: 1px solid var(--hr-line); background: rgba(255, 255, 255, .025); }
+  .hr-c .hr-st4 b { font-size: clamp(30px, 3.6vw, 42px); }
+  .hr-c .hr-strip { margin-top: 10px; }
+}
 
 /* ================= D · the arithmetic ================= */
 .hr-gx { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 6px clamp(10px, 1.6vw, 22px); align-items: center; margin-top: 8px; }

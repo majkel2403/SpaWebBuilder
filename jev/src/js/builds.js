@@ -19,7 +19,7 @@ JEV.mod('builds', () => {
 
   /* ---------- the ten build cards (generated from JEV.BUILDS) ---------- */
   const colL = $('#bld-colL'), colR = $('#bld-colR'), seedR = J.rng(11);
-  const wire = (el, rgb) => ({ el, rgb, v: $('.bld-v', el), c: $('.bld-c', el), m: $('.bld-m > i', el) });
+  const wire = (el, ti) => ({ el, ti, v: $('.bld-v', el), c: $('.bld-c', el), m: $('.bld-m > i', el) });
   const bCard = B.map((b, i) => {
     const el = document.createElement('article');
     el.className = 'bld-card bld-b'; el.dataset.c = b.col; el.dataset.i = i;
@@ -30,10 +30,10 @@ JEV.mod('builds', () => {
       '<div class="bld-rw"><span>' + b.k1 + '</span><b class="bld-v">' + b.v1 + '</b></div>' +
       '<div class="bld-rw"><span>conf</span><b class="bld-c">' + c0.toFixed(2) + '</b></div></div><i class="bld-m"><i style="transform:scaleX(' + c0.toFixed(2) + ')"></i></i>';
     (i < 5 ? colL : colR).appendChild(el);
-    return wire(el, TRGB[TIDX[b.col]]);
+    return wire(el, TIDX[b.col]);
   });
-  const pCard = $$('.bld-p', root).map((el) => wire(el, TRGB[0]));
-  const dCard = $$('.bld-d', root).map((el) => wire(el, TRGB[TIDX[el.dataset.c]]));
+  const pCard = $$('.bld-p', root).map((el) => wire(el, 0));
+  const dCard = $$('.bld-d', root).map((el) => wire(el, TIDX[el.dataset.c]));
   const rulesEl = $('#bld-rules'), coreEl = $('#bld-core'), coreBox = $('#bld-core-box');
   const dotEls = $$('.bld-pd i', root), lastEl = $('#bld-last'), wm = $('#bld-wm'), flashEl = $('#bld-flash');
   const rcEls = {}; $$('.bld-rc', root).forEach((e) => (rcEls[e.dataset.r] = e));
@@ -56,12 +56,19 @@ JEV.mod('builds', () => {
     return a;
   }
   const maxOf = (a) => Math.max(a[0], a[1], a[2], a[3]);
-  const flashCard = (c) => {
-    if (reduce || !c.el.animate) return;
-    const r = c.rgb.join(',');
-    c.el.animate([{ boxShadow: '0 0 0 1px rgba(' + r + ',1), 0 0 42px rgba(' + r + ',.8), inset 0 0 26px rgba(' + r + ',.22)', filter: 'brightness(1.45)' }], { duration: 1000, easing: 'cubic-bezier(.2,.7,.2,1)' });
+  /* Hit flash = a halo painted on the stage canvas (glow() in the draw loop) + a plain brightness lift on the card. The old flash animated box-shadow + filter on the card itself:
+     a re-raster of the card and everything it overlaps every frame, ~7 per decision. It is also "peak first, decay to rest" now (offset 0): a lone keyframe without an offset is
+     the END state, which made the old flash ramp UP and then snap off. */
+  const FLN = 19, FI_RULES = 18; // flash slots: 0-9 builds · 10-12 questions · 13-17 answers · 18 hard rules
+  const flv = new Float32Array(FLN), flT = new Uint8Array(FLN), flR = new Float32Array(FLN * 4);
+  bCard.concat(pCard, dCard).forEach((c, i) => { c.fi = i; flT[i] = c.ti; });
+  flT[FI_RULES] = TIDX.yellow;
+  const FL_LIT = [{ offset: 0, filter: 'brightness(1.4)' }], FL_DECAY = { duration: 1000, easing: 'cubic-bezier(.2,.7,.2,1)' };
+  const flashCard = (c) => { if (reduce) return; flv[c.fi] = 1; J.animate(c.el, FL_LIT, FL_DECAY); };
+  const setConf = (c, p) => {
+    setT(c.c, p.toFixed(2)); c.c.classList.toggle('lo', p < S.floor);
+    if (c.m) { const s = 'scaleX(' + clamp(p, 0, 1).toFixed(3) + ')'; if (s !== c.ms) { c.ms = s; c.m.style.transform = s; } } // no style write when the bar did not move
   };
-  const setConf = (c, p) => { setT(c.c, p.toFixed(2)); c.c.classList.toggle('lo', p < S.floor); if (c.m) c.m.style.transform = 'scaleX(' + clamp(p, 0, 1).toFixed(3) + ')'; };
 
   /* ---------- ribbons + particles (one canvas behind the DOM cards) ---------- */
   const NS = 40, NR = 33, NB = 12;
@@ -107,15 +114,17 @@ JEV.mod('builds', () => {
     RN[slot] = Math.min(520, Math.max(mq.matches ? 22 : 36, Math.round(len * dens * QF * (mq.matches ? 0.42 : 1))));
   }
 
+  const setFR = (i, r) => { flR[i * 4] = r.l; flR[i * 4 + 1] = r.t; flR[i * 4 + 2] = r.w; flR[i * 4 + 3] = r.h; };
   let lastSig = '', mTimer = 0, QF = 1; // QF: particle quality, lowered once if frames run slow
   function measure() {
     const f = J.fit(cv); g = f.g; W = f.W; H = f.H;
-    const sr = stage.getBoundingClientRect();
+    const sr = cv.getBoundingClientRect(); // everything is measured in canvas space (the canvas overhangs the stage by GM px so card glows are not clipped at its edges)
     sY = window.scrollY; sx0 = sr.left; sy0 = sr.top + sY;
     let sig = W + 'x' + H + (mq.matches ? 'm' : 'd') + '/' + J.DPR;
     const rc = (el) => { const r = el.getBoundingClientRect(); const l = r.left - sr.left, t = r.top - sr.top; sig += '|' + (l | 0) + ',' + (t | 0) + ',' + (r.width | 0) + ',' + (r.height | 0); return { l, t, r: l + r.width, b: t + r.height, w: r.width, h: r.height, cx: l + r.width / 2, cy: t + r.height / 2 }; };
     const mob = mq.matches, core = rc(coreBox); szk = mob ? 0.72 : 1;
     const bc = bCard.map((c) => rc(c.el)), pc = pCard.map((c) => rc(c.el)), dc = dCard.map((c) => rc(c.el)), ru = rc(rulesEl);
+    bc.forEach((r, i) => setFR(i, r)); pc.forEach((r, j) => setFR(10 + j, r)); dc.forEach((r, m) => setFR(13 + m, r)); setFR(FI_RULES, ru);
     coreCx = core.cx; coreCy = core.cy;
     if (sig === lastSig && ready) return;
     lastSig = sig;
@@ -241,6 +250,32 @@ JEV.mod('builds', () => {
   }
   function boostR(ri, a, n) { if (ri < 0 || ri >= NR || !RN[ri]) return; if (a > boost[ri]) boost[ri] = a; if (n) spawn(ri, n); }
 
+  /* card glow: one 9-slice sprite per tint (analytic rounded-rect falloff = the profile of `0 0 42px` + a 1px ring), built lazily on the first flash, drawn as 8 slices */
+  const GM = 50, GR = 9, GK = GM + GR, GS = 2 * GM + 2 * GR + 2, glowS = [];
+  function glowSpr(ti) {
+    if (glowS[ti]) return glowS[ti];
+    const s = document.createElement('canvas'); s.width = s.height = GS;
+    const x = s.getContext('2d'), im = x.createImageData(GS, GS), d = im.data, c = TRGB[ti], hw = GS / 2 - GM;
+    for (let py = 0; py < GS; py++) for (let px = 0; px < GS; px++) {
+      const qx = Math.abs(px + 0.5 - GS / 2) - (hw - GR), qy = Math.abs(py + 0.5 - GS / 2) - (hw - GR);
+      const sd = Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - GR; // distance outside the card edge (px)
+      let a = Math.min(1, 1.6 / (1 + Math.exp(1.702 * Math.max(sd, 0) / 22))); // gaussian edge, sigma ~22 (a 42-44px blur), x1.6 because the old filter brightened the glow with the card
+      const tp = Math.min(1, Math.max(0, (GM - 1 - sd) / 22)); a *= tp * tp * (3 - 2 * tp); // taper to 0 before the sprite edge: no visible box
+      if (sd > -0.5 && sd < 1.5) a = Math.max(a, sd < 0.5 ? 1 : 1.5 - sd);
+      const o = (py * GS + px) * 4; d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = Math.min(255, a * 255);
+    }
+    x.putImageData(im, 0, 0);
+    return (glowS[ti] = s);
+  }
+  function glow(c, s, x, y, w, h, a) {
+    x -= GM; y -= GM; w += 2 * GM; h += 2 * GM; c.globalAlpha = a;
+    const iw = w - 2 * GK, ih = h - 2 * GK, mid = GS - 2 * GK;
+    c.drawImage(s, 0, 0, GK, GK, x, y, GK, GK); c.drawImage(s, GS - GK, 0, GK, GK, x + w - GK, y, GK, GK);
+    c.drawImage(s, 0, GS - GK, GK, GK, x, y + h - GK, GK, GK); c.drawImage(s, GS - GK, GS - GK, GK, GK, x + w - GK, y + h - GK, GK, GK);
+    if (iw > 0) { c.drawImage(s, GK, 0, mid, GK, x + GK, y, iw, GK); c.drawImage(s, GK, GS - GK, mid, GK, x + GK, y + h - GK, iw, GK); }
+    if (ih > 0) { c.drawImage(s, 0, GK, GK, mid, x, y + GK, GK, ih); c.drawImage(s, GS - GK, GK, GK, mid, x + w - GK, y + GK, GK, ih); }
+  }
+
   let szk = 1, lastNow = performance.now(), sY = window.scrollY;
   window.addEventListener('scroll', () => { sY = window.scrollY; }, { passive: true });
   function draw(t, dt, still) {
@@ -264,6 +299,13 @@ JEV.mod('builds', () => {
     g.clearRect(0, 0, W, H);
     g.drawImage(hz, 0, 0, W, H);
     g.globalCompositeOperation = 'lighter';
+    // card hit flashes (decaying halos behind the cards)
+    const fdec = Math.exp(-rdt * 3.4);
+    for (let i = 0; i < FLN; i++) {
+      const v = flv[i] * fdec; if (flv[i] <= 0) continue;
+      if (v < 0.06) { flv[i] = 0; continue; } // below ~6% the halo is invisible: stop paying 8 drawImage for it
+      flv[i] = v; glow(g, glowSpr(flT[i]), flR[i * 4], flR[i * 4 + 1], flR[i * 4 + 2], flR[i * 4 + 3], v);
+    }
     // boosted haze + end glows
     for (let ri = 0; ri < NR; ri++) {
       const e = EFF[ri]; if (e < 0.04 || !RN[ri]) continue;
@@ -347,49 +389,56 @@ JEV.mod('builds', () => {
     if (a === 'close') return [3, 2];
     return [4, 2]; // flatten
   }
-  function stepBuild(d) {
+  /* Each step writes the card text/bars first (`fx` false = text only: used by the catch-up when a zone scrolls back into view), then the flash + stream boost. */
+  function stepBuild(d, fx) {
     const i = bIdx[d.build]; if (i == null) return;
     const c = bCard[i];
-    setT(c.v, ans(d.build, d)); setConf(c, d.conf); flashCard(c);
-    const r = $('.bld-lr[data-i="' + i + '"]'); if (r) { r.classList.add('hit'); setTimeout(() => r.classList.remove('hit'), 900); }
+    setT(c.v, ans(d.build, d)); setConf(c, d.conf);
+    if (!fx) return;
+    flashCard(c);
+    const r = latRows[i].li; r.classList.add('hit'); setTimeout(() => r.classList.remove('hit'), 900);
     boostR(R_BUILD + i, 1, 34);
   }
-  function stepCore(d) {
+  const FL_CORE = [{ offset: 0, filter: 'brightness(1.5) saturate(1.25)' }], FL_WM = [{ offset: 0, textShadow: '0 0 14px #fff, 0 0 46px #ff5a96, 0 0 90px #ff2e6e' }], FL_DOT = [{ offset: 0, opacity: 1, scale: '1.9' }], FL_FADE = [{ opacity: 0.95 }, { opacity: 0 }];
+  function stepCore(d, fx) {
     setT(lastEl, d.symbol + ' · ' + d.action + ' · ' + d.conf.toFixed(2) + ' → ' + d.dest); lastEl.dataset.d = d.dest;
+    if (!fx) return;
     if (!reduce) {
-      flashEl.animate([{ opacity: 0.95 }, { opacity: 0 }], { duration: 900, easing: 'ease-out' });
-      coreBox.animate([{ filter: 'brightness(1.5) saturate(1.25)' }], { duration: 700, easing: 'ease-out' });
-      wm.animate([{ textShadow: '0 0 14px #fff, 0 0 46px #ff5a96, 0 0 90px #ff2e6e' }], { duration: 800, easing: 'ease-out' });
-      dotEls.forEach((e) => e.animate([{ opacity: 1, scale: '1.9' }], { duration: 650, easing: 'ease-out' }));
+      J.animate(flashEl, FL_FADE, { duration: 900, easing: 'ease-out' });
+      J.animate(coreBox, FL_CORE, { duration: 700, easing: 'ease-out' });
+      J.animate(wm, FL_WM, { duration: 800, easing: 'ease-out' });
+      dotEls.forEach((e) => J.animate(e, FL_DOT, { duration: 650, easing: 'ease-out' }));
     }
     boostR(R_CORE, 1, 40); boostR(R_CORE + 1, d.action === 'hold' ? 0.5 : 1, d.action === 'hold' ? 8 : 34); boostR(R_CORE + 2, 1, 34);
   }
-  function stepPrims(d) {
+  function stepPrims(d, fx) {
     setT(pCard[0].v, d.action); setConf(pCard[0], d.conf);
     setT(pCard[1].v, d.size + '%'); setConf(pCard[1], maxOf(d.sizes));
     setT(pCard[2].v, d.riskOk ? 'yes' : 'no'); setConf(pCard[2], d.pRisk);
+    if (!fx) return;
     pCard.forEach(flashCard);
     const act = activeDecs(d);
     for (const m of act) for (const j of DEC_FROM[m]) boostR(R_PD + j * 5 + m, 1, 18);
   }
-  function stepDecs(d) {
+  function stepDecs(d, fx) {
     const a = d.action, e = dCard[0], z = dCard[1], r = dCard[2], x = dCard[3], f = dCard[4];
     setT(e.v, a === 'hold' ? 'hold' : a === 'buy' || a === 'sell' ? a : 'hold'); setConf(e, d.conf);
     setT(z.v, d.size + '%'); setConf(z, maxOf(d.sizes));
     setT(r.v, d.venue); setT(r.c, d.dest); r.c.dataset.d = d.dest;
     setT(x.v, a === 'close' ? 'close' : 'hold'); setConf(x, d.p.close);
     setT(f.v, a === 'flatten' ? 'yes' : 'no'); setConf(f, d.p.flatten);
+    if (!fx) return;
     const act = activeDecs(d);
     for (const m of act) { flashCard(dCard[m]); if (d.dest !== 'skip') boostR(R_DR + m, 1, 22); }
   }
+  const FL_RULES = [{ offset: 0, filter: 'brightness(1.12)' }];
+  const FL_RC_BAD = [{ offset: 0, background: 'rgba(255,193,61,.4)' }], FL_RC_OK = [{ offset: 0, background: 'rgba(46,230,166,.28)' }];
   function stepRules(d) {
+    if (reduce) return;
     let key = null;
     if (d.reason === 'kill switch') key = 'kill'; else if (d.reason === 'risk flag') key = 'cap'; else if (d.reason.indexOf('conf') === 0) key = 'floor'; else if (d.size >= 4) key = 'pos';
-    if (key && rcEls[key] && !reduce) {
-      const bad = d.dest !== 'execute';
-      rcEls[key].animate([{ background: bad ? 'rgba(255,193,61,.4)' : 'rgba(46,230,166,.28)' }], { duration: 1100, easing: 'ease-out' });
-    }
-    if (!reduce) rulesEl.animate([{ boxShadow: '0 0 0 1px rgba(255,197,61,1), 0 0 40px rgba(255,197,61,.7)' }], { duration: 900, easing: 'ease-out' });
+    if (key && rcEls[key]) J.animate(rcEls[key], d.dest !== 'execute' ? FL_RC_BAD : FL_RC_OK, { duration: 1100, easing: 'ease-out' });
+    flv[FI_RULES] = 1; J.animate(rulesEl, FL_RULES, { duration: 900, easing: 'ease-out' });
   }
 
   /* ---------- hover / tap boosts a card's streams ---------- */
@@ -414,12 +463,13 @@ JEV.mod('builds', () => {
     li.innerHTML = '<span class="bld-dr-b" data-p="' + b.prim + '">' + b.tag.toLowerCase() + '</span><span class="bld-dr-a">' + d.action + ' ' + short(d.symbol) + '</span><span class="bld-dr-c' + (d.conf < S.floor ? ' lo' : '') + '">' + d.conf.toFixed(2) + '</span><span class="bld-dr-d"><i></i>' + d.dest + '</span>';
     return li;
   }
+  const DS_SLIDE = [{ transform: 'translateY(-' + RH + 'px)' }, { transform: 'translateY(0)' }], DS_FADE = [{ opacity: 0 }, { opacity: 1 }];
   function pushStream(d, animate) {
     const li = dsRow(d); dsList.insertBefore(li, dsList.firstChild);
     while (dsList.children.length > 7) dsList.removeChild(dsList.lastChild);
-    if (animate && !reduce && dsList.animate) {
-      dsList.animate([{ transform: 'translateY(-' + RH + 'px)' }, { transform: 'translateY(0)' }], { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)' });
-      li.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 520 });
+    if (animate && !reduce) {
+      J.animate(dsList, DS_SLIDE, { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      J.animate(li, DS_FADE, { duration: 520 });
     }
   }
   (function seed() {
@@ -432,7 +482,7 @@ JEV.mod('builds', () => {
   const latRows = B.map((b, i) => {
     const li = document.createElement('li'); li.className = 'bld-lr'; li.dataset.i = i; li.style.setProperty('--bc', PCOL[b.prim]);
     li.innerHTML = '<span>' + b.tag.toLowerCase() + '</span><div class="tr"><i></i></div><b>' + b.ms.toFixed(1) + '</b>';
-    latEl.appendChild(li); return { fill: $('.tr i', li), val: $('b', li), base: b.ms };
+    latEl.appendChild(li); return { li, fill: $('.tr i', li), val: $('b', li), base: b.ms };
   });
   function jitterLat() { latRows.forEach((r) => { const v = r.base * (0.86 + Math.random() * 0.3); r.fill.style.transform = 'scaleX(' + clamp(v / MAXMS, 0.03, 1).toFixed(3) + ')'; setT(r.val, v.toFixed(1)); }); }
   jitterLat();
@@ -475,7 +525,8 @@ JEV.mod('builds', () => {
     runEl.appendChild(li); if (!r) apiSq = $$('.bld-sg i.on', li);
   });
   let runCur = 0;
-  function pingRun() { const e = apiSq[runCur++ % apiSq.length]; if (e && !reduce && e.animate) e.animate([{ filter: 'brightness(2.2)', transform: 'scale(1.35)' }], { duration: 700, easing: 'ease-out' }); }
+  const PING = [{ offset: 0, filter: 'brightness(2.2)', transform: 'scale(1.35)' }];
+  function pingRun() { const e = apiSq[runCur++ % apiSq.length]; if (e && !reduce) J.animate(e, PING, { duration: 700, easing: 'ease-out' }); }
 
   // (6) what code owns
   const ownEl = $('#bld-own');
@@ -491,19 +542,53 @@ JEV.mod('builds', () => {
   const medEl = $('#bld-s-med'), decEl = $('#bld-s-dec');
   function median(a) { const s = a.slice().sort((x, y) => x - y); return s[(s.length / 2) | 0]; }
   function updStats() { setT(decEl, fmt(S.count)); setT(medEl, median(S.ms).toFixed(1) + 'ms'); }
+  const rEls = ['floor', 'cap', 'pos', 'kill'].map((k) => $('#bld-r-' + k)), coreSt = $('#bld-core-st'), liveT = $('#bld-live-t');
   function updRules() {
-    setT($('#bld-r-floor'), S.floor.toFixed(2)); setT($('#bld-r-cap'), J.usd(J.RULES.lossCap)); setT($('#bld-r-pos'), J.RULES.maxPos + '%');
-    setT($('#bld-r-kill'), S.killed ? 'halted' : 'armed'); setT($('#bld-core-st'), S.killed ? 'halted' : 'armed'); setT($('#bld-live-t'), S.killed ? 'halted' : 'live');
+    const k = S.killed ? 'halted' : 'armed';
+    setT(rEls[0], S.floor.toFixed(2)); setT(rEls[1], J.usd(J.RULES.lossCap)); setT(rEls[2], J.RULES.maxPos + '%'); setT(rEls[3], k); setT(coreSt, k); setT(liveT, S.killed ? 'halted' : 'live');
   }
+
+  /* ---------- off-screen gate ---------- */
+  /* A decision arrives every ~1 s whether or not anyone is looking: with the section off-screen the old pipeline still ran ~12 Element.animate calls (box-shadow + filter on
+     cards nobody sees), ~27 DOM mutations and a 60-slot timeline queue per decision. Now the three parts of the section (hub / head stats / tiles) are written only while within
+     160px of the viewport (same margin as J.task); when one comes back into view it is repainted ONCE from J.recent (final values, no flashes). */
+  const zone = { stage: false, head: false, tiles: false };
+  const zoneEl = [[stage, 'stage'], [$('.bld-stats', root), 'head'], [$('.bld-tiles', root), 'tiles']];
+  function catchUp(z) {
+    const rec = J.recent; if (!rec.length) return;
+    if (z === 'stage') {
+      const seen = {};
+      for (let i = 0; i < rec.length; i++) { const d = rec[i]; if (seen[d.build]) continue; seen[d.build] = 1; stepBuild(d, false); } // every build card shows its latest answer
+      stepCore(rec[0], false); stepPrims(rec[0], false); stepDecs(rec[0], false);
+    } else if (z === 'head') updStats();
+    else {
+      dsList.textContent = ''; rec.slice(0, 7).reverse().forEach((d) => pushStream(d, false));
+      updCost(); updMix();
+    }
+  }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) {
+        const z = zoneEl.find((x) => x[0] === e.target)[1], v = e.isIntersecting;
+        if (zone[z] === v) continue;
+        zone[z] = v;
+        if (v) catchUp(z); else if (z === 'stage') Q.length = 0; // the timeline of a half-played decision is moot once the hub is gone
+      }
+    }, { rootMargin: '160px 0px' });
+    zoneEl.forEach((x) => x[0] && io.observe(x[0]));
+  } else { zone.stage = zone.head = zone.tiles = true; }
 
   /* ---------- bus ---------- */
   J.bus.on('decision', (d) => {
-    stepBuild(d);
-    later(520, () => stepCore(d));
-    later(1040, () => stepPrims(d));
-    later(1520, () => stepDecs(d));
-    later(1980, () => stepRules(d));
-    pushStream(d, true); updStats(); updCost(); updMix(); pingRun();
+    if (zone.stage) {
+      stepBuild(d, true);
+      later(520, () => stepCore(d, true));
+      later(1040, () => stepPrims(d, true));
+      later(1520, () => stepDecs(d, true));
+      later(1980, () => stepRules(d));
+    }
+    if (zone.tiles) { pushStream(d, true); updCost(); updMix(); pingRun(); }
+    if (zone.head) updStats();
   });
   J.bus.on('kill', (k) => { kT = k ? 1 : 0; updRules(); if (reduce) { kk = kT; recolor(); draw(performance.now() / 1000, 0.016, true); } });
   J.bus.on('floor', () => { updRules(); [...bCard, ...pCard, ...dCard].forEach((c) => c.c.classList.toggle('lo', parseFloat(c.c.textContent) < S.floor && !isNaN(parseFloat(c.c.textContent)))); });

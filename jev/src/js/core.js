@@ -15,13 +15,16 @@
   J.pick = (a) => a[(Math.random() * a.length) | 0];
   J.gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(J.TAU * v); };
   J.rng = (seed) => { let a = seed | 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
-  J.fmt = (n, d) => n.toLocaleString('en-US', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 });
+  /** number → "1,234.50"; one cached Intl.NumberFormat per digit count (toLocaleString rebuilt a formatter on every call: ~27x slower, ~100 calls/s page-wide) */
+  const NF = [];
+  J.fmt = (n, d) => { d = d > 0 ? Math.min(20, d | 0) : 0; return (NF[d] || (NF[d] = new Intl.NumberFormat('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }))).format(n); };
   J.usd = (n, d) => (n < 0 ? '-$' : '$') + J.fmt(Math.abs(n), d || 0);
   J.sgn = (n, d) => (n >= 0 ? '+' : '-') + J.fmt(Math.abs(n), d == null ? 1 : d);
-  J.DPR = Math.min(window.devicePixelRatio || 1, 2);
+  /** device-pixel ratio used by every canvas: ≤ 2, and lowered (never below 1) only when a viewport-sized canvas would exceed the backing-store budget (~8.4 MP: 1920×1080@2x, 1440×900@2x are untouched) */
+  J.DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(8.4e6 / Math.max(1, window.innerWidth * window.innerHeight))));
   J.reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   J.narrow = () => window.innerWidth < 700;
-  J.C = { pink: '#ff2e6e', pink2: '#ff7ab3', green: '#2ee6a6', blue: '#4d8dff', amber: '#ffc13d', violet: '#a66bff', orange: '#ff8a3d', cyan: '#3be0ff', red: '#ff4d5e', ink: '#f4eef6', mut: '#8d8499', dim: '#5a5365', bg: '#05030a' };
+  J.C = { pink: '#ff2e6e', pink2: '#ff7ab3', green: '#2ee6a6', blue: '#4d8dff', amber: '#ffc13d', violet: '#a66bff', orange: '#ff8a3d', cyan: '#3be0ff', red: '#ff4d5e', ink: '#f4eef6', mut: '#8d8499', dim: '#837a8f', bg: '#05030a' };
   J.rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; };
 
   /* ---------- event bus: 'decision' · 'tick' · 'kill' · 'floor' ---------- */
@@ -44,48 +47,85 @@
 
   /* ---------- frame loop: J.task(el, fn(t,dt)) runs only while `el` is on screen ---------- */
   const tasks = new Set();
+  let raf = 0;
+  /** (re)arm the frame loop; it disarms itself when no task is visible (footer, hidden tab…) so the main thread can sleep */
+  const wake = () => { if (!raf) raf = requestAnimationFrame(frame); };
   const io = new IntersectionObserver((es) => {
-    for (const e of es) (e.target.__jevTasks || []).forEach((k) => (k.vis = e.isIntersecting));
+    let on = false;
+    for (const e of es) { const ks = e.target.__jevTasks || []; for (const k of ks) k.vis = e.isIntersecting; if (e.isIntersecting && ks.length) on = true; }
+    if (on) wake();
   }, { rootMargin: '160px 0px' });
   J.task = (el, fn) => {
     const k = { el, fn, vis: !el, n: 0 };
     if (el) { (el.__jevTasks || (el.__jevTasks = [])).push(k); io.observe(el); }
-    tasks.add(k);
+    tasks.add(k); if (k.vis) wake();
     return { stop() { tasks.delete(k); } };
   };
   J.time = 0;
   let last = 0;
   function frame(ms) {
-    requestAnimationFrame(frame);
+    raf = 0;
     const t = ms / 1000, dt = Math.min(0.05, t - last || 0.016);
     last = t; J.time = t;
+    let busy = false;
     for (const k of tasks) {
       if (!k.vis) continue;
       if (J.reduce && k.n >= 3) continue; // reduced motion: render a few frames then freeze
-      k.n++;
+      busy = true; k.n++;
       try { k.fn(t, dt); } catch (e) { console.error('[task]', e); tasks.delete(k); }
     }
+    if (busy) wake();
   }
-  requestAnimationFrame(frame);
+  wake();
+
+  /* ---------- off-screen pause: sections / cards / stages far outside the viewport get .is-off → base.css pauses their CSS animations ---------- */
+  /* (every running CSS animation costs a style invalidation per frame whether or not it is visible; ~220 of them run on this page) */
+  const OFF_SEL = 'body > section, body > footer, .card, [class*="-stage"]';
+  const offIo = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
+    for (const e of es) e.target.classList.toggle('is-off', !e.isIntersecting);
+  }, { rootMargin: '200px 0px' }) : null;
+  const pauseOffscreen = () => { if (offIo) document.querySelectorAll(OFF_SEL).forEach((el) => offIo.observe(el)); };
 
   /* ---------- canvas helpers ---------- */
-  /** size a canvas' backing store to its CSS box × DPR; returns {g, W, H} in CSS px with the transform applied */
-  J.fit = (c) => {
-    const r = c.getBoundingClientRect();
-    const W = Math.max(1, Math.round(r.width)), H = Math.max(1, Math.round(r.height));
-    const w = Math.round(W * J.DPR), h = Math.round(H * J.DPR);
+  /**
+   * size a canvas' backing store to its CSS box × DPR; returns {g, W, H, dpr} in CSS px with the transform applied.
+   * Measures the LAYOUT box (clientWidth/Height), not getBoundingClientRect: a canvas inside a `.rv` reveal is mid-scale(.985) when first fitted,
+   * and ResizeObserver never fires when that transform ends, so the rect would leave the backing store ~1.5% small for good.
+   * Optional 2nd arg (number = dpr cap, or {dpr, maxPx}) or data-dpr / data-maxpx on the canvas: cap the ratio for glow-only canvases
+   * (e.g. data-dpr="1.5"), or the backing-store pixel budget. A capped canvas must draw through the returned `g` (or use the returned `dpr`), never J.DPR.
+   */
+  J.fit = (c, o) => {
+    let cw = c.clientWidth, ch = c.clientHeight;
+    if (!cw || !ch) { const r = c.getBoundingClientRect(); cw = r.width; ch = r.height; } // inline / detached canvas
+    const W = Math.max(1, Math.round(cw)), H = Math.max(1, Math.round(ch));
+    if (typeof o === 'number') o = { dpr: o };
+    const ds = c.dataset || {};
+    let dpr = J.DPR;
+    const cap = (o && o.dpr) || +ds.dpr; if (cap > 0) dpr = Math.min(dpr, cap);
+    const px = (o && o.maxPx) || +ds.maxpx; if (px > 0) dpr = Math.min(dpr, Math.max(1, Math.sqrt(px / (W * H))));
+    dpr = Math.min(dpr, 8192 / Math.max(W, H)); // hard side limit (older mobile browsers refuse bigger canvases)
+    const w = Math.max(1, Math.round(W * dpr)), h = Math.max(1, Math.round(H * dpr));
     if (c.width !== w) c.width = w;
     if (c.height !== h) c.height = h;
     const g = c.getContext('2d');
-    g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0);
-    return { g, W, H };
+    g.setTransform(w / W, 0, 0, h / H, 0, 0);
+    return { g, W, H, dpr: w / W };
   };
-  /** call cb(rect) now and whenever el resizes (coalesced to one rAF) */
+  /** call cb(rect) now and whenever el resizes (coalesced to one rAF); also once more when an enclosing `.rv` reveal finishes (its scale() transform changes the rect without a resize) */
   J.watch = (el, cb) => {
     let raf = 0;
     const run = () => { raf = 0; cb(el.getBoundingClientRect()); };
-    const ro = new ResizeObserver(() => { if (!raf) raf = requestAnimationFrame(run); });
-    ro.observe(el); run(); return ro;
+    const kick = () => { if (!raf) raf = requestAnimationFrame(run); };
+    const ro = new ResizeObserver(kick);
+    ro.observe(el); run();
+    if (!J.reduce) {
+      for (let a = el.closest('.rv'); a; a = a.parentElement && a.parentElement.closest('.rv')) {
+        if (a.classList.contains('fx-done') || (a.classList.contains('in') && getComputedStyle(a).transform === 'none')) continue;
+        const done = (e) => { if (e.target !== a || e.propertyName !== 'transform') return; a.removeEventListener('transitionend', done); kick(); };
+        a.addEventListener('transitionend', done);
+      }
+    }
+    return ro;
   };
   J.onView = (el, cb, o) => {
     o = o || {};
@@ -148,14 +188,25 @@
     { key: 'jev', name: 'JEV', line: 'backtests, caps and arms it', sub: 'the gate · cap · kill switch · orders', col: '#ff2e6e' },
   ];
 
+  /* ---------- tab visibility ---------- */
+  /* A hidden tab gets no animation frames, so document.timeline stands still and every Element.animate() a 'decision'/'tick' handler starts can never finish:
+     the live-animation count (and heap) grew ~16/s until the tab came back. The market tick and the decision stream therefore stop while hidden and
+     resume on return WITHOUT catching up (no burst of queued decisions). */
+  J.hidden = () => document.hidden;
+  /** Element.animate that is a no-op (returns null) while the tab is hidden or the element has no WAAPI — use for fire-and-forget flashes */
+  J.animate = (el, kf, o) => { if (document.hidden || !el || !el.animate) return null; try { return el.animate(kf, o); } catch (e) { return null; } };
+
   /* ---------- simulated market (4 Hz) ---------- */
   const M = (J.market = { price: 84722, open: 84722, hist: [], vol: 0.00016 });
-  setInterval(() => {
+  let tickT = 0;
+  const tick = () => {
     const dp = M.price * (J.gauss() * M.vol + (84722 - M.price) * 1e-6);
     M.price = Math.max(1000, M.price + dp);
     M.hist.push(M.price); if (M.hist.length > 1200) M.hist.shift();
     J.bus.emit('tick', { price: M.price, dp });
-  }, 250);
+  };
+  const runTick = (on) => { if (on && !tickT) tickT = setInterval(tick, 250); else if (!on && tickT) { clearInterval(tickT); tickT = 0; } };
+  runTick(!document.hidden);
   for (let i = 0; i < 300; i++) { M.price += M.price * J.gauss() * M.vol; M.hist.push(M.price); }
 
   /* ---------- live decision stream (real engine on sampled states) ---------- */
@@ -190,17 +241,26 @@
     J.bus.emit('decision', d); hud();
     return d;
   };
-  function loop() { J.fire(); setTimeout(loop, 700 + Math.random() * 650); }
-  J.start = () => setTimeout(loop, 400);
+  let loopT = 0, started = false;
+  function loop() { loopT = 0; if (document.hidden) return; J.fire(); loopT = setTimeout(loop, 700 + Math.random() * 650); }
+  J.start = () => { started = true; if (!document.hidden && !loopT) loopT = setTimeout(loop, 400); };
+  document.addEventListener('visibilitychange', () => {
+    const on = !document.hidden;
+    runTick(on);
+    if (on) { if (started && !loopT) loopT = setTimeout(loop, 500 + Math.random() * 600); } // resume gently, nothing queued while away
+    else { clearTimeout(loopT); loopT = 0; }
+  });
 
   /* ---------- HUD (header metrics + kill switch) ---------- */
   function median(a) { const s = a.slice().sort((x, y) => x - y); return s[(s.length / 2) | 0]; }
+  const hudEls = {};
   function hud() {
-    const set = (id, v) => { const el = document.getElementById(id); if (el && el.textContent !== v) el.textContent = v; };
+    const set = (id, v) => { const el = hudEls[id] || (hudEls[id] = document.getElementById(id)); if (el && el.textContent !== v) el.textContent = v; };
     set('mDec', J.fmt(S.count)); set('mCost', '$' + S.cost.toFixed(3));
     set('mMed', median(S.ms).toFixed(1) + ' ms'); set('mFloor', S.floor.toFixed(2));
-    const k = document.getElementById('killBtn');
-    if (k) { k.setAttribute('aria-pressed', String(S.killed)); const t = document.getElementById('killTxt'); if (t) t.textContent = S.killed ? 'HALTED' : 'ARMED'; }
+    set('secExec', J.fmt(S.dest.execute)); set('secRev', J.fmt(S.dest.review)); set('secSkip', J.fmt(S.dest.skip)); // desk header: live gate tally (this session)
+    const k = hudEls.killBtn || (hudEls.killBtn = document.getElementById('killBtn'));
+    if (k) { k.setAttribute('aria-pressed', String(S.killed)); const t = hudEls.killTxt || (hudEls.killTxt = document.getElementById('killTxt')); if (t && t.textContent !== (S.killed ? 'HALTED' : 'ARMED')) t.textContent = S.killed ? 'HALTED' : 'ARMED'; }
   }
   J.hud = hud;
 
@@ -210,7 +270,7 @@
   J.boot = () => {
     const kb = document.getElementById('killBtn');
     if (kb) kb.addEventListener('click', () => J.setKilled(!S.killed));
-    hud();
+    hud(); pauseOffscreen();
     for (const m of mods) {
       const t0 = performance.now();
       try { m.init(); } catch (e) { console.error('[module:' + m.name + ']', e); }
