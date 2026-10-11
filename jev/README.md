@@ -66,6 +66,10 @@ JEV.market {price, open, hist[]}   simulated BTC price (4 Hz random walk)    JEV
 JEV.decide(state, {floor?, killed?})  run the engine on a hand-built state       JEV.makeDecision() sample+decide      JEV.fire() emit a decision now
 JEV.BUILDS[10]  JEV.AGENTS[6]  JEV.TRIO[3]  JEV.STATE_KEYS[15]  JEV.ACTIONS  JEV.SIZES [0.5,1,2,4]
 ```
+Core UI facilities: `JEV.shortcut(key, fn, label)` registers a single-key shortcut (label lists it in the `?` dialog; built-ins: `?` help · `k` kill · `f` fire · `t` top · `1-5` sections; ignored in inputs and during boot),
+`JEV.help()` toggles the dialog, `JEV.toTop()`. HUD metrics (`#mDec`, `#mCost`) are odometers (reels inside, readable text in an `.sr-only` copy: read `JEV.S`, not their textContent); `.m[data-tip]` gets a tooltip on hover / focus / tap.
+Global focus ring + scrollbars + print sheet live in `base.css`; sticky-HUD scroll offset is `--hud-h` (set by core).
+
 Facilities provided by the **fx** module (may not exist yet when your module's init runs — call lazily/guarded): `JEV.pulse(strength 0..1)`, `JEV.toast(msg, kind)`.
 
 ### Decision record `d` (bus `'decision'`)

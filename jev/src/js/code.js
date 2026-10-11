@@ -59,6 +59,7 @@ JEV.mod('code', () => {
       cur: 0, sy: 0, ty: 0, lh: 19, rows: 14, hv: 282, dh: 0, gm: null, seen: false, out: true, ts: 0, typedAt: -9,
     }, cfg);
     P.band.className = 'code-band'; P.band.setAttribute('aria-hidden', 'true'); P.caret.className = 'code-caret'; P.caret.setAttribute('aria-hidden', 'true');
+    P.mmT = doc.createElement('b'); P.mmT.setAttribute('aria-hidden', 'true'); mm.appendChild(P.mmT); P.actI = -1; P.seekUntil = 0;
     panes[k] = P;
     return P;
   };
@@ -68,7 +69,7 @@ JEV.mod('code', () => {
 
   function build(P, models) {
     const d = P.doc;
-    d.textContent = ''; d.appendChild(P.band);
+    d.textContent = ''; d.appendChild(P.band); P.actI = -1;
     P.lines = models.map((toks, i) => {
       const el = doc.createElement('div'), no = doc.createElement('span');
       el.className = 'code-ln'; no.className = 'code-no'; no.textContent = String(i + 1); el.appendChild(no);
@@ -83,7 +84,7 @@ JEV.mod('code', () => {
   function setModel(P, m) { m.forEach((toks, i) => toks.forEach((tk, j) => { const k = P.lines[i].toks[j]; k.t = tk.t; k.x = tk.x || ''; })); }
   function blank(P) {
     for (const L of P.lines) { L.on = L.done = false; L.el.classList.remove('on'); for (const k of L.toks) { k.tn.nodeValue = ''; cls(k); } }
-    P.cur = 0; P.sy = P.ty = 0; P.li = P.ti = P.ci = 0; P.began = false; P.carry = 0;
+    P.cur = 0; P.sy = P.ty = 0; P.li = P.ti = P.ci = 0; P.began = false; P.carry = 0; P.seekUntil = 0;
     applyScroll(P); band(P, 0);
   }
   function fillAll(P) {
@@ -91,13 +92,20 @@ JEV.mod('code', () => {
     P.mode = 'idle'; P.el.classList.remove('code-typing');
     P.caretEnd = -2; band(P, P.rest); mm(P);
   }
+  function act(P, i) { // active-line gutter glow + the minimap cursor tick
+    if (P.actI === i) return;
+    const o = P.lines[P.actI]; if (o) o.el.classList.remove('act');
+    P.actI = i; const n = P.lines[i]; if (n) n.el.classList.add('act');
+    P.mmT.style.transform = 'translate3d(0,' + (4 + i * 4).toFixed(1) + 'px,0)';
+  }
   function band(P, i) {
-    P.cur = i; P.band.style.transform = 'translate3d(0,' + (i * P.lh) + 'px,0)';
+    P.cur = i; P.band.style.transform = 'translate3d(0,' + (i * P.lh) + 'px,0)'; act(P, i);
     const L = P.lines[i];
     if (L) { const tk = L.toks, at = tk.length ? tk[tk.length - 1].el.nextSibling : null; if (P.caret.parentNode !== L.el || P.caretEnd !== i) { L.el.insertBefore(P.caret, at); P.caretEnd = i; } }
     follow(P, i);
   }
   function follow(P, i) {
+    if (J.time < P.seekUntil) return; // the reader moved the view: do not fight them
     const y0 = 8 + i * P.lh, m = 2 * P.lh, max = Math.max(0, P.dh - P.hv);
     if (y0 < P.ty + m) P.ty = y0 - m; else if (y0 + P.lh > P.ty + P.hv - m) P.ty = y0 + P.lh - P.hv + m;
     P.ty = clamp(P.ty, 0, max);
@@ -146,7 +154,7 @@ JEV.mod('code', () => {
   function beginLine(P, L) {
     if (P.rt) for (const k of L.toks) { k.tn.nodeValue = ''; cls(k); }
     L.on = true; L.done = false; L.el.classList.add('on');
-    P.cur = P.li; P.band.style.transform = 'translate3d(0,' + (P.li * P.lh) + 'px,0)';
+    P.cur = P.li; P.band.style.transform = 'translate3d(0,' + (P.li * P.lh) + 'px,0)'; act(P, P.li);
     L.el.insertBefore(P.caret, L.no.nextSibling); P.caretEnd = -1;
     follow(P, P.li); P.began = true;
   }
@@ -173,7 +181,7 @@ JEV.mod('code', () => {
       if (!P.began) beginLine(P, L);
       const k = L.toks[P.ti];
       if (!k) { endLine(P, L); if (P.pause > 0) break; continue; }
-      if (k.live) { k.tn.nodeValue = k.t; flash(k.el); L.el.insertBefore(P.caret, k.el.nextSibling); P.ti++; P.ci = 0; n -= 3; continue; }
+      if (k.live) { k.tn.nodeValue = k.t; flash(k.el); if (k.df) { k.el.classList.add('code-df', k.df); k.df = ''; } L.el.insertBefore(P.caret, k.el.nextSibling); P.ti++; P.ci = 0; n -= 3; continue; }
       if (!k.t.trim()) { k.tn.nodeValue = k.t; P.ti++; P.ci = 0; continue; } // indentation is free
       const take = Math.min(n, k.t.length - P.ci);
       P.ci += take; n -= take; k.tn.nodeValue = k.t.slice(0, P.ci);
@@ -225,7 +233,14 @@ JEV.mod('code', () => {
   let latest = null, lastRetype = -99;
   build(S, stateModel(DEF));
   function retype(d, t) {
+    const old = S.lines.map((L) => L.toks.map((k) => k.t));
     setModel(S, stateModel(d));
+    S.lines.forEach((L, i) => L.toks.forEach((k, j) => { // diff-style underline on every value that changed
+      k.df = '';
+      if (!k.live || old[i][j] === k.t) return;
+      const a = parseFloat(old[i][j].replace(/"/g, '')), b = parseFloat(k.t.replace(/"/g, ''));
+      k.df = isFinite(a) && isFinite(b) && /^[\d.\-]+$/.test(k.t) ? (b > a ? 'code-dfu' : 'code-dfd') : 'code-dfc';
+    }));
     lastRetype = t;
     start(S, { rt: true, cps: 230 });
   }
@@ -252,7 +267,7 @@ JEV.mod('code', () => {
    * 3. zsh : real decisions from the bus, ~900 ms behind so each lands as the hero's code-act card fires
    * ===================================================================== */
   const zel = $('.code-pane[data-k="zsh"]', win), zout = $('.code-out', zel), zbody = $('.code-term', zel), zmmW = $('.code-mm', zel), zmmC = $('canvas', zmmW), zmmV = $('i', zmmW);
-  const Z = { q: [], hist: [], n: 0, ndec: 0, off: 0, lh: 19, rows: 14, caret: doc.createElement('i'), gm: null, hold: false, lastPrint: -9, mLn: $('.code-ln-n', zel), mTs: $('.code-ts-n', zel), mLnV: '', mTsV: '', tag: $('.code-paused', zel), dirty: false };
+  const Z = { q: [], hist: [], n: 0, ndec: 0, off: 0, lh: 19, rows: 14, caret: doc.createElement('i'), gm: null, hold: false, lastPrint: -9, mLn: $('.code-ln-n', zel), mTs: $('.code-ts-n', zel), mLnV: '', mTsV: '', dirty: false, hover: false, pin: false, back: 0, bsy: 0, ly: 0, pill: $('.code-lv', zel), pt: $('.code-lv-t', zel), pn: $('.code-lv-n', zel), ps: '', pc: -1 };
   Z.caret.className = 'code-caret'; Z.caret.setAttribute('aria-hidden', 'true');
   const DELAY = 0.9, STEP = 0.095;
   const pad = (s, n) => s + ' '.repeat(Math.max(1, n - s.length));
@@ -266,15 +281,15 @@ JEV.mod('code', () => {
     else if (r === 'kill switch') L.push([['td', '> '], ['t-warn', 'kill switch -> human review']]);
     else if (r === 'risk flag') L.push([['td', '> '], ['t-warn', 'risk_ok=false -> human review']]);
     else if (d.dest === 'review') L.push([['td', '> '], ['t-warn', 'below ' + d.floor.toFixed(2) + ' -> human review']]);
-    const sv = [['tx', 'Saved handoff: '], ['td', 'queue/'], ['t-dest', d.dest], ['td', '/'], ['tx', d.id + '.json']]; sv.fx = d.dest;
-    L.push(sv);
+    const sv = [['tx', 'Saved handoff: '], ['td', 'queue/'], ['t-dest code-chip-' + d.dest, d.dest], ['td', '/'], ['tx', d.id + '.json']]; sv.fx = d.dest;
+    L.push(sv); L.dec = true; // L.dec: this block is one decision (counted by the '+N new' pill)
     if (++Z.ndec % 20 === 0) {
       L.push([['t-ps', '$ '], ['t-cmd', 'ls queue/']]);
-      L.push([['t-ok', 'execute/ '], ['t-conf', 'review/ '], ['t-warn', 'skip/']]);
+      L.push([['t-dest code-chip-execute', 'execute/'], ['tx', ' '], ['t-dest code-chip-review', 'review/'], ['tx', ' '], ['t-dest code-chip-skip', 'skip/']]);
     }
     return L;
   }
-  function zPush(lines, at, seed) { lines.forEach((toks, i) => Z.q.push({ at: at + i * STEP, toks, seed: !!seed })); if (Z.q.length > 44) Z.q.splice(0, Z.q.length - 44); }
+  function zPush(lines, at, seed) { lines.forEach((toks, i) => Z.q.push({ at: at + i * STEP, toks, seed: !!seed, dec: !!lines.dec && i === 0 })); if (Z.q.length > 44) Z.q.splice(0, Z.q.length - 44); }
   function zPrint(e, instant) {
     const el = doc.createElement('div');
     el.className = 'code-tl' + (instant || e.seed || reduce ? ' seed' : '');
@@ -286,17 +301,20 @@ JEV.mod('code', () => {
     if (e.toks.fx && !instant && !e.seed && !reduce) land(e.toks.fx);
     if (!instant && !e.seed && !reduce) Z.off = Math.min(Z.off + Z.lh, Z.lh * 3);
   }
-  const ZC = { 't-buy': '#2ee6a6', 't-sell': '#ff4d5e', 't-hold': '#b6aec2', 't-close': '#ff8a3d', 't-flatten': '#a66bff', 't-conf': '#ffc13d', 't-ok': '#2ee6a6', 't-no': '#ff4d5e', 't-dest': '#ff7ab3', 't-warn': '#ff7ab3', 't-ps': '#ff2e6e', 't-cmd': '#f4eef6', 'tx': '#cfc6d8', 'td': '#6f6680', 'tm': '#8d8499', 't-kill': '#ff4d5e', 't-arm': '#2ee6a6' };
+  const ZC = { 't-buy': '#2ee6a6', 't-sell': '#ff4d5e', 't-hold': '#b6aec2', 't-close': '#ff8a3d', 't-flatten': '#a66bff', 't-conf': '#ffc13d', 't-ok': '#2ee6a6', 't-no': '#ff4d5e', 't-dest': '#ff7ab3', 't-warn': '#ff7ab3', 't-ps': '#ff2e6e', 't-cmd': '#f4eef6', 'tx': '#cfc6d8', 'td': '#6f6680', 'tm': '#8d8499', 't-kill': '#ff4d5e', 't-arm': '#2ee6a6', 't-dest code-chip-execute': '#2ee6a6', 't-dest code-chip-review': '#ffc13d', 't-dest code-chip-skip': '#b6aec2' };
+  function zVp() { // viewport window mirrors the real (smoothed) scroll position of the log
+    const nd = zout.childNodes.length, first = Math.max(0, Math.max(0, nd - Z.rows) - Z.bsy / Z.lh);
+    zmmV.style.transform = 'translate3d(0,' + (4 + first * 4).toFixed(2) + 'px,0)'; zmmV.style.height = (Math.min(nd, Z.rows) * 4 + 2) + 'px';
+  }
   function zMm() {
     const m = Z.gm; if (!m) return;
     const g = m.g; g.clearRect(0, 0, m.W, m.H);
-    const n = Z.hist.length;
+    const n = Math.min(Z.hist.length, zout.childNodes.length), o = Z.hist.length - n;
     for (let i = 0; i < n; i++) {
       let x = 3;
-      for (const [c, t] of Z.hist[i]) { const w = t.length * 0.5; if (t.trim()) { g.fillStyle = ZC[c] || '#cfc6d8'; g.fillRect(x, 4 + i * 4, Math.max(0.6, Math.min(w, m.W - x - 1)), 1.8); } x += w; if (x > m.W) break; }
+      for (const [c, t] of Z.hist[o + i]) { const w = t.length * 0.5; if (t.trim()) { g.fillStyle = ZC[c] || '#cfc6d8'; g.fillRect(x, 4 + i * 4, Math.max(0.6, Math.min(w, m.W - x - 1)), 1.8); } x += w; if (x > m.W) break; }
     }
-    const top = 4 + Math.max(0, n - Z.rows) * 4;
-    zmmV.style.transform = 'translate3d(0,' + top + 'px,0)'; zmmV.style.height = (Math.min(n, Z.rows) * 4 + 2) + 'px';
+    zVp();
   }
   J.watch(zmmW, () => { Z.gm = J.fit(zmmC); zMm(); });
   J.watch(zbody, () => { const cs = getComputedStyle(win); Z.lh = parseFloat(cs.getPropertyValue('--code-lh')) || 19; Z.rows = parseFloat(cs.getPropertyValue('--code-rows')) || 14; Z.cw = (parseFloat(cs.getPropertyValue('--code-fs')) || 12) * 0.6; });
@@ -304,19 +322,54 @@ JEV.mod('code', () => {
   zPush([[['t-ps', '$ '], ['t-cmd', 'jev watch queue/ --sim']], [['td', 'floor ' + J.S.floor.toFixed(2) + ' - cap $' + J.fmt(J.RULES.lossCap) + ' - max ' + J.RULES.maxPos + '% - listening']]], 0, true);
   for (const d of J.recent.slice(0, 3).reverse()) zPush(zFormat(d), 0, true);
   { const first = Z.q.splice(0); first.forEach((e) => zPrint(e, true)); Z.off = 0; }
+  const zMax = () => Math.max(0, (zout.childNodes.length - Z.rows) * Z.lh);
+  function zUi() { // the sticky LIVE pill: live / paused (hover, scroll-back) / pinned, with a '+N new' tally while held
+    const st = Z.pin ? 'pin' : Z.back > 4 ? 'scroll' : Z.hover ? 'hover' : 'live';
+    if (st !== Z.ps) { Z.ps = st; Z.pill.setAttribute('data-s', st); Z.pill.setAttribute('aria-pressed', Z.pin ? 'true' : 'false'); Z.pt.textContent = st === 'live' ? 'live' : st === 'pin' ? 'pinned' : 'paused'; }
+    const n = Z.hold ? Z.q.reduce((a, e) => a + (e.dec && e.at <= J.time ? 1 : 0), 0) : 0;
+    if (n !== Z.pc) { Z.pc = n; Z.pn.hidden = !n; Z.pn.textContent = '+' + n + ' new'; }
+  }
+  function zResume() { Z.pin = false; Z.back = 0; if (reduce) Z.bsy = 0; }
   if (zel) {
     const fine = (e) => e.pointerType === 'mouse';
-    zbody.addEventListener('pointerenter', (e) => { if (fine(e)) { Z.hold = true; Z.tag.hidden = false; } }); // hover the log to freeze it; the header (and the run button) never freeze it
-    zbody.addEventListener('pointerleave', (e) => { if (fine(e)) { Z.hold = false; Z.tag.hidden = true; } });
+    zbody.addEventListener('pointerenter', (e) => { if (fine(e)) Z.hover = true; }); // hover the log to freeze it; the header (and the run button) never freeze it
+    zbody.addEventListener('pointerleave', (e) => { if (fine(e)) { Z.hover = false; if (!Z.pin && Z.back <= 4) Z.back = 0; } });
     $('.code-run', zel).addEventListener('click', () => { J.fire(); });
+    Z.pill.addEventListener('click', () => { if (Z.hold) zResume(); else Z.pin = true; });
+    zbody.addEventListener('keydown', (e) => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const mx = zMax(), pg = Math.max(1, Z.rows - 2) * Z.lh; let b = Z.back, k = e.key;
+      if (k === 'Enter') { e.preventDefault(); if (Z.hold) zResume(); else Z.pin = true; return; }
+      if (k === 'Escape') { if (Z.hold) { zResume(); e.preventDefault(); } return; }
+      if (k === 'c') { copyPane('zsh'); return; }
+      if (k === 'ArrowUp') b += Z.lh * 2; else if (k === 'ArrowDown') b -= Z.lh * 2; else if (k === 'PageUp') b += pg; else if (k === 'PageDown') b -= pg; else if (k === 'Home') b = mx; else if (k === 'End') b = 0; else return;
+      b = clamp(b, 0, mx); if (Math.abs(b - Z.back) < 0.5) return;
+      e.preventDefault(); Z.back = b;
+    });
+    zbody.addEventListener('wheel', (e) => { // only once the log has focus: otherwise the page keeps its wheel
+      if (doc.activeElement !== zbody) return;
+      const mx = zMax(), b = clamp(Z.back - e.deltaY * (e.deltaMode === 1 ? Z.lh : 1), 0, mx);
+      if (Math.abs(b - Z.back) < 0.5) return;
+      e.preventDefault(); Z.back = b;
+    }, { passive: false });
   }
   function zFlush(t, dt) {
-    if (Z.off > 0.05) { Z.off *= Math.exp(-dt * 13); zout.style.transform = 'translate3d(0,' + Z.off.toFixed(2) + 'px,0)'; } else if (Z.off !== 0) { Z.off = 0; zout.style.transform = ''; }
-    if (Z.hold) return;
-    let k = 0;
-    while (k < Z.q.length && Z.q[k].at <= t) { const e = Z.q[k++]; if (t - e.at > 1.6) e.seed = true; zPrint(e, false); }
-    if (k) { Z.q.splice(0, k); }
-    if (Z.dirty) { Z.dirty = false; zMm(); }
+    if (Z.off > 0.05) Z.off *= Math.exp(-dt * 13); else Z.off = 0;
+    const mx = zMax(); if (Z.back > mx) Z.back = mx;
+    let moved = false;
+    if (reduce) { if (Z.bsy !== Z.back) { Z.bsy = Z.back; moved = true; } }
+    else if (Math.abs(Z.back - Z.bsy) > 0.05) { Z.bsy += (Z.back - Z.bsy) * (1 - Math.exp(-dt * 11)); moved = true; } else if (Z.bsy !== Z.back) { Z.bsy = Z.back; moved = true; }
+    const y = Z.off + Z.bsy;
+    if (Math.abs(y - Z.ly) > 0.02) { Z.ly = y; zout.style.transform = y > 0.02 ? 'translate3d(0,' + y.toFixed(2) + 'px,0)' : ''; }
+    if (moved) zVp();
+    Z.hold = Z.hover || Z.pin || Z.back > 4;
+    if (!Z.hold) {
+      let k = 0;
+      while (k < Z.q.length && Z.q[k].at <= t) { const e = Z.q[k++]; if (t - e.at > 1.6) e.seed = true; zPrint(e, false); }
+      if (k) { Z.q.splice(0, k); }
+      if (Z.dirty) { Z.dirty = false; zMm(); }
+    }
+    if (Z.hold || Z.ps !== 'live' || Z.pc) zUi();
   }
 
   /* =====================================================================
@@ -349,7 +402,7 @@ JEV.mod('code', () => {
       hops.splice(i, 1);
       if (t - h.at > 1.5) continue; // stale (frame stall / tab was hidden): skip instead of replaying
       if (h.flow != null) { fnode(h.flow, h.d); continue; }
-      if (h.P.mode === 'idle' && !h.P.out) { band(h.P, h.i); pop(h.P.dot); }
+      if (h.P.mode === 'idle' && !h.P.out) { band(h.P, h.i); pop(h.P.dot); sel(h.P); }
       if (h.tab) tab(h.tab);
     }
   }
@@ -486,6 +539,84 @@ JEV.mod('code', () => {
     if (!tilt.tx && !tilt.ty && Math.abs(tilt.rx) < 0.01 && Math.abs(tilt.ry) < 0.01) { tilt.rx = tilt.ry = 0; tilt.on = false; stage.style.transform = ''; return; }
     stage.style.transform = 'perspective(1500px) rotateX(' + tilt.rx.toFixed(3) + 'deg) rotateY(' + tilt.ry.toFixed(3) + 'deg)';
   }
+
+  /* =====================================================================
+   * 4c. details: selection sweep · identifier linking · copy · minimap seek · pane keyboard
+   * ===================================================================== */
+  function sel(P) { // a hop selects its line for a beat (soft pink sweep that settles into the band)
+    if (reduce || J.hidden()) return;
+    J.animate(P.band, [{ boxShadow: 'inset 2px 0 0 var(--code-bandc), inset 0 0 0 40px var(--code-sel)' }, { boxShadow: 'inset 2px 0 0 var(--code-bandc), inset 0 0 0 40px rgba(255,255,255,0)' }], { duration: 640, easing: 'ease-out' });
+  }
+
+  // identifier linking: hover (or tap) FLOOR / gate / dest / "execute" ... and every other use lights up across the four panes
+  const IDC = /(?:^|\s)code-(?:v|ct|f|fa|fd|a|b|jk|s|t-dest|t-buy|t-sell|t-hold|t-close|t-flatten)(?:\s|$)/, LKS = '.code-doc span, .code-out span';
+  const stT = $('#code-st-t'), stTxt = stT ? stT.textContent : '';
+  let lkKey = '', lkOn = [];
+  function keyOf(el) {
+    if (!el || el.tagName !== 'SPAN' || !IDC.test(el.className)) return '';
+    const t = el.textContent.trim().replace(/^f?["']|["']$/g, '');
+    return /^[A-Za-z_][\w-]{1,24}$/.test(t) && !KW.has(t) ? t : '';
+  }
+  function link(el) {
+    const raw = keyOf(el), key = raw.toLowerCase();
+    if (key === lkKey) return;
+    for (const e of lkOn) e.classList.remove('code-lk');
+    lkOn = []; lkKey = key;
+    if (!key) { if (stT) stT.textContent = stTxt; return; }
+    const seen = new Set();
+    for (const e of win.querySelectorAll(LKS)) if (e.firstChild && keyOf(e).toLowerCase() === key) { e.classList.add('code-lk'); lkOn.push(e); seen.add(e.closest('.code-pane')); }
+    if (stT) stT.textContent = raw + ' · ' + lkOn.length + (lkOn.length === 1 ? ' ref' : ' refs') + ' · ' + seen.size + (seen.size === 1 ? ' pane' : ' panes');
+  }
+  win.addEventListener('pointerover', (e) => link(e.target));
+  win.addEventListener('pointerleave', () => link(null));
+
+  // copy: per pane, check-mark morph + toast
+  const CPN = { 'desk.py': D, 'state.json': S, 'questions.py': Q };
+  function paneText(k) {
+    if (k === 'zsh') return Z.hist.map((t) => t.map((x) => x[1]).join('').replace(/\s+$/, '')).join('\n');
+    return CPN[k].lines.map((L) => L.toks.map((x) => x.t).join('').replace(/\s+$/, '')).join('\n');
+  }
+  function clip(txt) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(txt);
+    return new Promise((ok, no) => {
+      const ta = doc.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      doc.body.appendChild(ta); ta.select(); let r = false; try { r = doc.execCommand('copy'); } catch (_) { /* blocked */ } ta.remove(); r ? ok() : no();
+    });
+  }
+  function copyPane(k) {
+    const btn = $('.code-cp[data-cp="' + k + '"]', win), txt = paneText(k), n = txt ? txt.split('\n').length : 0;
+    const done = (ok) => {
+      if (btn) { clearTimeout(btn._t); btn.classList.toggle('done', ok); btn.setAttribute('aria-label', (ok ? 'copied ' : 'copy ') + k); if (ok) btn._t = setTimeout(() => { btn.classList.remove('done'); btn.setAttribute('aria-label', 'copy ' + k + ' (illustrative sample)'); }, 1700); }
+      if (J.toast) J.toast(ok ? k + ' copied · ' + n + ' lines · illustrative sample' : 'copy blocked · select the text instead', ok ? 'ok' : 'info');
+    };
+    clip(txt).then(() => done(true), () => done(false));
+  }
+  win.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('.code-cp'); if (b && win.contains(b)) copyPane(b.dataset.cp); });
+
+  // minimap: click or drag to move the view (code panes pin the view for a few seconds, the log scrolls back)
+  function mmDrag(w, fn) {
+    let down = false;
+    const go = (e) => fn((e.clientY - w.getBoundingClientRect().top - 4) / 4);
+    w.addEventListener('pointerdown', (e) => { down = true; try { w.setPointerCapture(e.pointerId); } catch (_) { /* ok */ } w.classList.add('drag'); go(e); e.preventDefault(); });
+    w.addEventListener('pointermove', (e) => { if (down) go(e); });
+    const up = () => { down = false; w.classList.remove('drag'); };
+    w.addEventListener('pointerup', up); w.addEventListener('pointercancel', up);
+  }
+  for (const P of [D, S, Q]) {
+    mmDrag(P.mmW, (line) => { P.ty = clamp((line - P.rows / 2) * P.lh, 0, Math.max(0, P.dh - P.hv)); P.seekUntil = J.time + 6; });
+    P.body.addEventListener('keydown', (e) => { // keyboard parity: arrows / page / home / end move the view, c copies
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const mx = Math.max(0, P.dh - P.hv), pg = Math.max(1, P.rows - 2) * P.lh; let ty = P.ty, k = e.key;
+      if (k === 'c') { copyPane(P === D ? 'desk.py' : P === S ? 'state.json' : 'questions.py'); return; }
+      if (k === 'ArrowUp') ty -= P.lh * 2; else if (k === 'ArrowDown') ty += P.lh * 2; else if (k === 'PageUp') ty -= pg; else if (k === 'PageDown') ty += pg; else if (k === 'Home') ty = 0; else if (k === 'End') ty = mx; else return;
+      ty = clamp(ty, 0, mx); if (Math.abs(ty - P.ty) < 0.5) return;
+      e.preventDefault(); P.ty = ty; P.seekUntil = J.time + 6;
+    });
+  }
+  mmDrag(zmmW, (line) => {
+    const nd = zout.childNodes.length, first = clamp(line - Z.rows / 2, 0, Math.max(0, nd - Z.rows));
+    Z.back = (Math.max(0, nd - Z.rows) - first) * Z.lh;
+  });
 
   /* =====================================================================
    * 5. master tick (runs only while #code is on screen)

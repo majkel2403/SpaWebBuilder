@@ -301,6 +301,66 @@ JEV.mod('hero', () => {
   let confV = -1, confTxt = '', confA = 0, confOk = true, confRow = 0;
   let floorV = J.S.floor, floorTxt = 'floor ' + floorV.toFixed(2), killed = J.S.killed, PK = killed ? T_RED : T_PINK, killFl = 0;
   let mx = -9999, my = -9999, hov = 0, now = 0, lastRun = 0, cableS = -1, cableT0 = 0, cableTint = 0;
+  /* ---------- detail layer state: history · tooltip · dust · impact ripples · flare · odometers · springs ---------- */
+  const HN = 20, hist = [], refPx = {}; for (let i = 0; i < 15; i++) hist.push(new Float32Array(HN)); let hCount = 0, lastD = null;
+  const NUM = [null, (s) => Math.log(s.price / (refPx[s.symbol] || (refPx[s.symbol] = s.price))), (s) => s.vwap_dist_bps, (s) => s.spread_bps, (s) => s.imbalance, (s) => s.funding_bps, (s) => s.vol_1h, (s) => s.edge_bps, (s) => s.position_pct, (s) => s.daily_pnl, (s) => s.drawdown_pct, (s) => s.latency_ms, (s) => s.signal_age_s];
+  function pushHist(s) { for (let i = 1; i < 13; i++) { const h = hist[i]; h.copyWithin(0, 1); h[HN - 1] = NUM[i](s); } if (hCount < HN) hCount++; }
+  const NR = 14, nrX = new Float64Array(NR), nrY = new Float64Array(NR), nrT = new Float64Array(NR).fill(-9), nrS = new Float32Array(NR), nrC = new Uint8Array(NR); let nrI = 0;
+  const fFl = new Float32Array(3), cPrevT = ['', '', ''], cRoll = new Float32Array(3).fill(1);
+  const DMAX = 60, dX = new Float32Array(DMAX), dY = new Float32Array(DMAX), dZ = new Float32Array(DMAX), dP = new Float32Array(DMAX), dK = new Uint8Array(DMAX); let dN = 0;
+  function dustInit() { const R = J.rng(99); dN = M ? 22 : 56; for (let i = 0; i < dN; i++) { dX[i] = R() * W; dY[i] = R() * H; const r = R(); dZ[i] = 0.1 + 0.9 * r * r; dP[i] = R() * 6.28; dK[i] = i % 7 === 0 ? 2 : i % 3 === 0 ? 1 : 0; } }
+  let fDisp = J.S.floor, fVel = 0, fFlash = 0, confSp = 1, confVl = 0, lastDecT = performance.now() / 1000, idleA = 0, idleOn = false;
+  const legSim = J.$('.hero-leg-sim', stage);
+  const eBack = (r) => { const q = r - 1; return 1 + 2.1 * q * q * q + 1.1 * q * q; };
+
+  /* tooltip: DOM, event-driven (pointer move / tap / arrow keys), never per frame; the ring that marks the inspected node is drawn in the live loop */
+  const tip = J.$('#hero-tip'), tipH = J.$('.hero-tip-h', tip), tipV = J.$('.hero-tip-v', tip), tipW = J.$('.hero-tip-w', tip), tipC = J.$('.hero-tip-sp', tip), tipG = tipC ? tipC.getContext('2d') : null;
+  let tipN = -1, tipExp = 0, tipTw = 140, tipTh = 60, kbN = -1;
+  const QN3 = ['which action?', 'how much?', 'risk ok?'], QCH = ['choice', 'score', 'flag'], CNAME = ['orders/execute', 'orders/review', 'orders/skip'];
+  const QW = [[.3, .2, .1], [.5, .2, .1], [.9, .3, .1], [.3, .4, .5], [.9, .2, .1], [.7, .3, .2], [.3, .8, .4], [.8, .6, .2], [.2, .6, .7], [.1, .4, .9], [.1, .5, .9], [.2, .3, .8], [.3, .2, .8], [.1, .1, .4], [.4, .7, .3]];
+  function influence(i) {
+    const s = lastD && lastD.state, sal = i === 0 ? 0.5 : i === 1 ? 0.35 : i >= 13 ? 0.3 : s ? clamp(SAL[i](s), 0, 1.2) : 0.3; let bq = 0, bv = -1;
+    for (let q = 0; q < 3; q++) { const v = QW[i][q] * (0.25 + sal); if (v > bv) { bv = v; bq = q; } }
+    return [bq, Math.min(0.99, bv / 1.25)];
+  }
+  function tipSpark(i) {
+    const g = tipG, D = J.DPR, w = 100, h = 22; if (!g) return; if (tipC.width !== w * D) { tipC.width = w * D; tipC.height = h * D; tipC.style.width = w + 'px'; tipC.style.height = h + 'px'; }
+    g.setTransform(D, 0, 0, D, 0, 0); g.clearRect(0, 0, w, h); const n = hCount, a = hist[i]; if (n < 3) return;
+    let lo = 1e18, hi = -1e18; for (let j = HN - n; j < HN; j++) { if (a[j] < lo) lo = a[j]; if (a[j] > hi) hi = a[j]; } const rg = hi - lo || 1;
+    g.strokeStyle = 'rgba(255,130,184,.9)'; g.lineWidth = 1.2; g.lineJoin = 'round'; g.beginPath();
+    let ex = 0, ey = 0; for (let j = 0; j < n; j++) { const x = 2 + (w - 4) * (HN - n + j) / (HN - 1), y = h - 3 - (a[HN - n + j] - lo) / rg * (h - 6); if (j) g.lineTo(x, y); else g.moveTo(x, y); ex = x; ey = y; } g.stroke();
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(ex, ey, 1.8, 0, J.TAU); g.fill();
+  }
+  function tipFill(n) {
+    const l = nL[n], loc = n - LS[l]; let h = '', v = '', w = '', sp = 0;
+    if (l === 0) { h = KEYS[n]; v = stTxt[n] || '\u2014'; const f = influence(n); w = 'drives ' + QN3[f[0]] + ' \u00b7 ' + f[1].toFixed(2); sp = n >= 1 && n <= 12 ? n : 0; if (sp && !M) w += ' \u00b7 last ' + hCount; }
+    else if (l === 1) { h = 'encode \u00b7 dim ' + (loc + 1); v = 'vector slot'; w = '15 fields folded into 12 dims'; }
+    else if (l <= 4) { h = 'jev \u00b7 layer ' + 'abc'[l - 2] + ' \u00b7 unit ' + (loc + 1); v = 'one pass'; w = 'no loop, no retries'; }
+    else if (l === 5) { h = QN3[loc]; v = qTxt[loc] ? '= ' + qTxt[loc] : '\u2014'; w = 'typed question \u00b7 ' + QCH[loc]; }
+    else if (l === 6) { h = ROW[loc]; v = pct(aTg[loc]) + '%'; w = (loc < 5 ? 'choice' : loc < 9 ? 'score' : 'flag') + ' answer' + (aSelT[loc] > 0.5 ? ' \u00b7 chosen' : ''); }
+    else { h = CNAME[loc]; v = J.fmt(cCount[loc]) + ' sim'; w = DSUB[loc] + ' \u00b7 simulated'; }
+    tipH.textContent = h; tipV.textContent = v; tipW.textContent = w;
+    if (tipC) { tipC.style.display = sp ? 'block' : 'none'; if (sp) tipSpark(sp); }
+  }
+  function hideTip() { if (tipN < 0) return; tipN = -1; tipExp = 0; if (tip) tip.classList.remove('is-on'); }
+  function showTip(n, x, y, touch) {
+    if (!tip || n < 0) { hideTip(); return; }
+    if (n !== tipN) { tipN = n; tipFill(n); tip.classList.add('is-on'); tipTw = tip.offsetWidth; tipTh = tip.offsetHeight; }
+    let tx = touch ? x - tipTw / 2 : x + 14, ty = touch ? y - tipTh - 24 : y + 16;
+    if (touch && ty < 4) ty = y + 24; if (!touch && ty + tipTh > H - 4) ty = y - tipTh - 12;
+    tx = clamp(tx, 4, Math.max(4, W - tipTw - 4)); ty = clamp(ty, 4, Math.max(4, H - tipTh - 4));
+    tip.style.transform = 'translate3d(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px,0)';
+  }
+  function hit(x, y) { // state rows first (generous band), then code cards, answer rows, question nodes, nearest inner node
+    const p0 = P[0], p4 = P[4], R = M ? 13 : 10;
+    if (x >= p0.x && x <= p0.x + p0.w && y >= ny[0] - spitch / 2 && y <= ny[14] + spitch / 2) return clamp(Math.floor((y - (ny[0] - spitch / 2)) / spitch), 0, 14);
+    for (let k = 0; k < 3; k++) { const c = CARDS[k]; if (x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h) return LS[7] + k; }
+    if (x >= p4.x && x <= p4.x + p4.w) for (let r = 0; r < 11; r++) if (Math.abs(y - rowY[r]) <= pitch / 2) return LS[6] + r;
+    for (let i = LS[5]; i < LS[6]; i++) { const dx = x - nx[i], dy = y - ny[i]; if (dx * dx + dy * dy <= (qr + 5) * (qr + 5)) return i; }
+    let bn = -1, bd = R * R; for (let i = LS[1]; i < LS[5]; i++) { const dx = x - nx[i], dy = y - ny[i], d2 = dx * dx + dy * dy; if (d2 < bd) { bd = d2; bn = i; } }
+    return bn;
+  }
+
   const RIPN = 8, ripT = new Float32Array(RIPN).fill(-9), ripK = new Uint8Array(RIPN), ripC = new Uint8Array(RIPN); let ripI = 0;
 
   /* beams: ring buffer, struct-of-arrays */
@@ -310,6 +370,7 @@ JEV.mod('hero', () => {
   function beam(e, t0, dur, w, tint, amb) { const b = bi; bi = (bi + 1) % BN; if (bDur[b] !== 0 && bAmb[b]) nAmb--; if (amb) nAmb++; bE[b] = e; bT0[b] = t0; bDur[b] = dur; bW[b] = w > 1 ? 1 : w; bTint[b] = tint; bAmb[b] = amb; bDone[b] = 0; }
   function arrive(b, e) {
     const d = edst[e]; nfl[d] = Math.min(1, nfl[d] + (bAmb[b] ? 0.32 : 0.55 + 0.45 * bW[b]));
+    if (!bAmb[b] && eTr[e] >= 4) { const i = nrI; nrI = (nrI + 1) % NR; nrX[i] = nx[d]; nrY[i] = ny[d]; nrT[i] = now; nrC[i] = bTint[b]; nrS[i] = nL[d] === 5 ? qr : nL[d] === 6 ? 3 : 4; }
     if (bAmb[b] && eTr[e] < 4 && noutN[d] > 0 && nAmb < AMB_CAP() && Math.random() < 0.72) beam(nout0[d] + ((Math.random() * noutN[d]) | 0), now, bDur[b] * 0.92, bW[b] * 0.92, bTint[b], 1);
   }
 
@@ -335,7 +396,7 @@ JEV.mod('hero', () => {
     for (let i = 2; i < 13; i++) w.sal[i] = clamp(SAL[i](s), 0, 1.2);
     for (let n = 0; n < 5; n++) { let bi2 = -1, bv = 0.25; for (let i = 2; i < 13; i++) if (!w.lit[i] && w.sal[i] > bv) { bv = w.sal[i]; bi2 = i; } if (bi2 < 0) break; w.lit[bi2] = 1; }
     w.lit[0] = 1;
-    stateText(s);
+    pushHist(s); lastD = d; stateText(s);
     return w;
   }
   const lessM = () => (M ? 0.6 : 1);
@@ -366,7 +427,7 @@ JEV.mod('hero', () => {
       for (let i = 0; i < 4; i++) aTg[5 + i] = d.sizes[i]; aTg[9] = d.pRisk; aTg[10] = 1 - d.pRisk;
       aTg[rA] = cs; // the chosen action's bar IS the confidence (see confShown)
       aSelT.fill(0); aSelT[rA] = 1; aSelT[rS] = 1; aSelT[rK] = 1; aHot[rA] = 1; aHot[rS] = 1; aHot[rK] = 1; txD[1] = 1;
-      confOk = cs >= d.floor; confRow = rA; confA = 0;
+      confOk = cs >= d.floor; confRow = rA; confA = 0; confSp = 0; confVl = 0;
       // the readout chip waits until the chosen row's percentage has landed (the bars ease; the chip must never lead them)
       chipD = d; chipCs = cs; chipRow = rA; chipPc = pct(aTg[rA]); chipT0 = w.t0 + ST[6];
       const dk = DEST[d.dest], tint = d.dest === 'skip' ? T_DIM : d.dest === 'review' ? (killed ? T_RED : T_AMB) : PK, bw = d.dest === 'skip' ? 0.5 : 1;
@@ -374,7 +435,7 @@ JEV.mod('hero', () => {
       [rA, rS, rK].forEach((r, i) => beam(nout0[LS[6] + r] + dk, w.t0 + 0.86 + i * 0.02, 0.22, bw, tint, 0));
     } else {
       const dk = w.dk, tint = dk === 2 ? T_DIM : dk === 1 ? (killed ? T_RED : T_AMB) : PK;
-      cPulse[dk] = 1; cTint[dk] = tint; nfl[LS[7] + dk] = 1; ripT[ripI] = w.t0 + ST[7]; ripK[ripI] = dk; ripC[ripI] = tint; ripI = (ripI + 1) % RIPN;
+      cPulse[dk] = 1; fFl[dk] = 1; cTint[dk] = tint; nfl[LS[7] + dk] = 1; ripT[ripI] = w.t0 + ST[7]; ripK[ripI] = dk; ripC[ripI] = tint; ripI = (ripI + 1) % RIPN;
       if (!w.demo) cCount[dk]++;
       w.on = false;
     }
@@ -389,7 +450,18 @@ JEV.mod('hero', () => {
   }
   let chipD = null, chipCs = 0, chipRow = 0, chipPc = 0, chipT0 = 0;
   const chipV = {}; // last text written per readout field: an unchanged field costs no DOM write
-  function setC(k, v) { if (chipV[k] !== v) { chipV[k] = v; CH[k].textContent = v; } }
+  const ODO = { conf: 1, size: 1, ms: 1 }, odS = {};
+  function odo(k, v) { // per-character roll: the old glyph slides up and out, the new one springs in from below
+    const el = CH[k]; let sp = odS[k];
+    if (!sp || sp.length !== v.length || sp[0].parentNode !== el) { el.textContent = ''; sp = odS[k] = []; for (let i = 0; i < v.length; i++) { const c = document.createElement('span'); c.className = 'hero-od'; c.textContent = v[i]; el.appendChild(c); sp.push(c); } return; }
+    for (let i = 0; i < v.length; i++) {
+      const c = sp[i], ov = c.firstChild ? c.firstChild.nodeValue : ''; if (ov === v[i]) continue;
+      c.textContent = v[i]; const o = document.createElement('i'); o.className = 'hero-od-o'; o.setAttribute('aria-hidden', 'true'); o.textContent = ov; c.appendChild(o);
+      const a = J.animate(o, [{ transform: 'translateY(0)', opacity: .8 }, { transform: 'translateY(-.7em)', opacity: 0 }], { duration: 240, easing: 'ease-in', fill: 'forwards' });
+      if (a) { a.onfinish = () => o.remove(); J.animate(c, [{ transform: 'translateY(.6em)', opacity: .5 }, { transform: 'none', opacity: 1 }], { duration: 340, easing: 'cubic-bezier(.34,1.56,.64,1)' }); } else o.remove();
+    }
+  }
+  function setC(k, v) { if (chipV[k] !== v) { const first = chipV[k] === undefined; chipV[k] = v; if (ODO[k] && !J.reduce && !first) odo(k, v); else { CH[k].textContent = v; odS[k] = null; } } }
   function updateChip(d, pc, cs) {
     setC('sym', d.symbol); setC('act', d.action); setC('conf', (pc / 100).toFixed(2));
     setC('size', d.action === 'hold' ? '—' : (d.size < 1 ? '0.5' : d.size) + '%'); setC('risk', d.riskOk ? 'ok' : 'flag');
@@ -423,6 +495,15 @@ JEV.mod('hero', () => {
   function blit(g, i) { const r = txR[i]; g.drawImage(txCv[i], r.x, r.y, r.w, r.h); }
   function txState() {
     const g = txBegin(0), pst = P[0]; g.font = '500 ' + FS + 'px ' + FF;
+    if (stVals && hCount > 2) { // sparkline history (last 20 decisions) sits behind each numeric value, newest at the right
+      const x0 = pst.x + 8, x1 = pst.x + pst.w - 14, amp = Math.min(spitch * 0.32, 8), n = hCount; g.lineWidth = 1; g.lineJoin = 'round';
+      for (let i = 1; i < 13; i++) {
+        const h = hist[i]; let lo = 1e18, hi = -1e18; for (let j = HN - n; j < HN; j++) { if (h[j] < lo) lo = h[j]; if (h[j] > hi) hi = h[j]; } const rg = hi - lo || 1, br = stBr[i];
+        g.strokeStyle = br ? 'rgba(255,130,184,.46)' : 'rgba(255,120,175,.2)'; g.beginPath(); let ex = 0, ey = 0;
+        for (let j = 0; j < n; j++) { const x = x1 - (x1 - x0) * (n - 1 - j) / (HN - 1), y = ny[i] + amp - (h[HN - n + j] - lo) / rg * amp * 2; if (j) g.lineTo(x, y); else g.moveTo(x, y); ex = x; ey = y; }
+        g.stroke(); g.fillStyle = br ? 'rgba(255,210,228,.8)' : 'rgba(255,150,196,.4)'; g.beginPath(); g.arc(ex, ey, 1.4, 0, J.TAU); g.fill();
+      }
+    }
     if (stVals) { g.textAlign = 'left'; for (let i = 0; i < 15; i++) { g.fillStyle = stBr[i] ? '#fff' : '#8f859b'; g.fillText(stTxt[i], pst.x + 9, ny[i] + 0.5); } }
     if (!M) { g.textAlign = 'right'; g.fillStyle = '#fff'; for (let i = 0; i < 15; i++) if (stBr[i]) g.fillText(KEYS[i], nx[i] - 10, ny[i] + 0.5); }
   }
@@ -434,12 +515,24 @@ JEV.mod('hero', () => {
       if (sel) { g.textAlign = 'left'; g.fillStyle = '#fff'; g.strokeText(ROW[r], pa.x + (M ? 14 : 22), ty); g.fillText(ROW[r], pa.x + (M ? 14 : 22), ty); }
     }
   }
+  function counter(g, k, x, y, fs) { // odometer: changed glyphs roll up (old out, new in) with a little overshoot
+    const sN = cTxt[k], sO = cPrevT[k], r = cRoll[k];
+    if (r >= 1 || !sO || sO === sN) { g.fillText(sN, x, y); return; }
+    const e = eBack(r), off = fs * 0.95, dl = sN.length - sO.length; g.save(); g.beginPath(); g.rect(x - 2, y - fs * 0.98, fs * 0.75 * sN.length + 6, fs * 1.28); g.clip();
+    for (let i = 0; i < sN.length; i++) {
+      const ch = sN[i], oc = sO[i - dl], cx = x + (i ? g.measureText(sN.slice(0, i)).width : 0);
+      if (ch === oc) { g.globalAlpha = 1; g.fillText(ch, cx, y); continue; }
+      g.globalAlpha = Math.min(1, r * 2.2); g.fillText(ch, cx, y + (1 - e) * off);
+      if (oc) { g.globalAlpha = Math.max(0, 1 - r * 2.2); g.fillText(oc, cx, y - e * off); }
+    }
+    g.restore();
+  }
   function txCards() {
     const g = txBegin(2), CN = ['execute', 'review', 'skip']; g.textBaseline = 'alphabetic'; g.textAlign = 'left';
     for (let k = 0; k < 3; k++) {
       const c = CARDS[k]; g.font = '700 ' + cFS + 'px ' + FF; g.fillStyle = '#fff'; T(g, M || c.w < 116 ? CN[k] : 'orders/' + CN[k], c.x + (M ? 5 : 10), c.y + (M ? 12 : 17), M ? 0.2 : 0.6);
       if (!M) { g.font = '500 ' + cFS2 + 'px ' + FF; g.fillStyle = '#ffc7dc'; g.fillText(DSUB[k], c.x + 10, c.y + 29); }
-      g.font = '700 ' + (M ? 11 : 25) + 'px ' + SF; g.fillStyle = '#fff'; g.fillText(cTxt[k], c.x + (M ? 5 : 10), c.y + c.h - (M ? 7 : 11));
+      g.font = '700 ' + (M ? 11 : 25) + 'px ' + SF; g.fillStyle = '#fff'; counter(g, k, c.x + (M ? 5 : 10), c.y + c.h - (M ? 7 : 11), M ? 11 : 25);
     }
   }
   function txQ() { // typed-question labels: name · primitive · "= answer" (desktop: on the static plates; phone: centred under the node)
@@ -473,6 +566,13 @@ JEV.mod('hero', () => {
     // value tweens (bars, row glow) follow the wall clock, not the dt that core caps at 50 ms: on a slow GPU they still land ~0.5 s after the wave reaches them (the readout waits for them)
     const dA = Math.exp(-dk * 2.1), dB = Math.exp(-dk * 3.4), dC = Math.exp(-dk * 2.2), kE = Math.min(1, Math.max(dk, Math.min(0.3, t - prevT)) * 8); prevT = t;
     g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); g.clearRect(0, 0, W, H); g.lineCap = 'round'; g.globalCompositeOperation = 'lighter';
+    /* bokeh dust: drifting in depth behind the mesh, parallax from the pointer (<= 56 soft sprites) */
+    for (let i = 0; i < dN; i++) {
+      const z = dZ[i], L = W + 80, Lh = H + 80; let x = (dX[i] + t * (2 + 6 * z)) % L; x = (x < 0 ? x + L : x) - 40 - ax * z * 2.2; let y = (dY[i] - t * (1.5 + 4 * z)) % Lh; y = (y < 0 ? y + Lh : y) - 40 - ay * z * 2.2;
+      const sz = (M ? 7 : 9) + z * (M ? 18 : 30), a = (0.05 + 0.2 * z) * (0.55 + 0.45 * Math.sin(t * (0.5 + z) + dP[i])), k = dK[i];
+      g.globalAlpha = a; g.drawImage(SOFT[k === 2 ? T_WHT : k === 1 ? T_DIM : PK], x - sz / 2, y - sz / 2, sz, sz);
+    }
+    g.globalAlpha = 1;
     if (killFl > 0.01) { spr(T_RED, jcx, jcy, Math.max(W, H) * 1.3, killFl * 0.35); killFl *= Math.exp(-dk * 1.8); }
     if (auraEl) { const tx = J.pointer.nx * 16, ty = J.pointer.ny * 10; ax += (tx - ax) * Math.min(1, dk * 2.5); ay += (ty - ay) * Math.min(1, dk * 2.5); if (Math.abs(ax - lax) + Math.abs(ay - lay) > 0.08) { lax = ax; lay = ay; auraEl.style.transform = 'translate3d(' + ax.toFixed(1) + 'px,' + ay.toFixed(1) + 'px,0)'; } }
     /* pointer: soft spotlight, nearby edges + nodes light up */
@@ -549,7 +649,37 @@ JEV.mod('hero', () => {
       const age = t - ripT[i]; if (age < 0 || age > 0.85) continue; const k = age / 0.85, c = CARDS[ripK[i]], e = 1 - (1 - k) * (1 - k), gx = (M ? 12 : 22) * e, gy = (M ? 8 : 16) * e;
       g.strokeStyle = RAMP[ripC[i]][((1 - k) * 0.85 * 32) | 0]; rr(g, c.x - gx, c.y - gy, c.w + gx * 2, c.h + gy * 2, (M ? 5 : 8) + gx * 0.6); g.stroke();
     }
+    /* impact ripples at every node a (non-ambient) beam lands on */
+    g.lineWidth = 1.2;
+    for (let i = 0; i < NR; i++) {
+      const age = t - nrT[i]; if (age < 0 || age > 0.6) continue; const k = age / 0.6, r = nrS[i] + (M ? 12 : 20) * (1 - (1 - k) * (1 - k));
+      g.strokeStyle = RAMP[nrC[i]][((1 - k) * 0.8 * 32) | 0]; g.beginPath(); g.arc(nrX[i], nrY[i], r, 0, J.TAU); g.stroke();
+    }
+    /* lens flare on the code-act card that was hit: anamorphic streak + cross + ghosts along the axis */
+    for (let k = 0; k < 3; k++) {
+      const f = fFl[k]; if (f < 0.02) continue; fFl[k] = f * Math.exp(-dk * 3.2);
+      const c = CARDS[k], cx = c.x, cy = c.y + c.h / 2, tn = cTint[k], L = c.w * (0.9 + 0.9 * f);
+      g.globalAlpha = Math.min(1, f * 0.9); g.drawImage(SPR[T_WHT], cx - L / 2, cy - 2.5, L, 5);
+      g.globalAlpha = f * 0.5; g.drawImage(SPR[tn], cx - L * 0.8, cy - 8, L * 1.6, 16);
+      g.globalAlpha = f * 0.38; g.drawImage(SPR[tn], cx - 3.5, cy - c.h * 0.65, 7, c.h * 1.3);
+      for (let j = 0; j < 3; j++) { const sz = (M ? 7 : 11) * (1 + j * 0.55); g.globalAlpha = f * 0.26; g.drawImage(SPR[tn], cx + c.w * (0.2 + 0.28 * j) - sz / 2, cy - sz / 2, sz, sz); }
+    }
+    /* inspected node: crisp ring that breathes */
+    if (tipN >= 0 && tipN < LS[6]) { const l = nL[tipN], r = (l === 5 ? qr + 5 : M ? 6 : 7.5) + 1.2 * Math.sin(t * 6); g.globalAlpha = 0.9; g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1.2; g.beginPath(); g.arc(nx[tipN], ny[tipN], r, 0, J.TAU); g.stroke(); }
+    if (tipExp && t > tipExp) hideTip();
+    /* idle: after 12 s without any pointer / key interaction (the simulated stream itself never stops), soft rings around the tower + a 'tap to fire' plate */
+    idleA += (((t - lastDecT > 12 && hov < 0.2 && tipN < 0) ? 1 : 0) - idleA) * Math.min(1, dk * 3);
+    const hx = jcx, hy = jcy + P[2].h * 0.16;
+    if (idleA > 0.02) {
+      const ph = (t % 2.6) / 2.6; g.lineWidth = 1.4;
+      for (let j = 0; j < 2; j++) { const pk = (ph + j * 0.5) % 1; g.strokeStyle = RAMP[PK][((1 - pk) * 0.75 * idleA * 32) | 0]; g.beginPath(); g.arc(hx, hy, 14 + pk * (M ? 44 : 66), 0, J.TAU); g.stroke(); }
+    }
+    if ((idleA > 0.5) !== idleOn) { idleOn = idleA > 0.5; if (legSim) legSim.classList.toggle('is-idle', idleOn); }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    if (idleA > 0.02) {
+      const pw = M ? 66 : 92, ph2 = M ? 16 : 22; g.globalAlpha = idleA * (0.8 + 0.2 * Math.sin(t * 3)); rr(g, hx - pw / 2, hy - ph2 / 2, pw, ph2, ph2 / 2); g.fillStyle = 'rgba(10,4,16,.94)'; g.fill(); g.lineWidth = 1; g.strokeStyle = RAMP[PK][26]; g.stroke();
+      g.fillStyle = '#ffd0e2'; g.font = '700 ' + (M ? 7.5 : 9.5) + 'px ' + FF; g.textAlign = 'center'; g.textBaseline = 'middle'; T(g, 'tap to fire', hx, hy + 0.5, 0.8); g.globalAlpha = 1; g.textAlign = 'left';
+    }
     /* ---- bars + text (slow-changing text is cached in an offscreen canvas and blitted by sub-rect) ---- */
     g.textBaseline = 'middle';
     const bw = bx1 - bx0;
@@ -560,8 +690,17 @@ JEV.mod('hero', () => {
       if (s > 0.04) { g.globalAlpha = s; g.fillStyle = '#fff'; g.fillRect(bx0 + w - 2, by - 1, 2, barH + 2); g.globalAlpha = 1; }
       const pv = pct(v); if (pv !== aTxtV[r]) { aTxtV[r] = pv; aTxt[r] = pv + '%'; txD[1] = 1; }
     }
-    for (let k = 0; k < 3; k++) if (cCV[k] !== cCount[k]) { cCV[k] = cCount[k]; cTxt[k] = J.fmt(cCount[k]); txD[2] = 1; }
-    { const fx = bx0 + floorV * bw; g.strokeStyle = 'rgba(255,193,61,.9)'; g.lineWidth = 1; g.setLineDash(DASH); g.beginPath(); g.moveTo(fx, rowY[0] - pitch * 0.5); g.lineTo(fx, rowY[4] + pitch * 0.5); g.stroke(); g.setLineDash(NODASH); } // floor line sits under the text layer
+    for (let k = 0; k < 3; k++) {
+      if (cCV[k] !== cCount[k]) { cPrevT[k] = cTxt[k]; cTxt[k] = J.fmt(cCount[k]); cRoll[k] = cCV[k] < 0 || J.reduce ? 1 : 0; cCV[k] = cCount[k]; txD[2] = 1; }
+      if (cRoll[k] < 1) { cRoll[k] = Math.min(1, cRoll[k] + dk / 0.55); txD[2] = 1; }
+    }
+    { // floor marker: springs to a new floor, dashes crawl and the line breathes; a flash marks a change
+      const sdt = Math.min(dk, 0.033); fVel += ((floorV - fDisp) * 240 - fVel * 15) * sdt; fDisp += fVel * sdt; if (J.reduce || (Math.abs(fVel) < 0.002 && Math.abs(floorV - fDisp) < 0.0005)) { fDisp = floorV; fVel = 0; }
+      const fx = bx0 + fDisp * bw, y0 = rowY[0] - pitch * 0.5, y1 = rowY[4] + pitch * 0.5, br = 0.5 + 0.5 * Math.sin(t * 2.2); fFlash *= Math.exp(-dk * 2.6);
+      g.setLineDash(NODASH); g.strokeStyle = 'rgba(255,193,61,' + (0.07 + 0.06 * br + 0.3 * fFlash).toFixed(3) + ')'; g.lineWidth = 4; g.beginPath(); g.moveTo(fx, y0); g.lineTo(fx, y1); g.stroke();
+      g.strokeStyle = 'rgba(255,193,61,' + Math.min(1, 0.68 + 0.26 * br + 0.3 * fFlash).toFixed(3) + ')'; g.lineWidth = 1 + 0.35 * br; g.setLineDash(DASH); g.lineDashOffset = -t * 5; g.beginPath(); g.moveTo(fx, y0); g.lineTo(fx, y1); g.stroke(); g.setLineDash(NODASH); g.lineDashOffset = 0;
+      g.fillStyle = '#ffc13d'; g.beginPath(); g.moveTo(fx - 3, y0 - 0.5); g.lineTo(fx + 3, y0 - 0.5); g.lineTo(fx, y0 + 4); g.closePath(); g.fill();
+    }
     if (txD[0]) txState();
     if (txD[1] && (t - tAns >= 0.04 || J.reduce)) { tAns = t; txAns(); } // percentages tick at <= 25 Hz
     if (txD[2]) txCards();
@@ -574,8 +713,9 @@ JEV.mod('hero', () => {
     {
       g.textAlign = 'right'; g.font = '700 ' + fFS + 'px ' + FF; g.fillStyle = '#ffc13d'; g.fillText(floorTxt, pa.x + pa.w - (M ? 4 : 8), grpY[0] + 3);
       confA += (1 - confA) * Math.min(1, dk * 9);
+      { const sdt = Math.min(dk, 0.033); confVl += ((1 - confSp) * 320 - confVl * 13) * sdt; confSp += confVl * sdt; if (J.reduce) { confSp = 1; confVl = 0; } }
       if (confA > 0.02) {
-        const cx = bx0 + aVal[confRow] * bw, ry = rowY[confRow], hh = M ? pitch * 0.5 : Math.min(9, pitch * 0.3), col = confOk ? '#2ee6a6' : '#ffc13d', yy = M ? ry + 2.5 : ry, dn = confRow === 0 ? -1 : 1; // dn: +1 = marker above the bar
+        const cx = bx0 + aVal[confRow] * bw, ry = rowY[confRow], hh = Math.max(0.5, (M ? pitch * 0.5 : Math.min(9, pitch * 0.3)) * confSp), col = confOk ? '#2ee6a6' : '#ffc13d', yy = M ? ry + 2.5 : ry, dn = confRow === 0 ? -1 : 1; // dn: +1 = marker above the bar
         g.globalAlpha = confA; g.fillStyle = col; g.beginPath();
         if (M) {
           if (confRow === 0) { g.fillRect(cx - 1, yy - hh * 0.55, 2, hh * 1.55); g.moveTo(cx - 3.5, yy + hh + 4.5); g.lineTo(cx + 3.5, yy + hh + 4.5); g.lineTo(cx, yy + hh - 0.5); }
@@ -602,7 +742,7 @@ JEV.mod('hero', () => {
   function rebuild() {
     const a = J.fit(cs), b = J.fit(cl); gs = a.g; gl = b.g; W = a.W; H = a.H; M = W < 700;
     const dens = M ? 0 : W < 1000 ? 1 : 2; if (dens !== topoMode) buildTopo(dens);
-    layout(); stVals = !M && P[0].w >= 128; txLayout(); drawStatic(); if (!J.reduce || !lastRun) frame(performance.now() / 1000, 0.016); else frame(lastRun, 0.016);
+    layout(); dustInit(); stVals = !M && P[0].w >= 128; txLayout(); drawStatic(); if (!J.reduce || !lastRun) frame(performance.now() / 1000, 0.016); else frame(lastRun, 0.016);
   }
   J.watch(net, rebuild);
   if (document.fonts) { document.fonts.ready.then(() => W && rebuild()).catch(() => {}); if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => W && rebuild()); }
@@ -610,18 +750,27 @@ JEV.mod('hero', () => {
   /* ---------- events ---------- */
   function snap(d, demo) {
     const w = startWave(d, demo); while (w.st < 8) runStage(w, w.st++);
-    aVal.set(aTg); aSel.set(aSelT); qFl.fill(0); aHot.fill(0); stLit.forEach((v, i) => (stLit[i] = w.lit[i] ? 0.6 : 0)); cPulse.fill(0); nfl.fill(0); bDur.fill(0); nAmb = 0; cableS = -1; confA = 1;
+    aVal.set(aTg); aSel.set(aSelT); qFl.fill(0); aHot.fill(0); stLit.forEach((v, i) => (stLit[i] = w.lit[i] ? 0.6 : 0)); cPulse.fill(0); nfl.fill(0); bDur.fill(0); nAmb = 0; cableS = -1; confA = 1; confSp = 1; confVl = 0; fFl.fill(0); nrT.fill(-9); cRoll.fill(1); fDisp = floorV;
     if (chipD) { const cd = chipD; chipD = null; updateChip(cd, chipPc, chipCs); }
   }
-  J.bus.on('decision', (d) => { if (J.reduce) { snap(d, false); frame(performance.now() / 1000, 0.016); } else startWave(d, false); });
+  J.bus.on('decision', (d) => { if (J.reduce) { snap(d, false); frame(performance.now() / 1000, 0.016); } else startWave(d, false); if (tipN >= 0) { const n = tipN; tipN = -2; showTip(n, tipLX, tipLY, tipTouch); } });
   J.bus.on('kill', (k) => { killed = !!k; PK = killed ? T_RED : T_PINK; killFl = 1; });
-  J.bus.on('floor', (f) => { floorV = f; floorTxt = 'floor ' + f.toFixed(2); });
+  J.bus.on('floor', (f) => { floorV = f; fFlash = 1; floorTxt = 'floor ' + f.toFixed(2); });
   const fire = () => { const t = performance.now(); if (t - (fire.t || 0) > 160) { fire.t = t; J.fire(); } };
+  let tipLX = 0, tipLY = 0, tipTouch = false;
   const setP = (e) => { const r = cl.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; };
-  cl.addEventListener('pointermove', setP, { passive: true }); cl.addEventListener('pointerdown', setP, { passive: true });
-  cl.addEventListener('pointerleave', () => { mx = my = -9999; }); cl.addEventListener('pointercancel', () => { mx = my = -9999; });
+  const probe = (e) => { lastDecT = performance.now() / 1000; setP(e); tipTouch = e.pointerType === 'touch'; if (tipTouch && e.type === 'pointermove') return; tipLX = mx; tipLY = my; showTip(hit(mx, my), mx, my, tipTouch); if (tipTouch && tipN >= 0) tipExp = performance.now() / 1000 + 2.6; };
+  cl.addEventListener('pointermove', probe, { passive: true }); cl.addEventListener('pointerdown', probe, { passive: true });
+  cl.addEventListener('pointerleave', () => { mx = my = -9999; if (!tipTouch) hideTip(); }); cl.addEventListener('pointercancel', () => { mx = my = -9999; });
   cl.addEventListener('click', fire);
-  const fb = J.$('#hero-fire'); if (fb) fb.addEventListener('click', fire);
+  const fb = J.$('#hero-fire'); if (fb) {
+    fb.addEventListener('click', fire); fb.addEventListener('keydown', () => { lastDecT = performance.now() / 1000; });
+    fb.addEventListener('keydown', (e) => { // keyboard parity for the tooltip: arrow keys walk the 15 state fields
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); kbN = (kbN + (e.key === 'ArrowDown' ? 1 : 14) + (kbN < 0 ? (e.key === 'ArrowDown' ? 0 : 1) : 0)) % 15; if (kbN < 0) kbN = 0; tipTouch = false; tipLX = nx[kbN] + 6; tipLY = ny[kbN] - 4; tipN = -2; showTip(kbN, tipLX, tipLY, false); }
+      else if (e.key === 'Escape') hideTip();
+    });
+    fb.addEventListener('blur', () => { kbN = -1; hideTip(); });
+  }
 
   /* intro: once the boot overlay has left (or on first view), the network wipes in left -> right and the title decodes */
   stage.classList.add('hero-pre');

@@ -13,6 +13,7 @@ JEV.mod('lab', () => {
   const ACTIONS = J.ACTIONS, SIZES = J.SIZES;
   const HAS_WA = typeof Element.prototype.animate === 'function';
   const anim = (el, kf, o) => { if (!el || !HAS_WA || J.reduce) return null; try { return el.animate(kf, o); } catch (e) { return null; } };
+  const fxa = (el, kf, o) => (J.hidden() ? null : anim(el, kf, o));
   const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const ease3 = (p) => 1 - Math.pow(1 - p, 3);
   const eio = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
@@ -78,6 +79,7 @@ JEV.mod('lab', () => {
   let cur = null, auto = true, dirty = false, seq = 0, tween = null, ct = 0, timers = [], running = false;
   let lv = false, pv = false, pending = false, committed = false, runT0 = 0;
   const tape = [];
+  let lastC = null, base = null, copyT = 0, hashT = 0, restored = false;
   const files = { execute: [], review: [], skip: [] }, fcount = { execute: 0, review: 0, skip: 0 };
 
   /* ------------------------------------------------------------------ slider rows ------------------------------------------------------------------ */
@@ -89,13 +91,13 @@ JEV.mod('lab', () => {
     if (f.dz) dz = '<i class="lab-dz' + (f.dz[0] <= f.min ? ' lo' : '') + '"></i>';
     const mark = f.mark != null ? '<i class="lab-zero"></i>' : '';
     row.innerHTML = '<label for="' + id + '">' + f.label + '</label><output id="' + id + '-o" for="' + id + '"></output>' +
-      '<div class="lab-rng"><i class="lab-tr"></i>' + dz + mark + '<i class="lab-fill"></i>' +
+      '<div class="lab-rng"><i class="lab-tr"></i>' + dz + mark + '<i class="lab-fill"></i><b class="lab-bub" aria-hidden="true"></b>' +
       '<input id="' + id + '" type="range" min="' + f.min + '" max="' + f.max + '" step="' + f.step + '" value="' + f.v + '"></div>';
     host.appendChild(row);
     const rng = $('.lab-rng', row);
     if (f.dz) { rng.style.setProperty('--za', clamp((f.dz[0] - f.min) / span, 0, 1).toFixed(4)); rng.style.setProperty('--zb', clamp((f.dz[1] - f.min) / span, 0, 1).toFixed(4)); }
     if (f.mark != null) rng.style.setProperty('--zp', clamp((f.mark - f.min) / span, 0, 1).toFixed(4));
-    const r = { f, row, rng, input: $('input', row), out: $('output', row) };
+    const r = { f, row, rng, input: $('input', row), out: $('output', row), bub: $('.lab-bub', row), hold: 0 };
     paintRow(r, f.v);
     return r;
   }
@@ -103,9 +105,9 @@ JEV.mod('lab', () => {
     const f = r.f, span = f.max - f.min;
     const p = clamp((v - f.min) / span, 0, 1), z = f.mark != null ? clamp((f.mark - f.min) / span, 0, 1) : 0;
     const a = f.bi ? Math.min(p, z) : 0, b = f.bi ? Math.max(p, z) : p;
-    r.rng.style.setProperty('--a', a.toFixed(4)); r.rng.style.setProperty('--b', b.toFixed(4));
+    r.rng.style.setProperty('--a', a.toFixed(4)); r.rng.style.setProperty('--b', b.toFixed(4)); r.rng.style.setProperty('--p', p.toFixed(4));
     const txt = fmtV(f, v);
-    if (r.out.textContent !== txt) { r.out.textContent = txt; r.input.setAttribute('aria-valuetext', txt); }
+    if (r.out.textContent !== txt) { r.out.textContent = txt; r.bub.textContent = txt; r.input.setAttribute('aria-valuetext', txt); }
   }
   const rows = {};
   const slHost = $('#lab-sliders');
@@ -245,8 +247,15 @@ JEV.mod('lab', () => {
     setTxt(flv, t);
     fl.setAttribute('aria-valuenow', t); fl.setAttribute('aria-valuetext', 'floor ' + t);
   }
-  function rGate(d) {
+  function rGate(d, pop) {
     const pass = d.conf >= d.floor, v = d.killed ? 'halt' : pass ? 'pass' : 'below';
+    if (pop) {
+      const col = v === 'pass' ? '46,230,166' : v === 'halt' ? '255,77,94' : '255,193,61';
+      fxa(gt, [{ boxShadow: '0 0 0 0 rgba(' + col + ',.0), inset 0 0 0 0 rgba(' + col + ',0)' }, { boxShadow: '0 0 0 3px rgba(' + col + ',.55), 0 0 34px rgba(' + col + ',.55), inset 0 0 22px rgba(' + col + ',.35)', offset: 0.28 }, { boxShadow: '0 0 0 0 rgba(' + col + ',0), inset 0 0 0 0 rgba(' + col + ',0)' }], { duration: 900, delay: 520, easing: 'ease-out' });
+      fxa($('.lab-cf-o', cf), [{ transform: 'scale(1)' }, { transform: 'scale(1.7)', offset: 0.22 }, { transform: 'scale(.88)', offset: 0.5 }, { transform: 'scale(1)' }], { duration: 640, delay: 560, easing: 'ease-out' });
+      fxa(verdict, [{ transform: 'scale(1)' }, { transform: 'scale(1.22)', offset: 0.3 }, { transform: 'scale(1)' }], { duration: 520, delay: 560, easing: 'cubic-bezier(.2,1.6,.4,1)' });
+      if (v === 'halt') fxa(gt, [{ transform: 'translateX(0)' }, { transform: 'translateX(-7px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(2px)' }, { transform: 'none' }], { duration: 420, delay: 560, easing: 'ease-out' });
+    }
     cf.style.left = (d.conf * 100).toFixed(2) + '%'; cf.setAttribute('data-v', v);
     setTxt(cfv, d.conf.toFixed(2));
     tail.style.transform = 'scaleX(' + d.conf.toFixed(3) + ')';
@@ -294,6 +303,11 @@ JEV.mod('lab', () => {
     if (pop) {
       anim(destEl, [{ transform: 'perspective(520px) rotateX(64deg) scale(1.45)', opacity: 0 }, { transform: 'perspective(520px) rotateX(0) scale(1)', opacity: 1 }], { duration: 460, easing: 'cubic-bezier(.2,1.3,.3,1)' });
       anim(destR, [{ opacity: 0.9, transform: 'scale(.9)' }, { opacity: 0, transform: 'scale(1.3)' }], { duration: 760, easing: 'ease-out' });
+      if (d.killed && d.dest === 'review') anim(destEl, [{ transform: 'translateX(0)' }, { transform: 'translateX(-9px) rotate(-.6deg)' }, { transform: 'translateX(8px) rotate(.5deg)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(-2px)' }, { transform: 'none' }], { duration: 460, delay: 440, easing: 'ease-out' });
+      if (d.dest === 'execute' && !J.reduce) {
+        destEl.classList.remove('shim'); void destEl.offsetWidth; destEl.classList.add('shim');
+        clearTimeout(destEl._sh); destEl._sh = setTimeout(() => destEl.classList.remove('shim'), 1500);
+      }
     }
   }
 
@@ -301,14 +315,14 @@ JEV.mod('lab', () => {
   function renderTape(fresh) {
     let h = '';
     tape.forEach((r, i) => {
-      h += '<li' + (fresh && i === 0 ? ' class="fresh"' : '') + '><span>#' + hex2(r.n) + '</span><b class="lab-tp-a" data-a="' + r.action + '">' + r.action + '</b><span>' + (r.action === 'hold' ? '-' : fmtSize(r.size)) +
+      h += '<li' + (fresh && i === 0 ? ' class="fresh"' : '') + ' data-i="' + i + '" tabindex="0" role="button" aria-label="restore inputs of #' + hex2(r.n) + ': ' + r.action + ', ' + r.dest + '"><span>#' + hex2(r.n) + '</span><b class="lab-tp-a" data-a="' + r.action + '">' + r.action + '</b><span>' + (r.action === 'hold' ? '-' : fmtSize(r.size)) +
         '</span><span class="lab-tp-c">' + r.conf.toFixed(2) + '</span><i class="lab-tp-d" data-d="' + r.dest + '">' + r.dest + '</i><em>' + esc(r.reason) + '</em></li>';
     });
     tpEl.innerHTML = h;
     if (fresh) anim(tpEl, [{ transform: 'translateY(-28px)' }, { transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
   }
   function pushTape(d) {
-    tape.unshift({ n: d.n, action: d.action, size: d.size, conf: d.conf, dest: d.dest, reason: d.reason });
+    tape.unshift({ n: d.n, action: d.action, size: d.size, conf: d.conf, dest: d.dest, reason: d.reason, st: Object.assign({}, d.st), floor: d.floor });
     if (tape.length > 5) tape.pop();
   }
   function rMini(d) {
@@ -324,10 +338,34 @@ JEV.mod('lab', () => {
   function paintBad(d) {
     riskChecks(d.st, d.killed).forEach((c) => {
       const f = FIELDS.find((x) => x.risk === c.id);
-      if (f) rows[f.k].row.classList.toggle('bad', c.bad);
+      if (!f) return;
+      const row = rows[f.k].row, was = row.classList.contains('bad');
+      if (was !== c.bad) {
+        row.classList.toggle('bad', c.bad);
+        if (c.bad && lv) fxa($('output', row), [{ transform: 'scale(1.4)', filter: 'brightness(1.8)' }, { transform: 'scale(1)', filter: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,1.6,.4,1)' });
+      }
     });
   }
-  const rAll = (d, pop) => { rEncode(d, pop); rQuestions(d, pop); rGate(d); rActs(d, pop); rMini(d); paintBad(d); };
+  /* ---- what changed since the previous decision (baseline = last committed one) ---- */
+  const diffEl = $('#lab-diff');
+  function rDiff(d) {
+    const o = base;
+    CH.forEach((c) => {
+      const v = c.derived ? d.net : d.st[c.k], w = !o ? v : c.derived ? o.net : o.st[c.k];
+      const ch = !!o && Math.abs(v - w) > (c.derived ? 0.05 : (c.f.step || 0.01) * 0.5);
+      if (c.el.classList.contains('chg') !== ch) c.el.classList.toggle('chg', ch);
+    });
+    if (!o) { setTxt(diffEl, 'first decision \u00b7 nothing to compare yet'); return; }
+    const bits = [];
+    if (o.action !== d.action) bits.push('action ' + o.action + ' \u2192 ' + d.action);
+    if (o.size !== d.size && d.action !== 'hold') bits.push('size ' + fmtSize(o.size) + ' \u2192 ' + fmtSize(d.size));
+    if (Math.abs(o.conf - d.conf) >= 0.005) bits.push('conf ' + (d.conf > o.conf ? '+' : '\u2212') + Math.abs(d.conf - o.conf).toFixed(2));
+    if (o.dest !== d.dest) bits.push('dest ' + o.dest + ' \u2192 ' + d.dest);
+    if (o.riskOk !== d.riskOk) bits.push('risk_ok ' + o.riskOk + ' \u2192 ' + d.riskOk);
+    setTxt(diffEl, 'vs #' + hex2(o.n || 0) + ' \u00b7 ' + (bits.length ? bits.join(' \u00b7 ') : 'no change'));
+    diffEl.classList.toggle('nc', !bits.length);
+  }
+  const rAll = (d, pop) => { rEncode(d, pop); rQuestions(d, pop); rGate(d); rActs(d, pop); rMini(d); paintBad(d); rDiff(d); };
 
   /* ------------------------------------------------------------------ fx : ribbons · comet · bursts (2 canvases) ------------------------------------------------------------------ */
   const fx = (() => {
@@ -547,6 +585,7 @@ JEV.mod('lab', () => {
     cancelRun();
     pipe.classList.add('lab-live'); pipe.classList.remove('lab-run');
     cur = decideState(stateNow());
+    base = lastC;
     rAll(cur, false);
     if (!dirty) setStat('scrubbing …');
   }
@@ -575,12 +614,13 @@ JEV.mod('lab', () => {
   function commit(why) {
     clearTimeout(ct); clearTimeout(livePend); livePend = 0;
     cancelRun();
-    const replay = why === 'replay';
+    const replay = why === 'replay' && !!cur && !!cur.n;
     const d = replay && cur ? cur : decideState(stateNow());
     cur = d;
     if (!replay) { d.n = ++seq; d.file = hex2(d.n) + rhex(6) + '.json'; }
     setDirty(false); go.classList.remove('dirty');
-    committed = true;
+    committed = true; schedHash();
+    if (!replay) { base = lastC; lastC = d; }
     const animate = pv && !J.reduce;
     if (!animate) {
       pipe.classList.add('lab-live'); pipe.classList.remove('lab-run');
@@ -594,11 +634,11 @@ JEV.mod('lab', () => {
     stg.forEach((s) => s.classList.remove('on', 'done'));
     fx.begin();
     anim($('u', prog), [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: TL[4], easing: 'cubic-bezier(.4,0,.2,1)' });
-    rMini(d); paintBad(d);
+    rMini(d); paintBad(d); rDiff(d);
     const T = (ms, fn) => timers.push(setTimeout(fn, ms));
     stageOn(1); rEncode(d, true);
     T(TL[1], () => { stageOn(2); rQuestions(d, true); });
-    T(TL[2], () => { stageOn(3); rGate(d); });
+    T(TL[2], () => { stageOn(3); rGate(d, true); });
     T(TL[2] + 560, () => fx.gate(d.conf, d.killed ? 'halt' : d.conf >= d.floor ? 'pass' : 'below'));
     T(TL[3], () => { stageOn(4); rActs(d, true); });
     if (!replay) T(TL[3] + 230, () => { landFile(d, true); fx.land(d.dest); });
@@ -621,14 +661,29 @@ JEV.mod('lab', () => {
     FIELDS.forEach((f) => { let v = s ? s[f.k] : null; if (v == null || isNaN(v)) v = lerp(f.min, f.max, Math.random()); o[f.k] = snap(f, clamp(v, f.min, f.max)); });
     return o;
   }
+  function glide(to, dur, stag) {
+    touch();
+    clearTimeout(ct);
+    if (J.reduce) { FIELDS.forEach((f) => setVal(f, to[f.k])); commit('preset'); return; }
+    tween = { t0: now(), from: Object.assign({}, V), to, dur: dur || 560, stag: stag == null ? 38 : stag };
+  }
   function runPreset(name, btn) {
     setActive(btn);
     const to = {};
     if (name === 'random') Object.assign(to, randomState()); else FIELDS.forEach((f, i) => (to[f.k] = PRESETS[name][i]));
-    clearTimeout(ct);
-    if (J.reduce) { FIELDS.forEach((f) => setVal(f, to[f.k])); commit('preset'); return; }
-    tween = { t0: now(), from: Object.assign({}, V), to, dur: 560, stag: 38 };
+    glide(to);
   }
+  // tape row -> put that decision's inputs (and floor) back
+  function restoreRow(i) {
+    const r = tape[i]; if (!r) return;
+    setActive(null);
+    glide(Object.assign({}, r.st));
+    if (r.floor != null && Math.abs(r.floor - J.S.floor) > 0.0001) J.setFloor(r.floor);
+    setStat('restoring #' + hex2(r.n) + ' inputs');
+    fxa($('.lab-ctl'), [{ boxShadow: '0 0 0 0 rgba(255,46,110,0)' }, { boxShadow: '0 0 0 2px rgba(255,46,110,.55), 0 0 40px rgba(255,46,110,.35)' }, { boxShadow: '0 0 0 0 rgba(255,46,110,0)' }], { duration: 700, easing: 'ease-out' });
+  }
+  tpEl.addEventListener('click', (e) => { const li = e.target.closest('li[data-i]'); if (li) restoreRow(+li.getAttribute('data-i')); });
+  tpEl.addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; const li = e.target.closest('li[data-i]'); if (li) { e.preventDefault(); restoreRow(+li.getAttribute('data-i')); } });
   function tweenStep() {
     if (!tween) return;
     const n = now() - tween.t0; let done = true;
@@ -640,7 +695,7 @@ JEV.mod('lab', () => {
     if (done) { tween = null; commit('preset'); } else live();
   }
   function onChange() {
-    setActive(null);
+    touch(); setActive(null);
     if (auto) { live(); scheduleCommit(560, 'input'); } else { cancelRun(); setDirty(true); }
   }
   FIELDS.forEach((f) => {
@@ -648,18 +703,29 @@ JEV.mod('lab', () => {
     r.input.addEventListener('input', () => { tween = null; V[f.k] = +r.input.value; paintRow(r, V[f.k]); onChange(); });
     r.input.addEventListener('change', () => { if (auto) scheduleCommit(90, 'input'); });
   });
-  floorR.input.addEventListener('input', () => J.setFloor(+floorR.input.value));
+  floorR.input.addEventListener('input', () => { touch(); J.setFloor(+floorR.input.value); });
   presetBtns.forEach((b) => b.addEventListener('click', () => runPreset(b.getAttribute('data-p'), b)));
-  go.addEventListener('click', (e) => {
+  function decideNow(x, y) {
     if (tween) { FIELDS.forEach((f) => setVal(f, tween.to[f.k])); tween = null; }
-    if (HAS_WA && !J.reduce && e.detail !== 0) {
+    if (HAS_WA && !J.reduce && !J.hidden()) {
       const r = go.getBoundingClientRect(), rip = document.createElement('i');
-      rip.className = 'lab-rip'; rip.style.left = e.clientX - r.left + 'px'; rip.style.top = e.clientY - r.top + 'px'; go.appendChild(rip);
+      rip.className = 'lab-rip'; rip.style.left = (x == null ? r.width / 2 : x - r.left) + 'px'; rip.style.top = (y == null ? r.height / 2 : y - r.top) + 'px'; go.appendChild(rip);
       const a = rip.animate([{ transform: 'scale(.4)', opacity: 0.7 }, { transform: 'scale(14)', opacity: 0 }], { duration: 650, easing: 'ease-out' });
       a.onfinish = () => rip.remove();
     }
+    touch();
     commit('decide');
+  }
+  go.addEventListener('click', (e) => decideNow(e.detail !== 0 ? e.clientX : null, e.detail !== 0 ? e.clientY : null));
+  // keyboard: Enter = DECIDE (anywhere while the lab is on screen, unless a button / link has the focus), R = random scenario
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.defaultPrevented || e.repeat || e.ctrlKey || e.metaKey || e.altKey || !lv || document.getElementById('fx-boot')) return;
+    const t = e.target, tag = t && t.tagName;
+    if (/^(A|TEXTAREA|SELECT|SUMMARY)$/.test(tag) || (tag === 'BUTTON' && t.getAttribute('role') !== 'slider') || (t && t.closest && t.closest('dialog,[role=dialog],li[data-i]'))) return;
+    e.preventDefault(); decideNow();
+    go.classList.add('kp'); setTimeout(() => go.classList.remove('kp'), 160);
   });
+  J.shortcut('r', () => { if (lv) { const b = $('.lab-sc-r'); runPreset('random', b); } }, 'lab: random scenario');
   autoB.addEventListener('click', () => {
     auto = !auto;
     autoB.classList.toggle('on', auto); autoB.setAttribute('aria-checked', String(auto));
@@ -670,7 +736,7 @@ JEV.mod('lab', () => {
     killB.classList.toggle('on', on); killB.setAttribute('aria-checked', String(on));
     setTxt(killS, on ? 'halted · every order → review' : 'armed · orders flow');
   }
-  J.bus.on('floor', (v) => { paintFloor(v); if (!tween) { live(); scheduleCommit(420, 'floor'); } });
+  J.bus.on('floor', (v) => { paintFloor(v); schedHash(); if (!tween) { live(); scheduleCommit(420, 'floor'); } });
   J.bus.on('kill', (on) => { paintKill(on); fx.restyle(); if (!tween) { live(); scheduleCommit(90, 'kill'); } });
 
   // magnetic decide button (mouse only; the rect is cached on enter)
@@ -709,22 +775,120 @@ JEV.mod('lab', () => {
     e.preventDefault(); J.setFloor(clamp(Math.round(v * 100) / 100, FLOOR.min, FLOOR.max));
   });
 
+  /* ------------------------------------------------------------------ slider craft : bubble · shift-nudge · reset ------------------------------------------------------------------ */
+  function poke(r, ms) {
+    r.row.classList.add('drag'); clearTimeout(r.hold);
+    r.hold = setTimeout(() => r.row.classList.remove('drag'), ms);
+  }
+  function wireRow(r, reset) {
+    const inp = r.input, f = r.f;
+    inp.addEventListener('pointerdown', () => { clearTimeout(r.hold); r.row.classList.add('drag'); });
+    const rel = () => poke(r, 520);
+    inp.addEventListener('pointerup', rel); inp.addEventListener('pointercancel', rel);
+    inp.addEventListener('keydown', (e) => {
+      const dir = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -1 : 0;
+      if (!dir) return;
+      if (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) { // shift = x10
+        e.preventDefault();
+        const v = clamp(snap(f, +inp.value + dir * f.step * 10), f.min, f.max);
+        inp.value = v; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      poke(r, 900);
+    });
+    r.rng.addEventListener('dblclick', (e) => { e.preventDefault(); reset(); poke(r, 700); });
+  }
+  FIELDS.forEach((f) => wireRow(rows[f.k], () => {
+    if (Math.abs(V[f.k] - f.v) < f.step / 2) return;
+    setActive(null);
+    glide(Object.assign({}, V, { [f.k]: f.v }), 380, 0);
+    setStat('reset ' + f.chip + ' · ' + fmtV(f, f.v));
+  }));
+  wireRow(floorR, () => { touch(); J.setFloor(J.RULES.floor); setStat('reset floor · ' + J.RULES.floor.toFixed(2)); });
+
+  /* ------------------------------------------------------------------ shareable state : location.hash ------------------------------------------------------------------ */
+  let touched = false;
+  function touch() { touched = true; }
+  const HK = FIELDS.map((f) => f.chip);
+  function hashStr() {
+    const q = [];
+    const src = tween ? tween.to : V;
+    FIELDS.forEach((f) => { if (Math.abs(src[f.k] - f.v) > f.step / 2) q.push(f.chip + '=' + +src[f.k].toFixed(3)); });
+    const fv = J.S.floor != null ? J.S.floor : J.RULES.floor;
+    if (Math.abs(fv - J.RULES.floor) > 0.004) q.push('floor=' + fv.toFixed(2));
+    return '#lab' + (q.length ? '?' + q.join('&') : '');
+  }
+  function schedHash() {
+    if (!touched) return;
+    clearTimeout(hashT);
+    hashT = setTimeout(() => { try { const h = hashStr(); if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* sandboxed */ } }, 450);
+  }
+  function readHash() {
+    let h = ''; try { h = location.hash; } catch (e) { return false; }
+    if (h.indexOf('#lab?') !== 0) return false;
+    let any = false;
+    h.slice(5).split('&').forEach((kv) => {
+      const i = kv.indexOf('='), k = kv.slice(0, i), v = parseFloat(kv.slice(i + 1));
+      if (!isFinite(v)) return;
+      const fi = HK.indexOf(k);
+      if (fi >= 0) { const f = FIELDS[fi]; setVal(f, snap(f, clamp(v, f.min, f.max))); any = true; }
+      else if (k === 'floor') { J.setFloor(clamp(Math.round(v * 100) / 100, FLOOR.min, FLOOR.max)); any = true; }
+    });
+    return any;
+  }
+
+  /* ------------------------------------------------------------------ copy link / copy handoff json ------------------------------------------------------------------ */
+  function copyText(txt) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(txt).catch(() => legacyCopy(txt));
+    return legacyCopy(txt);
+  }
+  function legacyCopy(txt) {
+    return new Promise((res, rej) => {
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove(); ok ? res() : rej(new Error('copy'));
+    });
+  }
+  function handoffJson() {
+    const d = cur; if (!d) return '{}';
+    return JSON.stringify({ action: d.action, size: d.action === 'hold' ? null : d.size, venue: d.venue, conf: +d.conf.toFixed(2), risk_ok: d.riskOk, floor: +d.floor.toFixed(2), reason: d.reason, dest: d.dest, simulated: true }, null, 2);
+  }
+  function wireCopy(btn, make, msg) {
+    const lab = $('span:last-child', btn), orig = lab.textContent;
+    btn.addEventListener('click', () => {
+      copyText(make()).then(() => {
+        btn.classList.add('ok'); lab.textContent = 'copied';
+        if (J.toast) J.toast(msg, 'ok');
+        clearTimeout(btn._t); btn._t = setTimeout(() => { btn.classList.remove('ok'); lab.textContent = orig; }, 1500);
+      }).catch(() => { if (J.toast) J.toast('copy blocked by the browser', 'info'); });
+    });
+  }
+  wireCopy($('#lab-cp-link'), () => { const base0 = location.href.split('#')[0]; return base0 + hashStr(); }, 'scenario link copied · simulated inputs');
+  wireCopy($('#lab-cp-json'), handoffJson, 'handoff json copied · simulated');
+
   /* ------------------------------------------------------------------ init ------------------------------------------------------------------ */
   stg.forEach((s) => { const sc = document.createElement('i'); sc.className = 'lab-scan'; sc.setAttribute('aria-hidden', 'true'); s.appendChild(sc); });
   paintFloor(J.S.floor != null ? J.S.floor : J.RULES.floor);
   paintKill(!!J.S.killed);
+  restored = readHash();
   // earlier lab decisions, so the tape and the queue are alive before the first touch
   ['trend', 'wide book', 'mean-revert'].forEach((name) => {
     const st = {}; FIELDS.forEach((f, i) => (st[f.k] = PRESETS[name][i]));
     const d = decideState(st);
     d.n = ++seq; d.file = hex2(d.n) + rhex(6) + '.json';
-    files[d.dest].unshift(d.file); fcount[d.dest]++; pushTape(d);
+    files[d.dest].unshift(d.file); fcount[d.dest]++; pushTape(d); lastC = d;
   });
   ['execute', 'review', 'skip'].forEach((k) => renderFolder(k, false));
   renderTape(false);
   cur = decideState(stateNow());
   rAll(cur, false);
-  setStat('ready');
+  setStat(restored ? 'shared scenario loaded' : 'ready');
+  if (restored) setTimeout(() => {
+    const y = root.getBoundingClientRect().top + scrollY - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hud-h')) || 64) + 8;
+    scrollTo({ top: Math.max(0, y), behavior: J.reduce ? 'auto' : 'smooth' });
+    if (J.toast) J.toast('shared scenario loaded \u00b7 simulated', 'info');
+  }, 900);
   // keep sliders' danger flags + readouts correct if the floor/kill state was changed before init
   new IntersectionObserver((es) => { lv = es[0].isIntersecting; }, { rootMargin: '80px 0px' }).observe(root);
   new IntersectionObserver((es) => {

@@ -5,7 +5,7 @@ JEV.mod('fx', () => {
   const $ = J.$, $$ = J.$$, clamp = J.clamp, reduce = J.reduce;
   const fine = !!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
   const hudEl = $('#hud'), decEl = $('#mDec'), killBtn = $('#killBtn');
-  let winW = window.innerWidth, winH = window.innerHeight, scrollY = window.scrollY || 0, scrollMax = 1, away = false;
+  let winW = window.innerWidth, winH = window.innerHeight, scrollY = window.scrollY || 0, scrollMax = 1, away = false, vel = 0;
 
   /* =====================================================================
    * 0. pulse + toast API (defined first so other modules can call them)
@@ -26,26 +26,55 @@ JEV.mod('fx', () => {
   };
 
   const toastHost = $('#fx-toasts'), toasts = [];
+  const ICON = {
+    info: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M8 7.2v3.6M8 5.1v.1"/></svg>',
+    ok: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M5.2 8.2l2 2 3.6-4.1"/></svg>',
+    kill: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.2 1.8h5.6l3.4 3.4v5.6l-3.4 3.4H5.2L1.8 10.8V5.2z"/><path d="M8 4.8v3.8M8 11v.1"/></svg>',
+  };
+  const TOAST_MS = 3000;
   function dismiss(t, fast) {
     if (t.gone) return;
     t.gone = true; clearTimeout(t.timer);
     const i = toasts.indexOf(t); if (i >= 0) toasts.splice(i, 1);
     t.el.classList.add('fx-t-out'); if (fast) t.el.classList.add('fast');
+    t.el.style.pointerEvents = 'none';
     setTimeout(() => t.el.remove(), fast ? 170 : 400);
   }
-  /** bottom-centre glass pill, auto-dismiss 3 s, max 2 stacked. kind: 'info' | 'ok' | 'kill' */
+  function arm(t) { clearTimeout(t.timer); t.since = performance.now(); t.timer = setTimeout(() => dismiss(t), Math.max(120, t.left)); }
+  function wireToast(t) { // hover pauses (mouse), tap / swipe / Esc dismiss
+    const el = t.el; let id = -1, x0 = 0, dx = 0, moved = false;
+    el.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'mouse' || t.gone) return; clearTimeout(t.timer); t.left -= performance.now() - t.since; el.classList.add('hold'); });
+    el.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'mouse' || t.gone || !el.classList.contains('hold')) return; el.classList.remove('hold'); arm(t); });
+    el.addEventListener('pointerdown', (e) => { if (t.gone) return; id = e.pointerId; x0 = e.clientX; dx = 0; moved = false; el.style.transition = 'none'; try { el.setPointerCapture(id); } catch (err) { /* ignore */ } });
+    el.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== id) return;
+      dx = e.clientX - x0; if (Math.abs(dx) > 6) moved = true;
+      if (moved) { el.style.transform = 'translateX(' + dx.toFixed(0) + 'px)'; el.style.opacity = String(clamp(1 - Math.abs(dx) / 240, 0.15, 1)); }
+    });
+    const end = (e) => {
+      if (e.pointerId !== id) return; id = -1;
+      if (Math.abs(dx) > 56) { // fling out
+        el.style.transition = 'transform .22s var(--ease), opacity .22s'; el.style.transform = 'translateX(' + (dx > 0 ? 130 : -130) + 'px)'; el.style.opacity = '0'; dismiss(t, true);
+      } else if (!moved && e.type === 'pointerup') dismiss(t, true);
+      else { el.style.transition = 'transform .3s var(--ease), opacity .3s'; el.style.transform = ''; el.style.opacity = ''; }
+    };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  }
+  /** bottom-centre glass pill with icon + countdown bar, auto-dismiss 3 s (hover holds), tap / swipe / Esc dismiss, max 2 stacked. kind: 'info' | 'ok' | 'kill' */
   J.toast = (msg, kind) => {
     if (!toastHost) return;
-    kind = kind || 'info';
+    kind = ICON[kind] ? kind : 'info';
     for (const o of toasts.slice()) if (o.msg === msg) dismiss(o, true);
-    const el = doc.createElement('div'), dot = doc.createElement('i'), tx = doc.createElement('span'), bar = doc.createElement('b');
-    el.className = 'fx-toast fx-t-' + kind; dot.className = 'fx-t-dot'; bar.className = 'fx-t-bar'; tx.textContent = msg;
-    el.append(dot, tx, bar); toastHost.appendChild(el);
-    const t = { el, msg, gone: false, timer: 0 };
-    toasts.push(t);
+    const el = doc.createElement('div'), ic = doc.createElement('i'), tx = doc.createElement('span'), bar = doc.createElement('b');
+    el.className = 'fx-toast fx-t-' + kind; ic.className = 'fx-t-ic'; ic.innerHTML = ICON[kind]; bar.className = 'fx-t-bar'; tx.textContent = msg;
+    el.title = 'tap, swipe or press esc to dismiss';
+    el.append(ic, tx, bar); toastHost.appendChild(el);
+    const t = { el, msg, gone: false, timer: 0, left: TOAST_MS, since: 0 };
+    toasts.push(t); wireToast(t);
     while (toasts.length > 2) dismiss(toasts[0], true);
-    t.timer = setTimeout(() => dismiss(t), 3000);
+    arm(t);
   };
+  doc.addEventListener('keydown', (e) => { if (e.key === 'Escape' && toasts.length && !(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))) dismiss(toasts[toasts.length - 1]); });
 
   /* =====================================================================
    * 1. #fx-bg — webgl plasma (domain-warped fbm), data bands, grain, pointer glow, pulse ripple, kill shift.
@@ -56,7 +85,7 @@ JEV.mod('fx', () => {
   const VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
   const FS = [
     '#ifdef GL_FRAGMENT_PRECISION_HIGH', 'precision highp float;', '#else', 'precision mediump float;', '#endif',
-    'uniform vec2 uRes,uPtr;uniform float uSc,uT,uKill,uScroll,uProg,uPA;uniform vec2 uPu[3];',
+    'uniform vec2 uRes,uPtr;uniform float uSc,uT,uKill,uScroll,uProg,uPA,uVel;uniform vec2 uPu[3];',
     'const float CAP=.0049;', // linear-luminance ceiling of the plasma: keeps 12px grey text >= 4.5:1 anywhere
     'const mat2 ROT=mat2(.8,-.6,.6,.8);const vec3 LW=vec3(.2126,.7152,.0722);',
     'vec3 hue(vec3 c){return c/dot(c,LW);}',
@@ -100,6 +129,8 @@ JEV.mod('fx', () => {
     ' float L=dot(col,LW);col*=1./pow(1.+pow(L/CAP,3.),1./3.);',
     // vignette baked in (plasma only, never over text): dark corners, red-hot edges while killed
     ' float vg=smoothstep(.5,1.12,length(p*vec2(.86,1.)));col*=1.-.7*vg;col+=vec3(.9,.02,.03)*k*vg*.0011;',
+    // edge dispersion: cyan fringe left, magenta fringe right, swelling with scroll velocity (added after the vignette: a few % of the text-contrast budget)
+    ' float ex=p.x/(asp*.5);col+=mix(vec3(.04,.5,.9),vec3(.9,.05,.22),step(0.,ex))*smoothstep(.55,1.05,abs(ex))*(.0004+.0012*uVel)*(1.-.5*k);',
     // drifting data motes: two parallax layers of tiny twinkling points (full-quality path only; points are far too small to touch text contrast)
     '#ifdef MOTES',
     ' float mo=0.;',
@@ -117,10 +148,10 @@ JEV.mod('fx', () => {
   ].join('\n');
 
   /* renderer + simulation. SELF-CONTAINED (no closure access): its source is shipped into the worker via toString().
-   * messages: Float32Array[nx, ny, idle, away, scroll, prog] · {t:'k',v} kill · {t:'p',s} pulse · {t:'r',w,h} css size */
+   * messages: Float32Array[nx, ny, idle, away, scroll, prog, vel] · {t:'k',v} kill · {t:'p',s} pulse · {t:'r',w,h} css size */
   function createBg(canvas, VS, FS, o) {
     const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
-    const S = { T: 11.7, kill: o.killed ? 1 : 0, killT: o.killed ? 1 : 0, sx: 0.5, sy: 0.55, pa: 0.5, nx: 0.5, ny: 0.5, idle: 1, away: 0, scroll: 0, prog: 0, cw: o.w, ch: o.h, qual: 1, reduce: !!o.reduce };
+    const S = { T: 11.7, kill: o.killed ? 1 : 0, killT: o.killed ? 1 : 0, sx: 0.5, sy: 0.55, pa: 0.5, vel: 0, nx: 0.5, ny: 0.5, idle: 1, away: 0, scroll: 0, prog: 0, cw: o.w, ch: o.h, qual: 1, reduce: !!o.reduce };
     const P = [{ a: 9, s: 0 }, { a: 9, s: 0 }, { a: 9, s: 0 }], pu = new Float32Array(6);
     let pi = 0, gl = null, U = null, soft = false, info = '', warm = 0, gAcc = 0, gN = 0;
     const cb = o.cb || function () {};
@@ -149,7 +180,7 @@ JEV.mod('fx', () => {
       g.bufferData(g.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), g.STATIC_DRAW);
       const al = g.getAttribLocation(pr, 'a'); g.enableVertexAttribArray(al); g.vertexAttribPointer(al, 2, g.FLOAT, false, 0, 0);
       U = {};
-      ['uRes', 'uPtr', 'uSc', 'uT', 'uKill', 'uScroll', 'uProg', 'uPA'].forEach((n) => (U[n] = g.getUniformLocation(pr, n)));
+      ['uRes', 'uPtr', 'uSc', 'uT', 'uKill', 'uScroll', 'uProg', 'uPA', 'uVel'].forEach((n) => (U[n] = g.getUniformLocation(pr, n)));
       U.uPu = g.getUniformLocation(pr, 'uPu[0]');
       gl = g;
       info = (soft ? 'software' : 'hw') + ' ctx ' + (t1 - t0).toFixed(0) + 'ms compile+link ' + (performance.now() - t1).toFixed(0) + 'ms';
@@ -173,6 +204,7 @@ JEV.mod('fx', () => {
       gl.uniform1f(U.uScroll, S.scroll);
       gl.uniform1f(U.uProg, S.prog);
       gl.uniform1f(U.uPA, S.pa);
+      gl.uniform1f(U.uVel, S.vel);
       gl.uniform2fv(U.uPu, pu);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
@@ -198,7 +230,7 @@ JEV.mod('fx', () => {
         if (!S.reduce && ++warm > 60) { gAcc += dt; if (++gN >= 60) { if (gAcc / gN > 0.05 && S.qual > 0.4) { S.qual = Math.max(0.4, S.qual * 0.85); size(); } gAcc = gN = 0; } }
       },
       msg(m) {
-        if (m instanceof Float32Array) { S.nx = m[0]; S.ny = m[1]; S.idle = m[2]; S.away = m[3]; S.scroll = m[4]; S.prog = m[5]; return; }
+        if (m instanceof Float32Array) { S.nx = m[0]; S.ny = m[1]; S.idle = m[2]; S.away = m[3]; S.scroll = m[4]; S.prog = m[5]; S.vel = m[6] || 0; return; }
         if (m.t === 'k') { S.killT = m.v ? 1 : 0; if (S.reduce) { S.kill = S.killT; once(); } }
         else if (m.t === 'p') { const p = P[pi]; p.a = 0; p.s = m.s; pi = (pi + 1) % 3; if (S.reduce) once(); }
         else if (m.t === 'r') { S.cw = m.w; S.ch = m.h; size(); }
@@ -250,13 +282,14 @@ JEV.mod('fx', () => {
   function wireBg(post, drive) {
     bgPost = post; root.classList.add('fx-gl');
     J.watch(bg, (r) => { winW = Math.max(1, Math.round(r.width)); winH = Math.max(1, Math.round(r.height)); post({ t: 'r', w: winW, h: winH }); });
-    const st = new Float32Array(6), last = new Float32Array(6).fill(-9);
+    const st = new Float32Array(7), last = new Float32Array(7).fill(-9);
     let acc = 0;
     J.task(bg, (t, dt) => {
       if (doc.hidden) return;
       const p = J.pointer, idle = p.x < -1000 ? 1 : 0;
       st[0] = idle ? 0.5 : p.x / winW; st[1] = idle ? 0.5 : 1 - p.y / winH; st[2] = idle; st[3] = away ? 1 : 0; st[4] = scrollY; st[5] = clamp(scrollY / scrollMax, 0, 1);
-      if (Math.abs(st[0] - last[0]) + Math.abs(st[1] - last[1]) > 0.0004 || st[2] !== last[2] || st[3] !== last[3] || Math.abs(st[4] - last[4]) > 0.5 || Math.abs(st[5] - last[5]) > 0.0005) { last.set(st); post(st); }
+      vel = vel > 0.004 ? vel * Math.exp(-dt * 3.2) : 0; st[6] = Math.round(vel * 50) / 50;
+      if (Math.abs(st[0] - last[0]) + Math.abs(st[1] - last[1]) > 0.0004 || st[2] !== last[2] || st[3] !== last[3] || Math.abs(st[4] - last[4]) > 0.5 || Math.abs(st[5] - last[5]) > 0.0005 || st[6] !== last[6]) { last.set(st); post(st); }
       if (drive) { acc += dt; if (acc >= drive.minDt || J.reduce) { drive.tick(J.reduce ? 0.016 : acc); acc = 0; } }
     });
   }
@@ -313,15 +346,20 @@ JEV.mod('fx', () => {
    * ===================================================================== */
   let scrollTimer = 0, resizeTimer = 0;
   const onScrollEnd = [], onResizeEnd = [];
-  function measureDoc() { scrollMax = Math.max(1, root.scrollHeight - winH); }
+  function measureDoc() { scrollMax = Math.max(1, root.scrollHeight - winH); placeTicks(); paintProg(); }
+  let lastSY = scrollY, lastST = performance.now(), progRaf = 0;
   window.addEventListener('scroll', () => {
     scrollY = window.scrollY || 0;
+    const nw = performance.now();
+    if (!reduce) vel = Math.max(vel * 0.7, clamp(Math.abs(scrollY - lastSY) / Math.max(8, nw - lastST) / 2.4, 0, 1));
+    lastSY = scrollY; lastST = nw;
+    if (!progRaf) progRaf = requestAnimationFrame(paintProg);
     clearTimeout(scrollTimer); scrollTimer = setTimeout(() => onScrollEnd.forEach((f) => f()), 160);
   }, { passive: true });
   window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { measureDoc(); onResizeEnd.forEach((f) => f()); }, 160);
+    clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { winW = window.innerWidth; winH = window.innerHeight; measureDoc(); onResizeEnd.forEach((f) => f()); }, 160);
   }, { passive: true });
-  setTimeout(measureDoc, 600); setTimeout(measureDoc, 2600);
+  setTimeout(measureDoc, 600); setTimeout(measureDoc, 2600); onScrollEnd.push(measureDoc);
 
   /* =====================================================================
    * 3. cursor spotlight + card border light (one delegated listener)
@@ -357,12 +395,114 @@ JEV.mod('fx', () => {
   }
 
   /* =====================================================================
+   * 3b. custom cursor (ring + dot, fine pointers only) + shared magnetic helper
+   *     - the system cursor is hidden only on plain surfaces (body / links / buttons); anything that brings its own cursor
+   *       (text inputs, crosshair charts, grab handles, resize) keeps it, and the ring steps aside there.
+   *     - the ring eases toward the pointer, is pulled toward the centre of the interactive element under it, grows over it, shrinks on press.
+   *     - magnets: .kill + primary buttons drift a few px toward the pointer and spring back (one task, idle when nothing is hovered).
+   * ===================================================================== */
+  const curEl = $('#fx-cur'), ring = curEl && $('.fx-cr', curEl), dot = curEl && $('.fx-cd', curEl);
+  const INTERACTIVE = 'a[href],button,[role="button"],[role="tab"],summary,label,select,input,[tabindex]:not([tabindex="-1"])';
+  const MAGNETS = '.kill,.code-run,.lab-go,.lab-kill,.hr-kill';
+  if (fine && !reduce && curEl && ring && dot) {
+    const c = { x: -200, y: -200, rx: -200, ry: -200, dx: -200, dy: -200, seen: false, tgt: null, rect: null, cls: '', sy: scrollY, rt: 0 };
+    const mags = new Map(); // el -> {x,y,tx,ty}
+    const setCls = (v) => { if (v !== c.cls) { c.cls = v; curEl.className = v; } };
+    const state = () => {
+      if (!c.seen) return;
+      const t = c.tgt;
+      if (!t || t.nodeType !== 1) return setCls('on');
+      let cs = ''; try { cs = getComputedStyle(t).cursor; } catch (e) { /* ignore */ }
+      if (cs && cs !== 'none') { root.classList.add('fx-nat'); return setCls('on nat'); } // the page brought its own cursor here: show it
+      root.classList.remove('fx-nat');
+      const it = t.closest ? t.closest(INTERACTIVE) : null;
+      c.rect = it && !/^(INPUT|TEXTAREA)$/.test(it.tagName) ? it.getBoundingClientRect() : null;
+      setCls('on' + (it ? ' hov' : '') + (J.pointer.down ? ' down' : ''));
+    };
+    doc.addEventListener('pointerover', (e) => { if (e.pointerType === 'touch') return; c.tgt = e.target; state(); }, { passive: true });
+    doc.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') { if (c.seen) { c.seen = false; root.classList.remove('fx-cur', 'fx-nat'); setCls(''); } return; }
+      if (!c.seen) { c.seen = true; c.x = c.rx = c.dx = e.clientX; c.y = c.ry = c.dy = e.clientY; root.classList.add('fx-cur'); c.tgt = e.target; state(); }
+      const m = e.target && e.target.closest ? e.target.closest(MAGNETS) : null; // magnet follows the pointer while inside it
+      for (const [el, o] of mags) if (el !== m) { o.tx = 0; o.ty = 0; }
+      if (m && !m.disabled) {
+        let o = mags.get(m); if (!o) { o = { x: 0, y: 0, tx: 0, ty: 0 }; mags.set(m, o); }
+        const r = m.getBoundingClientRect(), str = Math.min(1, 60 / Math.max(r.width, r.height));
+        o.tx = clamp((e.clientX - (r.left + r.width / 2)) * 0.28 * str, -7, 7); o.ty = clamp((e.clientY - (r.top + r.height / 2)) * 0.34 * str, -5, 5);
+      }
+    }, { passive: true });
+    doc.addEventListener('pointerdown', () => { if (c.seen && c.cls.indexOf('nat') < 0) setCls(c.cls.replace(' down', '') + ' down'); }, { passive: true });
+    doc.addEventListener('pointerup', () => { if (c.seen) setCls(c.cls.replace(' down', '')); }, { passive: true });
+    root.addEventListener('mouseleave', () => { if (c.seen) setCls(''); });
+    root.addEventListener('mouseenter', () => { if (c.seen) state(); });
+    doc.addEventListener('keydown', (e) => { if (c.seen && e.key === 'Tab') { c.seen = false; root.classList.remove('fx-cur', 'fx-nat'); setCls(''); } }, true); // keyboard user: hand the cursor back
+    J.task(curEl, (t, dt) => {
+      if (!c.seen) return;
+      const p = J.pointer; c.x = p.x; c.y = p.y;
+      if (c.rect && Math.abs(scrollY - c.sy) > 0.5) { c.sy = scrollY; if (c.tgt && c.tgt.closest) { const it = c.tgt.closest(INTERACTIVE); if (it) c.rect = it.getBoundingClientRect(); } }
+      let tx = c.x, ty = c.y;
+      if (c.rect && c.rect.width && c.cls.indexOf('hov') >= 0) { tx += (c.rect.left + c.rect.width / 2 - c.x) * 0.3; ty += (c.rect.top + c.rect.height / 2 - c.y) * 0.3; }
+      const k = 1 - Math.exp(-dt * 15), kd = 1 - Math.exp(-dt * 48);
+      c.rx += (tx - c.rx) * k; c.ry += (ty - c.ry) * k; c.dx += (c.x - c.dx) * kd; c.dy += (c.y - c.dy) * kd;
+      ring.style.transform = 'translate3d(' + c.rx.toFixed(1) + 'px,' + c.ry.toFixed(1) + 'px,0)';
+      dot.style.transform = 'translate3d(' + c.dx.toFixed(1) + 'px,' + c.dy.toFixed(1) + 'px,0)';
+      if (mags.size) {
+        const km = 1 - Math.exp(-dt * 12);
+        for (const [el, o] of mags) {
+          o.x += (o.tx - o.x) * km; o.y += (o.ty - o.y) * km;
+          if (o.tx === 0 && o.ty === 0 && Math.abs(o.x) < 0.05 && Math.abs(o.y) < 0.05) { el.style.translate = ''; mags.delete(el); continue; }
+          el.style.translate = o.x.toFixed(2) + 'px ' + o.y.toFixed(2) + 'px';
+        }
+      }
+    });
+  }
+
+  /* =====================================================================
+   * 3c. scroll-progress hairline under the hud, with a tick per section
+   * ===================================================================== */
+  const progEl = $('#fx-prog'), progFill = progEl && $('.fx-pf', progEl), progTicks = [];
+  let progShown = false, progLast = -1;
+  function placeTicks() {
+    if (!progEl) return;
+    if (hudEl) progEl.style.top = hudEl.offsetHeight + 'px';
+    if (!progTicks.length) {
+      for (const a of $$('.nav a[href^="#"]')) {
+        const sec = doc.getElementById(a.getAttribute('href').slice(1)); if (!sec) continue;
+        const el = doc.createElement('i'); el.className = 'fx-tk'; el.title = (a.textContent || '').replace(/\d+/, '').trim();
+        progEl.appendChild(el); progTicks.push({ el, sec, f: 0, on: false });
+      }
+    }
+    for (const k of progTicks) { k.f = clamp((k.sec.getBoundingClientRect().top + scrollY) / scrollMax, 0, 1); k.el.style.left = (k.f * 100).toFixed(2) + '%'; k.on = false; k.el.classList.remove('on'); }
+  }
+  function paintProg() {
+    progRaf = 0;
+    if (!progEl || !progFill) return;
+    const f = clamp(scrollY / scrollMax, 0, 1), show = scrollY > 6;
+    if (show !== progShown) { progShown = show; progEl.classList.toggle('show', show); }
+    if (Math.abs(f - progLast) > 0.0004) { progLast = f; progFill.style.transform = 'scaleX(' + f.toFixed(4) + ')'; }
+    for (const k of progTicks) { const on = f + 0.002 >= k.f && k.f > 0.001; if (on !== k.on) { k.on = on; k.el.classList.toggle('on', on); } }
+  }
+  if (progEl && hudEl && 'ResizeObserver' in window) new ResizeObserver(() => { progEl.style.top = hudEl.offsetHeight + 'px'; }).observe(hudEl);
+  setTimeout(() => { placeTicks(); paintProg(); }, 300);
+
+  /* =====================================================================
    * 4. reveal: IntersectionObserver adds .in to .rv (stagger via --i); failsafes so nothing stays hidden
    * ===================================================================== */
   const boot = $('#fx-boot');
   const seen = new WeakSet(), pend = new Set();
   let held = [], rio = null;
-  function landed(els) { setTimeout(() => els.forEach((e) => e.classList.add('fx-done')), 1900); }
+  function headSweep(els) { // one-shot light pass over a section heading when its reveal lands
+  if (reduce) return;
+  for (const e of els) {
+    const h = e.classList && e.classList.contains('h2') ? e : e.querySelector && e.querySelector('.h2');
+    if (!h || h.querySelector('.fx-hsw')) continue;
+    const host = doc.createElement('i'), band = doc.createElement('i');
+    host.className = 'fx-hsw'; host.setAttribute('aria-hidden', 'true'); host.appendChild(band); h.classList.add('fx-hs'); h.appendChild(host);
+    band.addEventListener('animationend', () => host.remove(), { once: true });
+    setTimeout(() => host.remove(), 2600);
+  }
+}
+  function landed(els) { headSweep(els); setTimeout(() => els.forEach((e) => e.classList.add('fx-done')), 1900); }
   function revealBatch(els) {
     els = els.filter((e) => !e.classList.contains('in'));
     if (!els.length) return;
@@ -428,7 +568,8 @@ JEV.mod('fx', () => {
         row.className = 'fx-bl'; row.append(a, b); logEl.appendChild(row);
         return { row, a, b, t: l[0], ok: l[1], n: -1, done: false };
       });
-      let T0 = -1, over = false, lastPct = -1, tk = null;
+      let T0 = -1, over = false, lastPct = -1, tk = null, steps = 0;
+      const GLYPHS = '#%/\\<>01=+*';
       const finish = (fast) => {
         if (over) return; over = true;
         if (tk) tk.stop();
@@ -446,13 +587,17 @@ JEV.mod('fx', () => {
         const e = t - T0; // wall clock: the overlay is gone <= 1.6 s after its first frame no matter how slow the frames are
         for (let i = 0; i < rows.length; i++) {
           const r = rows[i], p = clamp((e - starts[i]) / durs[i], 0, 1), n = Math.floor(p * r.t.length);
-          if (p > 0 && n !== r.n) { r.n = n; r.a.textContent = r.t.slice(0, n); r.row.classList.add('show'); }
+          if (p > 0 && p < 1) { // typing: the head of the line is still resolving (a few glyphs scramble ahead of the caret)
+            const ahead = Math.min(3, r.t.length - n); let g = '';
+            for (let j = 0; j < ahead; j++) g += GLYPHS[(Math.random() * GLYPHS.length) | 0];
+            r.n = n; r.a.textContent = r.t.slice(0, n) + g; r.row.classList.add('show');
+          } else if (p >= 1 && r.n !== r.t.length) { r.n = r.t.length; r.a.textContent = r.t; r.row.classList.add('show'); }
           r.row.classList.toggle('cur', p > 0 && p < 1);
-          if (p >= 1 && !r.done) { r.done = true; r.b.textContent = r.ok; }
+          if (p >= 1 && !r.done) { r.done = true; r.b.textContent = r.ok; r.row.classList.add('hit'); fill.classList.remove('tk'); void fill.offsetWidth; fill.classList.add('tk'); steps++; }
         }
-        const f = clamp(e / (OUT - 0.02), 0, 1), q = Math.round(f * 100);
+        const f0 = clamp(e / (OUT - 0.02), 0, 1), f = f0 < 0.5 ? 2 * f0 * f0 : 1 - Math.pow(-2 * f0 + 2, 2) / 2, q = Math.round(f * 100); // ease-in-out
         fill.style.transform = 'scaleX(' + f.toFixed(3) + ')';
-        if (q !== lastPct) { lastPct = q; pct.textContent = (q < 10 ? '0' : '') + q + '%'; }
+        if (q !== lastPct) { lastPct = q; pct.textContent = (q < 10 ? '0' : '') + q + '% - ' + steps + '/' + rows.length; }
         if (e >= OUT) finish(false);
       });
     }

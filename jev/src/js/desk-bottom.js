@@ -9,6 +9,30 @@ JEV.mod('desk-bottom', () => {
   const MONO = "'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace";
   const rgbOf = (h) => { const n = parseInt(h.slice(1), 16); return (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255); };
   const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
+  /** odometer: per-digit cells; a changed digit rolls in from below (up) or above (down) while the old one leaves — transform/opacity only, no clipping so the glow survives */
+  const odo = (el) => {
+    let cells = [], cur = '';
+    return (s) => {
+      if (s === cur) return;
+      const up = parseFloat(s) >= parseFloat(cur || s);
+      if (s.length !== cur.length) {
+        el.textContent = ''; cells = [];
+        for (let i = 0; i < s.length; i++) { const c = document.createElement('span'), t = document.createElement('i'); c.className = 'dkb-dg'; c.setAttribute('aria-hidden', 'true'); t.textContent = s[i]; c.appendChild(t); el.appendChild(c); cells.push(c); }
+      } else {
+        for (let i = 0; i < s.length; i++) {
+          if (s[i] === cur[i]) continue;
+          const c = cells[i], t = c.firstChild, old = t.textContent; t.textContent = s[i];
+          if (J.reduce || s[i] === '.' || old === '.') continue;
+          const gh = document.createElement('i'); gh.className = 'dkb-gh'; gh.textContent = old; c.appendChild(gh);
+          const d = up ? 1 : -1;
+          const a1 = J.animate(gh, [{ transform: 'translateY(0)', opacity: 0.9 }, { transform: 'translateY(' + -0.42 * d + 'em)', opacity: 0 }], { duration: 360, easing: 'cubic-bezier(.3,.7,.2,1)' });
+          if (a1) a1.onfinish = () => gh.remove(); else gh.remove();
+          J.animate(t, [{ transform: 'translateY(' + 0.42 * d + 'em)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2,.9,.25,1)' });
+        }
+      }
+      cur = s; el.setAttribute('role', 'img'); el.setAttribute('aria-label', s);
+    };
+  };
   const sgn = (v, d) => (v >= 0 ? '+' : '-') + Math.abs(v).toFixed(d == null ? 1 : d);
   const rr = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
   /** soft additive glow sprite (drawn with 'lighter'; replaces shadowBlur) */
@@ -44,10 +68,11 @@ JEV.mod('desk-bottom', () => {
     if (!wrap || !cs || !cd) return;
     const eRg = $('#dkb-rg'), eRgv = $('#dkb-rgv'), eBig = $('#dkb-bp'), eV = $('#dkb-bv'), eK1 = $('#dkb-bk1'), eK2 = $('#dkb-bk2'), eN = $('#dkb-bn');
     const lg = { pm: $('#dkb-pm'), ps: $('#dkb-ps'), lm: $('#dkb-lm'), ls: $('#dkb-ls'), om: $('#dkb-om'), os: $('#dkb-os') };
+    const oV = odo(eV);
     const X0 = 0.2, X1 = 1.0, PEAK = 9.0, MAXP = 220, NSP = 120, NE = 56;
     const YP = new Float32Array(MAXP), YL = new Float32Array(MAXP), YO = new Float32Array(MAXP), XS = new Float32Array(MAXP), SPK = new Float32Array(NSP);
     const EX = new Float32Array(NE), EY = new Float32Array(NE), EV = new Float32Array(NE), EA = new Float32Array(NE), EM = new Float32Array(NE), EZ = new Float32Array(NE);
-    const B = { mp: 0.54, sp: 0.095, ml: 0.676, sl: 0.072, tmp: 0.54, tml: 0.676, tsl: 0.072, bias: 0.1, flash: 0, ring: 1, n: 1204, spT: 0, si: 0, domT: 9, post: 0.627, ps: 0.057, dmp: 0.54, dsp: 0.095, dml: 0.676, dsl: 0.072, up: true };
+    const B = { mp: 0.54, sp: 0.095, ml: 0.676, sl: 0.072, tmp: 0.54, tml: 0.676, tsl: 0.072, bias: 0.1, flash: 0, ring: 1, n: 1204, spT: 0, si: 0, domT: 9, vp: 0, vl: 0, pinP: 0, pinL: 0, post: 0.627, ps: 0.057, dmp: 0.54, dsp: 0.095, dml: 0.676, dsl: 0.072, up: true };
     const TAG = [
       { f: 'rgba(255,193,61,.15)', s: 'rgba(255,193,61,.7)', t: '#ffd47a', l: 'rgba(255,193,61,.5)' },
       { f: 'rgba(77,141,255,.17)', s: 'rgba(106,163,255,.75)', t: '#9cc2ff', l: 'rgba(106,163,255,.55)' },
@@ -56,9 +81,40 @@ JEV.mod('desk-bottom', () => {
     const SPR = { ok: sprite('46,230,166'), kill: sprite('255,77,94') };
     // pointer probe: hover/drag along the axis to read P(up > x) — the posterior's upper tail lights up
     const PRB = { on: false, x: 0, k: '', t: -9, w: 90, cv: document.createElement('canvas') };
-    cd.addEventListener('pointermove', (e) => { PRB.on = true; PRB.x = e.offsetX; });
-    cd.addEventListener('pointerleave', () => { PRB.on = false; });
-    cd.addEventListener('pointercancel', () => { PRB.on = false; });
+    const DEN = { k: '', t: -9, w: 100, h: 44, cv: document.createElement('canvas') };
+    // drag handles: grab the prior or book mean and pull it (sim only) — the posterior re-solves live while the means ride a spring
+    const DR = { k: -1, near: -1, kb: 0, focus: false, hv: [0, 0] };
+    const vOf = (x) => X0 + ((clamp(x, L, L + pw) - L) / pw) * (X1 - X0);
+    const hit = (x) => { const R = matchMedia('(pointer: coarse)').matches ? 24 : 14, a = Math.abs(x - px(B.dmp)), b = Math.abs(x - px(B.dml)); if (a > R && b > R) return -1; return a <= b ? 0 : 1; };
+    const setMean = (k, v) => { if (k === 0) { B.tmp = clamp(v, 0.34, 0.7); B.pinP = 99; } else { B.tml = clamp(v, 0.26, 0.82); B.pinL = 99; } B.flash = Math.max(B.flash, 0.4); };
+    const release = (k) => { if (k === 0) B.pinP = 7; else B.pinL = 7; };
+    const resetPins = () => { B.pinP = B.pinL = 0; B.flash = 0.6; };
+    const cur = (c) => { if (cd.style.cursor !== c) cd.style.cursor = c; };
+    cd.addEventListener('pointerdown', (e) => {
+      PRB.on = true; PRB.x = e.offsetX;
+      const k = hit(e.offsetX);
+      if (k >= 0) { DR.k = k; DR.kb = k; try { cd.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } setMean(k, vOf(e.offsetX)); cur('grabbing'); }
+    });
+    cd.addEventListener('pointermove', (e) => {
+      PRB.on = true; PRB.x = e.offsetX;
+      if (DR.k >= 0) setMean(DR.k, vOf(e.offsetX));
+      else { DR.near = e.pointerType === 'mouse' ? hit(e.offsetX) : -1; cur(DR.near >= 0 ? 'grab' : 'crosshair'); }
+    });
+    const up = (e) => { if (DR.k >= 0) { release(DR.k); DR.k = -1; try { cd.releasePointerCapture(e.pointerId); } catch (x) { /* ignore */ } cur('crosshair'); } if (e.pointerType !== 'mouse') PRB.on = false; };
+    cd.addEventListener('pointerup', up);
+    cd.addEventListener('pointerleave', () => { if (DR.k < 0) { PRB.on = false; DR.near = -1; } });
+    cd.addEventListener('pointercancel', (e) => { PRB.on = false; up(e); });
+    cd.addEventListener('dblclick', resetPins);
+    cd.addEventListener('focus', () => { DR.focus = true; });
+    cd.addEventListener('blur', () => { DR.focus = false; });
+    cd.addEventListener('keydown', (e) => {
+      const k = e.key;
+      if (k === 'ArrowLeft' || k === 'ArrowRight') { const d = (k === 'ArrowLeft' ? -1 : 1) * (e.shiftKey ? 0.02 : 0.005); setMean(DR.kb, (DR.kb ? B.tml : B.tmp) + d); release(DR.kb); }
+      else if (k === 'Enter' || k === ' ') DR.kb ^= 1;
+      else if (k === 'Escape' || k === 'Home') resetPins();
+      else return;
+      e.preventDefault();
+    });
     const ST = {
       ok: { g10: null, g4: null, core: null, hot: null, crgb: '141,255,208', coreS: '#8dffd0', hrgb: '212,255,238', rgb: '46,230,166', tail: 'rgba(141,255,208,.24)', fillTop: 'rgba(46,230,166,.6)', fillMid: 'rgba(46,230,166,.22)', fillBot: 'rgba(46,230,166,.02)', fill: null, spark: null },
       kill: { g10: null, g4: null, core: null, hot: null, crgb: '255,143,154', coreS: '#ff8f9a', hrgb: '255,214,218', rgb: '255,77,94', tail: 'rgba(255,143,154,.24)', fillTop: 'rgba(255,77,94,.55)', fillMid: 'rgba(255,77,94,.2)', fillBot: 'rgba(255,77,94,.02)', fill: null, spark: null },
@@ -126,11 +182,16 @@ JEV.mod('desk-bottom', () => {
     const dyn = (t, dt) => {
       const sq = Math.sqrt(dt);
       B.bias *= Math.exp(-dt / 10);
-      B.tml += (0.5 + B.bias - B.tml) * (1 - Math.exp(-dt * 0.5)) + gauss() * 0.075 * sq;
-      B.tmp += (0.535 - B.tmp) * (1 - Math.exp(-dt * 0.05)) + gauss() * 0.03 * sq;
+      if (B.pinL > 0) B.pinL -= dt; if (B.pinP > 0) B.pinP -= dt;
+      if (B.pinL <= 0) B.tml += (0.5 + B.bias - B.tml) * (1 - Math.exp(-dt * 0.5)) + gauss() * 0.075 * sq;
+      if (B.pinP <= 0) B.tmp += (0.535 - B.tmp) * (1 - Math.exp(-dt * 0.05)) + gauss() * 0.03 * sq;
       B.tml = clamp(B.tml, 0.26, 0.82); B.tmp = clamp(B.tmp, 0.34, 0.7);
-      const k4 = 1 - Math.exp(-dt * 3.2), k5 = 1 - Math.exp(-dt * 4.4);
-      B.mp += (B.tmp - B.mp) * k4; B.ml += (B.tml - B.ml) * k5;
+      const k4 = 1 - Math.exp(-dt * 3.2);
+      // the two means ride a damped spring (slight overshoot) so a drag, a decision or a release all settle physically
+      const h = Math.min(dt, 0.04);
+      B.vp += ((B.tmp - B.mp) * 150 - B.vp * 15) * h; B.mp += B.vp * h;
+      B.vl += ((B.tml - B.ml) * 150 - B.vl * 15) * h; B.ml += B.vl * h;
+      for (let i = 0; i < 2; i++) DR.hv[i] += (((DR.k === i || DR.near === i || (DR.focus && DR.kb === i)) ? 1 : 0) - DR.hv[i]) * (1 - Math.exp(-dt * 14));
       B.sl += ((S.killed ? 0.15 : B.tsl) - B.sl) * k4; B.sp += (0.095 - B.sp) * k4;
       B.dmp = B.mp; B.dml = B.ml;
       B.dsp = B.sp * (1 + 0.1 * Math.sin(t * 0.7)); B.dsl = B.sl * (1 + 0.12 * Math.sin(t * 1.1 + 1.3));
@@ -143,9 +204,11 @@ JEV.mod('desk-bottom', () => {
     const nudge = (d) => {
       const st = d.state || {}, e = +st.edge_bps || 0, im = +st.imbalance || 0;
       B.bias = clamp(e / 60, -1, 1) * 0.2 + im * 0.06;
-      B.tmp += (B.post - B.tmp) * 0.25;                      // yesterday's posterior leaks into today's prior
-      B.tml = 0.5 + B.bias;                                  // the book re-centres on the new evidence
-      if (Math.abs(B.tml - B.tmp) < 0.045) B.tml = B.tmp + (B.tml >= B.tmp ? 0.045 : -0.045);   // keep the two curves readable
+      if (B.pinP <= 0) B.tmp += (B.post - B.tmp) * 0.25;     // yesterday's posterior leaks into today's prior
+      if (B.pinL <= 0) {
+        B.tml = 0.5 + B.bias;                                // the book re-centres on the new evidence
+        if (Math.abs(B.tml - B.tmp) < 0.045) B.tml = B.tmp + (B.tml >= B.tmp ? 0.045 : -0.045);   // keep the two curves readable
+      }
       B.tsl = clamp(0.1 - (d.conf || 0.7) * 0.05, 0.045, 0.09);
       B.flash = 1; B.ring = 0; B.n++;
       setT(eN, fmt(B.n));
@@ -162,17 +225,41 @@ JEV.mod('desk-bottom', () => {
     const closeDown = (g) => { g.lineTo(XS[np - 1], baseY); g.lineTo(XS[0], baseY); g.closePath(); };
     /** tags are baked to tiny sprites (text is the costly part of a canvas frame) and only re-baked when the label changes, <= ~9 Hz */
     const TCV = [document.createElement('canvas'), document.createElement('canvas'), document.createElement('canvas')], TAGK = ['', '', ''], TAGT = [-9, -9, -9], TAGW = [60, 60, 60];
-    const tag = (g, i, name, v, row, killed, t) => {
-      const T = TAG[i], dead = i === 2 && killed;
+    const TY = [5, 22, 39], LANE = [0, 1, 2], TXR = [0, 0, 0];
+    const tag = (g, i, name, v, killed, t) => {
+      const T = TAG[i], dead = i === 2 && killed, pin = (i === 0 && B.pinP > 0) || (i === 1 && B.pinL > 0);
       if (t - TAGT[i] > 0.11 || !TAGK[i]) {
         TAGT[i] = t;
-        const txt = name + ' ' + (v * 100).toFixed(1), key = dead ? txt + '!' : txt;
+        const txt = name + ' ' + (v * 100).toFixed(1) + (pin ? ' ◆' : ''), key = dead ? txt + '!' : txt;
         if (key !== TAGK[i]) { TAGK[i] = key; TAGW[i] = txt.length * 5.6 + 12; bake(TCV[i], txt, TAGW[i], 15, dead ? 'rgba(255,77,94,.2)' : T.f, dead ? 'rgba(255,77,94,.85)' : T.s, dead ? '#ffc3c9' : T.t, F_TAG); }
       }
-      const w = TAGW[i], xm = px(v), x = clamp(xm - w / 2, 3, W - w - 3), y = 5 + row * 17;
+      const w = TAGW[i], xm = px(v), x = clamp(xm - w / 2, 3, W - w - 3), y = TY[i], hv = i < 2 ? DR.hv[i] : 0;
       g.setLineDash(DASH); g.lineWidth = 1; g.strokeStyle = dead ? 'rgba(255,170,178,.6)' : T.l;
-      g.beginPath(); g.moveTo(Math.round(xm) + 0.5, y + 16); g.lineTo(Math.round(xm) + 0.5, baseY); g.stroke(); g.setLineDash(NODASH);
+      if (hv > 0.02) { g.globalAlpha = 0.5 + hv * 0.5; g.lineWidth = 1 + hv * 0.8; }
+      g.beginPath(); g.moveTo(Math.round(xm) + 0.5, y + 16); g.lineTo(Math.round(xm) + 0.5, baseY); g.stroke(); g.setLineDash(NODASH); g.globalAlpha = 1;
       g.drawImage(TCV[i], x, y, w, 15);
+      if (i < 2) { // grip on the axis: grows when the mean can be grabbed
+        const r = 2.6 + hv * 2.8;
+        g.beginPath(); g.arc(Math.round(xm) + 0.5, baseY, r, 0, TAU); g.fillStyle = T.t; g.fill();
+        if (hv > 0.02) { g.globalAlpha = hv * 0.6; g.lineWidth = 1; g.strokeStyle = T.t; g.beginPath(); g.arc(Math.round(xm) + 0.5, baseY, r + 4, 0, TAU); g.stroke(); g.globalAlpha = 1; }
+      }
+    };
+    /** tag lanes: left to right, each tag takes the first lane whose neighbours it does not touch; the y of every tag eases to its lane, so tags glide apart and re-merge */
+    const lanes = (dt, vs) => {
+      const o = [0, 1, 2].sort((a, b) => vs[a] - vs[b]), end = [-99, -99, -99], k = 1 - Math.exp(-dt * 13);
+      for (let n = 0; n < 3; n++) {
+        const i = o[n], w = TAGW[i], x = clamp(px(vs[i]) - w / 2, 3, W - w - 3);
+        let l = 0; while (l < 2 && x < end[l] + 5) l++;
+        end[l] = x + w; LANE[i] = l; TY[i] += (5 + l * 17 - TY[i]) * k;
+      }
+    };
+    /** density readout panel: three rows, label left and value right, baked to a sprite (re-baked <= ~12 Hz and only when the numbers change) */
+    const bakeDen = (rows) => {
+      const w = DEN.w, h = DEN.h, cv = DEN.cv; cv.width = Math.round(w * J.DPR); cv.height = Math.round(h * J.DPR);
+      const g = cv.getContext('2d'); g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0);
+      rr(g, 0.5, 0.5, w - 1, h - 1, 5); g.fillStyle = 'rgba(10,6,16,.9)'; g.fill(); g.strokeStyle = 'rgba(255,255,255,.28)'; g.stroke();
+      g.font = F_TAG; g.textBaseline = 'alphabetic';
+      for (let i = 0; i < 3; i++) { const y = 14 + i * 12; g.fillStyle = TAG[i].t; g.textAlign = 'left'; g.fillText(rows[i][0], 9, y); g.textAlign = 'right'; g.fillText(rows[i][1], w - 9, y); }
     };
     const spawn = (i) => {
       const x = clamp(B.post + B.ps * gauss(), X0 + 0.02, X1 - 0.02), d = x - B.post;
@@ -233,9 +320,18 @@ JEV.mod('desk-bottom', () => {
           if (txt !== PRB.k) { PRB.k = txt; PRB.w = txt.length * 5.6 + 12; bake(PRB.cv, txt, PRB.w, 15, 'rgba(10,6,16,.9)', 'rgba(255,255,255,.7)', '#fff', F_TAG); }
         }
         g.drawImage(PRB.cv, clamp(xp + 8 + PRB.w > W - 3 ? xp - 8 - PRB.w : xp + 8, 3, W - PRB.w - 3), baseY - 24, PRB.w, 15);
+        // each density at the pointer: a dot on every curve + a three-row readout (probability density, per unit of P)
+        const den = (m, sd) => { const z = (pv - m) / sd; return Math.exp(-0.5 * z * z) / (sd * 2.5066); }, dv = [den(B.dmp, B.dsp), den(B.dml, B.dsl), den(B.post, B.ps)];
+        for (let i = 0; i < 3; i++) { const y = baseY - scale * dv[i], r = 3.2; g.beginPath(); g.arc(xp, y, r, 0, TAU); g.fillStyle = i === 2 && kill ? '#ffc3c9' : TAG[i].t; g.fill(); g.lineWidth = 1; g.strokeStyle = 'rgba(10,6,16,.9)'; g.stroke(); }
+        if (t - DEN.t > 0.08) {
+          DEN.t = t; const rows = [['prior', dv[0].toFixed(1)], ['book', dv[1].toFixed(1)], ['post', dv[2].toFixed(1)]], key = rows.join('|');
+          if (key !== DEN.k) { DEN.k = key; bakeDen(rows); }
+        }
+        g.drawImage(DEN.cv, clamp(xp + 10 + DEN.w > W - 3 ? xp - 10 - DEN.w : xp + 10, 3, W - DEN.w - 3), 60, DEN.w, DEN.h);
       }
       // mean ticks + tags (three rows, so they never collide)
-      tag(g, 0, 'prior', B.dmp, 0, false, t); tag(g, 1, 'book', B.dml, 1, false, t); tag(g, 2, 'post', B.post, 2, kill, t);
+      lanes(dt, [B.dmp, B.dml, B.post]);
+      tag(g, 0, 'prior', B.dmp, false, t); tag(g, 1, 'book', B.dml, false, t); tag(g, 2, 'post', B.post, kill, t);
       // posterior history strip
       g.beginPath();
       for (let i = 0; i < NSP; i++) { const v = SPK[(B.si + i) % NSP], x = L + (pw * i) / (NSP - 1), y = yS(v); if (i) g.lineTo(x, y); else g.moveTo(x, y); }
@@ -248,9 +344,10 @@ JEV.mod('desk-bottom', () => {
       if (B.domT >= 0.25 || J.reduce) {
         B.domT = 0;
         const p = B.post, up = p >= 0.5;
-        setT(eV, (p * 100).toFixed(1));
+        oV((p * 100).toFixed(1));
         if (up !== B.up) { B.up = up; eBig.classList.toggle('dn', !up); }
         setT(eK1, sgn((p - 0.5) * 100) + 'pp'); setT(eK2, sgn((p - B.dmp) * 100) + 'pp');
+        eK1.classList.toggle('neg', p < 0.5); eK2.classList.toggle('neg', p < B.dmp);
         setT(lg.pm, (B.dmp * 100).toFixed(1)); setT(lg.ps, (B.dsp * 100).toFixed(1));
         setT(lg.lm, (B.dml * 100).toFixed(1)); setT(lg.ls, (B.dsl * 100).toFixed(1));
         setT(lg.om, (p * 100).toFixed(1)); setT(lg.os, (B.ps * 100).toFixed(1));
@@ -271,7 +368,8 @@ JEV.mod('desk-bottom', () => {
     J.AGENTS.forEach((a) => { const m = { key: a.key, name: a.name, col: a.col, rgb: rgbOf(a.col), n: 0, muted: false, chip: null, nEl: null }; META[a.key] = m; META[a.name.toLowerCase()] = m; ORDER.push(m); });
     const JEVM = { key: 'jev', name: 'JEV', col: C.pink, rgb: rgbOf(C.pink) };
     const GRAY = { key: 'x', name: '?', col: '#b8b2c2', rgb: '184,178,194' };
-    let rows = [], q = [], rh = 27, rn = 12, anim = null, resolved = 27, lastReal = -1e9, lastIns = 0, nextSyn = 0, hover = false, hold = false;
+    const more = $('#dkb-more'), tip = $('#dkb-tip'), tph = $('#dkb-tph'), tpt = $('#dkb-tpt'), rw = $('#dkb-rw') || holder.parentElement;
+    let rows = [], q = [], rh = 27, rn = 12, anim = null, resolved = 27, lastReal = -1e9, lastIns = 0, nextSyn = 0, hover = false, hold = false, kbOn = false, kbIdx = 0, missed = 0, tipLi = null;
     const VENUES = ['binance', 'okx', 'bybit', 'hyperliquid', 'coinbase', 'kraken'];
     const px = () => J.pick(['btc', 'btc', 'eth', 'sol']);
     const money = (v) => (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(2);
@@ -282,9 +380,18 @@ JEV.mod('desk-bottom', () => {
       b.style.setProperty('--a', m.col); b.style.setProperty('--ar', m.rgb);
       const i = document.createElement('i'), n = document.createElement('b'), u = document.createElement('u');
       n.textContent = m.name; u.textContent = '0'; b.append(i, n, u); m.dot = i;
-      b.addEventListener('click', () => { m.muted = !m.muted; b.setAttribute('aria-pressed', String(!m.muted)); });
+      b.title += ' · click to mute · double-click to solo';
+      b.addEventListener('click', () => { m.muted = !m.muted; applyMute(); });
+      b.addEventListener('dblclick', () => { const solo = ORDER.every((o) => o === m ? !o.muted : o.muted); ORDER.forEach((o) => { o.muted = solo ? false : o !== m; }); applyMute(); });
       chipsEl.appendChild(b); m.chip = b; m.nEl = u;
     });
+
+    /** filter: muted agents stop producing rows AND the rows already on screen dim out (the list never reflows) */
+    const applyMute = () => {
+      ORDER.forEach((m) => m.chip.setAttribute('aria-pressed', String(!m.muted)));
+      rows.forEach((li) => { const m = META[li.dataset.ag]; li.classList.toggle('mute', !!(m && m.muted)); });
+      q = q.filter((it) => !(it.m && it.m.muted));
+    };
 
     // ---- synthesiser (only used while no 'agentstep' arrives) ----
     const mkt = () => Math.round(J.market.price);
@@ -350,7 +457,8 @@ JEV.mod('desk-bottom', () => {
       const v = document.createElement('span'); v.className = 'dkb-vb'; v.textContent = it.verb;
       const p = document.createElement('span'); p.className = 'dkb-v' + (it.tone ? ' ' + it.tone : ''); p.textContent = it.val;
       const m = document.createElement('span'); m.className = 'dkb-ms'; m.textContent = it.text;
-      li.title = it.name.toLowerCase() + ' · ' + it.verb + ' · ' + it.text;
+      li.dataset.ag = it.m.key; li._it = it;
+      if (it.m.muted) li.classList.add('mute');
       li.append(d, b, v, p, m);
       return li;
     };
@@ -370,7 +478,7 @@ JEV.mod('desk-bottom', () => {
     };
     const push = (it) => {
       const li = mk(it);
-      if (!J.reduce) { li.classList.add('new'); li.addEventListener('animationend', () => li.classList.remove('new'), { once: true }); }
+      if (!J.reduce) { li.classList.add('new'); li.addEventListener('animationend', (e) => { if (e.target === li && !e.pseudoElement) li.classList.remove('new'); }); }
       list.prepend(li); rows.unshift(li);
       shift(); trim(1); count(it, true);
     };
@@ -378,7 +486,46 @@ JEV.mod('desk-bottom', () => {
     const enqueue = (it) => {
       if (it.m && it.m.muted) return;
       q.push(it); if (q.length > 14) q.shift();
+      if (paused()) { missed++; pill(); }
     };
+    /** '+N' pill while the log is held: N steps arrived meanwhile, click to catch up */
+    const pill = () => {
+      const n = paused() ? Math.min(missed, 99) : 0, s = n ? '+' + n : '';
+      if (more.hidden === !n && more.textContent === s) return;
+      more.hidden = !n; setT(more, s);
+    };
+    const flush = () => {
+      const items = q.splice(0); missed = 0;
+      hideTip(); items.slice(-3).forEach(push); pill();
+    };
+    more.addEventListener('click', flush);
+    // ---- full message card (rows stay one line; the card shows everything) ----
+    const hideTip = () => { tipLi = null; tip.classList.remove('on'); tip.setAttribute('aria-hidden', 'true'); rows.forEach((r) => r.classList.remove('sel')); };
+    const placeTip = () => {
+      if (!tipLi || !tipLi.isConnected) return hideTip();
+      const a = tipLi.getBoundingClientRect(), b = rw.getBoundingClientRect(), th = tip.offsetHeight, top = a.bottom - b.top + 4;
+      tip.style.transform = ''; tip.style.top = (top + th > b.height - 2 ? a.top - b.top - th - 4 : top) + 'px';
+    };
+    const showTip = (li) => {
+      const it = li && li._it; if (!it) return hideTip();
+      const ms = li.querySelector('.dkb-ms');
+      if (!kbOn && ms && ms.scrollWidth <= ms.clientWidth + 1) return hideTip();
+      rows.forEach((r) => r.classList.toggle('sel', r === li));
+      tip.style.setProperty('--ar', it.rgb); tph.style.color = it.col;
+      setT(tph, it.name.toLowerCase() + ' · ' + it.verb + (it.val !== '—' ? ' · ' + it.val : '') + '  '); setT(tpt, it.text);
+      tipLi = li; tip.classList.add('on'); tip.setAttribute('aria-hidden', 'false'); placeTip();
+    };
+    list.addEventListener('pointerover', (e) => { if (e.pointerType === 'mouse') showTip(e.target.closest('.dkb-r')); });
+    rw.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && !hold && !kbOn) hideTip(); });
+    list.addEventListener('pointerup', (e) => { if (e.pointerType === 'mouse') return; const li = e.target.closest('.dkb-r'); if (li) { hold = true; sync(); showTip(li); } });
+    holder.addEventListener('focus', () => { kbOn = true; kbIdx = 0; sync(); showTip(rows[0]); });
+    holder.addEventListener('blur', () => { kbOn = false; hideTip(); sync(); if (!paused()) resume(); });
+    holder.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { kbIdx = clamp(kbIdx + (e.key === 'ArrowDown' ? 1 : -1), 0, rows.length - 1); showTip(rows[kbIdx]); }
+      else if (e.key === 'Home') { kbIdx = 0; showTip(rows[0]); } else if (e.key === 'End') { kbIdx = rows.length - 1; showTip(rows[kbIdx]); }
+      else if (e.key === 'Escape') holder.blur(); else return;
+      e.preventDefault();
+    });
 
     // ---- layout vars from css (--rh / --rn change with the container width) ----
     let seeded = false;
@@ -402,17 +549,16 @@ JEV.mod('desk-bottom', () => {
     J.bus.on('kill', (on) => { q.length = 0; push(kill(!!on)); });
 
     // ---- hover / tap pauses ----
-    const paused = () => hover || hold;
-    const sync = () => { const p = paused(); liveB.setAttribute('aria-pressed', String(p)); setT(lv, p ? 'paused' : 'live'); };
-    const resume = () => { if (q.length > 4) q.splice(0, q.length - 4); lastIns = 0; };
-    const rw = holder.parentElement;
+    const paused = () => hover || hold || kbOn;
+    const sync = () => { const p = paused(); liveB.setAttribute('aria-pressed', String(p)); setT(lv, p ? 'paused' : 'live'); if (!p) missed = 0; pill(); };
+    const resume = () => { if (q.length > 4) q.splice(0, q.length - 4); lastIns = 0; missed = 0; pill(); };
     rw.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { hover = true; sync(); } });
     rw.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hover = false; sync(); if (!paused()) resume(); } });
-    liveB.addEventListener('click', () => { hold = !hold; sync(); if (!paused()) resume(); });
+    liveB.addEventListener('click', () => { hold = !hold; if (!hold) hideTip(); sync(); if (!paused()) resume(); });
 
     J.task(list, (t) => {
       const now = t * 1000;
-      if (paused()) return;
+      if (paused()) { if (tipLi) placeTip(); return; }
       if (performance.now() - lastReal > 2600 && now >= nextSyn) { enqueue(synth()); nextSyn = now + 1000 + Math.random() * 500; }
       if (q.length && now - lastIns > 400) { push(q.shift()); lastIns = now; }
     });
@@ -425,6 +571,7 @@ JEV.mod('desk-bottom', () => {
     const wrap = $('#dkb-dw'), cs = $('#dkb-ds'), cA = $('#dkb-dp'), cB = $('#dkb-dq'), co = $('#dkb-do');
     if (!wrap || !cs || !cA || !cB || !co) return;
     const ePP = $('#dkb-pp'), eTr = $('#dkb-tr'), ePool = $('#dkb-pool'), eRuns = $('#dkb-runs');
+    const oP = odo(ePP);
     const N = 140, T = 220, S1 = T + 1, NB = 14, NBIN = 30, RATE = T / 7.2, HOLD = 3.2, XF = 0.9, PRE = 44, MU0 = 0.8, SG0 = 8.6, VMIN = -150, VSTEP = 600 / NB;
     // the whole run is drawn up front (PX = equity of path i at step k), so a path can be coloured by where it ENDS and a resize re-draws the same run instead of re-rolling it
     const PX = new Float32Array(N * S1), MN = new Float32Array(S1), BKI = new Uint8Array(N), BKS = new Uint16Array(NB + 1), BKP = new Uint16Array(NB);
@@ -436,8 +583,8 @@ JEV.mod('desk-bottom', () => {
       const a = STOPS[i - 1], b = STOPS[i], f = clamp((v - a[0]) / (b[0] - a[0]), 0, 1);
       return ((a[1] + (b[1] - a[1]) * f) | 0) + ',' + ((a[2] + (b[2] - a[2]) * f) | 0) + ',' + ((a[3] + (b[3] - a[3]) * f) | 0);
     };
-    const CORE = [], HALO = [], BAR = [], HEAD = [];
-    for (let q = 0; q < NB; q++) { const s = ramp(VMIN + (q + 0.5) * VSTEP); CORE[q] = 'rgba(' + s + ',.34)'; HALO[q] = 'rgba(' + s + ',.035)'; BAR[q] = 'rgba(' + s + ',.85)'; HEAD[q] = 'rgba(' + s + ',.9)'; }
+    const CORE = [], HALO = [], BAR = [], HEAD = [], RGB = [], SPB = [];
+    for (let q = 0; q < NB; q++) { const s = ramp(VMIN + (q + 0.5) * VSTEP); RGB[q] = s; CORE[q] = 'rgba(' + s + ',.34)'; HALO[q] = 'rgba(' + s + ',.035)'; BAR[q] = 'rgba(' + s + ',.85)'; HEAD[q] = 'rgba(' + s + ',.9)'; }
     const bk = (v) => clamp(Math.floor((v - VMIN) / VSTEP), 0, NB - 1);
     let W = 0, H = 0, gs = null, go = null, ok = false, lw = 0, lh = 0, have = false, snap = true;
     let padL = 36, padT = 24, padB = 22, hx0 = 0, hx1 = 0, histW = 52, px0 = 0, px1 = 0, pw = 0, ph = 0, dx = 1, lo = 0, hi = 1, invR = 1;
@@ -445,10 +592,21 @@ JEV.mod('desk-bottom', () => {
     const yPx = (v) => padT + ph - (v - lo) * invR * ph;
     const meanCv = document.createElement('canvas'), haltCv = document.createElement('canvas'); let meanW = 40;
     // pointer probe: a horizontal threshold line — the label says what share of the 140 paths sits above it
-    const PRD = { on: false, y: 0, k: '', t: -9, w: 100, cv: document.createElement('canvas') };
-    co.addEventListener('pointermove', (e) => { PRD.on = true; PRD.y = e.offsetY; });
+    const PRD = { on: false, x: 0, y: 0, a: 0, idx: 0, k: '', t: -9, w: 100, cv: document.createElement('canvas'), pk: '', pt: -9, pw: 120, pc: document.createElement('canvas') };
+    const pos = (e) => { PRD.on = true; PRD.x = e.offsetX; PRD.y = e.offsetY; };
+    co.addEventListener('pointermove', pos);
+    co.addEventListener('pointerdown', pos);
     co.addEventListener('pointerleave', () => { PRD.on = false; });
     co.addEventListener('pointercancel', () => { PRD.on = false; });
+    co.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') PRD.on = false; });
+    co.addEventListener('blur', () => { PRD.on = false; });
+    co.addEventListener('keydown', (e) => {
+      const k = e.key, d = e.shiftKey ? 24 : 8;
+      if (!PRD.on) { PRD.on = true; PRD.x = px0 + Math.min(step, T) * dx * 0.6; PRD.y = my; }
+      if (k === 'ArrowLeft') PRD.x -= d; else if (k === 'ArrowRight') PRD.x += d; else if (k === 'ArrowUp') PRD.y -= d; else if (k === 'ArrowDown') PRD.y += d;
+      else if (k === 'Escape') PRD.on = false; else return;
+      PRD.x = clamp(PRD.x, px0, W - 2); PRD.y = clamp(PRD.y, padT + 1, padT + ph - 1); e.preventDefault();
+    });
     const bakeMean = () => { meanW = meanStr.length * 5.6 + 12; bake(meanCv, meanStr, meanW, 15, 'rgba(10,6,16,.88)', 'rgba(255,255,255,.55)', '#fff', F_TAG); };
     const bakeHalt = () => bake(haltCv, 'HALTED · NO ORDERS, NO WALK', 168, 22, 'rgba(40,6,12,.86)', 'rgba(255,77,94,.8)', '#ff9aa4', F_HALT);
 
@@ -572,16 +730,50 @@ JEV.mod('desk-bottom', () => {
       my += (yPx(mv) - my) * (sn ? 1 : 1 - Math.exp(-dt * 13));
       g.setLineDash(DOT); g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 1; g.beginPath(); g.moveTo(xh, my + 0.5); g.lineTo(hx0 - 2, my + 0.5); g.stroke(); g.setLineDash(NODASH);
       g.drawImage(meanCv, hx0 - 4 - meanW, my - 7.5, meanW, 15);
-      if (PRD.on && PRD.y > padT && PRD.y < padT + ph) {
-        const thr = lo + (1 - (PRD.y - padT) / ph) * (hi - lo); let above = 0;
+      // pointer over the plot: the nearest path lights up (full trace + a faint comet running along it + a readout);
+      // pointer over the histogram well: a level line, the share of paths above it and the count in the bin under it
+      PRD.a += ((PRD.on ? 1 : 0) - PRD.a) * (sn ? 1 : 1 - Math.exp(-dt * (PRD.on ? 16 : 7)));
+      const inY = PRD.y > padT && PRD.y < padT + ph;
+      if (PRD.on && inY && PRD.x >= hx0 - 2) {
+        const thr = lo + (1 - (PRD.y - padT) / ph) * (hi - lo), bin = clamp(Math.floor((1 - (PRD.y - padT) / ph) * NBIN), 0, NBIN - 1); let above = 0;
         for (let i = 0; i < N; i++) if (PX[i * S1 + o] > thr) above++;
         g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(hx0 + 1, padT, histW - 2, PRD.y - padT);
+        g.fillStyle = 'rgba(255,255,255,.16)'; g.fillRect(hx0 + 1, padT + ph - (bin + 1) * binH, histW - 2, binH);
         g.setLineDash(NODASH); g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,.65)'; g.beginPath(); g.moveTo(px0, Math.round(PRD.y) + 0.5); g.lineTo(hx1, Math.round(PRD.y) + 0.5); g.stroke();
         if (t - PRD.t > 0.08) {
-          PRD.t = t; const txt = sgn(thr, 0) + 'bp · ' + Math.round((above / N) * 100) + '% of paths above';
+          PRD.t = t; const txt = sgn(thr, 0) + 'bp · ' + Math.round((above / N) * 100) + '% above · ' + HC[bin] + ' in bin';
           if (txt !== PRD.k) { PRD.k = txt; PRD.w = txt.length * 5.6 + 12; bake(PRD.cv, txt, PRD.w, 15, 'rgba(10,6,16,.9)', 'rgba(255,255,255,.7)', '#fff', F_TAG); }
         }
         g.drawImage(PRD.cv, px0 + 6, clamp(PRD.y - 19, padT + 2, padT + ph - 17), PRD.w, 15);
+      } else if (PRD.a > 0.02 && o > 0) {
+        if (PRD.on && inY && PRD.x >= px0 - 2) { // pick the path whose value at the pointer's step is closest to the pointer's level
+          const kk = clamp(Math.round((PRD.x - px0) / dx), 0, o), lv = lo + (1 - (PRD.y - padT) / ph) * (hi - lo); let bd = 1e9;
+          for (let i = 0; i < N; i++) { const d = Math.abs(PX[i * S1 + kk] - lv); if (d < bd) { bd = d; PRD.idx = i; } }
+          PRD.kk = kk;
+        }
+        const i = PRD.idx, base = i * S1, kk = Math.min(PRD.kk | 0, o), q = bk(PX[base + T]), a = PRD.a, rgb = RGB[q], spr = SPB[q] || (SPB[q] = sprite(rgb));
+        g.globalCompositeOperation = 'lighter'; g.lineJoin = 'round'; g.lineCap = 'round';
+        g.beginPath(); g.moveTo(px0, yPx(PX[base])); for (let k = 1; k <= o; k++) g.lineTo(px0 + k * dx, yPx(PX[base + k]));
+        g.lineWidth = 4; g.strokeStyle = 'rgba(' + rgb + ',' + (0.12 * a).toFixed(3) + ')'; g.stroke();
+        g.lineWidth = 1.8; g.strokeStyle = 'rgba(' + rgb + ',' + (0.95 * a).toFixed(3) + ')'; g.stroke();
+        g.lineWidth = 0.7; g.strokeStyle = 'rgba(255,255,255,' + (0.55 * a).toFixed(3) + ')'; g.stroke();
+        // comet: a faint head that runs the path from trade 1 to the frontier, with a fading tail
+        if (!J.reduce) {
+          const hp = ((t * 0.5) % 1) * o, h0 = hp | 0, tl = 22; g.lineWidth = 2;
+          for (let k = Math.max(1, h0 - tl); k <= h0 && k <= o; k++) { const f = (k - (h0 - tl)) / tl; g.strokeStyle = 'rgba(255,255,255,' + (0.5 * f * f * a).toFixed(3) + ')'; g.beginPath(); g.moveTo(px0 + (k - 1) * dx, yPx(PX[base + k - 1])); g.lineTo(px0 + k * dx, yPx(PX[base + k])); g.stroke(); }
+          g.globalAlpha = 0.8 * a; g.drawImage(spr, px0 + h0 * dx - 9, yPx(PX[base + h0]) - 9, 18, 18); g.globalAlpha = 1;
+        }
+        g.globalCompositeOperation = 'source-over';
+        // marker + vertical hairline at the hovered step
+        const mx = px0 + kk * dx, my2 = yPx(PX[base + kk]), val = PX[base + kk];
+        g.globalAlpha = a; g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(Math.round(mx), padT, 1, ph);
+        g.beginPath(); g.arc(mx, my2, 3.4, 0, TAU); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(' + rgb + ',1)'; g.stroke();
+        if (t - PRD.pt > 0.07) {
+          PRD.pt = t; const txt = '#' + String(i + 1).padStart(3, '0') + ' · ' + sgn(val, 0) + 'bp @ ' + kk + ' · ends ' + sgn(PX[base + o], 0);
+          if (txt !== PRD.pk) { PRD.pk = txt; PRD.pw = txt.length * 5.6 + 12; bake(PRD.pc, txt, PRD.pw, 15, 'rgba(10,6,16,.92)', 'rgba(' + rgb + ',.85)', '#fff', F_TAG); }
+        }
+        g.drawImage(PRD.pc, clamp(mx + 10 + PRD.pw > px1 + 4 ? mx - 10 - PRD.pw : mx + 10, px0, px1 + 4 - PRD.pw), clamp(my2 - 24 < padT + 2 ? my2 + 10 : my2 - 24, padT + 2, padT + ph - 17), PRD.pw, 15);
+        g.globalAlpha = 1;
       }
       if (killed) {
         g.fillStyle = 'rgba(255,60,80,.07)'; g.fillRect(px0, padT, hx1 - px0, ph);
@@ -607,7 +799,7 @@ JEV.mod('desk-bottom', () => {
       domT += dt;
       if (domT >= 0.25 || J.reduce) {
         domT = 0;
-        setT(ePP, ((wins() / N) * 100).toFixed(1)); setT(eTr, String(step));
+        oP(((wins() / N) * 100).toFixed(1)); setT(eTr, String(step));
         const ms = sgn(mv, 0); if (ms !== meanStr) { meanStr = ms; bakeMean(); }
         setT(ePool, ((poolW / poolN) * 100).toFixed(1) + '%'); setT(eRuns, runs + (runs === 1 ? ' run' : ' runs'));
       }

@@ -98,6 +98,35 @@ body.killed .dkb-bayes .dkb-big { --rc: var(--red); --rc-rgb: 255, 77, 94; }
 .dkb-r.dkb-rk { background-image: linear-gradient(90deg, rgba(255, 77, 94, .16), rgba(255, 77, 94, .03) 70%, transparent); }
 .dkb-r.dkb-rk .dkb-d { background: var(--red); box-shadow: 0 0 8px var(--red), 0 0 16px rgba(255, 77, 94, .7); }
 .dkb-r.new { animation: dkbIn .75s var(--ease) both; }
+.dkb-r { position: relative; }
+/* left-edge flash in the agent's colour on every new row */
+.dkb-r.new::before { content: ''; position: absolute; left: 0; top: 3px; bottom: 3px; width: 2px; border-radius: 2px; background: var(--a); box-shadow: 0 0 10px var(--a), 0 0 22px rgba(var(--ar), .6); transform-origin: 50% 50%; animation: dkbEdge .75s cubic-bezier(.2, .8, .2, 1) both; pointer-events: none; }
+@keyframes dkbEdge { 0% { opacity: 1; transform: scaleY(.3) scaleX(2.4); } 35% { opacity: 1; transform: scaleY(1) scaleX(1.6); } 100% { opacity: 0; transform: scaleY(1) scaleX(1); } }
+.dkb-r.mute { opacity: .2; filter: saturate(.2); }
+.dkb-r { transition: background-color .5s, opacity .35s, filter .35s; }
+.dkb-r.sel { background-color: rgba(255, 255, 255, .06); box-shadow: inset 2px 0 0 var(--a); }
+.dkb-rows:focus-visible { outline: 2px solid var(--pink2); outline-offset: 2px; border-radius: 4px; }
+.dkb-rw { position: relative; }
+/* full-message card + '+N' catch-up pill */
+.dkb-tip { position: absolute; left: 14px; right: 14px; top: 40px; z-index: 6; padding: 8px 11px 9px; border-radius: 9px; background: rgba(14, 9, 22, .96); border: 1px solid rgba(var(--ar, 255, 255, 255), .45);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .55), 0 0 22px rgba(var(--ar, 255, 255, 255), .16); font-size: 10.5px; line-height: 1.5; color: #e9e2f1; white-space: normal; overflow-wrap: anywhere; pointer-events: none;
+  opacity: 0; visibility: hidden; transform: translateY(3px); transition: opacity .16s, transform .2s var(--ease), visibility 0s .2s; }
+.dkb-tip.on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.dkb-tip b { font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase; white-space: pre; }
+.dkb-more { position: absolute; z-index: 7; right: 22px; top: 11px; min-height: 22px; padding: 2px 10px; border-radius: 99px; font: 700 10px/1 var(--mono); letter-spacing: .06em; color: #fff; font-variant-numeric: tabular-nums;
+  background: linear-gradient(180deg, #ff4f8d, #e0155a); border: 1px solid rgba(255, 255, 255, .25); box-shadow: 0 0 14px rgba(255, 46, 110, .55); animation: dkbPop .28s cubic-bezier(.3, 1.5, .5, 1) both; }
+.dkb-more[hidden] { display: none; }
+.dkb-more:hover { filter: brightness(1.12); }
+.dkb-more:focus-visible { outline: 2px solid var(--pink2); outline-offset: 2px; }
+@keyframes dkbPop { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+/* odometer digits */
+.dkb-dg { position: relative; display: inline-block; }
+.dkb-dg i { display: inline-block; font-style: normal; }
+.dkb-dg .dkb-gh { position: absolute; left: 0; top: 0; pointer-events: none; }
+.dkb-kv b.neg { color: var(--dn); }
+.dkb-cvw canvas:focus-visible { outline: 2px solid var(--pink2); outline-offset: -2px; border-radius: 6px; }
+.dkb-hn .num, .dkb-pool .num, .dkb-rg b, .dkb-kv b, .dkb-cap label span { font-variant-numeric: tabular-nums; }
+.dkb-cvw canvas:last-child { -webkit-tap-highlight-color: transparent; }
 @keyframes dkbIn {
   0% { opacity: 0; filter: blur(7px); translate: -22px 0; background-color: rgba(var(--ar), .3); }
   45% { opacity: 1; filter: blur(0); translate: 0 0; background-color: rgba(var(--ar), .2); }
@@ -131,7 +160,8 @@ body.killed .dkb-bayes .dkb-big { --rc: var(--red); --rc-rgb: 255, 77, 94; }
   .dkb-pool { margin-left: 0; }
 }
 @media (pointer: coarse) {
+  .dkb-more { min-height: 40px; padding: 0 16px; top: 6px; }
   .dkb-live { min-height: 40px; padding: 0 14px; }
   .dkb-ch { min-height: 40px; }
 }
-@media (prefers-reduced-motion: reduce) { .dkb-halt { animation: none; } .dkb-r.new { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .dkb-halt { animation: none; } .dkb-r.new { animation: none; } .dkb-r.new::before { animation: none; opacity: 0; } .dkb-more { animation: none; } .dkb-tip { transition: none; } }

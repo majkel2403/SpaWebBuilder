@@ -37,7 +37,7 @@
                 <div class="bld-core-body">
                   <span class="glitch bld-wm" id="bld-wm" data-text="JEV">JEV</span>
                   <span class="bld-core-sub">typed questions &middot; probabilities out</span>
-                  <span class="bld-pd" aria-hidden="true"><i data-p="0"></i><i data-p="1"></i><i data-p="2"></i></span>
+                  <span class="bld-pd"><span class="bld-dots" aria-hidden="true"><i data-p="0"></i><i data-p="1"></i><i data-p="2"></i></span><b class="bld-chip" id="bld-chip" data-a="buy" title="last action (simulated)">buy</b></span>
                   <span class="bld-last" id="bld-last" data-d="execute">BTC-PERP &middot; buy &middot; 0.93 &rarr; execute</span>
                 </div>
               </div>
@@ -115,6 +115,16 @@
         </div>
 
       </div>
+      <div class="bld-tip" id="bld-tip" role="tooltip" aria-hidden="true">
+        <div class="bld-tip-h"><b id="bld-tip-n">entry</b><i id="bld-tip-p">choice</i></div>
+        <dl>
+          <div><dt>last answer</dt><dd id="bld-tip-a">buy BTC</dd></div>
+          <div><dt>confidence</dt><dd id="bld-tip-c">0.93</dd></div>
+          <div><dt>typed answer</dt><dd id="bld-tip-m">3.2 ms</dd></div>
+          <div><dt>gate</dt><dd id="bld-tip-g">execute</dd></div>
+        </dl>
+        <p id="bld-tip-f">simulated &middot; click or enter pins its stream</p>
+      </div>
       <p class="bld-fig" aria-hidden="true"><i></i>fig 02 &middot; ten builds in, one decision out &middot; simulated</p>
     </div>
 
@@ -165,6 +175,7 @@
           <p class="bld-tn"><span>jev answers. code does everything else.</span></p></div>
       </article>
 
+      <div class="bld-vt" id="bld-vt" aria-hidden="true"></div>
     </div>
 
     <div class="bld-foot"><span>simulation &middot; illustrative values</span><span>10 builds &middot; 1 decision layer</span></div>

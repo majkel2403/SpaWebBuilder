@@ -104,3 +104,19 @@ body.killed .hero-aura { filter: hue-rotate(14deg) saturate(1.2); }
 
 /* keyboard path: the visually hidden fire button becomes a visible chip while focused */
 #hero-fire:focus-visible { clip: auto; width: auto; height: auto; overflow: visible; left: 12px; top: 104px; z-index: 6; padding: 7px 12px; font: 600 11px/1 var(--mono, monospace); letter-spacing: .08em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .92); border: 1px solid #ff6fa6; border-radius: 4px; outline: 2px solid #ff6fa6; outline-offset: 2px; cursor: pointer; }
+
+/* ---- detail layer: tooltip · chip odometer · idle hint ---- */
+.hero-tip { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity .16s ease; will-change: transform; display: flex; flex-direction: column; gap: 2px; min-width: 128px; max-width: 218px; padding: 8px 11px 7px; border-radius: 8px; font-size: 10px; line-height: 1.45; letter-spacing: .03em; color: #cfc6d8;
+  background: linear-gradient(180deg, rgba(26, 9, 30, .92), rgba(9, 4, 15, .94)); border: 1px solid rgba(255, 90, 156, .5); box-shadow: 0 0 26px rgba(255, 46, 110, .28), 0 8px 24px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .08); }
+.hero-tip.is-on { opacity: 1; }
+.hero-tip-h { font-size: 9.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--pink2); }
+.hero-tip-v { font: 600 20px/1.1 'Fraunces', 'Playfair Display', Georgia, serif; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.hero-net .hero-tip .hero-tip-sp { position: static; inset: auto; width: 100px; height: 22px; clip-path: none; transition: none; opacity: 1; display: block; margin: 2px 0; }
+.hero-tip-w { color: #b8aec4; font-size: 9.5px; }
+.hero-tip-s { color: #7d7389; font-size: 8px; letter-spacing: .2em; text-transform: uppercase; }
+body.killed .hero-tip { border-color: rgba(255, 77, 94, .55); }
+.hero-od { display: inline-block; position: relative; }
+.hero-od-o { position: absolute; left: 0; top: 0; pointer-events: none; font-style: normal; }
+.hero-leg-sim.is-idle { color: var(--pink2); animation: heroIdle 1.7s ease-in-out infinite; }
+@keyframes heroIdle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@media (max-width: 699px) { .hero-tip { min-width: 112px; max-width: 190px; padding: 6px 9px 5px; font-size: 9px; } .hero-tip-v { font-size: 17px; } }

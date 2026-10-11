@@ -17,6 +17,61 @@ JEV.mod('builds', () => {
   const bIdx = {}; B.forEach((b, i) => (bIdx[b.key] = i));
   const mix = (a, b, k) => 'rgba(' + ((a[0] + (b[0] - a[0]) * k) | 0) + ',' + ((a[1] + (b[1] - a[1]) * k) | 0) + ',' + ((a[2] + (b[2] - a[2]) * k) | 0);
 
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const TICK = [{ offset: 0, color: '#fff' }];
+
+  /* ---------- odometer: reels per digit, spare 0 so 9 -> 0 keeps rolling forward; readable copy in .sr-only ---------- */
+  const REEL = '0123456789'.concat('0').replace(/./g, '<bld-n>$&</bld-n>');
+  const otf = (p) => 'translateY(calc(var(--oh,1.2em) * ' + -p + '))';
+  function odo(el, text, from) {
+    const sr = document.createElement('span'), vis = document.createElement('span');
+    sr.className = 'sr-only'; vis.className = 'bld-odo'; vis.setAttribute('aria-hidden', 'true');
+    el.textContent = ''; el.append(sr, vis); sr.textContent = text;
+    let cells = [], cur = '';
+    const snap = (c, p) => { c.pos = p; c.r.style.transition = 'none'; c.r.style.transform = otf(p); void c.r.offsetWidth; c.r.style.transition = ''; };
+    function build(s) {
+      vis.textContent = ''; cells = []; cur = s;
+      for (let k = 0; k < s.length; k++) {
+        const ch = s[k];
+        if (ch >= '0' && ch <= '9') {
+          const w = document.createElement('span'), r = document.createElement('span'), d = +ch;
+          w.className = 'bld-od'; r.className = 'bld-od-r'; r.innerHTML = REEL; r.style.transform = otf(d); w.appendChild(r); vis.appendChild(w); cells.push({ w, r, d, pos: d });
+        } else { const q = document.createElement('span'); q.className = 'bld-op'; q.textContent = ch; vis.appendChild(q); cells.push(null); }
+      }
+    }
+    vis.addEventListener('transitionend', (e) => { if (e.propertyName !== 'transform') return; const c = cells.find((x) => x && x.r === e.target); if (c && c.pos === 10) snap(c, 0); });
+    function set(s, o) {
+      if (s === cur) return;
+      sr.textContent = s;
+      if (s.length !== cur.length) { build(s); return; }
+      const flash = !(o && o.quiet) && !reduce, st = o && o.stagger;
+      for (let k = s.length - 1, n = 0; k >= 0; k--, n++) {
+        const c = cells[k], ch = s[k];
+        if (!c || ch < '0' || ch > '9') { if (ch !== cur[k]) { build(s); return; } continue; }
+        const d = +ch; if (c.d === d) continue;
+        if (c.pos === 10) snap(c, 0);
+        c.d = d; c.pos = d === 0 && c.pos > 0 ? 10 : d;
+        c.r.style.transitionDelay = st ? n * 70 + 'ms' : ''; c.r.style.transform = otf(c.pos);
+        if (flash) J.animate(c.w, TICK, { duration: 700, easing: 'ease-out' });
+      }
+      cur = s;
+    }
+    build(from || text);
+    return { set };
+  }
+
+  /* ---------- sparkline of the last 24 confidences (SVG, redrawn only when its build answers) ---------- */
+  const SPN = 24, SPW = 46, SPHT = 12, SLO = 0.7, SHI = 1;
+  const spY = (v) => (1 + (1 - clamp((v - SLO) / (SHI - SLO), 0, 1)) * (SPHT - 2)).toFixed(1);
+  function drawSpark(c) {
+    const h = c.h, st = SPW / (SPN - 1); let p = '';
+    for (let i = 0; i < SPN; i++) p += (i ? ' ' : '') + (i * st).toFixed(1) + ',' + spY(h[i]);
+    c.sp.pl.setAttribute('points', p); c.sp.ar.setAttribute('points', '0,' + SPHT + ' ' + p + ' ' + SPW + ',' + SPHT);
+    const last = h[SPN - 1]; c.sp.dot.style.top = (spY(last) / SPHT * 100).toFixed(1) + '%'; c.sp.wrap.classList.toggle('lo', last < S.floor);
+  }
+  function pushSpark(c, v) { c.h.push(v); c.h.shift(); drawSpark(c); }
+  function floorLines() { const y = spY(S.floor); bCard.forEach((c) => { c.sp.fl.setAttribute('y1', y); c.sp.fl.setAttribute('y2', y); drawSpark(c); }); }
+
   /* ---------- the ten build cards (generated from JEV.BUILDS) ---------- */
   const colL = $('#bld-colL'), colR = $('#bld-colR'), seedR = J.rng(11);
   const wire = (el, ti) => ({ el, ti, v: $('.bld-v', el), c: $('.bld-c', el), m: $('.bld-m > i', el) });
@@ -28,14 +83,21 @@ JEV.mod('builds', () => {
     const c0 = 0.86 + seedR() * 0.11;
     el.innerHTML = '<div class="bld-ci"><div class="bld-hd"><b>' + b.name + '</b><i>' + b.tag + '</i></div>' +
       '<div class="bld-rw"><span>' + b.k1 + '</span><b class="bld-v">' + b.v1 + '</b></div>' +
-      '<div class="bld-rw"><span>conf</span><b class="bld-c">' + c0.toFixed(2) + '</b></div></div><i class="bld-m"><i style="transform:scaleX(' + c0.toFixed(2) + ')"></i></i>';
+      '<div class="bld-rw"><span>conf</span><i class="bld-sp" aria-hidden="true"><svg viewBox="0 0 ' + SPW + ' ' + SPHT + '" preserveAspectRatio="none" focusable="false"><line class="fl" x1="0" x2="' + SPW + '"/><polygon/><polyline/></svg><em></em></i><b class="bld-c">' + c0.toFixed(2) + '</b></div></div><i class="bld-m"><i style="transform:scaleX(' + c0.toFixed(2) + ')"></i></i>';
+    el.tabIndex = 0; el.setAttribute('role', 'button'); el.setAttribute('aria-pressed', 'false'); el.setAttribute('aria-describedby', 'bld-tip');
+    el.setAttribute('aria-label', b.name + ', ' + b.prim + ' question. press enter to pin its stream');
     (i < 5 ? colL : colR).appendChild(el);
-    return wire(el, TIDX[b.col]);
+    const c = wire(el, TIDX[b.col]);
+    c.sp = { wrap: $('.bld-sp', el), fl: $('.fl', el), ar: $('polygon', el), pl: $('polyline', el), dot: $('.bld-sp em', el) };
+    c.h = Array.from({ length: SPN }, () => clamp(c0 + (seedR() - 0.5) * 0.09, 0.8, 0.99)); c.h[SPN - 1] = c0; c.lastId = -1; c.ld = null;
+    return c;
   });
+  J.recent.slice().reverse().forEach((d) => { const c = bCard[bIdx[d.build]]; if (c) { c.h.push(d.conf); c.h.shift(); c.lastId = d.id; c.ld = d; } });
+  floorLines();
   const pCard = $$('.bld-p', root).map((el) => wire(el, 0));
   const dCard = $$('.bld-d', root).map((el) => wire(el, TIDX[el.dataset.c]));
   const rulesEl = $('#bld-rules'), coreEl = $('#bld-core'), coreBox = $('#bld-core-box');
-  const dotEls = $$('.bld-pd i', root), lastEl = $('#bld-last'), wm = $('#bld-wm'), flashEl = $('#bld-flash');
+  const chipEl = $('#bld-chip'), dotEls = $$('.bld-dots i', root), lastEl = $('#bld-last'), wm = $('#bld-wm'), flashEl = $('#bld-flash');
   const rcEls = {}; $$('.bld-rc', root).forEach((e) => (rcEls[e.dataset.r] = e));
 
   /* ---------- text helpers ---------- */
@@ -126,6 +188,7 @@ JEV.mod('builds', () => {
     const bc = bCard.map((c) => rc(c.el)), pc = pCard.map((c) => rc(c.el)), dc = dCard.map((c) => rc(c.el)), ru = rc(rulesEl);
     bc.forEach((r, i) => setFR(i, r)); pc.forEach((r, j) => setFR(10 + j, r)); dc.forEach((r, m) => setFR(13 + m, r)); setFR(FI_RULES, ru);
     coreCx = core.cx; coreCy = core.cy;
+    if (tipOn) tipPlace(tipI);
     if (sig === lastSig && ready) return;
     lastSig = sig;
     RN.fill(0);
@@ -276,6 +339,7 @@ JEV.mod('builds', () => {
     if (ih > 0) { c.drawImage(s, 0, GK, GK, mid, x, y + GK, GK, ih); c.drawImage(s, GS - GK, GK, GK, mid, x + w - GK, y + GK, GK, ih); }
   }
 
+  let dimV = 0, dimT = 0;
   let szk = 1, lastNow = performance.now(), sY = window.scrollY;
   window.addEventListener('scroll', () => { sY = window.scrollY; }, { passive: true });
   function draw(t, dt, still) {
@@ -285,6 +349,8 @@ JEV.mod('builds', () => {
     const ek = 1 - Math.exp(-rdt * 3.2); kk += (kT - kk) * ek; if (Math.abs(kk - kT) < 0.003) kk = kT;
     if (Math.abs(kk - kShown) > 0.004) recolor();
     const dec = Math.exp(-rdt * 1.55), hk = 1 - Math.exp(-rdt * 9);
+    dimV += (dimT - dimV) * (1 - Math.exp(-rdt * 7)); if (Math.abs(dimV - dimT) < 0.004) dimV = dimT;
+    const dA = 1 - 0.6 * dimV; // pinned / hovered build: every other stream recedes
     for (let i = 0; i < NR; i++) {
       boost[i] *= dec; if (boost[i] < 0.004) boost[i] = 0;
       hov[i] += ((hovT[i] || now < hovUntil[i] ? 1 : 0) - hov[i]) * hk;
@@ -297,7 +363,7 @@ JEV.mod('builds', () => {
     // ---- draw ----
     g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
     g.clearRect(0, 0, W, H);
-    g.drawImage(hz, 0, 0, W, H);
+    g.globalAlpha = 1 - 0.5 * dimV; g.drawImage(hz, 0, 0, W, H); g.globalAlpha = 1;
     g.globalCompositeOperation = 'lighter';
     // card hit flashes (decaying halos behind the cards)
     const fdec = Math.exp(-rdt * 3.4);
@@ -319,7 +385,7 @@ JEV.mod('builds', () => {
     for (let b = 0; b < NB; b++) {
       const s0 = bs[b], s1 = bs[b + 1]; if (s0 === s1) continue;
       const sz = (b >= 10 ? (b & 1 ? 1.65 : 1.1) : bsz[b & 1]) * szk;
-      g.fillStyle = bstyle[b]; g.beginPath();
+      g.fillStyle = bstyle[b]; g.globalAlpha = dA; g.beginPath();
       for (let i = s0; i < s1; i++) {
         const ri = PR[i];
         let u = PU[i] + dt * PVU[i] * SM[ri] * px; if (u >= 1) u -= 1; PU[i] = u;
@@ -335,6 +401,7 @@ JEV.mod('builds', () => {
       }
       g.fill();
     }
+    g.globalAlpha = 1;
     // boosted ribbons: bright overlay on their own particles
     for (let ri = 0; ri < NR; ri++) {
       const e = EFF[ri]; if (e < 0.05) continue;
@@ -362,7 +429,7 @@ JEV.mod('builds', () => {
     const sp = kk > 0.5 ? 6 : 0;
     for (let k = 0; k < stars.length; k++) {
       const i = stars[k], ri = PR[i];
-      g.globalAlpha = (0.34 + 0.4 * Math.sin(t * 2.1 + k * 1.7)) * (0.7 + 0.5 * EFF[ri]);
+      g.globalAlpha = (0.34 + 0.4 * Math.sin(t * 2.1 + k * 1.7)) * (0.7 + 0.5 * EFF[ri]) * (EFF[ri] > 0.5 ? 1 : dA);
       g.drawImage(spr[kk > 0.5 ? 6 : RTINT[ri]], PX[i] - 8, PY[i] - 8, 16, 16);
     }
     g.globalAlpha = 1;
@@ -394,14 +461,19 @@ JEV.mod('builds', () => {
     const i = bIdx[d.build]; if (i == null) return;
     const c = bCard[i];
     setT(c.v, ans(d.build, d)); setConf(c, d.conf);
+    if (c.lastId !== d.id) { c.lastId = d.id; c.ld = d; pushSpark(c, d.conf); }
+    if (tipI === i) tipFill(i, fx);
     if (!fx) return;
     flashCard(c);
     const r = latRows[i].li; r.classList.add('hit'); setTimeout(() => r.classList.remove('hit'), 900);
     boostR(R_BUILD + i, 1, 34);
   }
-  const FL_CORE = [{ offset: 0, filter: 'brightness(1.5) saturate(1.25)' }], FL_WM = [{ offset: 0, textShadow: '0 0 14px #fff, 0 0 46px #ff5a96, 0 0 90px #ff2e6e' }], FL_DOT = [{ offset: 0, opacity: 1, scale: '1.9' }], FL_FADE = [{ opacity: 0.95 }, { opacity: 0 }];
+  const FL_CORE = [{ offset: 0, filter: 'brightness(1.5) saturate(1.25)' }], FL_WM = [{ offset: 0, textShadow: '0 0 14px #fff, 0 0 46px #ff5a96, 0 0 90px #ff2e6e' }], FL_DOT = [{ offset: 0, opacity: 1, scale: '1.9' }], FL_FADE = [{ opacity: 0.95 }, { opacity: 0 }], CHIP_POP = [{ offset: 0, scale: '1.35', filter: 'brightness(1.8)' }];
   function stepCore(d, fx) {
     setT(lastEl, d.symbol + ' · ' + d.action + ' · ' + d.conf.toFixed(2) + ' → ' + d.dest); lastEl.dataset.d = d.dest;
+    const k = clamp((d.conf - 0.5) / 0.5, 0, 1); // halo breathes harder (bigger, brighter) on a confident answer
+    coreEl.style.setProperty('--hi', (0.8 + 0.5 * k).toFixed(2)); coreEl.style.setProperty('--hs', (0.88 + 0.2 * k).toFixed(2));
+    if (chipEl.dataset.a !== d.action) { chipEl.dataset.a = d.action; chipEl.textContent = d.action; if (fx && !reduce) J.animate(chipEl, CHIP_POP, { duration: 520, easing: 'cubic-bezier(.3,1.6,.5,1)' }); }
     if (!fx) return;
     if (!reduce) {
       J.animate(flashEl, FL_FADE, { duration: 900, easing: 'ease-out' });
@@ -441,6 +513,83 @@ JEV.mod('builds', () => {
     flv[FI_RULES] = 1; J.animate(rulesEl, FL_RULES, { duration: 900, easing: 'ease-out' });
   }
 
+  /* ---------- build cards: tilt + glare, tooltip card, stream focus (hover / keyboard / pin) ---------- */
+  const tip = $('#bld-tip'), tipEls = { n: $('#bld-tip-n'), p: $('#bld-tip-p'), a: $('#bld-tip-a'), c: $('#bld-tip-c'), m: $('#bld-tip-m'), g: $('#bld-tip-g') };
+  let hovI = -1, focI = -1, pinI = -1, tipI = -1, tipOn = false;
+  const isHot = (i) => i === hovI || i === focI || i === pinI;
+  function tipFill(i, pulse) {
+    const c = bCard[i], b = B[i], d = c.ld;
+    tip.dataset.c = b.col;
+    setT(tipEls.n, b.name); setT(tipEls.p, b.prim);
+    setT(tipEls.a, c.v.textContent); setT(tipEls.m, (d ? d.ms : b.ms).toFixed(1) + ' ms'); setT(tipEls.g, d ? d.dest : 'n/a');
+    tipEls.g.dataset.d = d ? d.dest : '';
+    const cs = c.c.textContent;
+    if (tipEls.c.textContent !== cs) { setT(tipEls.c, cs); if (pulse && !reduce) J.animate(tipEls.c, TICK, { duration: 600, easing: 'ease-out' }); }
+    tipEls.c.classList.toggle('lo', parseFloat(cs) < S.floor);
+  }
+  function tipPlace(i) {
+    const sr = stage.getBoundingClientRect(), r = bCard[i].el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    let x, y;
+    if (!mq.matches) { x = i < 5 ? r.right - sr.left + 14 : r.left - sr.left - w - 14; y = r.top - sr.top + r.height / 2 - h / 2; }
+    else { x = r.left - sr.left + r.width / 2 - w / 2; y = r.top - sr.top - h - 10; if (y < 0) y = r.bottom - sr.top + 10; }
+    x = clamp(x, 0, Math.max(0, sr.width - w)); y = clamp(y, 0, Math.max(0, sr.height - h));
+    tip.style.transform = 'translate(' + x.toFixed(0) + 'px,' + y.toFixed(0) + 'px)';
+  }
+  function applyFocus() {
+    const act = hovI >= 0 ? hovI : focI >= 0 ? focI : pinI;
+    for (let i = 0; i < B.length; i++) {
+      const hot = isHot(i), c = bCard[i];
+      hovT[R_BUILD + i] = hot ? 1 : 0;
+      c.el.classList.toggle('bld-hot', hot); c.el.classList.toggle('bld-pin', i === pinI);
+      const pr = i === pinI ? 'true' : 'false'; if (c.el.getAttribute('aria-pressed') !== pr) c.el.setAttribute('aria-pressed', pr);
+    }
+    dimT = act >= 0 ? 1 : 0; stage.classList.toggle('bld-focus', act >= 0);
+    if (act < 0) { tipI = -1; tipOn = false; tip.classList.remove('on'); tip.setAttribute('aria-hidden', 'true'); return; }
+    const first = !tipOn || tipI !== act; tipI = act; tipFill(act, false);
+    if (!tipOn) { tip.style.transition = 'none'; tipPlace(act); void tip.offsetWidth; tip.style.transition = ''; } else if (first) tipPlace(act);
+    tipOn = true; tip.classList.add('on'); tip.setAttribute('aria-hidden', 'false');
+  }
+  function togglePin(i) {
+    pinI = pinI === i ? -1 : i;
+    if (pinI >= 0 && !reduce) spawn(R_BUILD + i, 26);
+    applyFocus();
+  }
+  function buildInteract() {
+    bCard.forEach((c, i) => {
+      const el = c.el; let rect = null;
+      el.addEventListener('pointerenter', (e) => {
+        if (e.pointerType === 'touch') return;
+        hovI = i; applyFocus();
+        if (!reduce && e.pointerType === 'mouse' && fine.matches) { rect = el.getBoundingClientRect(); el.classList.remove('bld-settle'); el.classList.add('bld-tilt'); }
+      });
+      el.addEventListener('pointermove', (e) => {
+        if (!rect || e.pointerType !== 'mouse') return;
+        const px = (e.clientX - rect.left) / rect.width, py = (e.clientY - rect.top) / rect.height, st = el.style;
+        st.setProperty('--tx', ((0.5 - py) * 12).toFixed(2) + 'deg'); st.setProperty('--ty', ((px - 0.5) * 16).toFixed(2) + 'deg'); st.setProperty('--ts', '1.025');
+        st.setProperty('--gx', (px * 100).toFixed(1) + '%'); st.setProperty('--gy', (py * 100).toFixed(1) + '%'); st.setProperty('--ga', '1');
+      });
+      el.addEventListener('pointerleave', (e) => {
+        if (e.pointerType === 'touch') return;
+        if (hovI === i) { hovI = -1; applyFocus(); }
+        if (el.classList.contains('bld-tilt')) {
+          rect = null; el.classList.add('bld-settle'); const st = el.style;
+          st.setProperty('--tx', '0deg'); st.setProperty('--ty', '0deg'); st.setProperty('--ts', '1'); st.setProperty('--ga', '0');
+        }
+      });
+      el.addEventListener('transitionend', (e) => { if (e.target === el && e.propertyName === 'transform' && el.classList.contains('bld-settle')) el.classList.remove('bld-tilt', 'bld-settle'); });
+      el.addEventListener('pointerdown', () => { const u = performance.now() + 1500; hovUntil[R_BUILD + i] = u; if (!reduce) spawn(R_BUILD + i, 20); });
+      el.addEventListener('click', () => togglePin(i));
+      el.addEventListener('focus', () => { if (el.matches(':focus-visible')) { focI = i; applyFocus(); } });
+      el.addEventListener('blur', () => { if (focI === i) { focI = -1; applyFocus(); } });
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePin(i); }
+        else if (e.key === 'Escape' && pinI >= 0) { pinI = -1; applyFocus(); }
+      });
+    });
+    document.addEventListener('pointerdown', (e) => { if (pinI >= 0 && e.pointerType === 'touch' && !(e.target.closest && e.target.closest('.bld-b'))) { pinI = -1; applyFocus(); } });
+    J.bus.on('floor', floorLines);
+  }
+
   /* ---------- hover / tap boosts a card's streams ---------- */
   function linkCard(el, slots) {
     const on = () => slots.forEach((s) => (hovT[s] = 1)), off = () => slots.forEach((s) => (hovT[s] = 0));
@@ -448,19 +597,38 @@ JEV.mod('builds', () => {
     el.addEventListener('pointerleave', () => { off(); el.classList.remove('bld-hot'); });
     el.addEventListener('pointerdown', () => { const u = performance.now() + 1500; slots.forEach((s) => { hovUntil[s] = u; if (!reduce) spawn(s, 20); }); });
   }
-  bCard.forEach((c, i) => linkCard(c.el, [R_BUILD + i]));
+  buildInteract();
   pCard.forEach((c, j) => linkCard(c.el, [R_CORE + j, R_PD + j * 5, R_PD + j * 5 + 1, R_PD + j * 5 + 2, R_PD + j * 5 + 3, R_PD + j * 5 + 4]));
   dCard.forEach((c, m) => linkCard(c.el, [R_PD + m, R_PD + 5 + m, R_PD + 10 + m, R_DR + m]));
   linkCard(rulesEl, [R_DR, R_DR + 1, R_DR + 2, R_DR + 3, R_DR + 4]);
   linkCard(coreEl, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
   /* ---------- live tiles ---------- */
+  /* value-on-hover bubble for the tile bars / rows (pointer + tap; one element, moved with transform) */
+  const vt = $('#bld-vt'), tilesEl = $('.bld-tiles', root), vtFn = new WeakMap();
+  let vtEl = null, vtTimer = 0;
+  const vtReg = (el, fn) => { vtFn.set(el, fn); el.setAttribute('data-vt', ''); };
+  function vtHide() { if (vtEl) { vtEl = null; vt.classList.remove('on'); } }
+  function vtMove(e) {
+    const t = e.target.closest ? e.target.closest('[data-vt]') : null;
+    if (!t || !tilesEl.contains(t)) { vtHide(); return; }
+    if (t !== vtEl) { vtEl = t; setT(vt, vtFn.get(t)()); vt.classList.add('on'); }
+    const r = tilesEl.getBoundingClientRect(), w = vt.offsetWidth, h = vt.offsetHeight;
+    vt.style.transform = 'translate(' + clamp(e.clientX - r.left - w / 2, 0, Math.max(0, r.width - w)).toFixed(0) + 'px,' + (e.clientY - r.top - h - 16).toFixed(0) + 'px)';
+    if (e.pointerType === 'touch') { clearTimeout(vtTimer); vtTimer = setTimeout(vtHide, 2000); }
+  }
+  const vtRefresh = () => { if (vtEl) setT(vt, vtFn.get(vtEl)()); };
+  tilesEl.addEventListener('pointermove', vtMove); tilesEl.addEventListener('pointerdown', vtMove);
+  tilesEl.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') vtHide(); });
+  tilesEl.addEventListener('pointercancel', vtHide);
+
   // (1) decision stream
   const dsList = $('#bld-ds'), RH = 28;
   function dsRow(d) {
     const b = B[bIdx[d.build]] || B[0], li = document.createElement('li');
     li.className = 'bld-dr'; li.dataset.d = d.dest;
     li.innerHTML = '<span class="bld-dr-b" data-p="' + b.prim + '">' + b.tag.toLowerCase() + '</span><span class="bld-dr-a">' + d.action + ' ' + short(d.symbol) + '</span><span class="bld-dr-c' + (d.conf < S.floor ? ' lo' : '') + '">' + d.conf.toFixed(2) + '</span><span class="bld-dr-d"><i></i>' + d.dest + '</span>';
+    vtReg(li, () => b.name.toLowerCase() + ' · ' + d.symbol + ' · ' + d.venue + ' · ' + d.ms.toFixed(1) + ' ms · ' + (d.reason === 'ok' ? 'passed the gate' : d.reason));
     return li;
   }
   const DS_SLIDE = [{ transform: 'translateY(-' + RH + 'px)' }, { transform: 'translateY(0)' }], DS_FADE = [{ opacity: 0 }, { opacity: 1 }];
@@ -482,23 +650,25 @@ JEV.mod('builds', () => {
   const latRows = B.map((b, i) => {
     const li = document.createElement('li'); li.className = 'bld-lr'; li.dataset.i = i; li.style.setProperty('--bc', PCOL[b.prim]);
     li.innerHTML = '<span>' + b.tag.toLowerCase() + '</span><div class="tr"><i></i></div><b>' + b.ms.toFixed(1) + '</b>';
-    latEl.appendChild(li); return { li, fill: $('.tr i', li), val: $('b', li), base: b.ms };
+    latEl.appendChild(li); const o = { li, fill: $('.tr i', li), val: $('b', li), base: b.ms, cur: b.ms };
+    vtReg(li, () => b.tag.toLowerCase() + ' · ' + o.cur.toFixed(1) + ' ms · ' + Math.round(o.cur / MAXMS * 100) + '% of the ' + MAXMS + ' ms scale');
+    return o;
   });
-  function jitterLat() { latRows.forEach((r) => { const v = r.base * (0.86 + Math.random() * 0.3); r.fill.style.transform = 'scaleX(' + clamp(v / MAXMS, 0.03, 1).toFixed(3) + ')'; setT(r.val, v.toFixed(1)); }); }
+  function jitterLat() { latRows.forEach((r) => { const v = r.base * (0.86 + Math.random() * 0.3); r.cur = v; r.fill.style.transform = 'scaleX(' + clamp(v / MAXMS, 0.03, 1).toFixed(3) + ')'; setT(r.val, v.toFixed(1)); }); vtRefresh(); }
   jitterLat();
   let latLast = 0;
   J.task(latT, (t) => { if (t - latLast < 0.7) return; latLast = t; jitterLat(); });
 
   // (3) cost this run
   const costV = $('#bld-cost-v'), costS = $('#bld-cost-s'), costJ = $('#bld-cost-j');
-  let costCounting = true;
   const costFmt = (v) => '$' + v.toFixed(4);
+  const costO = odo(costV, costFmt(S.cost), costFmt(S.cost).replace(/[1-9]/g, '0')); let costOn = false; // starts on zeros, rolls up when the tile scrolls in
   function updCost() {
-    if (!costCounting) setT(costV, costFmt(S.cost));
+    if (costOn) costO.set(costFmt(S.cost));
     setT(costS, fmt(S.count) + ' decisions · $' + (S.cost / Math.max(1, S.count)).toFixed(6) + ' each');
     setT(costJ, '$' + S.cost.toFixed(3));
   }
-  J.onView(costV, () => { J.countTo(costV, S.cost, { from: 0, dur: 1500, fmt: costFmt }); setTimeout(() => { costCounting = false; updCost(); }, reduce ? 20 : 1600); }, { threshold: 0.4 });
+  J.onView(costV, () => { costOn = true; costO.set(costFmt(S.cost), { stagger: true, quiet: true }); }, { threshold: 0.4 });
 
   // (4) primitive mix
   const mixEl = $('#bld-mix'), mixT = $('#bld-mix-t');
@@ -506,12 +676,16 @@ JEV.mod('builds', () => {
   const mixRows = MIXC.map(([k, col]) => {
     const li = document.createElement('li'); li.className = 'bld-mr'; li.style.setProperty('--bc', col);
     li.innerHTML = '<div class="l"><span>' + k + '</span><b><span class="n">0</span><em>0%</em></b></div><div class="tr"><i></i></div>';
-    mixEl.appendChild(li); return { k, n: $('.n', li), p: $('em', li), bar: $('.tr i', li) };
+    mixEl.appendChild(li);
+    const o = { k, n: odo($('.n', li), '0'), p: $('em', li), bar: $('.tr i', li) };
+    vtReg(li, () => { const c = S.counts, tot = Math.max(1, c.choice + c.flag + c.score); return k + ' · ' + fmt(c[k]) + ' answers · ' + (c[k] / tot * 100).toFixed(1) + '% of the mix'; });
+    return o;
   });
+  const mixO = odo(mixT, '0');
   function updMix() {
     const c = S.counts, tot = c.choice + c.flag + c.score;
-    mixRows.forEach((r) => { const v = c[r.k]; setT(r.n, fmt(v)); setT(r.p, Math.round((v / tot) * 100) + '%'); r.bar.style.transform = 'scaleX(' + (v / tot * 1.5).toFixed(3) + ')'; });
-    setT(mixT, fmt(tot));
+    mixRows.forEach((r) => { const v = c[r.k]; r.n.set(fmt(v)); setT(r.p, Math.round((v / tot) * 100) + '%'); r.bar.style.transform = 'scaleX(' + (v / tot * 1.5).toFixed(3) + ')'; });
+    mixO.set(fmt(tot)); vtRefresh();
   }
 
   // (5) where it runs
@@ -523,6 +697,7 @@ JEV.mod('builds', () => {
     let sq = ''; for (let i = 0; i < 10; i++) sq += '<i class="' + (i < n ? 'on' : '') + '" style="--n:' + i + '"></i>';
     li.innerHTML = '<div class="l"><span>' + label + '</span><b>' + n + '</b></div><div class="bld-sg">' + sq + '</div>';
     runEl.appendChild(li); if (!r) apiSq = $$('.bld-sg i.on', li);
+    vtReg(li, () => label + ' · ' + n + ' of 10 builds');
   });
   let runCur = 0;
   const PING = [{ offset: 0, filter: 'brightness(2.2)', transform: 'scale(1.35)' }];
@@ -533,6 +708,7 @@ JEV.mod('builds', () => {
   [['the menu', 96, C.pink, ''], ['thresholds', 92, C.pink, ''], ['orders', 84, C.pink2, ''], ['the stop', 100, C.amber, 'stop'], ['the log', 70, '#ffd4e4', '']].forEach(([label, w, col, cl], n) => {
     const li = document.createElement('li'); li.className = 'bld-or ' + cl; li.style.setProperty('--bc', col); li.style.setProperty('--w', (w / 100).toFixed(2)); li.style.setProperty('--n', String(n));
     li.innerHTML = '<i></i><span>' + label + '</span><div class="tr"><i></i></div><em>code</em>'; ownEl.appendChild(li);
+    vtReg(li, () => label + ' · held by code · ' + w + '/100, illustrative');
   });
 
   // entrance for tile internals
@@ -541,7 +717,8 @@ JEV.mod('builds', () => {
   /* ---------- head stats + rules readouts ---------- */
   const medEl = $('#bld-s-med'), decEl = $('#bld-s-dec');
   function median(a) { const s = a.slice().sort((x, y) => x - y); return s[(s.length / 2) | 0]; }
-  function updStats() { setT(decEl, fmt(S.count)); setT(medEl, median(S.ms).toFixed(1) + 'ms'); }
+  const decO = odo(decEl, fmt(S.count));
+  function updStats() { decO.set(fmt(S.count)); setT(medEl, median(S.ms).toFixed(1) + 'ms'); }
   const rEls = ['floor', 'cap', 'pos', 'kill'].map((k) => $('#bld-r-' + k)), coreSt = $('#bld-core-st'), liveT = $('#bld-live-t');
   function updRules() {
     const k = S.killed ? 'halted' : 'armed';

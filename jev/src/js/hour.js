@@ -309,8 +309,13 @@ JEV.mod('hour', () => {
     'hr-s-time': (v) => { const s = Math.round(v); return pad2((s / 60) | 0) + ':' + pad2(s % 60); },
     'hr-s-trades': (v) => fmt(Math.round(v)), 'hr-s-year': (v) => Math.round(v) + '%', 'hr-s-cost': (v) => '$' + v.toFixed(2),
   };
+  /** count-up that settles with a one-off glow (bounded timers, started from onView only) */
+  const countUp = (b, dur, delay, f) => setTimeout(() => {
+    J.countTo(b, +b.dataset.to, { dur, fmt: f });
+    if (!reduce) setTimeout(() => b.classList.add('hr-done'), dur + 60);
+  }, delay);
   J.onView($('#hr-a-stats'), () => {
-    $$('b', $('#hr-a-stats')).forEach((b, i) => setTimeout(() => J.countTo(b, +b.dataset.to, { dur: 1500, fmt: statFmt[b.id] }), i * 120));
+    $$('b', $('#hr-a-stats')).forEach((b, i) => countUp(b, 1500, i * 120, statFmt[b.id]));
   }, { threshold: 0.5 });
 
   /* =====================================================================
@@ -330,6 +335,15 @@ JEV.mod('hour', () => {
     ticks.push(svg('line', { x1: (110 + r0 * Math.cos(a)).toFixed(2), y1: (110 + r0 * Math.sin(a)).toFixed(2), x2: (110 + r1 * Math.cos(a)).toFixed(2), y2: (110 + r1 * Math.sin(a)).toFixed(2), 'stroke-width': major ? 2.2 : 1.4, 'stroke-linecap': 'round', stroke: PCOL[phaseOf(m)] }, ticksG));
   }
   const paintTick = (m, lit) => ticks[m].setAttribute('stroke', lit ? PCOL[phaseOf(m)] : 'rgba(255,255,255,.16)');
+  const gAx = $$('.hr-g-axis span', panB);
+  let headT = -1, axN = -1;
+  /** the freshest lit minute flares white + thick, then relaxes into its phase colour when the next one lights */
+  function setHead(h) {
+    if (h === headT) return;
+    if (headT >= 0) { const o = ticks[headT]; o.setAttribute('stroke-width', headT % 5 === 0 ? 2.2 : 1.4); if (headT < lit) paintTick(headT, true); }
+    headT = h;
+    if (h >= 0) { const o = ticks[h]; o.setAttribute('stroke', '#fff'); o.setAttribute('stroke-width', h % 5 === 0 ? 3.4 : 2.6); }
+  }
   let lit = 60, dm = 60, mT = 60, mode = 'static', clk = 0, rest = 0, manT = 0, act = -1, ckT = 0, lastClock = '';
   const LOOP = { PLAY: 12, REST: 4.2, LEAD: 0.5, MAN: 9 };
 
@@ -340,6 +354,9 @@ JEV.mod('hour', () => {
     const n = Math.min(60, Math.floor(dm + 0.0001));
     while (lit < n) paintTick(lit++, true);
     while (lit > n) paintTick(--lit, false);
+    setHead(n > 0 && n < 60 && mode !== 'static' ? n - 1 : -1);
+    const ax = Math.min(4, Math.floor(dm / 15 + 0.0001));
+    if (ax !== axN) { axN = ax; for (let i = 0; i < 5; i++) gAx[i].classList.toggle('on', i <= ax && dm > 0.01); }
     for (let i = 0; i < 6; i++) {
       const v = mode === 'manual' ? on[i] : clamp((dm - GR[i][0]) / (GR[i][1] - GR[i][0]), 0, 1), q = Math.round(v * 100) / 100;
       if (q !== gF[i]) { gF[i] = q; gRows[i].style.setProperty('--f', q); }
@@ -369,7 +386,11 @@ JEV.mod('hour', () => {
     const b = sws[i]; on[i] = v ? 1 : 0;
     b.classList.toggle('on', v); b.setAttribute('aria-pressed', v ? 'true' : 'false');
     setT(b.querySelector('em'), v ? 'on' : 'off'); cells[i].classList.toggle('on', v);
-    if (pop && v) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+    if (pop) {
+      /* class swaps restart the animations (identical keyframes under two names): no forced layout */
+      const a = !b.classList.contains('rip-a'); b.classList.toggle('rip-a', a); b.classList.toggle('rip-b', !a);
+      if (v) { const q = !b.classList.contains('pop-a'); b.classList.toggle('pop-a', q); b.classList.toggle('pop-b', !q); }
+    }
   }
   function setAct(i) {
     if (act === i) return;
@@ -381,14 +402,22 @@ JEV.mod('hour', () => {
 
   /* burst particles (additive sprites, pooled) */
   const BU = { g: null, W: 0, H: 0, live: false, shocks: [], ring: { x: 0, y: 0 }, arm: { x: 0, y: 0 } };
-  const PP = Array.from({ length: 110 }, () => ({ x: 0, y: 0, vx: 0, vy: 0, l: 0, m: 1, s: 4, c: 0 }));
-  const BCOL = [C.pink, C.pink2, C.amber, '#ffffff', C.orange];
+  const PP = Array.from({ length: 150 }, () => ({ x: 0, y: 0, vx: 0, vy: 0, l: 0, m: 1, s: 4, c: 0, k: 0, r: 0, vr: 0 }));
+  const BCOL = [C.pink, C.pink2, C.amber, '#ffffff', C.orange, C.green, C.cyan];
+  let flashN = false;
+  function armFlash() {
+    flashN = !flashN;
+    armEl.classList.toggle('hr-fa', flashN); armEl.classList.toggle('hr-fb', !flashN);
+    const rf = $('.hr-rflash', panB); if (rf) { rf.classList.toggle('hr-fa', flashN); rf.classList.toggle('hr-fb', !flashN); }
+  }
   function burst(x, y, n, up, R) {
     let k = 0;
     for (let i = 0; i < PP.length && k < n; i++) {
       const p = PP[i]; if (p.l > 0) continue;
       const a = up ? -Math.PI * (0.08 + 0.84 * Math.random()) : Math.random() * TAU, s = 90 + Math.random() * 280;
-      p.x = x; p.y = y; p.vx = Math.cos(a) * s; p.vy = Math.sin(a) * s; p.m = p.l = 0.8 + Math.random() * 0.9; p.s = 3 + Math.random() * 5; p.c = (Math.random() * BCOL.length) | 0; k++;
+      p.x = x; p.y = y; p.vx = Math.cos(a) * s; p.vy = Math.sin(a) * s; p.m = p.l = 0.8 + Math.random() * 0.9; p.s = 3 + Math.random() * 5; p.c = (Math.random() * BCOL.length) | 0;
+      /* kinds: 0 glow spark · 1 tumbling confetti · 2 streak along its velocity */
+      p.k = k % 3; p.r = Math.random() * TAU; p.vr = (Math.random() - 0.5) * 16; if (p.k === 1) p.l = p.m = p.m * 1.25; k++;
     }
     BU.shocks.push({ x, y, t: 0, R: R || 120 }); if (BU.shocks.length > 3) BU.shocks.shift(); BU.live = true;
   }
@@ -401,7 +430,17 @@ JEV.mod('hour', () => {
       const p = PP[i]; if (p.l <= 0) continue;
       p.l -= dt; if (p.l <= 0) continue; live++;
       p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 230 * dt; p.vx *= 1 - 1.3 * dt;
-      const k = p.l / p.m; blit(g, BCOL[p.c], p.x, p.y, p.s * (0.7 + k), k);
+      const k = p.l / p.m;
+      if (p.k === 0) blit(g, BCOL[p.c], p.x, p.y, p.s * (0.7 + k), k);
+      else if (p.k === 1) {
+        p.r += p.vr * dt; const L = p.s * 0.9, Wd = p.s * 0.45 * Math.abs(Math.cos(p.r * 0.8)) + 0.4, ca = Math.cos(p.r), sa = Math.sin(p.r);
+        const ux = ca * L, uy = sa * L, vx = -sa * Wd, vy = ca * Wd;
+        g.globalAlpha = Math.min(1, k * 1.6); g.fillStyle = BCOL[p.c];
+        g.beginPath(); g.moveTo(p.x - ux - vx, p.y - uy - vy); g.lineTo(p.x + ux - vx, p.y + uy - vy); g.lineTo(p.x + ux + vx, p.y + uy + vy); g.lineTo(p.x - ux + vx, p.y - uy + vy); g.closePath(); g.fill();
+      } else {
+        g.globalAlpha = k; g.strokeStyle = BCOL[p.c]; g.lineWidth = 1.4; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(p.x - p.vx * 0.045, p.y - p.vy * 0.045); g.stroke();
+        blit(g, '#ffffff', p.x, p.y, 2.2, k);
+      }
     }
     for (let i = BU.shocks.length - 1; i >= 0; i--) {
       const s = BU.shocks[i]; s.t += dt; const u = s.t / 0.9;
@@ -420,7 +459,8 @@ JEV.mod('hour', () => {
   });
   function arrive() {
     if (killed) return;
-    burst(BU.arm.x, BU.arm.y, 72, true, 200); burst(BU.ring.x, BU.ring.y, 38, false, 118);
+    burst(BU.arm.x, BU.arm.y, 92, true, 200); burst(BU.ring.x, BU.ring.y, 46, false, 118);
+    armFlash();
     if (J.pulse) J.pulse(0.7);
   }
   function resetB() {
@@ -541,7 +581,7 @@ JEV.mod('hour', () => {
     g.fillStyle = 'rgba(255,214,120,.95)'; g.fillText(bt.emax.toFixed(1) + '×', 4, EY(bt.emax) + 3); g.fillStyle = 'rgba(160,152,176,.85)'; g.fillText('1×', 4, EY(1) + 3);
     g.textAlign = 'center'; g.fillStyle = '#ff6b79'; g.font = '800 ' + (narrow ? 11 : 13) + 'px ' + MONO;
     const lx = clamp((bx0 + bx1) / 2, padL + 20, W - padR - 22); g.fillText('-' + Math.round(bt.worst * 100) + '%', lx, padT + 11);
-    BT.dirty = true; if (reduce) renderC(0, 0);
+    BT.dirty = true; if (BT.pin >= 0) setPin(BT.pin); else if (reduce) renderC(0, 0);
   }
   J.watch(btBox, layoutC);
   setTimeout(() => {
@@ -551,16 +591,29 @@ JEV.mod('hour', () => {
   }, reduce ? 0 : 500);
 
   const idxAt = (x) => clamp(Math.round((x - BT.padL) / BT.cw * N), 1, N);
+  const xOfI = (i) => BT.padL + i / N * BT.cw;
+  const pct = (v, d) => (v >= 0 ? '+' : '-') + Math.abs(v * 100).toFixed(d == null ? 2 : d) + '%';
+  /** trade #, outcome, running total and drawdown for trade i (1-based) */
+  function tipHtml(i, pin) {
+    const dd = bt.dd[i], yr = Math.min(4, 1 + Math.floor((i - 1) / N * 4)), r = bt.ret[i - 1], w = r > 0;
+    return (pin ? '<i class="pn">pinned</i> ' : '') + 'trade <b>#' + fmt(i) + '</b> · year ' + yr + ' · <span class="' + (w ? 'up' : 'dn') + '">' + (w ? 'win ' : 'loss ') + pct(r) + '</span><br>total <b>' + X(bt.eq[i]) + '</b> · ' +
+      (dd > 0.0005 ? '<span class="dn">-' + (dd * 100).toFixed(1) + '%</span> from peak' : 'at a new high') + ' <em>sim</em>';
+  }
+  /* side with the room, then clamped inside the box with min()/max() (100% = the tip's own width): never clipped at 390px */
+  const tipSide = (el, x) => { const rt = x < BT.W * 0.5; el.style.transform = 'translateX(' + (rt ? 'min(' + Math.round(x + 14) + 'px, calc(' + Math.round(BT.W) + 'px - 100% - 4px))' : 'max(4px, calc(' + Math.round(x - 14) + 'px - 100%))') + ')'; };
   function setTip(x) {
     if (x < 0 || !bt) { tip.classList.remove('on'); return; }
     const i = idxAt(x);
-    if (i !== BT.last) {
-      BT.last = i; const dd = bt.dd[i], yr = Math.min(4, 1 + Math.floor(i / N * 4));
-      tip.innerHTML = 'trade <b>' + fmt(i) + '</b> · year ' + yr + '<br>total <b>' + X(bt.eq[i]) + '</b> · ' + (dd > 0.0005 ? '<span class="dn">-' + (dd * 100).toFixed(1) + '%</span> from peak' : 'at a new high');
-    }
-    tip.classList.add('on');
-    const w = BT.W, left = x < w * 0.55;
-    tip.style.transform = 'translateX(' + (left ? Math.round(x + 14) + 'px' : 'calc(' + Math.round(x - 14) + 'px - 100%)') + ')';
+    if (i !== BT.last) { BT.last = i; tip.innerHTML = tipHtml(i, false); }
+    tip.classList.add('on'); tipSide(tip, x);
+  }
+  const pinEl = $('#hr-bt-pin'), srEl = $('#hr-bt-sr');
+  BT.pin = -1; BT.over = false;
+  function setPin(i) {
+    BT.pin = i; BT.dirty = true;
+    if (i < 0 || !bt) { pinEl.classList.remove('on'); return; }
+    pinEl.innerHTML = tipHtml(i, true); pinEl.classList.add('on'); tipSide(pinEl, xOfI(i));
+    if (reduce) renderC(J.time, 0);
   }
   /* hover: the box's left edge is cached (re-read once per hover, and after a resize / reveal via layoutC), so pointermove does no layout read and no DOM write;
      the tip text + transform are written by the frame task (renderC), at most once per frame. (reduced motion freezes the task, so it flushes inline there) */
@@ -570,16 +623,42 @@ JEV.mod('hour', () => {
     if (reduce) { flushTip(); renderC(J.time, 0); }
   };
   const flushTip = () => { if (BT.tipX !== BT.tipDone) { BT.tipDone = BT.tipX; setTip(BT.tipX); } };
-  btBox.addEventListener('pointerenter', () => { BT.rl = true; });
+  btBox.addEventListener('pointerenter', () => { BT.rl = true; BT.over = true; });
   btBox.addEventListener('pointermove', hoverAt);
-  btBox.addEventListener('pointerleave', () => { BT.hx = -1; BT.dirty = true; BT.tipX = -1; if (reduce) { flushTip(); renderC(J.time, 0); } });
-  btBox.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') { BT.rl = true; hoverAt(e); } });
+  btBox.addEventListener('pointerleave', () => { BT.over = false; BT.hx = -1; BT.dirty = true; BT.tipX = -1; if (reduce) { flushTip(); renderC(J.time, 0); } });
+  btBox.addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') { BT.rl = true; BT.over = true; hoverAt(e); } });
+  /* click / tap pins the trade under the pointer; clicking the pin again (or Esc) clears it */
+  btBox.addEventListener('click', (e) => {
+    if (!bt || BT.e < 1 || e.detail === 0) return;
+    if (BT.rl) { BT.left = btBox.getBoundingClientRect().left; BT.rl = false; }
+    const x = clamp(e.clientX - BT.left, BT.padL, BT.W - 10), i = idxAt(x);
+    setPin(BT.pin >= 0 && Math.abs(xOfI(BT.pin) - x) < 9 ? -1 : i);
+  });
+  /* keyboard parity: arrows scrub (shift = x5), Home / End jump, Enter or Space pins, Esc clears */
+  let kbI = 0;
+  const kbShow = (i) => {
+    kbI = clamp(i, 1, N); BT.hx = xOfI(kbI); BT.tipX = BT.hx; BT.dirty = true;
+    srEl.textContent = 'trade ' + kbI + ', ' + (bt.ret[kbI - 1] > 0 ? 'win ' : 'loss ') + pct(bt.ret[kbI - 1]) + ', total ' + X(bt.eq[kbI]) + ', drawdown ' + (bt.dd[kbI] * 100).toFixed(1) + ' percent, simulated';
+    if (reduce) { flushTip(); renderC(J.time, 0); }
+  };
+  btBox.addEventListener('keydown', (e) => {
+    if (!bt || BT.e < 1) return;
+    const k = e.key, st = (e.shiftKey ? 5 : 1) * 12;
+    if (k === 'ArrowRight' || k === 'ArrowUp') kbShow((kbI || (BT.hx > 0 ? idxAt(BT.hx) : N >> 1)) + st);
+    else if (k === 'ArrowLeft' || k === 'ArrowDown') kbShow((kbI || (BT.hx > 0 ? idxAt(BT.hx) : N >> 1)) - st);
+    else if (k === 'Home') kbShow(1); else if (k === 'End') kbShow(N);
+    else if (k === 'Enter' || k === ' ') { if (!kbI) kbShow(BT.hx > 0 ? idxAt(BT.hx) : N >> 1); setPin(BT.pin === kbI ? -1 : kbI); }
+    else if (k === 'Escape') setPin(-1);
+    else return;
+    e.preventDefault();
+  });
+  btBox.addEventListener('blur', () => { kbI = 0; if (!BT.over) { BT.hx = -1; BT.tipX = -1; BT.dirty = true; if (reduce) { flushTip(); renderC(J.time, 0); } } });
 
   const statFmtC = { pct: (v) => Math.round(v) + '%', int: (v) => fmt(Math.round(v)) };
   J.onView(btBox, () => {
     if (reduce) return;
     BT.go = true; BT.t0 = -1;
-    $$('b', $('#hr-c-stats')).forEach((b, i) => setTimeout(() => J.countTo(b, +b.dataset.to, { dur: 2200, fmt: statFmtC[b.dataset.f] }), 300 + i * 160));
+    $$('b', $('#hr-c-stats')).forEach((b, i) => countUp(b, 2200, 300 + i * 160, statFmtC[b.dataset.f]));
   }, { threshold: 0.35 });
   if (!reduce) { BT.e = 0; BT.go = false; }
 
@@ -605,6 +684,19 @@ JEV.mod('hour', () => {
       const c = clamp(Math.floor((BT.hx - BT.padL) / BT.cw * BT.cols), 0, BT.cols - 1);
       g.globalAlpha = 0.5; g.fillStyle = '#fff'; g.fillRect(Math.round(BT.hx), 6, 1, H - 24);
       blit(g, '#ffc13d', BT.hx, BT.ey[c], 16, 1); blit(g, '#ffffff', BT.hx, BT.ey[c], 4, 1);
+      /* drawdown bracket: from the running peak down to the running total at this trade */
+      const hi = idxAt(BT.hx), ddv = bt.dd[hi];
+      if (ddv > 0.004) {
+        const yT = BT.EY(bt.eq[hi] / (1 - ddv)), yB = BT.EY(bt.eq[hi]), xb = Math.round(BT.hx) + 5;
+        g.globalAlpha = 0.85; g.strokeStyle = '#ff6b79'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(xb - 3, yT); g.lineTo(xb, yT); g.lineTo(xb, yB); g.lineTo(xb - 3, yB); g.stroke();
+        g.globalAlpha = 0.35; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(BT.padL, yT); g.lineTo(xb, yT); g.stroke(); g.setLineDash([]);
+      }
+    }
+    if (BT.pin >= 0 && e >= 1) {
+      const px = Math.round(xOfI(BT.pin)) + 0.5, py = BT.EY(bt.eq[BT.pin]);
+      g.globalAlpha = 0.55; g.strokeStyle = '#8fb4ff'; g.lineWidth = 1; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(px, 6); g.lineTo(px, H - 20); g.stroke(); g.setLineDash([]);
+      blit(g, '#4d8dff', px, py, 14, 0.9); g.globalAlpha = 1; g.strokeStyle = '#fff'; g.lineWidth = 1.6; g.beginPath(); g.arc(px, py, 4.5, 0, TAU); g.stroke();
+      g.fillStyle = '#8fb4ff'; g.beginPath(); g.moveTo(px - 4.5, 6); g.lineTo(px + 4.5, 6); g.lineTo(px, 12); g.closePath(); g.fill();
     }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   };
@@ -629,11 +721,24 @@ JEV.mod('hour', () => {
     segLit.push(svg('path', { d: arcD(s[0], s[1], RR), fill: 'none', stroke: s[2], 'stroke-width': 11, 'stroke-dasharray': '0 999' }, gLit));
   });
   const segLen = SEG.map((s) => RR * (s[1] - s[0]) * GS * Math.PI / 180);
+  const gTk = [];
   [5, 7, 10, 14, 17, 20, 25, 31, 40, 50, 70, 100, 150, 200, 300, 480].forEach((v) => {
     const major = v === 5 || v === 17 || v === 31 || v === 100 || v === 480, u = r2u(v), a = polar(u, RR + 9), b = polar(u, RR + (major ? 19 : 14));
-    svg('line', { x1: a[0].toFixed(1), y1: a[1].toFixed(1), x2: b[0].toFixed(1), y2: b[1].toFixed(1), class: 'hr-gtick' + (major ? ' mj' : '') }, gTicks);
-    if (major) { const p = polar(u, RR + 33), c = Math.cos(rad(u)), tx = svg('text', { x: p[0].toFixed(1), y: (p[1] + 4).toFixed(1), class: 'hr-glab', 'text-anchor': c < -0.3 ? 'end' : c > 0.3 ? 'start' : 'middle' }, gTicks); tx.textContent = v + '%'; }
+    const ln = svg('line', { x1: a[0].toFixed(1), y1: a[1].toFixed(1), x2: b[0].toFixed(1), y2: b[1].toFixed(1), class: 'hr-gtick' + (major ? ' mj' : '') }, gTicks);
+    let tx = null;
+    if (major) { const p = polar(u, RR + 33), c = Math.cos(rad(u)); tx = svg('text', { x: p[0].toFixed(1), y: (p[1] + 4).toFixed(1), class: 'hr-glab', 'text-anchor': c < -0.3 ? 'end' : c > 0.3 ? 'start' : 'middle' }, gTicks); tx.textContent = v + '%'; }
+    gTk.push({ u, ln, tx, st: 0 });
   });
+  /* magnets: the three numbers the whole section argues about */
+  const MAGS = [17, 31, 100].map(r2u), MAGR = [17, 31, 100];
+  const gPulse = svg('circle', { cx: 0, cy: 0, r: 7, class: 'hr-gpulse' }, gTicks);
+  let pulseN = false, magNow = -1;
+  function magPulse(m) {
+    const p = polar(MAGS[m], RR + 14); gPulse.setAttribute('cx', p[0].toFixed(1)); gPulse.setAttribute('cy', p[1].toFixed(1));
+    pulseN = !pulseN; gPulse.setAttribute('class', 'hr-gpulse ' + (pulseN ? 'pa' : 'pb'));
+    if (!reduce && navigator.vibrate) { try { navigator.vibrate(8); } catch (_) { /* no haptics */ } }
+  }
+  const magnet = (u, tol) => { for (let i = 0; i < 3; i++) if (Math.abs(u - MAGS[i]) < tol) return i; return -1; };
   const G = { u: r2u(31), uT: r2u(31), v: 0, drag: false, cap: 0, capT: 0, ret: 31, lastRet: '', lastCap: '', zone: '', scale: 1, rest: true };
   G.cap = G.capT = ANNUAL / 0.31;
   const fmtRet = (r) => (r < 10 ? r.toFixed(1) : String(Math.round(r))) + '%';
@@ -652,10 +757,19 @@ JEV.mod('hour', () => {
       segLit[i].setAttribute('stroke-dasharray', d); segGlow[i].setAttribute('stroke-dasharray', d);
     }
     const tip2 = polar(u, 94); knob.style.transform = 'translate(' + (tip2[0] * G.scale).toFixed(1) + 'px,' + (tip2[1] * G.scale).toFixed(1) + 'px)';
+    /* tick-by-tick: passed ticks glow, the one under the needle is hot */
+    let hot = -1, bd = 0.02;
+    for (let i = 0; i < gTk.length; i++) { const d = Math.abs(gTk[i].u - u); if (d < bd) { bd = d; hot = i; } }
+    for (let i = 0; i < gTk.length; i++) {
+      const k = gTk[i], st = i === hot ? 2 : k.u <= u + 1e-4 ? 1 : 0;
+      if (st !== k.st) { k.st = st; k.ln.setAttribute('class', 'hr-gtick' + (k.tx ? ' mj' : '') + (st === 2 ? ' hot' : st ? ' lit' : '')); if (k.tx) k.tx.setAttribute('class', 'hr-glab' + (st ? ' lit' : '')); }
+    }
     const r = dispRet(u), rs = fmtRet(r);
     if (rs !== G.lastRet) {
       G.lastRet = rs; setT(retEl, rs); setT(gTag, rs); G.capT = ANNUAL / (r / 100);
-      setT(smallEl, J.usd(Math.round(25000 * r / 100 / 12))); rangeEl.setAttribute('aria-valuetext', rs + ' a year');
+      setT(smallEl, J.usd(Math.round(25000 * r / 100 / 12)));
+      const av = rs + ' a year, ' + fmtCap(G.capT) + ' of capital needed';
+      rangeEl.setAttribute('aria-valuetext', av); knob.setAttribute('aria-valuetext', av); knob.setAttribute('aria-valuenow', String(r));
       const vi = verdIdx(r), z = zoneOf(r);
       if (G.zone !== vi) { G.zone = vi; setT(verdEl, VERD[vi]); verdEl.dataset.z = z; setT(noteD, z === 'r' ? 'the red end of the dial is the returns nobody delivers' : z === 'a' ? 'the amber middle is where backtests live and live accounts do not' : 'the green end is slow money: it needs a very large account'); }
       if (document.activeElement !== rangeEl) rangeEl.value = String(Math.round(clamp(G.uT, 0, 1) * 1000));
@@ -666,7 +780,30 @@ JEV.mod('hour', () => {
     const cs = fmtCap(G.cap);
     if (cs !== G.lastCap) { G.lastCap = cs; setT(capEl, cs); setT(badgeD, cs); }
   }
-  function setU(u, snap) { G.uT = clamp(u, 0, 1); G.rest = false; if (snap) { G.u = G.uT; G.v = 0; } }
+  function setU(u, snap) {
+    G.uT = clamp(u, 0, 1); G.rest = false; if (snap) { G.u = G.uT; G.v = 0; }
+    if (reduce) { G.u = G.uT; G.v = 0; renderG(0); }
+  }
+  /** pointer drag: a weak detent pulls the target onto a magnet and fires one pulse on entering it */
+  function dragU(u) {
+    const m = magnet(u, 0.012);
+    if (m !== magNow) { magNow = m; if (m >= 0) magPulse(m); }
+    setU(m >= 0 ? MAGS[m] : u);
+  }
+  /** release: snap to the nearest magnet within ~8deg, with a velocity kick so the needle overshoots and settles like a detent */
+  function settle() {
+    magNow = -1;
+    const m = magnet(G.uT, 0.03);
+    if (m < 0) return;
+    if (Math.abs(G.uT - MAGS[m]) > 1e-4 || !G.rest) { const dir = MAGS[m] >= G.u ? 1 : -1; magPulse(m); G.v += dir * 0.9; }
+    setU(MAGS[m]);
+  }
+  const STEP = 0.01;
+  function kbMove(dir, mult) {
+    let t = G.uT + dir * STEP * mult;
+    for (let i = 0; i < 3; i++) if ((MAGS[i] - G.uT) * dir > 1e-4 && (MAGS[i] - t) * dir <= 1e-4) { t = MAGS[i]; magPulse(i); G.v += dir * 0.5; break; }
+    setU(t);
+  }
   /* the gauge rect is cached for the length of a drag (re-read on pointerdown, after a resize, and after any scroll) instead of once per pointermove */
   let gRect = null;
   const dropRect = () => { gRect = null; };
@@ -678,16 +815,25 @@ JEV.mod('hour', () => {
     return d <= GS ? d / GS : d < GS + (360 - GS) / 2 ? 1 : 0;
   }
   const beginDrag = () => { G.drag = true; window.addEventListener('scroll', dropRect, { passive: true }); };
-  knob.addEventListener('pointerdown', (e) => { beginDrag(); knob.setPointerCapture(e.pointerId); knob.classList.add('drag', 'used'); setU(ptrU(e, true)); e.preventDefault(); });
-  knob.addEventListener('pointermove', (e) => { if (G.drag) setU(ptrU(e)); });
-  const endDrag = () => { G.drag = false; knob.classList.remove('drag'); window.removeEventListener('scroll', dropRect); };
+  knob.addEventListener('pointerdown', (e) => { beginDrag(); knob.setPointerCapture(e.pointerId); knob.classList.add('drag', 'used'); dragU(ptrU(e, true)); e.preventDefault(); });
+  knob.addEventListener('pointermove', (e) => { if (G.drag) dragU(ptrU(e)); });
+  const endDrag = () => { const was = G.drag; G.drag = false; knob.classList.remove('drag'); window.removeEventListener('scroll', dropRect); if (was) settle(); };
   knob.addEventListener('pointerup', endDrag); knob.addEventListener('pointercancel', endDrag); knob.addEventListener('lostpointercapture', endDrag);
-  gsvg.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && e.button === 0) { beginDrag(); gsvg.setPointerCapture(e.pointerId); knob.classList.add('used'); setU(ptrU(e, true)); } });
-  gsvg.addEventListener('pointermove', (e) => { if (G.drag && e.pointerType === 'mouse') setU(ptrU(e)); });
+  gsvg.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && e.button === 0) { beginDrag(); gsvg.setPointerCapture(e.pointerId); knob.classList.add('used'); dragU(ptrU(e, true)); } });
+  gsvg.addEventListener('pointermove', (e) => { if (G.drag && e.pointerType === 'mouse') dragU(ptrU(e)); });
   gsvg.addEventListener('pointerup', endDrag); gsvg.addEventListener('pointercancel', endDrag);
-  gsvg.addEventListener('click', (e) => { if (e.pointerType === 'mouse') return; knob.classList.add('used'); setU(ptrU(e, true)); });
+  gsvg.addEventListener('click', (e) => { if (e.pointerType === 'mouse') return; knob.classList.add('used'); setU(ptrU(e, true)); settle(); });
   rangeEl.addEventListener('input', () => { knob.classList.add('used'); setU(+rangeEl.value / 1000); });
-  $$('.hr-pb').forEach((b) => b.addEventListener('click', () => { knob.classList.add('used'); setU(r2u(+b.dataset.r)); if (reduce) { G.u = G.uT; renderG(0); } }));
+  rangeEl.addEventListener('pointerup', () => { settle(); });
+  knob.addEventListener('keydown', (e) => {
+    const k = e.key, m = e.shiftKey ? 5 : 1;
+    if (k === 'ArrowRight' || k === 'ArrowUp') kbMove(1, m); else if (k === 'ArrowLeft' || k === 'ArrowDown') kbMove(-1, m);
+    else if (k === 'PageUp') kbMove(1, 5); else if (k === 'PageDown') kbMove(-1, 5);
+    else if (k === 'Home') setU(0); else if (k === 'End') setU(1);
+    else return;
+    knob.classList.add('used'); e.preventDefault();
+  });
+  $$('.hr-pb').forEach((b) => b.addEventListener('click', () => { knob.classList.add('used'); const u = r2u(+b.dataset.r); setU(u); const m = magnet(u, 1e-3); if (m >= 0) { magPulse(m); G.v += (u >= G.u ? 1 : -1) * 0.6; } }));
   J.watch(gaugeEl, () => { gRect = null; G.scale = gsvg.clientWidth / 320; renderG(0); });
   J.task(gaugeEl, (t, dt) => {
     const k = G.drag ? 620 : 175, c = G.drag ? 46 : 17, d = G.uT - G.u;
@@ -704,6 +850,13 @@ JEV.mod('hour', () => {
   const ecEl = $('#hr-ec'), leakCv = $('#hr-leak'), binEl = $('#hr-bin');
   const E = { g: null, W: 0, H: 0, on: false, ok: false, rib: [null, null], off: null, fade: 0, t: 0 };
   const RP = Array.from({ length: 10 }, () => ({ x: 0, y: 0, t: 1 })), PU = new Float32Array(40), NP = 18;
+  /* splash droplets thrown up where a leak lands in the venue, then falling back (pooled, 24 max) */
+  const DR = Array.from({ length: 24 }, () => ({ x: 0, y: 0, vx: 0, vy: 0, l: 0 }));
+  let hitN = false, hitT = 0;
+  function splash(x, y) {
+    for (let q = 0, n = 0; q < DR.length && n < 3; q++) if (DR[q].l <= 0) { const d = DR[q]; d.x = x; d.y = y; d.vx = (Math.random() - 0.5) * 90; d.vy = -(50 + Math.random() * 80); d.l = 0.55; n++; }
+    if (E.t - hitT > 0.35) { hitT = E.t; hitN = !hitN; binEl.classList.toggle('hr-hit-a', hitN); binEl.classList.toggle('hr-hit-b', !hitN); }
+  }
   function layoutE() {
     const f = fitC(leakCv); E.g = f.g; E.W = f.W; E.H = f.H;
     const a = offs($('.hr-col-a .hr-barbox', ecEl), ecEl), b = offs($('.hr-col-b .hr-barbox', ecEl), ecEl), bn = offs(binEl, ecEl);
@@ -729,7 +882,7 @@ JEV.mod('hour', () => {
       const p = E.rib[r];
       for (let k = 0; k < NP; k++) {
         const j = r * NP + k, u = (E.t * 0.3 + k / NP + r * 0.31) % 1;
-        if (u < PU[j]) { for (let q = 0; q < RP.length; q++) if (RP[q].t >= 1) { at(p, p.len); RP[q].x = PT.x; RP[q].y = PT.y; RP[q].t = 0; break; } }
+        if (u < PU[j]) { for (let q = 0; q < RP.length; q++) if (RP[q].t >= 1) { at(p, p.len); RP[q].x = PT.x; RP[q].y = PT.y; RP[q].t = 0; splash(PT.x, PT.y); break; } }
         PU[j] = u;
         at(p, Math.pow(u, 1.35) * p.len); const s = Math.sin(Math.min(1, u * 1.15) * Math.PI);
         blit(g, C.red, PT.x, PT.y, 6.5 + 5 * s, E.fade * (0.4 + 0.6 * s)); blit(g, '#ffffff', PT.x, PT.y, 2.3, E.fade * s);
@@ -740,6 +893,12 @@ JEV.mod('hour', () => {
       const r = RP[k]; if (r.t >= 1) continue;
       r.t += dt / 0.65; const u = Math.min(1, r.t);
       g.globalAlpha = (1 - u) * 0.85; g.strokeStyle = '#ff7f8b'; g.beginPath(); g.ellipse(r.x, r.y, 3 + 12 * u, 1.2 + 3.4 * u, 0, 0, TAU); g.stroke();
+    }
+    for (let k = 0; k < DR.length; k++) {
+      const d = DR[k]; if (d.l <= 0) continue;
+      d.l -= dt; if (d.l <= 0) continue;
+      d.x += d.vx * dt; d.y += d.vy * dt; d.vy += 300 * dt;
+      blit(g, C.red, d.x, d.y, 4.5, Math.min(1, d.l / 0.3)); blit(g, '#ffffff', d.x, d.y, 1.6, d.l / 0.55);
     }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   }

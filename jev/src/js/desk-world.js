@@ -142,6 +142,8 @@ JEV.mod('desk-world', () => {
   const COMET = [0, 1].map((kv) => [0, 1].map((c) => { const col = kv ? '255,140,150' : c ? '190,150,255' : '150,240,255'; return Array.from({ length: 7 }, (_, j) => 'rgba(' + col + ',' + (((1 - j / 7) * 0.7) * (c ? 0.6 : 1)).toFixed(2) + ')'); }));
   const AM = 40, ABX = new Float32Array(AM), ABY = new Float32Array(AM), ATX = new Float32Array(AM), ATY = new Float32Array(AM), AV = new Uint8Array(AM);
   const AFR = [1, 0.62, 0.3];
+  const TN = 17, TC = new Float32Array(TN), TS = new Float32Array(TN);
+  for (let i = 0; i < TN; i++) { const ph = Math.PI / 2 - (i / (TN - 1)) * Math.PI; TC[i] = Math.cos(ph); TS[i] = Math.sin(ph); }
 
   // stars
   const STARS = (() => { const r = J.rng(11); return Array.from({ length: 80 }, () => ({ u: r(), v: r(), ph: r() * TAU, sp: 0.4 + r() * 1.4, s: r() < 0.15 ? 2 : 1 })); })();
@@ -298,6 +300,7 @@ JEV.mod('desk-world', () => {
     return null;
   }
   const FL = new Float32Array(CITIES.length), MX = new Float32Array(CITIES.length), MY = new Float32Array(CITIES.length), MZ = new Float32Array(CITIES.length);
+  let tiltOff = 0, hoverCity = -1, kbi = -1;
   let yaw = 0.2, yawVel = 0, tilt = 0.4, focusYaw = null, focusHold = 0, focusCity = -1, dragging = false, ambient = 0.5;
   const AUTO = 0.1;
   const EMPTY = [], DASH = [2, 7];
@@ -336,13 +339,14 @@ JEV.mod('desk-world', () => {
         if (Math.abs(d) < 0.03) { focusHold -= dt; if (focusHold <= 0) { focusYaw = null; setFocusRow(-1); } }
       } else { yaw += (AUTO * (1 - 0.85 * km) + yawVel) * dt; yawVel *= Math.exp(-dt * 2.2); }
     }
-    tilt = 0.4 + 0.045 * Math.sin(t * 0.21);
+    if (!dragging) tiltOff *= Math.exp(-dt * 2.4);
+    tilt = 0.4 + 0.045 * Math.sin(t * 0.21) + tiltOff;
     const cyw = Math.cos(yaw), syw = Math.sin(yaw), ct = Math.cos(tilt), st = Math.sin(tilt);
     g.setTransform(kx, 0, 0, ky, 0, 0);
     g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(0, 0, W, H);
     // ---- stars
     g.fillStyle = '#cfe3ff';
-    for (let i = 0; i < STARS.length; i += lq > 2 ? 2 : 1) { const s = STARS[i]; g.globalAlpha = (0.12 + 0.45 * (0.5 + 0.5 * Math.sin(t * s.sp + s.ph))) * (1 - 0.5 * km); g.fillRect(SX + s.u * SW, SY + s.v * SH, s.s, s.s); }
+    for (let i = 0; i < STARS.length; i += lq > 2 ? 2 : 1) { const s = STARS[i], pu = s.u + yaw * 0.008 * s.s; g.globalAlpha = (0.12 + 0.45 * (0.5 + 0.5 * Math.sin(t * s.sp + s.ph))) * (1 - 0.5 * km); g.fillRect(SX + (pu - Math.floor(pu)) * SW, SY + s.v * SH, s.s, s.s); }
     g.globalAlpha = 1;
     // ---- orbit track (back half goes under the globe)
     g.lineWidth = 1; g.setLineDash(DASH); g.strokeStyle = km > 0.5 ? 'rgba(255,150,160,.2)' : 'rgba(170,200,255,.2)';
@@ -393,6 +397,20 @@ JEV.mod('desk-world', () => {
     for (let q = 0; q < 3; q++) {
       const b = q === 0 ? 11 : 13 + q, n = bN[b], ix = bIdx[b], sz = 4.6 * dotK, h = sz / 2; if (!n) continue;
       g.beginPath(); for (let j = 0; j < n; j++) { const i = ix[j]; g.rect(SXa[i] - h, SYa[i] - h, sz, sz); } g.fill();
+    }
+    // ---- day / night terminator: a soft, nested night crescent (the sun sits upper-left in view space and drifts slowly)
+    {
+      const sxv = -0.62 + 0.1 * Math.sin(t * 0.045), syv = 0.4 + 0.05 * Math.sin(t * 0.031 + 1), szv = 0.62, sl = Math.hypot(sxv, syv, szv), kz = szv / sl;
+      g.globalCompositeOperation = 'source-over'; g.save(); g.translate(cx, cy); g.rotate(Math.atan2(-syv, sxv));
+      const nest = lq > 2 ? 1 : 3, rr = R * 0.996;
+      g.fillStyle = km > 0.5 ? 'rgba(20,0,6,' : 'rgba(2,5,24,';
+      for (let q = 0; q < nest; q++) {
+        const k = nest === 1 ? kz : kz + (1 - q) * 0.17;
+        g.globalAlpha = nest === 1 ? 0.3 : 0.13; g.beginPath(); g.arc(0, 0, rr, -Math.PI / 2, Math.PI / 2, true);
+        for (let i = 0; i < TN; i++) g.lineTo(-k * rr * TC[i], rr * TS[i]);
+        g.closePath(); g.fillStyle = km > 0.5 ? '#14000a' : '#02051a'; g.fill();
+      }
+      g.restore(); g.globalAlpha = 1; g.globalCompositeOperation = 'lighter';
     }
     // ---- aurora ribbons over the upper hemisphere
     if (alive > 0.02) {
@@ -454,7 +472,7 @@ JEV.mod('desk-world', () => {
       if (ambient < 0) { ambient = rnd(0.14, 0.42); const ai = (Math.random() * ARCS.length) | 0, col = AMB_COL[(Math.random() * 6) | 0]; if (spawn(0, ai, col, rnd(0.3, 0.55), Math.random() < 0.5, 1.1)) ARCS[ai].lit = Math.min(1, ARCS[ai].lit + 0.4); }
     }
     for (let a = 0; a < ARCS.length; a++) {
-      const A = ARCS[a], pts = A.pts; A.lit = Math.max(0, A.lit - dt * 0.55);
+      const A = ARCS[a], pts = A.pts; A.lit = Math.max(0, A.lit - dt * 0.42);
       for (let i = 0; i <= ARC_SEG; i++) {
         const x = pts[i * 3], y = pts[i * 3 + 1], z = pts[i * 3 + 2], x1 = x * cyw + z * syw, z1 = -x * syw + z * cyw, y2 = y * ct - z1 * st, z2 = y * st + z1 * ct;
         A.sx[i] = cx + R * x1; A.sy[i] = cy - R * y2; A.sz[i] = z2; A.vis[i] = z2 > 0.01 || x1 * x1 + y2 * y2 > 1.0 ? 1 : 0;
@@ -477,13 +495,18 @@ JEV.mod('desk-world', () => {
         const A = ARCS[p.idx], tt = p.rev ? 1 - p.t : p.t, f = tt * ARC_SEG, i0 = Math.min(ARC_SEG - 1, f | 0), fr = f - i0;
         if (!A.vis[i0] || !A.vis[i0 + 1]) continue;
         const x = A.sx[i0] + (A.sx[i0 + 1] - A.sx[i0]) * fr, y = A.sy[i0] + (A.sy[i0 + 1] - A.sy[i0]) * fr;
-        g.strokeStyle = COLS[p.col]; g.lineWidth = 2; g.globalAlpha = 0.6; g.beginPath(); g.moveTo(x, y);
-        const dir = p.rev ? 1 : -1;
-        for (let j = 1; j <= 5; j++) { const tf = clamp(tt + dir * j * 0.014, 0, 1) * ARC_SEG, i1 = Math.min(ARC_SEG - 1, tf | 0), f1 = tf - i1; g.lineTo(A.sx[i1] + (A.sx[i1 + 1] - A.sx[i1]) * f1, A.sy[i1] + (A.sy[i1 + 1] - A.sy[i1]) * f1); }
-        g.stroke(); g.globalAlpha = 1; const sz = 22 * p.sz; g.drawImage(SPR[p.col], x - sz / 2, y - sz / 2, sz, sz);
+        const dir = p.rev ? 1 : -1, nT = lq > 2 ? 4 : 8; let ox = x, oy = y; g.strokeStyle = COLS[p.col]; g.lineCap = 'round';
+        for (let j = 1; j <= nT; j++) {
+          const tf = clamp(tt + dir * j * 0.02, 0, 1) * ARC_SEG, i1 = Math.min(ARC_SEG - 1, tf | 0), f1 = tf - i1; if (!A.vis[i1] || !A.vis[i1 + 1]) break;
+          const nx = A.sx[i1] + (A.sx[i1 + 1] - A.sx[i1]) * f1, ny = A.sy[i1] + (A.sy[i1 + 1] - A.sy[i1]) * f1, k = 1 - j / (nT + 1);
+          g.globalAlpha = 0.75 * k * k; g.lineWidth = 0.6 + 2.4 * k; g.beginPath(); g.moveTo(ox, oy); g.lineTo(nx, ny); g.stroke(); ox = nx; oy = ny;
+        }
+        g.lineCap = 'butt';
+        g.globalAlpha = 1; const sz = 22 * p.sz; g.drawImage(SPR[p.col], x - sz / 2, y - sz / 2, sz, sz);
       } else {
         const B = BEAMS[p.idx]; if (!B) continue; const f = p.t * 40, i0 = Math.min(39, f | 0), fr = f - i0, q = B.pts;
         const x = q[i0 * 2] + (q[i0 * 2 + 2] - q[i0 * 2]) * fr, y = q[i0 * 2 + 1] + (q[i0 * 2 + 3] - q[i0 * 2 + 1]) * fr, sz = 26 * p.sz;
+        beamTail(q, i0, x, y, -1, lq > 2 ? 4 : 8, p.col, 0.7); g.globalAlpha = 1;
         g.drawImage(SPR[p.col], x - sz / 2, y - sz / 2, sz, sz);
       }
     }
@@ -523,17 +546,25 @@ JEV.mod('desk-world', () => {
       if (km > 0.01) { g.strokeStyle = B.gK; g.lineWidth = B.w; g.globalAlpha = al * 0.32 * km; g.stroke(B.path); }
       if (!killed) {
         const u = (t * B.spd + B.off) % 1, f = u * 40, i0 = Math.min(39, f | 0), fr = f - i0, q = B.pts, x = q[i0 * 2] + (q[i0 * 2 + 2] - q[i0 * 2]) * fr, y = q[i0 * 2 + 1] + (q[i0 * 2 + 3] - q[i0 * 2 + 1]) * fr;
-        g.globalAlpha = 0.5 * al * (B.wide ? 1 : 0.8); g.strokeStyle = COLS[B.col]; g.lineWidth = 2.2; g.beginPath(); g.moveTo(x, y);
-        for (let j = 1; j <= 4; j++) { const ii = B.dir >= 0 ? Math.max(0, i0 - j) : Math.min(40, i0 + j); g.lineTo(q[ii * 2], q[ii * 2 + 1]); }
-        g.stroke(); g.globalAlpha = 0.9 * (B.wide ? 1 : 0.7); const sz = 20 + (B.wide ? 6 : 0); g.drawImage(SPR[B.col], x - sz / 2, y - sz / 2, sz, sz);
+        beamTail(q, i0, x, y, B.dir >= 0 ? -1 : 1, lq > 2 ? 4 : 7, B.col, 0.7 * al * (B.wide ? 1 : 0.8)); g.globalAlpha = 0.9 * (B.wide ? 1 : 0.7); const sz = 20 + (B.wide ? 6 : 0); g.drawImage(SPR[B.col], x - sz / 2, y - sz / 2, sz, sz);
       }
     }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   }
+  /** tapered comet tail along a bezier polyline (pts = flat x,y; i0 = segment of the head; sgn -1 trails toward index 0) */
+  function beamTail(q, i0, x, y, sgn, n, col, a0) {
+    let ox = x, oy = y; g.strokeStyle = COLS[col]; g.lineCap = 'round';
+    for (let j = 1; j <= n; j++) {
+      const ii = sgn < 0 ? i0 - j + 1 : i0 + j; if (ii < 0 || ii > 40) break;
+      const nx = q[ii * 2], ny = q[ii * 2 + 1], k = 1 - j / (n + 1);
+      g.globalAlpha = a0 * k * k; g.lineWidth = 0.6 + 2.2 * k; g.beginPath(); g.moveTo(ox, oy); g.lineTo(nx, ny); g.stroke(); ox = nx; oy = ny;
+    }
+    g.lineCap = 'butt';
+  }
   let slowAcc = 0;
 
   /* ================================================================ orbiting DOM agents ================================================================ */
-  const OB = J.$$('.dkw-ob', stage).map((el, i) => ({ el, i, key: el.dataset.k, act: 0, z: 0, label: J.$('em', el), orb: J.$('.orb', el), ex: 99, ey: 99, x: 0, y: 0, tx: 1e9, ty: 0, ts: 0, to: -1 }));
+  const OB = J.$$('.dkw-ob', stage).map((el, i) => ({ el, i, key: el.dataset.k, act: 0, rx: 0, z: 0, label: J.$('em', el), orb: J.$('.orb', el), ex: 99, ey: 99, x: 0, y: 0, tx: 1e9, ty: 0, ts: 0, to: -1 }));
   const JV = { el: J.$('#dkw-jv'), x: 0, y: 0, tx: 1e9, ty: 0, ts: 0, to: -1, vis: 0 };
   // transform / opacity are written only when they change at 0.5 px / 0.0025 scale / 0.01 opacity resolution (opacity changes ~once per 10 frames)
   function put(o, x, y, sc, op) {
@@ -548,10 +579,12 @@ JEV.mod('desk-world', () => {
       const o = OB[i], a = a0 + i * (TAU / OB.length), ex = OB_RX * Math.cos(a), ey = OB_RY * Math.sin(a), d = Math.sin(a);
       const x = OB_X + ex * cr - ey * sr, y = OB_Y + ex * sr + ey * cr;
       o.act += ((o.key === on ? 1 : 0) - o.act) * step; o.x = x; o.y = y;
-      const pinned = ST.pin === o.key, sc = (0.66 + 0.34 * (d * 0.5 + 0.5)) * (1 + 0.26 * o.act), op = pinned ? 1 : 0.58 + 0.42 * (d * 0.5 + 0.5);
-      put(o, x - SX, y - SY, sc, op);
+      if (o.rx > 0) o.rx = Math.max(0, o.rx - dt * 1.6);
+      const pinned = ST.pin === o.key, sc = (0.66 + 0.34 * (d * 0.5 + 0.5)) * (1 + 0.26 * o.act + 0.2 * o.rx * o.rx), op = pinned ? 1 : 0.58 + 0.42 * (d * 0.5 + 0.5);
+      put(o, x - SX, y - SY + Math.sin(t * 1.3 + i * 1.7) * 2.6 * (0.5 + 0.5 * o.act + 0.3), sc, op);
       const z = pinned ? 3 : d > 0 ? (o.act > 0.5 ? 3 : 2) : 0; if (z !== o.z) { o.z = z; o.el.style.zIndex = z; }
     }
+    tipPlace(dt);
     // jev: every ~16 s a big white orb sweeps across the front of the globe
     const cyc = 16, ph = J.reduce ? 0.8 : (t % cyc) / 7.5, dirn = J.reduce ? 1 : Math.floor(t / cyc) % 2 ? -1 : 1;
     if (ph < 1) {
@@ -559,7 +592,40 @@ JEV.mod('desk-world', () => {
       put(JV, x - SX, y - SY, 0.5 + 1.0 * Math.pow(s, 0.8), clamp(s * 2.4, 0, 1)); JV.vis = 1;
     } else if (JV.vis) { JV.el.style.opacity = '0'; JV.to = 0; JV.vis = 0; }
   }
+  /* venue tooltip: follows the marker of the hovered / faced venue, fades out behind the limb */
+  const TIP = { el: J.$('#dkw-tip'), n: J.$('#dkw-tip-n'), c: J.$('#dkw-tip-c'), l: J.$('#dkw-tip-l'), s: J.$('#dkw-tip-s'), city: -1, a: 0, w: 150, h: 60, tx: 1e9, ty: 0, to: -1 };
+  const FDC = {}; FD.forEach((f) => (FDC[f.city] = f));
+  function tipText() {
+    const f = FDC[TIP.city]; if (!f) return;
+    txt(TIP.n, f.k); txt(TIP.c, CITIES[f.city].c.toLowerCase()); txt(TIP.l, Math.round(f.lat) + 'ms');
+    const lc = f.lat < 40 ? '' : f.lat < 70 ? 'm' : 's'; if (TIP.l.className !== lc) TIP.l.className = lc;
+    txt(TIP.s, J.sgn((f.price / J.market.price - 1) * 1e4, 1) + 'bp');
+  }
+  function tipPlace(dt) {
+    const c = hoverCity >= 0 ? hoverCity : focusCity;
+    if (c !== TIP.city) { TIP.city = c; if (c >= 0) { tipText(); TIP.w = TIP.el.offsetWidth || 150; TIP.h = TIP.el.offsetHeight || 60; } }
+    const tgt = c >= 0 ? clamp((MZ[c] - 0.12) * 5, 0, 1) : 0;
+    TIP.a += (tgt - TIP.a) * Math.min(1, dt * 12); if (Math.abs(tgt - TIP.a) < 0.01) TIP.a = tgt;
+    const o = Math.round(TIP.a * 100);
+    if (o !== TIP.to) { TIP.to = o; TIP.el.style.opacity = o / 100; }
+    if (c < 0 || o === 0) return;
+    let x = MX[c] - SX + 16, y = MY[c] - SY - TIP.h - 10;
+    if (x + TIP.w > SW - 4) x = MX[c] - SX - 16 - TIP.w;
+    if (y < 18) y = MY[c] - SY + 16;
+    x = Math.max(2, x);
+    const tx = Math.round(x * 2), ty = Math.round(y * 2);
+    if (tx !== TIP.tx || ty !== TIP.ty) { TIP.tx = tx; TIP.ty = ty; TIP.el.style.transform = 'translate3d(' + tx / 2 + 'px,' + ty / 2 + 'px,0)'; }
+  }
+  // an agent's step lands: the orbit orb pops (scale via rx, brightness pulse) and the eyes of every copy of that agent widen
+  const EYES = {};
+  function react(k) {
+    const o = OBK[k]; o.rx = 1;
+    const ev = EYES[k] || (EYES[k] = [OBK[k].orb, TAB[k].el, ROW[k].el].map((e) => J.$$('.e', e)).flat());
+    for (let i = 0; i < ev.length; i++) J.animate(ev[i], [{ scale: '1 1' }, { scale: '1.35 1.55', offset: 0.22 }, { scale: '1 1' }], { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    J.animate(o.orb, [{ filter: 'brightness(1.7) saturate(1.3)' }, { filter: 'none' }], { duration: 600, easing: 'ease-out' });
+  }
   function slow() {
+    if (TIP.city >= 0 && TIP.a > 0) tipText();
     // eyes follow the globe (≤4 Hz) + countdown text
     for (let i = 0; i < OB.length; i++) {
       const o = OB[i], dx = OB_X - o.x, dy = OB_Y - o.y, dl = Math.hypot(dx, dy) || 1, ex = Math.round((dx / dl) * 3) / 2, ey = Math.round((dy / dl) * 3) / 2;
@@ -572,7 +638,7 @@ JEV.mod('desk-world', () => {
   const hexRgb = (h) => { const n = parseInt(h.slice(1), 16); return (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255); };
   const T = {
     id: J.$('#dkw-tid'), tk: J.$('#dkw-tk'), side: J.$('#dkw-side'), sym: J.$('#dkw-sym'), dest: J.$('#dkw-dest'), not: J.$('#dkw-not'), edge: J.$('#dkw-edge'), sz: J.$('#dkw-sz'), px: J.$('#dkw-px'), cf: J.$('#dkw-cf'),
-    rail: J.$('#dkw-rail'), sds: J.$$('.dkw-sd', root), now: J.$('.dkw-now', root), nowO: J.$('#dkw-now-o'), nowN: J.$('#dkw-now-n'), nowV: J.$('#dkw-now-v'), nowX: J.$('#dkw-now-x'),
+    rail: J.$('#dkw-rail'), tl: J.$('.dkw-tl', root), sds: J.$$('.dkw-sd', root), now: J.$('.dkw-now', root), nowO: J.$('#dkw-now-o'), nowN: J.$('#dkw-now-n'), nowV: J.$('#dkw-now-v'), nowX: J.$('#dkw-now-x'),
     cd: J.$('#dkw-cd'), cdf: J.$('#dkw-cdf'), stn: J.$('#dkw-stn'), stv: J.$('#dkw-stv'), loop: J.$('#dkw-loop'),
   };
   const TAB = {}, ROW = {};
@@ -672,6 +738,7 @@ JEV.mod('desk-world', () => {
     if (railN !== i || all) {
       T.rail.style.setProperty('--q', i); T.rail.style.setProperty('--mc', AG[i].col);
       for (let j = 0; j < T.sds.length; j++) if (all || (j <= i) !== (j <= railN)) T.sds[j].classList.toggle('on', j <= i);
+      if (!all && i > railN && railN >= 0) J.animate(T.tl, [{ scale: '2.6 1', opacity: 1 }, { scale: '1 1', opacity: 0.75 }], { duration: 750, easing: 'cubic-bezier(.2,.8,.2,1)' });
       railN = i;
     }
     txt(T.stn, '0' + (i + 1)); txt(T.stv, VERB[i].toLowerCase()); txt(T.loop, String(ST.loop));
@@ -705,7 +772,7 @@ JEV.mod('desk-world', () => {
     setStatus(i, 'working');
     if (show) {
       runBar(key, dur); paintRow(key); paintStep(i); paintEdge();
-      flash(TAB[key].el); flash(ROW[key].el);
+      flash(TAB[key].el); flash(ROW[key].el); react(key);
       applyOn(); tickCd();
       // the world reacts: a burst down a beam to the ticket, a packet out of the venue the agent looked at
       if (!kd) {
@@ -720,28 +787,46 @@ JEV.mod('desk-world', () => {
   /* ================================================================ interactions + bus ================================================================ */
   function setFocusRow(c) { focusCity = c; for (let i = 0; i < FD.length; i++) FD[i].el.classList.toggle('is-f', FD[i].city === c); }
   function focusVenue(c) {
-    focusYaw = -CITIES[c].lon * D2R; focusHold = 3.4; yawVel = 0; setFocusRow(c); FL[c] = 1;
+    focusYaw = -CITIES[c].lon * D2R; focusHold = 4.2; kbi = c; yawVel = 0; setFocusRow(c); FL[c] = 1;
+    const f = FDC[c]; if (liveEl && f) liveEl.textContent = 'facing ' + f.k + ' ' + CITIES[c].c.toLowerCase() + ', latency ' + Math.round(f.lat) + ' milliseconds, ' + J.sgn((f.price / J.market.price - 1) * 1e4, 1) + ' basis points versus oracle (simulated)';
+    if (J.reduce) { yaw = focusYaw; redraw(); }
     if (!killed) for (let k = 0; k < ARC_BY_CITY[c].length; k++) { const ai = ARC_BY_CITY[c][k], A = ARCS[ai]; A.lit = 1; spawn(0, ai, (k + 2) % 4, 0.5, A.a !== c, 1.1); }
   }
   FD.forEach((f) => f.el.addEventListener('click', () => focusVenue(f.city)));
   Object.keys(TAB).forEach((k) => { TAB[k].el.addEventListener('click', () => togglePin(k)); ROW[k].el.addEventListener('click', () => togglePin(k)); OBK[k].el.addEventListener('click', () => togglePin(k)); });
 
-  let lastX = 0, lastT = 0, moved = 0, downX = 0, downY = 0;
-  grab.addEventListener('pointerdown', (e) => { dragging = true; moved = 0; lastX = downX = e.clientX; downY = e.clientY; lastT = performance.now(); focusYaw = null; setFocusRow(-1); yawVel = 0; try { grab.setPointerCapture(e.pointerId); } catch (_) { /* noop */ } });
+  const liveEl = J.$('#dkw-live');
+  function redraw() { if (J.reduce && g) { draw(J.time || 0, 0); orbits(J.time || 0, 0.2); } } // (under reduced motion the frame task is frozen: interactions repaint directly)
+  function hit(e) {
+    const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / cks, y = (e.clientY - r.top) / cks; let best = -1, bd = (e.pointerType === 'mouse' ? 22 : 30) ** 2;
+    for (let i = 0; i < CITIES.length; i++) { if (MZ[i] < 0.12) continue; const d2 = (MX[i] - x) * (MX[i] - x) + (MY[i] - y) * (MY[i] - y); if (d2 < bd) { bd = d2; best = i; } }
+    return best;
+  }
+  function setHover(c) { if (c === hoverCity) return; hoverCity = c; grab.classList.toggle('is-hot', c >= 0); redraw(); }
+  let lastX = 0, lastY = 0, lastT = 0, moved = 0, downX = 0, downY = 0;
+  grab.addEventListener('pointerdown', (e) => { dragging = true; moved = 0; lastX = downX = e.clientX; lastY = downY = e.clientY; lastT = performance.now(); focusYaw = null; setFocusRow(-1); yawVel = 0; setHover(-1); try { grab.setPointerCapture(e.pointerId); } catch (_) { /* noop */ } });
   grab.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
+    if (!dragging) { if (e.pointerType === 'mouse') setHover(hit(e)); return; }
     const dx = e.clientX - lastX, now = performance.now(), dtm = Math.max(8, now - lastT) / 1000, dy = dx / (R * 0.9);
-    lastX = e.clientX; lastT = now; moved += Math.abs(dx); yaw += dy; yawVel = lerp(yawVel, dy / dtm, 0.4);
+    if (e.pointerType === 'mouse') tiltOff = clamp(tiltOff + (e.clientY - lastY) / (R * 1.7), -0.4, 0.4); // (touch keeps vertical drags for page scroll; the tilt springs back on release)
+    lastX = e.clientX; lastY = e.clientY; lastT = now; moved += Math.abs(dx); yaw += dy; yawVel = lerp(yawVel, dy / dtm, 0.4); redraw();
   });
   grab.addEventListener('pointerup', (e) => {
     if (!dragging) return; dragging = false;
-    if (moved < 6 && Math.hypot(e.clientX - downX, e.clientY - downY) < 8) {
-      const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / cks, y = (e.clientY - r.top) / cks; let best = -1, bd = 28 * 28;
-      for (let i = 0; i < CITIES.length; i++) { if (MZ[i] < 0.05) continue; const d2 = (MX[i] - x) * (MX[i] - x) + (MY[i] - y) * (MY[i] - y); if (d2 < bd) { bd = d2; best = i; } }
-      if (best >= 0) focusVenue(best);
-    } else yawVel = clamp(yawVel, -3, 3);
+    if (moved < 6 && Math.hypot(e.clientX - downX, e.clientY - downY) < 8) { const best = hit(e); if (best >= 0) focusVenue(best); }
+    else yawVel = clamp(yawVel, -3, 3);
   });
   grab.addEventListener('pointercancel', () => { dragging = false; });
+  grab.addEventListener('pointerleave', () => { if (!dragging) setHover(-1); });
+  grab.addEventListener('keydown', (e) => {
+    const k = e.key;
+    if (k === 'ArrowLeft' || k === 'ArrowRight') { focusYaw = null; setFocusRow(-1); yawVel = clamp(yawVel + (k === 'ArrowLeft' ? -1.5 : 1.5), -3, 3); if (J.reduce) { yaw += (k === 'ArrowLeft' ? -0.3 : 0.3); redraw(); } }
+    else if (k === 'ArrowUp' || k === 'ArrowDown') { tiltOff = clamp(tiltOff + (k === 'ArrowUp' ? 0.2 : -0.2), -0.4, 0.4); redraw(); }
+    else if (k === 'Enter' || k === ' ') { kbi = (kbi + 1) % CITIES.length; focusVenue(kbi); }
+    else if (k === 'Escape') { focusYaw = null; setFocusRow(-1); }
+    else return;
+    e.preventDefault();
+  });
 
   J.bus.on('tick', (m) => updateFeeds(m.price, cardIn));
   J.bus.on('decision', (d) => {

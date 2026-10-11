@@ -17,7 +17,7 @@
   </div>
   <div class="dkb-cvw" id="dkb-bw">
     <canvas id="dkb-bs" aria-hidden="true"></canvas>
-    <canvas id="dkb-bc" title="move along the axis to read P(up above x)" role="img" aria-label="three density curves: a prior in amber, the book likelihood in blue and the posterior in green, re-centred on every decision; simulated"></canvas>
+    <canvas id="dkb-bc" tabindex="0" title="move along the axis to read each density · drag the prior or book mean (simulated) · double-click resets · focus + arrows, enter switches mean, esc resets" role="img" aria-label="three density curves: a prior in amber, the book likelihood in blue and the posterior in green, re-centred on every decision; the prior and book means can be dragged or moved with the arrow keys; simulated"></canvas>
   </div>
   <div class="dkb-lg">
     <div class="dkb-lgi" style="--lc:#ffc13d"><b><i></i>prior</b><span>μ <u id="dkb-pm">54.0</u></span><span>σ <u id="dkb-ps">9.5</u></span></div>
@@ -35,8 +35,10 @@
     </span>
   </div>
   <div class="dkb-chips" id="dkb-chips" role="group" aria-label="mute or unmute an agent"></div>
-  <div class="dkb-rw">
-    <div class="dkb-rows" id="dkb-rows"><ol class="dkb-rl" id="dkb-rl" role="log" aria-live="off" aria-label="newest step first"></ol></div>
+  <div class="dkb-rw" id="dkb-rw">
+    <button type="button" class="dkb-more" id="dkb-more" hidden aria-label="jump to the newest steps"></button>
+    <div class="dkb-tip" id="dkb-tip" role="tooltip" aria-hidden="true"><b id="dkb-tph"></b><span id="dkb-tpt"></span></div>
+    <div class="dkb-rows" id="dkb-rows" role="group" tabindex="0" aria-label="log rows: arrow keys move, full message shows in a card"><ol class="dkb-rl" id="dkb-rl" role="log" aria-live="off" aria-label="newest step first"></ol></div>
   </div>
 </div>
 
@@ -59,7 +61,7 @@
     <canvas id="dkb-ds" aria-hidden="true"></canvas>
     <canvas id="dkb-dp" data-dpr="1.5" aria-hidden="true"></canvas>
     <canvas id="dkb-dq" data-dpr="1.5" aria-hidden="true"></canvas>
-    <canvas id="dkb-do" title="move up and down to read how many paths sit above a level" role="img" aria-label="one hundred and forty simulated random-walk equity curves with a small positive drift fanning out left to right, with a live histogram of their values on the right edge"></canvas>
+    <canvas id="dkb-do" tabindex="0" title="hover a path to trace it · on the right edge, read how many paths sit above a level · arrows move the probe, esc clears" role="img" aria-label="one hundred and forty simulated random-walk equity curves with a small positive drift fanning out left to right, with a live histogram of their values on the right edge"></canvas>
   </div>
   <div class="dkb-df">
     <span class="dkb-gr" aria-hidden="true"><i>loss</i><u></u><i>profit</i></span>

@@ -255,10 +255,41 @@
   /* ---------- HUD (header metrics + kill switch) ---------- */
   function median(a) { const s = a.slice().sort((x, y) => x - y); return s[(s.length / 2) | 0]; }
   const hudEls = {};
+  /** odometer: every digit is a 0-9 reel that rolls to its value (transform transition); separators stay static. Rebuilt only when the glyph layout changes.
+      The reels are aria-hidden, a visually hidden copy carries the text for assistive tech. */
+  function odo(el, text) {
+    if (!el || el.__od === text) return;
+    const prev = el.__od; el.__od = text;
+    let wrap = el.__odw;
+    const lay = text.replace(/\d/g, '0');
+    if (!wrap || el.__odl !== lay) {
+      el.__odl = lay; el.textContent = '';
+      wrap = el.__odw = document.createElement('span'); wrap.className = 'od'; wrap.setAttribute('aria-hidden', 'true');
+      for (const ch of text) {
+        const c = document.createElement('span');
+        if (ch >= '0' && ch <= '9') {
+          c.className = 'od-d'; const r = document.createElement('span'); r.className = 'od-r'; r.style.setProperty('--d', ch);
+          for (let i = 0; i < 10; i++) { const n = document.createElement('i'); n.textContent = i; r.appendChild(n); }
+          c.appendChild(r);
+        } else { c.className = 'od-s'; c.textContent = ch; }
+        wrap.appendChild(c);
+      }
+      const sr = document.createElement('span'); sr.className = 'sr-only'; el.__ods = sr;
+      el.append(wrap, sr);
+    } else {
+      let i = 0; for (const ch of text) { if (ch >= '0' && ch <= '9') wrap.children[i].firstChild.style.setProperty('--d', ch); i++; }
+    }
+    el.__ods.textContent = text;
+    return prev;
+  }
+  const flash = (el) => { if (el && !J.reduce) J.animate(el, [{ textShadow: '0 0 12px rgba(255,46,110,.95)', color: '#fff' }, { offset: 1 }], { duration: 520, easing: 'ease-out' }); };
   function hud() {
-    const set = (id, v) => { const el = hudEls[id] || (hudEls[id] = document.getElementById(id)); if (el && el.textContent !== v) el.textContent = v; };
-    set('mDec', J.fmt(S.count)); set('mCost', '$' + S.cost.toFixed(3));
-    set('mMed', median(S.ms).toFixed(1) + ' ms'); set('mFloor', S.floor.toFixed(2));
+    const set = (id, v) => { const el = hudEls[id] || (hudEls[id] = document.getElementById(id)); if (el && el.textContent !== v) { const had = el.textContent; el.textContent = v; return had; } };
+    odo(hudEls.mDec || (hudEls.mDec = document.getElementById('mDec')), J.fmt(S.count));
+    const cEl = hudEls.mCost || (hudEls.mCost = document.getElementById('mCost')), cPrev = cEl && cEl.__od;
+    odo(cEl, '$' + S.cost.toFixed(3)); if (cPrev && cPrev !== cEl.__od && hudEls.ready) flash(cEl);
+    const mp = set('mMed', median(S.ms).toFixed(1) + ' ms'); if (mp && hudEls.ready) flash(hudEls.mMed);
+    const fp = set('mFloor', S.floor.toFixed(2)); if (fp && hudEls.ready) flash(hudEls.mFloor);
     set('secExec', J.fmt(S.dest.execute)); set('secRev', J.fmt(S.dest.review)); set('secSkip', J.fmt(S.dest.skip)); // desk header: live gate tally (this session)
     if (hudEls.fl !== S.floor) { hudEls.fl = S.floor; document.querySelectorAll('.foot-fl').forEach((el) => (el.textContent = 'floor ' + S.floor.toFixed(2))); }
     const k = hudEls.killBtn || (hudEls.killBtn = document.getElementById('killBtn'));
@@ -266,13 +297,95 @@
   }
   J.hud = hud;
 
+  /* ---------- keyboard shortcuts: J.shortcut(key, fn, label) + '?' help dialog ---------- */
+  const keys = [];
+  /** register a single-key shortcut (case-insensitive, no modifiers). `label` (optional) lists it in the '?' dialog. Returns an unregister fn. */
+  J.shortcut = (key, fn, label) => { const o = { key: String(key).toLowerCase(), fn, label }; keys.push(o); return () => { const i = keys.indexOf(o); if (i >= 0) keys.splice(i, 1); }; };
+  const SECS = ['hero', 'builds', 'hour', 'desk', 'lab'];
+  const goto = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: J.reduce ? 'auto' : 'smooth', block: 'start' }); };
+  J.toTop = () => { window.scrollTo({ top: 0, behavior: J.reduce ? 'auto' : 'smooth' }); const l = document.querySelector('.logo'); if (l) l.focus({ preventScroll: true }); };
+  let dlg = null, dlgBack = null, dlgFrom = null;
+  function helpOpen() { return !!(dlg && dlg.classList.contains('on')); }
+  function helpClose() {
+    if (!helpOpen()) return;
+    dlg.classList.remove('on'); dlgBack.classList.remove('on'); document.body.classList.remove('kb-open');
+    if (dlgFrom && dlgFrom.focus && document.contains(dlgFrom)) dlgFrom.focus({ preventScroll: true });
+    dlgFrom = null;
+  }
+  function helpBuild() {
+    dlgBack = document.createElement('div'); dlgBack.className = 'kb-back'; dlgBack.addEventListener('click', helpClose);
+    dlg = document.createElement('div'); dlg.className = 'kb'; dlg.id = 'kbDlg'; dlg.setAttribute('role', 'dialog'); dlg.setAttribute('aria-modal', 'true'); dlg.setAttribute('aria-labelledby', 'kbTitle'); dlg.tabIndex = -1;
+    const rows = [['?', 'this help'], ['1 – 5', 'jump to decides · builds · hour · desk · lab']].concat(keys.filter((k) => k.label).map((k) => [k.key === ' ' ? 'space' : k.key, k.label])).concat([['esc', 'close']]);
+    dlg.innerHTML = '<div class="kb-h"><div><span class="kb-eb">keyboard</span><h2 id="kbTitle">shortcuts</h2></div><button type="button" class="kb-x" aria-label="Close shortcuts">esc</button></div><dl class="kb-l"></dl>'
+      + '<p class="kb-n">simulation console. shortcuts never place orders; the kill switch only reroutes simulated tickets to review.</p>';
+    const dl = dlg.querySelector('dl');
+    for (const [k, t] of rows) { const dt = document.createElement('dt'), dd = document.createElement('dd'); const kb = document.createElement('kbd'); kb.textContent = k; dt.appendChild(kb); dd.textContent = t; dl.append(dt, dd); }
+    dlg.querySelector('.kb-x').addEventListener('click', helpClose);
+    document.body.append(dlgBack, dlg);
+  }
+  J.help = (on) => {
+    if (on === false) return helpClose();
+    if (helpOpen()) return helpClose();
+    if (!dlg) helpBuild();
+    dlgFrom = document.activeElement; dlg.classList.add('on'); dlgBack.classList.add('on'); document.body.classList.add('kb-open');
+    dlg.querySelector('.kb-x').focus({ preventScroll: true });
+  };
+  J.shortcut('k', () => J.setKilled(!S.killed), 'kill switch (arm / halt)');
+  J.shortcut('f', () => { J.fire(); if (J.pulse) J.pulse(0.45); }, 'fire a simulated decision');
+  J.shortcut('t', () => J.toTop(), 'back to top');
+  SECS.forEach((id, i) => J.shortcut(String(i + 1), () => goto(id)));
+  J.shortcut('?', () => J.help());
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+    if (helpOpen()) {
+      if (e.key === 'Escape') { e.preventDefault(); helpClose(); } else if (e.key === 'Tab') { e.preventDefault(); dlg.querySelector('.kb-x').focus(); } else if (e.key === '?') { e.preventDefault(); helpClose(); }
+      return;
+    }
+    const t = e.target, tag = t && t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+    if (document.getElementById('fx-boot')) return; // boot overlay: any key only skips it
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    for (const k of keys) if (k.key === key) { e.preventDefault(); try { k.fn(e); } catch (er) { console.error('[shortcut]', er); } return; }
+  });
+
+  /* ---------- HUD tooltips (one fixed element: .mets scrolls, so a CSS child would clip) + scroll progress ---------- */
+  function hudExtras() {
+    const hudEl = document.getElementById('hud'); if (!hudEl) return;
+    const tip = document.createElement('div'); tip.className = 'hud-tip'; tip.setAttribute('aria-hidden', 'true'); document.body.appendChild(tip);
+    let cur = null, tm = 0, touch = false;
+    const hide = () => { clearTimeout(tm); cur = null; tip.classList.remove('on'); };
+    const show = (m) => {
+      if (m === cur) return; cur = m; clearTimeout(tm);
+      tip.textContent = m.getAttribute('data-tip'); tip.classList.add('on');
+      const r = m.getBoundingClientRect(), w = tip.offsetWidth;
+      tip.style.left = Math.round(J.clamp(r.left, 8, innerWidth - w - 8)) + 'px'; tip.style.top = Math.round(r.bottom + 10) + 'px';
+      if (touch) tm = setTimeout(hide, 3000);
+    };
+    window.addEventListener('pointerdown', (e) => { touch = e.pointerType === 'touch'; }, { passive: true, capture: true });
+    hudEl.addEventListener('mouseover', (e) => { const m = e.target.closest && e.target.closest('.m[data-tip]'); if (m) show(m); });
+    hudEl.addEventListener('mouseout', (e) => { const m = e.target.closest && e.target.closest('.m[data-tip]'); if (m && !m.contains(e.relatedTarget)) hide(); });
+    hudEl.addEventListener('focusin', (e) => { const m = e.target.closest && e.target.closest('.m[data-tip]'); if (m && e.target.matches(':focus-visible')) show(m); });
+    hudEl.addEventListener('focusout', hide);
+    window.addEventListener('scroll', () => { if (cur) hide(); }, { passive: true });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
+    // section scroll offset follows the real sticky HUD height; page scroll progress hairline (transform only, one write per frame)
+    const prog = hudEl.querySelector('.hud-prog'); let pr = 0;
+    const root = document.documentElement;
+    const upd = () => { pr = 0; if (prog) prog.style.transform = 'scaleX(' + J.clamp(scrollY / Math.max(1, root.scrollHeight - innerHeight), 0, 1).toFixed(4) + ')'; };
+    window.addEventListener('scroll', () => { if (!pr) pr = requestAnimationFrame(upd); }, { passive: true }); upd();
+    new ResizeObserver(() => root.style.setProperty('--hud-h', hudEl.offsetHeight + 'px')).observe(hudEl);
+    const hb = document.getElementById('helpBtn'); if (hb) hb.addEventListener('click', () => J.help());
+    document.querySelectorAll('[data-act="help"]').forEach((b) => b.addEventListener('click', () => J.help()));
+    document.querySelectorAll('[data-act="top"]').forEach((b) => b.addEventListener('click', () => J.toTop()));
+  }
+
   /* ---------- module registry: JEV.mod(name, init) — each module is a closure, no globals ---------- */
   const mods = [];
   J.mod = (name, init) => mods.push({ name, init });
   J.boot = () => {
     const kb = document.getElementById('killBtn');
     if (kb) kb.addEventListener('click', () => J.setKilled(!S.killed));
-    hud(); pauseOffscreen();
+    hud(); hudEls.ready = true; hudExtras(); pauseOffscreen();
     for (const m of mods) {
       const t0 = performance.now();
       try { m.init(); } catch (e) { console.error('[module:' + m.name + ']', e); }

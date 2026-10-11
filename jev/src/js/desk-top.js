@@ -89,18 +89,19 @@ JEV.mod('desk-top', () => {
     const live = mkC(M.price, nowMs()); live.v = 6; accum(live, cands[cands.length - 1]); cands.push(live);
     for (let i = 0; i < 11; i++) {                               // a few fired tickets in the back-history
       const c = cands[4 + Math.floor(rg() * (N - 10))], k = rg(), kind = k < 0.4 ? 'buy' : k < 0.8 ? 'sell' : 'close';
-      marks.push({ cid: c.cid, price: kind === 'buy' ? c.l : kind === 'sell' ? c.h : (c.o + c.c) / 2, kind, t: -1e9, txt: '' });
+      marks.push({ cid: c.cid, price: kind === 'buy' ? c.l : kind === 'sell' ? c.h : (c.o + c.c) / 2, kind, t: -1e9, txt: '', size: J.SIZES[(rg() * 4) | 0], conf: 0.86 + rg() * 0.11, dest: 'execute', venue: ['binance', 'okx', 'bybit', 'hyperliquid', 'coinbase', 'kraken'][(rg() * 6) | 0] });
     }
   })();
 
+  const pA = new Float32Array(NB), pB = new Float32Array(NB), sA = new Int8Array(NB), sB = new Int8Array(NB);
   const bkA = new Float32Array(NB), bkB = new Float32Array(NB), tA = new Float32Array(NB), tB = new Float32Array(NB), fA = new Float32Array(NB), fB = new Float32Array(NB);
   const lblA = new Array(NB).fill(''), lblB = new Array(NB).fill('');
   const book = { mid: '', spr: '', sprBps: 0, imb: 0, up: true, mx: 3, gap: 5 };
   const draw1 = (k, imb, bid) => (0.35 + Math.random() * 1.5) * (1 + k * 0.2) * (Math.random() < 0.05 ? 2.4 : 1) * Math.max(0.35, 1 + (bid ? 1 : -1) * 0.6 * imb);
   const retarget = (frac) => {
     for (let k = 0; k < NB; k++) {
-      if (Math.random() < frac) { const v = draw1(k, sim.imbT, false); if (Math.abs(v - tA[k]) > 0.6 + 0.4 * tA[k]) fA[k] = 1; tA[k] = v; }
-      if (Math.random() < frac) { const v = draw1(k, sim.imbT, true); if (Math.abs(v - tB[k]) > 0.6 + 0.4 * tB[k]) fB[k] = 1; tB[k] = v; }
+      if (Math.random() < frac) { const v = draw1(k, sim.imbT, false); if (Math.abs(v - tA[k]) > 0.6 + 0.4 * tA[k]) { fA[k] = 1; sA[k] = v > tA[k] ? 1 : -1; pA[k] = bkA[k]; } tA[k] = v; }
+      if (Math.random() < frac) { const v = draw1(k, sim.imbT, true); if (Math.abs(v - tB[k]) > 0.6 + 0.4 * tB[k]) { fB[k] = 1; sB[k] = v > tB[k] ? 1 : -1; pB[k] = bkB[k]; } tB[k] = v; }
     }
   };
   const bookLabels = (price) => {
@@ -158,7 +159,7 @@ JEV.mod('desk-top', () => {
       pop(sgnUsd(jump) + ' · ' + a + ' ' + d.size + '%', jump);
     } else if (a === 'close') { sim.tix.shift(); sim.tixN++; } else if (a === 'flatten') { sim.tix.length = 0; sim.tixN++; }
     if (d.symbol === 'BTC-PERP' && a !== 'hold') {
-      marks.push({ cid: cands[cands.length - 1].cid, price: M.price, kind: a === 'buy' || a === 'sell' ? a : 'close', t,
+      marks.push({ cid: cands[cands.length - 1].cid, price: M.price, kind: a === 'buy' || a === 'sell' ? a : 'close', t, act: a, size: d.size, conf: d.conf, dest: d.dest, venue: d.venue,
         txt: (a === 'buy' || a === 'sell' ? a + ' ' + d.size + '% ' : a + ' ') + '.' + String(Math.round(d.conf * 100)).padStart(2, '0') });
       if (marks.length > 60) marks.shift();
     }
@@ -194,6 +195,11 @@ JEV.mod('desk-top', () => {
   const holdChips = $$('.dkt-c', mt).filter((e) => e.querySelector('[data-k="holder"]'));
   const K = (k, s) => { const a = kEls[k]; if (a) for (let i = 0; i < a.length; i++) setT(a[i], s); };
   const chipC = (k, c) => { const a = chipEls[k]; if (a) for (let i = 0; i < a.length; i++) if (a[i].dataset.c !== c) a[i].dataset.c = c; };
+  $$('.dkt-c', set1).forEach((e) => { e.tabIndex = 0; });       // keyboard: tab through the chips (the marquee holds while one has focus); the clone stays out of the tab order
+  const mq = $('.dkt-mq', bar);
+  if (mq) {                                                      // touch: tap the strip to hold it, tap again to resume
+    mq.addEventListener('click', () => { if (matchMedia('(hover: none)').matches) mq.classList.toggle('dkt-hold'); });
+  }
   let mqW = 0;
   J.watch(set1, (r) => {
     if (!r.width || (mqW && Math.abs(r.width - mqW) / mqW < 0.05)) return;
@@ -273,9 +279,18 @@ JEV.mod('desk-top', () => {
     host._ft = t; gl.className = 'dkt-gl ' + cls;
     return a;
   }
-  function digitFlash(sp, ch, dir) {
-    if (!glowFlash(sp, ch, dir > 0 ? 'u' : 'd')) return;
-    J.animate(sp, [{ transform: 'translateY(' + (dir > 0 ? '14%' : '-14%') + ') scale(1.06)' }, { transform: 'none' }], { duration: 760, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  let rollN = 0;
+  /** odometer roll: the old glyph slides out one way while the new one rolls in from the other, with a springy settle (transform + opacity only) */
+  function digitFlash(sp, ch, dir, old) {
+    glowFlash(sp, ch, dir > 0 ? 'u' : 'd');
+    if (reduce) return;
+    const tn = sp.firstChild;
+    const a = J.animate(sp, [{ transform: 'translateY(' + (dir > 0 ? '34%' : '-34%') + ') scale(1.04)', opacity: .15 }, { transform: 'translateY(' + (dir > 0 ? '-3%' : '3%') + ')', opacity: 1, offset: .55 }, { transform: 'none', opacity: 1 }], { duration: 620, easing: 'cubic-bezier(.2,.9,.25,1.12)' });
+    if (!a || rollN > 9 || old == null) return;
+    const g = document.createElement('i'); g.className = 'dkt-ol'; g.setAttribute('aria-hidden', 'true'); g.textContent = old; sp.appendChild(g);
+    const b = J.animate(g, [{ transform: 'none', opacity: .5 }, { transform: 'translateY(' + (dir > 0 ? '-48%' : '48%') + ')', opacity: 0 }], { duration: 340, easing: 'cubic-bezier(.4,0,.8,.4)' });
+    if (!b) { g.remove(); return; }
+    rollN++; b.onfinish = b.oncancel = () => { rollN--; g.remove(); };
   }
   function setBalText(s, dir) {
     if (digs.length !== s.length) {
@@ -283,7 +298,7 @@ JEV.mod('desk-top', () => {
       for (let i = 0; i < s.length; i++) { const sp = document.createElement('span'); sp.className = s[i] === ',' ? 'dkt-cm' : 'dkt-dg'; sp.appendChild(document.createTextNode(s[i])); balEl.appendChild(sp); digs.push(sp); }
       return;
     }
-    for (let i = 0; i < s.length; i++) { const sp = digs[i], tn = sp.firstChild; if (tn.data !== s[i]) { tn.data = s[i]; if (sp.className === 'dkt-dg') digitFlash(sp, s[i], dir); } }
+    for (let i = 0; i < s.length; i++) { const sp = digs[i], tn = sp.firstChild; if (tn.data !== s[i]) { const old = tn.data; tn.data = s[i]; if (sp.className === 'dkt-dg') digitFlash(sp, s[i], dir, old); } }
   }
   /** stat value with a flash overlay: text lives in firstChild so the overlay survives text updates */
   const flashStat = (el, txt) => { const tn = el.firstChild; if (tn.data === txt) return; tn.data = txt; glowFlash(el, txt, 's'); };
@@ -292,11 +307,16 @@ JEV.mod('desk-top', () => {
   const pb1 = segs('dkt-pb1'), pb2 = segs('dkt-pb2'), pb3 = segs('dkt-pb3'), pv1 = $('#dkt-pv1'), pv2 = $('#dkt-pv2'), pv3 = $('#dkt-pv3');
   function flushPnl() {
     const bal = sim.bal, delta = bal - sim.open, pos = delta >= 0, pct = delta / sim.open * 100;
-    if (pnl.classList.contains('dkt-neg') === pos) pnl.classList.toggle('dkt-neg', !pos);
+    if (pnl.classList.contains('dkt-neg') === pos) {
+      pnl.classList.toggle('dkt-neg', !pos);
+      const pill = $('.dkt-dp', pnl); if (pill && pill._pos != null) J.animate(pill, [{ transform: 'scale(1)' }, { transform: 'scale(1.12)', offset: .35 }, { transform: 'scale(1)' }], { duration: 560, easing: 'cubic-bezier(.2,.9,.3,1.2)' });   // sign flip: the pill morphs colour (css transition) and pops
+    }
+    { const pill = $('.dkt-dp', pnl); if (pill) pill._pos = pos; }
+    if (dpcEl) { const arrow = darEl; if (arrow && arrow._pos !== pos) { arrow._pos = pos; arrow.style.transform = pos ? 'none' : 'rotate(180deg)'; } }
     const dir = bal >= sim.shown ? 1 : -1; sim.shown = bal;
     const s = fmt(Math.round(bal)); setBalText(s, dir);
     const t = nowMs(); if (t - srT > 6000) { srT = t; setT(balSr, 'swarm balance ' + s + ' dollars, ' + sgnUsd(delta) + ' on the session, simulated'); }
-    setT(runEl, sgnUsd(delta)); setT(dvEl, sgnUsd(delta)); setT(dpcEl, sgnPct(pct)); setT(darEl, pos ? '▲' : '▼');
+    setT(runEl, sgnUsd(delta)); setT(dvEl, sgnUsd(delta)); setT(dpcEl, sgnPct(pct)); setT(darEl, '▲');
     setT(subEl, 'vs open $' + fmt(Math.round(sim.open)) + ' · settled by code');
     setT(liveEl, S.killed ? 'halted' : 'live');
     // stats
@@ -333,6 +353,14 @@ JEV.mod('desk-top', () => {
     pc.dirty = true;
   });
   J.watch(wcv, () => { const r = J.fit(wcv); wl.g = r.g; wl.W = r.W; wl.H = r.H; wl.fs = tfs(r.W); sim.stripDirty = true; });
+  /* hover / touch scrub over the balance history: a vertical guide + dot are drawn per frame (no text), the readout is a DOM chip updated only when the sample changes */
+  const scrub = document.createElement('div'); scrub.className = 'dkt-scrub'; scrub.setAttribute('aria-hidden', 'true');
+  scrub.innerHTML = '<b></b><span></span>'; pcv.parentNode.appendChild(scrub);
+  const scB = scrub.firstChild, scS = scrub.lastChild; const sc = { on: false, x: 0, i: -1, t: 0, touch: false };
+  const scMove = (e) => { sc.on = true; sc.x = e.offsetX; sc.t = nowMs(); sc.touch = e.pointerType === 'touch'; };
+  pcv.addEventListener('pointermove', scMove, { passive: true }); pcv.addEventListener('pointerdown', scMove, { passive: true });
+  pcv.addEventListener('pointerleave', () => { if (!sc.touch) sc.on = false; }); pcv.addEventListener('pointercancel', () => { if (!sc.touch) sc.on = false; });
+  pcv.style.touchAction = 'pan-y'; pcv.style.cursor = 'crosshair';
   const PY0 = 16, PX0 = 8;
   /** the cached layer: grid, above/below-open fill, glow + line, open baseline, axis labels */
   function renderPnl() {
@@ -392,6 +420,17 @@ JEV.mod('desk-top', () => {
     g.globalCompositeOperation = 'source-over';
     g.fillStyle = '#fff'; g.beginPath(); g.arc(x1, yEnd, 2.6, 0, TAU); g.fill();
     g.drawImage(pc.tag, x1 + 7, pc.ty - 8, pc.tw, 16);
+    if (sc.on && sc.touch && nowMs() - sc.t > 3500) sc.on = false;
+    if (sc.on && pc.W) {
+      const dxs = (x1 - PX0) / HN, k = clamp(Math.round((sc.x - PX0) / dxs), 0, HN - 1), v = k === HN - 1 ? sim.bal : hat(k), xx = PX0 + k * dxs, ysc = (y1 - y0) / (pc.yMax - pc.yMin), yy = y1 - (v - pc.yMin) * ysc;
+      g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 1; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(Math.round(xx) + 0.5, y0 - 4); g.lineTo(Math.round(xx) + 0.5, y1 + 6); g.stroke(); g.setLineDash([]);
+      g.fillStyle = v >= sim.open ? C.green : C.red; g.beginPath(); g.arc(xx, yy, 4, 0, TAU); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.stroke();
+      if (k !== sc.i) {
+        sc.i = k; const dlt = v - sim.open, ago = (HN - 1 - k) / 4;
+        setT(scB, '$' + fmt(Math.round(v))); setT(scS, sgnUsd(dlt) + ' vs open · ' + (ago < 1 ? 'now' : '-' + Math.round(ago) + 's')); scB.style.color = dlt >= 0 ? C.green : C.red;
+      }
+      scrub.style.transform = 'translate(' + Math.round(clamp(xx - 62, 4, pc.W - ax - 112)) + 'px,' + 2 + 'px)'; if (!scrub.classList.contains('on')) scrub.classList.add('on');
+    } else if (scrub.classList.contains('on')) { scrub.classList.remove('on'); sc.i = -1; }
   }
   function drawStrip() {
     const g = wl.g; if (!g) return;
@@ -418,7 +457,8 @@ JEV.mod('desk-top', () => {
    * ===================================================================================== */
   const tcv = $('#dkt-cv'), twrap = $('#dkt-tc');
   const L = { vwap: true, bands: true, book: true };
-  const hv = { on: false, x: 0, y: 0 };
+  const hv = { on: false, x: 0, y: 0, touch: false, t: 0, key: false };
+  const hits = [];                                              // marker hit boxes of the last frame {x,y,m}
   const tg = { gArea: null, g: null, W: 0, H: 0, bf: 0.225, bfT: 0.225, bfMax: 0.225, px: M.price, yMin: 0, yMax: 1, ys: 1, init: false, slide: 0, n: 0, nar: false,
     x0: 8, x1: 100, y0: 12, y1: 100, cw: 100, bw: 0, axW: 60, slot: 8, nVis: 70, volH: 40, timeH: 16, fs: 9.5 };
   function layout() {
@@ -435,11 +475,21 @@ JEV.mod('desk-top', () => {
     const k = b.dataset.l; L[k] = !L[k]; b.classList.toggle('on', L[k]); b.setAttribute('aria-pressed', String(L[k]));
     if (k === 'book') layout();
   }));
-  const setHover = (e) => { hv.on = true; hv.x = e.offsetX; hv.y = e.offsetY; };
+  const setHover = (e) => { hv.on = true; hv.key = false; hv.touch = e.pointerType === 'touch'; hv.x = e.offsetX; hv.y = e.offsetY; hv.t = nowMs(); };
   tcv.addEventListener('pointermove', setHover, { passive: true });
   tcv.addEventListener('pointerdown', setHover, { passive: true });
-  tcv.addEventListener('pointerleave', () => (hv.on = false));
-  tcv.addEventListener('pointercancel', () => (hv.on = false));
+  tcv.addEventListener('pointerleave', () => { if (!hv.touch) hv.on = false; });   // touch: the read-out stays ~4 s after lifting, then fades (see drawTape)
+  tcv.addEventListener('pointercancel', () => { if (!hv.touch) hv.on = false; });
+  /* keyboard parity: focus the canvas, arrows walk the candles, home/end jump, esc clears */
+  tcv.tabIndex = 0; tcv.setAttribute('role', 'img');
+  tcv.addEventListener('keydown', (e) => {
+    const k = e.key; if (k !== 'ArrowLeft' && k !== 'ArrowRight' && k !== 'Home' && k !== 'End' && k !== 'Escape') return;
+    e.preventDefault(); if (k === 'Escape') { hv.on = false; return; }
+    const n = tg.n || 1; let i = hv.on && hv.key ? hv.i : n - 1;
+    i = k === 'ArrowLeft' ? i - 1 : k === 'ArrowRight' ? i + 1 : k === 'Home' ? 0 : n - 1; i = clamp(i, 0, n - 1);
+    hv.on = true; hv.key = true; hv.touch = false; hv.i = i; hv.x = X(i); hv.y = tg.y0 + (tg.y1 - tg.y0) * 0.5; hv.t = nowMs();
+  });
+  tcv.addEventListener('blur', () => { if (hv.key) hv.on = false; });
   const X = (i) => tg.x1 - 4 - tg.slot * (tg.n - 1 - i) - tg.slot * 0.5 + tg.slide;
   const Y = (p) => tg.y1 - (p - tg.yMin) * tg.ys;
   const f0 = (n) => fmt(Math.round(n));
@@ -448,12 +498,12 @@ JEV.mod('desk-top', () => {
     const g = tg.g, W = tg.W, H = tg.H, cw = tg.cw, al = clamp(tg.bf / tg.bfMax, 0, 1);
     const k = 1 - Math.exp(-dt * 7); let sa = 0, sb = 0, mx = 0.5;
     for (let i = 0; i < NB; i++) {
-      bkA[i] += (tA[i] - bkA[i]) * k; bkB[i] += (tB[i] - bkB[i]) * k; fA[i] = Math.max(0, fA[i] - dt * 2.4); fB[i] = Math.max(0, fB[i] - dt * 2.4);
+      bkA[i] += (tA[i] - bkA[i]) * k; bkB[i] += (tB[i] - bkB[i]) * k; fA[i] = Math.max(0, fA[i] - dt * 1.7); fB[i] = Math.max(0, fB[i] - dt * 1.7);
       sa += bkA[i]; sb += bkB[i]; if (bkA[i] > mx) mx = bkA[i]; if (bkB[i] > mx) mx = bkB[i];
     }
     book.mx += (mx - book.mx) * k * 0.6; book.imb = (sb - sa) / (sb + sa || 1);
     if (al < 0.03) return;
-    const nar = tg.nar, bx0 = cw + 10, bx1 = W - 8, bwid = bx1 - bx0, headH = 24, spH = 30, imbH = 32;
+    const nar = tg.nar, bx0 = cw + 10, bx1 = W - 8, bwid = bx1 - bx0, headH = 24, spH = 30, imbH = 44;
     const rh = (H - headH - spH - imbH - 4) / (NB * 2), yS = headH + NB * rh, cmx = Math.max(sa, sb, 1);
     g.save(); g.globalAlpha = al;
     g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(cw + 1, 0, 1, H);
@@ -464,7 +514,7 @@ JEV.mod('desk-top', () => {
     if (!nar) { g.fillStyle = C.green; g.beginPath(); g.arc(bx1 - 2, 12, 2 + 0.6 * Math.sin(t * 5), 0, TAU); g.fill(); }
     const fz = fs;
     for (let side = 0; side < 2; side++) {
-      const ask = side === 0, bk = ask ? bkA : bkB, fl = ask ? fA : fB, lb = ask ? lblA : lblB; let cum = 0;
+      const ask = side === 0, bk = ask ? bkA : bkB, fl = ask ? fA : fB, sg = ask ? sA : sB, pv = ask ? pA : pB, lb = ask ? lblA : lblB; let cum = 0;
       for (let kk = 0; kk < NB; kk++) {
         cum += bk[kk];
         const y = ask ? headH + (NB - 1 - kk) * rh : yS + spH + kk * rh, h = rh - 1.2;
@@ -472,7 +522,12 @@ JEV.mod('desk-top', () => {
         const w = Math.max(2, Math.min(1, bk[kk] / book.mx) * (nar ? bwid * 0.94 : bwid - 46));
         g.fillStyle = ask ? cR(kk === 0 ? 0.78 : 0.52) : cG(kk === 0 ? 0.72 : 0.46); g.fillRect(bx1 - w, y, w, h);
         g.fillStyle = ask ? cR(0.95) : cG(0.95); g.fillRect(bx1 - w, y, 1.5, h);
-        if (fl[kk] > 0.02) { g.fillStyle = 'rgba(255,255,255,' + (fl[kk] * 0.34).toFixed(3) + ')'; g.fillRect(bx1 - w, y, w, h); }
+        if (fl[kk] > 0.02) {                                  // size change: green = grew, red = shrank; the old edge fades as a trail
+          const f = fl[kk], bwm = nar ? bwid * 0.94 : bwid - 46, wp = Math.max(2, Math.min(1, pv[kk] / book.mx) * bwm), grew = sg[kk] > 0;
+          g.fillStyle = grew ? cG(f * 0.5) : cR(f * 0.5); g.fillRect(bx1 - w, y, w, h);
+          if (Math.abs(wp - w) > 1) { g.fillStyle = grew ? cG(f * 0.3) : 'rgba(255,255,255,' + (f * 0.22).toFixed(3) + ')'; g.fillRect(bx1 - Math.max(w, wp), y, Math.abs(wp - w), h); }
+          g.fillStyle = 'rgba(255,255,255,' + (f * f * 0.6).toFixed(3) + ')'; g.fillRect(bx1 - w, y, 1.5, h);
+        }
         g.font = '600 ' + fz + 'px ' + MONO; g.textAlign = 'right'; g.fillStyle = '#fff'; g.fillText(bk[kk].toFixed(2), bx1 - 3, y + h / 2 + 0.5);
         if (!nar) { g.font = '500 ' + fz + 'px ' + MONO; g.textAlign = 'left'; g.fillStyle = ask ? '#ff9ca6' : '#7af3cb'; g.fillText(lb[kk], bx0 + 1, y + h / 2 + 0.5); }
       }
@@ -491,6 +546,13 @@ JEV.mod('desk-top', () => {
     g.fillStyle = cG(0.9); g.fillRect(bx0, yi + 11, bw1 - 1, 6); g.fillStyle = cR(0.9); g.fillRect(bx0 + bw1 + 1, yi + 11, bwid - bw1 - 1, 6);
     g.globalCompositeOperation = 'lighter'; g.fillStyle = cG(0.16); g.fillRect(bx0, yi + 8, bw1, 12); g.fillStyle = cR(0.16); g.fillRect(bx0 + bw1, yi + 8, bwid - bw1, 12); g.globalCompositeOperation = 'source-over';
     g.fillStyle = '#fff'; g.fillRect(bx0 + bwid / 2 - 0.5, yi + 9, 1, 10);
+    // depth heat: cumulative size per level, bids grow left of centre (green), asks right (red); brighter = deeper, centre = touch
+    const hy = yi + 23, hw = bwid / 2 - 1, cw1 = hw / NB; let cb = 0, ca = 0;
+    for (let kk = 0; kk < NB; kk++) {
+      cb += bkB[kk]; ca += bkA[kk];
+      g.fillStyle = cG(0.12 + 0.78 * cb / cmx); g.fillRect(bx0 + hw - (kk + 1) * cw1 + 0.5, hy, cw1 - 1, 6);
+      g.fillStyle = cR(0.12 + 0.78 * ca / cmx); g.fillRect(bx0 + hw + 2 + kk * cw1 + 0.5, hy, cw1 - 1, 6);
+    }
     g.restore();
   }
 
@@ -556,6 +618,10 @@ JEV.mod('desk-top', () => {
         const yt = Y(Math.max(c.o, cc)), yb = Y(Math.min(c.o, cc)); g.fillRect(X(i) - bw / 2 - 2, yt - 2, bw + 4, yb - yt + 4);
       }
     }
+    {                                                           // the live candle breathes: a slow additive halo around its body + wick (static when reduced motion)
+      const c = cur, cc = px, br = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(t * 2.4), bx = X(n - 1), yt = Y(Math.max(c.o, cc, c.h)), yb = Y(Math.min(c.o, cc, c.l));
+      g.fillStyle = cc >= c.o ? cG(0.05 + 0.1 * br) : cR(0.05 + 0.1 * br); g.fillRect(bx - bw / 2 - 3 - br * 2, yt - 2, bw + 6 + br * 4, yb - yt + 4);
+    }
     g.globalCompositeOperation = 'source-over';
     for (let pass = 0; pass < 2; pass++) {
       const col = pass === 0 ? C.green : C.red; g.strokeStyle = col; g.fillStyle = col; g.lineWidth = 1; g.beginPath();
@@ -582,12 +648,13 @@ JEV.mod('desk-top', () => {
     if (iHi >= 0 && iHi < n - 1) g.fillText(f0(hi), clamp(X(iHi), x0 + 22, x1 - 22), Y(hi) - 8);
     if (iLo >= 0 && iLo < n - 1) g.fillText(f0(lo), clamp(X(iLo), x0 + 22, x1 - 22), Y(lo) + 9);
     // fired tickets
-    const first = cands[st].cid, r = nar ? 4.5 : 5.5, tnow = nowMs();
+    const first = cands[st].cid, r = nar ? 4.5 : 5.5, tnow = nowMs(); hits.length = 0;
     for (let pass = 0; pass < 2; pass++) {
       for (let j = 0; j < marks.length; j++) {
         const m = marks[j], i = m.cid - first; if (i < 0 || i >= n) continue;
         const isB = m.kind === 'buy', isS = m.kind === 'sell'; if ((pass === 0) !== (isB || isS)) continue;
         const x = X(i), y = isB ? Y(m.price) + 12 : isS ? Y(m.price) - 12 : Y(m.price), age = (tnow - m.t) / 1000;
+        hits.push({ x, y, m });
         if (pass === 0) {
           g.beginPath();
           if (isB) { g.moveTo(x, y - r); g.lineTo(x + r, y + r * 0.8); g.lineTo(x - r, y + r * 0.8); } else { g.moveTo(x, y + r); g.lineTo(x + r, y - r * 0.8); g.lineTo(x - r, y - r * 0.8); }
@@ -614,14 +681,41 @@ JEV.mod('desk-top', () => {
     const tw = tg.axW - 4; rr(g, x1 + 5, ly - 8.5, tw, 17, 4); g.fillStyle = lcol; g.fill();
     g.fillStyle = '#0a0710'; g.font = '700 9.5px ' + MONO; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(nar ? f0(px) : fmt(px, 1), x1 + 9, ly + 0.5);
 
-    // crosshair
+    // crosshair + tooltip (mouse hover, touch hold or keyboard)
+    if (hv.on && hv.touch && tnow - hv.t > 4200) hv.on = false;
     if (hv.on && hv.x >= x0 && hv.x <= x1 + 4 && hv.y >= y0 && hv.y <= H - tg.timeH) {
-      let i = Math.round((hv.x - X(0)) / slot); i = clamp(i, 0, n - 1); const c = cands[st + i], cx = X(i), py = hv.y;
-      g.setLineDash([3, 3]); g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,.45)'; g.beginPath(); g.moveTo(Math.round(cx) + 0.5, y0); g.lineTo(Math.round(cx) + 0.5, H - tg.timeH); g.moveTo(x0, Math.round(py) + 0.5); g.lineTo(x1 + 4, Math.round(py) + 0.5); g.stroke(); g.setLineDash([]);
-      if (py <= y1) { const pv = yMin + (y1 - py) / tg.ys; rr(g, x1 + 5, py - 8.5, tw, 17, 4); g.fillStyle = '#f4eef6'; g.fill(); g.fillStyle = '#0a0710'; g.font = '700 9.5px ' + MONO; g.textAlign = 'left'; g.fillText(nar ? f0(pv) : fmt(pv, 1), x1 + 9, py + 0.5); }
-      const ci = i === n - 1 ? px : c.c, tx = nar ? 'c ' + f0(ci) + ' · v ' + c.v.toFixed(0) : 'o ' + f0(c.o) + '  h ' + f0(i === n - 1 ? Math.max(c.h, px) : c.h) + '  l ' + f0(i === n - 1 ? Math.min(c.l, px) : c.l) + '  c ' + f0(ci) + '  v ' + c.v.toFixed(1) + '  vwap ' + f0(c.vw);
-      g.font = '500 9.5px ' + MONO; const w = g.measureText(tx).width + 16; rr(g, x0 + 2, y0 - 8, w, 18, 5); g.fillStyle = 'rgba(10,6,16,.88)'; g.fill(); g.strokeStyle = 'rgba(255,255,255,.16)'; g.stroke();
-      g.fillStyle = ci >= c.o ? '#7ff5cf' : '#ff9aa4'; g.textAlign = 'left'; g.fillText(tx, x0 + 10, y0 + 1.5);
+      let i = hv.key ? hv.i : Math.round((hv.x - X(0)) / slot); i = clamp(i, 0, n - 1); const c = cands[st + i], cx = Math.round(X(i)) + 0.5, py = hv.y, last = i === n - 1;
+      let hm = null, hd = 15;                                    // nearest fired-ticket marker within reach (bigger reach for touch)
+      for (let j = 0; j < hits.length; j++) { const h = hits[j], d2 = Math.hypot(h.x - hv.x, h.y - hv.y); if (d2 < hd + (hv.touch ? 10 : 0) && (!hm || d2 < hd)) { hm = h; hd = d2; } }
+      if (hm) i = clamp(hm.m.cid - first, 0, n - 1);
+      const cc = hm ? cands[st + i] : c, cxx = hm ? Math.round(X(i)) + 0.5 : cx;
+      g.setLineDash([3, 3]); g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,.4)'; g.beginPath(); g.moveTo(cxx, y0); g.lineTo(cxx, H - tg.timeH); g.moveTo(x0, Math.round(py) + 0.5); g.lineTo(x1 + 4, Math.round(py) + 0.5); g.stroke(); g.setLineDash([]);
+      g.font = '700 9.5px ' + MONO; g.textBaseline = 'middle';
+      if (py <= y1) { const pv = yMin + (y1 - py) / tg.ys; rr(g, x1 + 5, py - 8.5, tw, 17, 4); g.fillStyle = '#f4eef6'; g.fill(); g.fillStyle = '#0a0710'; g.textAlign = 'left'; g.fillText(nar ? f0(pv) : fmt(pv, 1), x1 + 9, py + 0.5); }
+      const ci = i === n - 1 ? px : cc.c, hi2 = i === n - 1 ? Math.max(cc.h, px) : cc.h, lo2 = i === n - 1 ? Math.min(cc.l, px) : cc.l, upc = ci >= cc.o;
+      // time chip on the axis
+      const tl = i === n - 1 ? 'now' : '-' + (lastCid - cc.cid) + 'm', tlw = g.measureText(tl).width + 12; rr(g, clamp(cxx - tlw / 2, x0, x1 - tlw + 6), H - tg.timeH + 1, tlw, 14, 4); g.fillStyle = '#f4eef6'; g.fill();
+      g.fillStyle = '#0a0710'; g.textAlign = 'center'; g.fillText(tl, clamp(cxx, x0 + tlw / 2, x1 - tlw / 2 + 6), H - tg.timeH + 8.5);
+      // ohlc / vwap / volume card (flips to the free side of the cursor)
+      const rows = nar ? [['o', f0(cc.o)], ['h', f0(hi2)], ['l', f0(lo2)], ['c', f0(ci)], ['vwap', f0(cc.vw)], ['vol', cc.v.toFixed(1)]]
+        : [['open', f0(cc.o)], ['high', f0(hi2)], ['low', f0(lo2)], ['close', f0(ci)], ['vwap', f0(cc.vw) + (cc.sd > 0 ? ' ±' + cc.sd.toFixed(1) : '')], ['volume', cc.v.toFixed(1) + ' btc']];
+      const rh2 = 13, cwd = nar ? 104 : 148, chh = rows.length * rh2 + 22;
+      let bx = cxx + 14; if (bx + cwd > x1 + 2) bx = cxx - 14 - cwd; bx = Math.max(x0 + 2, bx);
+      let by = clamp(py - chh / 2, y0 - 6, y1 - chh + 6);
+      if (!hm) {
+        rr(g, Math.round(bx), Math.round(by), cwd, chh, 6); g.fillStyle = 'rgba(10,6,16,.92)'; g.fill(); g.strokeStyle = upc ? cG(0.5) : cR(0.5); g.lineWidth = 1; g.stroke();
+        g.font = '700 9.5px ' + MONO; g.textAlign = 'left'; g.fillStyle = upc ? '#7ff5cf' : '#ff9aa4'; g.fillText(tl + ' · ' + (upc ? 'up' : 'down') + ' ' + sgnPct((ci / cc.o - 1) * 100), Math.round(bx) + 8, Math.round(by) + 10);
+        g.font = '500 9.5px ' + MONO;
+        for (let r2 = 0; r2 < rows.length; r2++) { const yy = Math.round(by) + 24 + r2 * rh2; g.textAlign = 'left'; g.fillStyle = '#a79eb6'; g.fillText(rows[r2][0], Math.round(bx) + 8, yy); g.textAlign = 'right'; g.fillStyle = r2 === 4 ? '#ffd77a' : '#f1eaf7'; g.fillText(rows[r2][1], Math.round(bx) + cwd - 8, yy); }
+      }
+      if (hm) {                                                  // fired-ticket card: action · size · confidence · destination
+        const m = hm.m, col = m.kind === 'buy' ? C.green : m.kind === 'sell' ? C.red : C.amber, ln = [(m.act || m.kind) + (m.kind === 'close' ? '' : ' ' + m.size + '%'), 'conf .' + String(Math.round(m.conf * 100)).padStart(2, '0') + ' ≥ floor', 'dest ' + m.dest + ' · ' + (m.venue || 'sim')];
+        const mw = 150, mh = 54, mx = clamp(hm.x - mw / 2, x0 + 2, x1 - mw + 4), my = hm.y - 14 - mh < y0 ? hm.y + 14 : hm.y - 14 - mh;
+        g.globalCompositeOperation = 'lighter'; glow(g, m.kind === 'buy' ? SP.g : m.kind === 'sell' ? SP.r : SP.a, hm.x, hm.y, 17, 0.8); g.globalCompositeOperation = 'source-over';
+        rr(g, Math.round(mx), Math.round(my), mw, mh, 6); g.fillStyle = 'rgba(10,6,16,.95)'; g.fill(); g.strokeStyle = col; g.stroke();
+        g.textAlign = 'left'; g.font = '700 10px ' + MONO; g.fillStyle = col; g.fillText('◆ ' + ln[0], Math.round(mx) + 8, Math.round(my) + 11);
+        g.font = '500 9.5px ' + MONO; g.fillStyle = '#e9e1f1'; g.fillText(ln[1], Math.round(mx) + 8, Math.round(my) + 26); g.fillStyle = '#b4abc2'; g.fillText(ln[2], Math.round(mx) + 8, Math.round(my) + 40);
+      }
     }
     drawBook(t, dt);
     if (S.killed) {
