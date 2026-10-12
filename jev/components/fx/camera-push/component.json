@@ -1,0 +1,1 @@
+{ "title": "Camera push intro", "description": "A one-shot zoom-blur streak burst with a chromatic text split that settles, as when the boot overlay lifts.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": [ "component.html" ], "css": [ "component.css" ], "js": [ "component.js" ] }

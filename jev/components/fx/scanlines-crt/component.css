@@ -1,0 +1,22 @@
+/* fx / scanlines-crt (prefix fx-). Strength: --scan. Parent must be position:relative (or use position:fixed for a page overlay). */
+.fx-scan{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;opacity:var(--scan,.5);background:repeating-linear-gradient(180deg,rgba(0,0,0,.24) 0 1px,transparent 1px 3px)}
+.fx-scan i{position:absolute;left:0;right:0;top:0;height:26%;min-height:90px;transform:translateY(-120%);will-change:transform;animation:fxRoll 7s linear infinite;
+  background:linear-gradient(180deg,transparent,rgba(255,60,120,.07) 45%,rgba(255,110,170,.12) 78%,transparent)}
+body.killed .fx-scan i{background:linear-gradient(180deg,transparent,rgba(255,60,50,.09) 45%,rgba(255,110,70,.15) 78%,transparent)}
+@keyframes fxRoll{to{transform:translateY(480%)}}
+@media (hover:none),(pointer:coarse){.fx-scan{opacity:calc(var(--scan,.5)*.55)}}
+@media (prefers-reduced-motion:reduce){.fx-scan i{display:none}}
+@media print{.fx-scan{display:none!important}}
+.fxd-stage{position:relative;overflow:hidden;isolation:isolate;border-radius:16px;border:1px solid var(--line);background:#05030a}
+.fxd-eb{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--pink)}
+.fxd-h{font:700 clamp(24px,5vw,44px)/1.05 var(--sans);letter-spacing:-.02em}
+.fxd-h em{font-style:normal;color:var(--pink);text-shadow:0 0 28px rgba(255,46,110,.55)}
+.fxd-p{color:var(--mut);max-width:58ch;margin-top:10px}
+.fxd-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.fxd-btn{min-height:40px;padding:0 16px;border-radius:99px;font:700 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);border:1px solid var(--line2);background:rgba(255,255,255,.04);transition:.25s}
+.fxd-btn:hover{border-color:var(--pink);box-shadow:0 0 18px rgba(255,46,110,.35)}
+.fxd-btn[aria-pressed="true"]{color:var(--red);border-color:rgba(255,77,94,.6);background:rgba(255,77,94,.1)}
+.fxd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.fxd-tile{position:relative;overflow:hidden;isolation:isolate;min-height:130px;border-radius:14px;border:1px solid var(--line);background:linear-gradient(160deg,#1a0f26,#0a0612);padding:14px;display:flex;flex-direction:column;justify-content:flex-end}
+.fxd-tile b{font:700 18px/1 var(--sans)}.fxd-tile span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-top:6px}
+.fxd-pad{padding:clamp(18px,3vw,30px)}

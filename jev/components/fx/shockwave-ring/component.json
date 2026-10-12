@@ -1,0 +1,1 @@
+{ "title": "Shockwave ring", "description": "An expanding radial shockwave ring fired from any point: red on a kill, green on re-arm, with a trailing second wave.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": [ "component.html" ], "css": [ "component.css" ], "js": [ "component.js" ] }

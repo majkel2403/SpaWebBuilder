@@ -1,0 +1,34 @@
+/* fx / glitch-rgb-split (prefix fx-). Container .fx-gl (position:relative); trigger by adding .fx-glitch for ~350 ms. */
+.fx-glitch-ov{position:absolute;inset:0;z-index:6;pointer-events:none;display:none;overflow:hidden}
+.fx-gl.fx-glitch .fx-glitch-ov{display:block}
+.fx-glitch-ov::before{content:'';position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 50%,rgba(255,40,70,0),rgba(255,40,70,.3) 100%);animation:fxFlash .35s ease-out both}
+.fx-glitch-ov i{position:absolute;left:-6%;right:-6%;opacity:0;mix-blend-mode:screen;animation:fxSlice .35s steps(1) both;
+  background:linear-gradient(90deg,transparent,rgba(255,0,70,.42) 16%,rgba(0,235,255,.36) 64%,transparent);
+  -webkit-backdrop-filter:hue-rotate(150deg) saturate(2.4) brightness(1.35);backdrop-filter:hue-rotate(150deg) saturate(2.4) brightness(1.35)}
+.fx-glitch-ov i:nth-child(1){top:8%;height:4.5%;--gx:26;animation-delay:0s}
+.fx-glitch-ov i:nth-child(2){top:23%;height:2.2%;--gx:-38;animation-delay:.03s}
+.fx-glitch-ov i:nth-child(3){top:41%;height:7%;--gx:18;animation-delay:.06s}
+.fx-glitch-ov i:nth-child(4){top:57%;height:3%;--gx:-30;animation-delay:.02s}
+.fx-glitch-ov i:nth-child(5){top:72%;height:5.5%;--gx:42;animation-delay:.05s}
+.fx-glitch-ov i:nth-child(6){top:88%;height:2.4%;--gx:-22;animation-delay:.08s}
+@keyframes fxFlash{0%{opacity:1}100%{opacity:0}}
+@keyframes fxSlice{0%{opacity:1;transform:translateX(calc(var(--gx)*1px))}16%{opacity:0}30%{opacity:1;transform:translateX(calc(var(--gx)*-1.4px))}48%{opacity:0}62%{opacity:1;transform:translateX(calc(var(--gx)*.6px))}80%{opacity:0}100%{opacity:0}}
+.fx-gl.fx-glitch{animation:fxSplit .35s steps(1) both}
+@keyframes fxSplit{0%{text-shadow:4px 0 rgba(255,20,70,.9),-4px 0 rgba(0,235,255,.9)}20%{text-shadow:-6px 0 rgba(255,20,70,.9),5px 0 rgba(0,235,255,.9)}40%{text-shadow:2px 0 rgba(255,20,70,.8),-2px 0 rgba(0,235,255,.8)}60%{text-shadow:-3px 1px rgba(255,20,70,.8),3px -1px rgba(0,235,255,.8)}80%{text-shadow:1px 0 rgba(255,20,70,.6),-1px 0 rgba(0,235,255,.6)}100%{text-shadow:none}}
+.fx-gl.fx-glitch .fx-gl-jit{animation:fxJit .35s steps(1) both}
+@keyframes fxJit{0%{translate:-5px 0}14%{translate:6px 1px}28%{translate:-3px -1px}42%{translate:4px 0}57%{translate:-2px 1px}71%{translate:2px 0}85%{translate:-1px 0}100%{translate:0 0}}
+@media (prefers-reduced-motion:reduce){.fx-glitch-ov{display:none!important}.fx-gl.fx-glitch,.fx-gl.fx-glitch .fx-gl-jit{animation:none}}
+@media print{.fx-glitch-ov{display:none!important}}
+.fxd-stage{position:relative;overflow:hidden;isolation:isolate;border-radius:16px;border:1px solid var(--line);background:#05030a}
+.fxd-eb{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--pink)}
+.fxd-h{font:700 clamp(24px,5vw,44px)/1.05 var(--sans);letter-spacing:-.02em}
+.fxd-h em{font-style:normal;color:var(--pink);text-shadow:0 0 28px rgba(255,46,110,.55)}
+.fxd-p{color:var(--mut);max-width:58ch;margin-top:10px}
+.fxd-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.fxd-btn{min-height:40px;padding:0 16px;border-radius:99px;font:700 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);border:1px solid var(--line2);background:rgba(255,255,255,.04);transition:.25s}
+.fxd-btn:hover{border-color:var(--pink);box-shadow:0 0 18px rgba(255,46,110,.35)}
+.fxd-btn[aria-pressed="true"]{color:var(--red);border-color:rgba(255,77,94,.6);background:rgba(255,77,94,.1)}
+.fxd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.fxd-tile{position:relative;overflow:hidden;isolation:isolate;min-height:130px;border-radius:14px;border:1px solid var(--line);background:linear-gradient(160deg,#1a0f26,#0a0612);padding:14px;display:flex;flex-direction:column;justify-content:flex-end}
+.fxd-tile b{font:700 18px/1 var(--sans)}.fxd-tile span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-top:6px}
+.fxd-pad{padding:clamp(18px,3vw,30px)}

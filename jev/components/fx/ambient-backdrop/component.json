@@ -1,0 +1,1 @@
+{ "title": "Ambient backdrop", "description": "The layered violet, magenta and indigo gradient wash with a dark vignette that flips to red under the kill switch.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": [ "component.html" ], "css": [ "component.css" ], "js": [ "component.js" ] }

@@ -1,0 +1,1 @@
+{ "title": "CRT scanlines", "description": "Fine CRT scanlines with a slow rolling light band that turns red when the kill switch is thrown.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": [ "component.html" ], "css": [ "component.css" ], "js": [ "component.js" ] }

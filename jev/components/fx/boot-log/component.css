@@ -1,0 +1,39 @@
+/* fx / boot-log (prefix fx-). Inline version of the boot overlay's terminal card. */
+.fx-bx{position:relative;width:100%;padding:16px 18px 14px;border-radius:14px;border:1px solid rgba(255,46,110,.38);color:var(--ink);font:500 12px/1.7 var(--mono);
+  background:linear-gradient(180deg,rgba(20,10,26,.82),rgba(9,5,14,.86));box-shadow:0 0 60px -10px rgba(255,46,110,.5),0 30px 80px -20px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.08)}
+.fx-bhead{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:11px;border-bottom:1px solid var(--line)}
+.fx-bhead b{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;font:800 16px/1 var(--sans);color:#fff;background:linear-gradient(145deg,#ff4f8d,#e0155a);box-shadow:0 0 20px rgba(255,46,110,.65),inset 0 1px 0 rgba(255,255,255,.4)}
+.fx-bhead span{font:700 13px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase}
+.fx-bhead em{margin-left:auto;font-style:normal;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.fx-blog{min-height:7.9em}
+.fx-bl{min-height:1.7em;color:#cfc6d6;white-space:pre-wrap;overflow-wrap:anywhere;visibility:hidden}
+.fx-bl.show{visibility:visible}
+.fx-bl::before{content:'> ';color:var(--pink)}
+.fx-bl em{display:inline-block;transform-origin:left center;font-style:normal;font-weight:700;color:var(--green);text-shadow:0 0 10px rgba(46,230,166,.6)}
+.fx-bl em:not(:empty)::before{content:' '}
+.fx-bl.cur::after{content:'';display:inline-block;width:.55em;height:1em;margin-left:3px;vertical-align:-.14em;background:var(--pink);box-shadow:0 0 10px var(--pink);animation:fxCaret .5s steps(1) infinite}
+@keyframes fxCaret{50%{opacity:0}}
+.fx-bl.hit em{animation:fxOk .5s ease-out both}
+@keyframes fxOk{0%{opacity:0;scale:1.5;filter:brightness(2.2)}100%{opacity:1;scale:1;filter:none}}
+.fx-bbar{height:3px;margin-top:12px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.fx-bbar i{display:block;height:100%;width:100%;transform:scaleX(0);transform-origin:left;border-radius:inherit;background:linear-gradient(90deg,var(--pink),var(--pink2),#fff);box-shadow:0 0 14px var(--pink)}
+.fx-bbar i.tk{animation:fxTick .26s ease-out}
+@keyframes fxTick{0%{filter:brightness(2.4) saturate(.6)}100%{filter:none}}
+.fx-bmeta{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:9px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);font-variant-numeric:tabular-nums}
+.fx-bmeta span:first-child{color:var(--pink2)}
+.fx-bmeta .fxd-btn{min-height:40px}
+@media (max-width:700px){.fx-bx{padding:14px 14px 12px;font-size:11px}.fx-bhead em{display:none}}
+@media (prefers-reduced-motion:reduce){.fx-bl.cur::after{animation:none}}
+.fxd-stage{position:relative;overflow:hidden;isolation:isolate;border-radius:16px;border:1px solid var(--line);background:#05030a}
+.fxd-eb{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--pink)}
+.fxd-h{font:700 clamp(24px,5vw,44px)/1.05 var(--sans);letter-spacing:-.02em}
+.fxd-h em{font-style:normal;color:var(--pink);text-shadow:0 0 28px rgba(255,46,110,.55)}
+.fxd-p{color:var(--mut);max-width:58ch;margin-top:10px}
+.fxd-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.fxd-btn{min-height:40px;padding:0 16px;border-radius:99px;font:700 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);border:1px solid var(--line2);background:rgba(255,255,255,.04);transition:.25s}
+.fxd-btn:hover{border-color:var(--pink);box-shadow:0 0 18px rgba(255,46,110,.35)}
+.fxd-btn[aria-pressed="true"]{color:var(--red);border-color:rgba(255,77,94,.6);background:rgba(255,77,94,.1)}
+.fxd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.fxd-tile{position:relative;overflow:hidden;isolation:isolate;min-height:130px;border-radius:14px;border:1px solid var(--line);background:linear-gradient(160deg,#1a0f26,#0a0612);padding:14px;display:flex;flex-direction:column;justify-content:flex-end}
+.fxd-tile b{font:700 18px/1 var(--sans)}.fxd-tile span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-top:6px}
+.fxd-pad{padding:clamp(18px,3vw,30px)}
