@@ -1,1 +1,65 @@
-{ "title": "Runtime tail", "description": "A blank stage that tails the live JEV state, simulated market and the recent decision stream as JSON, for testing the data bus.", "width": "1100px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }
+{
+  "title": "Runtime tail",
+  "description": "A blank stage that tails the live JEV state, simulated market and the recent decision stream as JSON, for testing the data bus.",
+  "width": "1100px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".rt-wrap",
+          "enter": "rise",
+          "dur": 800,
+          "delay": 100,
+          "dist": 22
+        },
+        {
+          "sel": ".rt-wrap .ph",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 450
+        },
+        {
+          "sel": ".rt-col h3",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 620,
+          "stagger": 110
+        },
+        {
+          "sel": ".rt-pre",
+          "enter": "wipe-x",
+          "dur": 950,
+          "delay": 760,
+          "stagger": 130
+        }
+      ],
+      "loops": [
+        {
+          "sel": "#rtRate",
+          "loop": "flicker",
+          "dur": 4200
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}

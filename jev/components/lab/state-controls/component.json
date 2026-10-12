@@ -110,5 +110,61 @@
       "lab/_demo",
       "lab/_tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".lab-ctl",
+          "enter": "blur",
+          "dur": 800
+        },
+        {
+          "sel": ".lab-ph > *",
+          "enter": "rise",
+          "stagger": 80,
+          "dur": 600,
+          "delay": 200,
+          "dist": 12
+        },
+        {
+          "sel": ".lab-ctl > .lab-sub",
+          "enter": "rise",
+          "stagger": 140,
+          "dur": 600,
+          "delay": 380,
+          "dist": 10
+        },
+        {
+          "sel": ".lab-sc",
+          "enter": "pop",
+          "stagger": 50,
+          "dur": 700,
+          "delay": 480,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".lab-row",
+          "enter": "slide-l",
+          "stagger": 70,
+          "dur": 800,
+          "delay": 600,
+          "dist": 14
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".lab-bdg .lamp",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

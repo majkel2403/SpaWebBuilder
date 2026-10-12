@@ -1,0 +1,7 @@
+/* fx/scanlines-crt motion: CRT power-on - a bright line opens vertically (transform + filter only) */
+html.m-js [data-m="crt"]:not(.m-in):not(.m-done){opacity:1;transform:scale(.55,.006);filter:brightness(3.2) saturate(1.4)}
+html.m-js [data-m="crt"].m-in{opacity:1;transform:none;filter:brightness(1)}
+html.m-js [data-m="crt"].m-out{opacity:1;transform:scale(.55,.006);filter:brightness(3)}
+/* arm fix: the hidden pre-state is applied instantly, so a delayed entrance starts from hidden on first load (otherwise the delay keeps the element visible and nothing animates) */
+html.m-js [data-m]:not(.m-in):not(.m-done):not(.m-out){transition:none}
+html.m-js [data-m-split]:not(.m-in):not(.m-out) .m-ch{transition:none}

@@ -15,5 +15,59 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".code-pane",
+          "enter": "rise",
+          "stagger": 140,
+          "dur": 850,
+          "dist": 22
+        },
+        {
+          "sel": ".code-pane .code-ph",
+          "enter": "wipe-x",
+          "stagger": 140,
+          "dur": 600,
+          "delay": 220
+        },
+        {
+          "sel": ".code-pane .code-pd",
+          "enter": "pop",
+          "stagger": 140,
+          "dur": 450,
+          "delay": 420
+        },
+        {
+          "sel": ".cx-tl-src",
+          "enter": "wipe-d",
+          "stagger": 140,
+          "dur": 1000,
+          "delay": 380
+        },
+        {
+          "sel": ".cx-tl-st",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1000
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".code-pd",
+          "loop": "glow",
+          "dur": 3800
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

@@ -15,5 +15,58 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": "#bld-core",
+          "enter": "fade",
+          "dur": 800,
+          "delay": 30
+        },
+        {
+          "sel": ".bld-ring",
+          "enter": "scale",
+          "stagger": 180,
+          "dur": 1400,
+          "delay": 120
+        },
+        {
+          "sel": ".bld-hc",
+          "enter": "glow",
+          "dur": 1100,
+          "delay": 320
+        },
+        {
+          "sel": ".bld-hc span",
+          "enter": "rise",
+          "dist": 8,
+          "dur": 650,
+          "delay": 850
+        },
+        {
+          "sel": ".bld-hc-n",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1000
+        },
+        {
+          "sel": ".bld-hc-n code",
+          "enter": "pop",
+          "stagger": 100,
+          "dur": 700,
+          "delay": 1050
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

@@ -1,1 +1,68 @@
-{ "title": "Film grain overlay", "description": "A sparse hopping film-grain layer from an inline SVG turbulence tile, shown at four strengths over glass tiles.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": [ "component.html" ], "css": [ "component.css" ] }
+{
+  "title": "Film grain overlay",
+  "description": "A sparse hopping film-grain layer from an inline SVG turbulence tile, shown at four strengths over glass tiles.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".fxd-stage",
+          "enter": "fade",
+          "dur": 600
+        },
+        {
+          "sel": ".fxd-eb",
+          "enter": "fade",
+          "split": true,
+          "dur": 500,
+          "delay": 250
+        },
+        {
+          "sel": ".fxd-h",
+          "enter": "blur",
+          "dur": 900,
+          "delay": 390
+        },
+        {
+          "sel": ".fxd-p",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 570,
+          "dist": 14
+        },
+        {
+          "sel": ".fxd-tile",
+          "enter": "rise",
+          "stagger": 130,
+          "dur": 800,
+          "delay": 750,
+          "dist": 22
+        },
+        {
+          "sel": ".fx-grainhost",
+          "enter": "fade",
+          "stagger": 130,
+          "dur": 1200,
+          "delay": 950
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}

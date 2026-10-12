@@ -15,5 +15,42 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hbp-net",
+          "enter": "glow",
+          "dur": 1400,
+          "delay": 150
+        },
+        {
+          "sel": ".hbp-bar .hbtn",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 950,
+          "stagger": 80,
+          "dist": 12
+        },
+        {
+          "sel": ".hbp-th",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 1100,
+          "stagger": 90
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hbp-bar .hbtn[aria-pressed]",
+          "loop": "glow"
+        }
+      ]
+    }
+  }
 }

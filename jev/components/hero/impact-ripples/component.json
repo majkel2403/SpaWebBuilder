@@ -15,5 +15,40 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": "#hirCv",
+          "enter": "arc",
+          "dur": 1300,
+          "delay": 150,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hir-ports li",
+          "enter": "slide-r",
+          "dur": 700,
+          "delay": 900,
+          "stagger": 110,
+          "dist": 14
+        },
+        {
+          "sel": ".hir-hint",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 1400
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

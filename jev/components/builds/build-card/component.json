@@ -15,5 +15,69 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": "#bld-bc-grid",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 40
+        },
+        {
+          "sel": "#bld-bc-grid .bld-hd",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 100,
+          "dur": 650,
+          "delay": 200
+        },
+        {
+          "sel": "#bld-bc-grid .bld-ci > :nth-child(2)",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 100,
+          "dur": 650,
+          "delay": 360
+        },
+        {
+          "sel": "#bld-bc-grid .bld-ci > :nth-child(3)",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 100,
+          "dur": 650,
+          "delay": 480
+        },
+        {
+          "sel": "#bld-bc-grid .bld-sp",
+          "enter": "wipe-bx",
+          "stagger": 100,
+          "dur": 1000,
+          "delay": 620
+        },
+        {
+          "sel": "#bld-bc-grid .bld-m",
+          "enter": "wipe-bx",
+          "stagger": 100,
+          "dur": 900,
+          "delay": 700
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".bld-sp em",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

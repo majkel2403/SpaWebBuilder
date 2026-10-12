@@ -302,6 +302,115 @@ body.killed .dkw-tip { border-color: rgba(255, 77, 94, .55); }
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
 .cmp-stage{width:100%;max-width:var(--cmp-w,1200px);position:relative}
 .cmp-note{position:fixed;left:10px;bottom:8px;z-index:5;font:10px/1.4 var(--mono);color:var(--dim);letter-spacing:.08em;pointer-events:none}
+
+/* JEV motion — premium preset package. Opt-in per element via data-m / data-m-loop, or per component via component.json "motion".
+   Needs nothing but motion.js (adds html.m-js, so with JS off everything stays visible). Respects prefers-reduced-motion and JEV.tier. */
+:root {
+  --m-ease-out: cubic-bezier(.16, 1, .3, 1);          /* expo-out: arrivals */
+  --m-ease-in: cubic-bezier(.7, 0, .84, 0);           /* expo-in: exits */
+  --m-ease-io: cubic-bezier(.65, 0, .35, 1);          /* in-out: moves, loops */
+  --m-ease-back: cubic-bezier(.34, 1.56, .64, 1);     /* overshoot: pops */
+  --m-ease-spring: linear(0, .17 4%, .52 9%, .86 14%, 1.06 19%, 1.12 23%, 1.1 27%, 1.03 33%, .98 40%, .99 47%, 1 60%, 1); /* spring, ~0.6 damping */
+  --m-dur-xs: 140ms; --m-dur-sm: 260ms; --m-dur-md: 520ms; --m-dur-lg: 900ms; --m-dur-xl: 1500ms;
+  --m-dur: var(--m-dur-lg);
+  --m-delay: 0ms; --m-stagger: 70ms; --m-i: 0; --m-dist: 28px; --m-speed: 1;
+  --m-glow: var(--cc, #ff2e6e);
+}
+/* ---------- entrance: hidden state (only when JS is running) ---------- */
+html.m-js .m-t[data-m]:not(.m-in):not(.m-done) { opacity: 0; will-change: opacity, transform; }
+html.m-js .m-t[data-m] { transition: opacity calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
+  transform calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
+  filter calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
+  clip-path calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)); }
+html.m-js [data-m="fade"]:not(.m-in):not(.m-done) { }
+html.m-js [data-m="rise"]:not(.m-in):not(.m-done) { transform: translateY(var(--m-dist)); }
+html.m-js [data-m="drop"]:not(.m-in):not(.m-done) { transform: translateY(calc(var(--m-dist) * -1)); }
+html.m-js [data-m="slide-l"]:not(.m-in):not(.m-done) { transform: translateX(calc(var(--m-dist) * -1.6)); }
+html.m-js [data-m="slide-r"]:not(.m-in):not(.m-done) { transform: translateX(calc(var(--m-dist) * 1.6)); }
+html.m-js [data-m="scale"]:not(.m-in):not(.m-done) { transform: scale(.92); }
+html.m-js [data-m="zoom"]:not(.m-in):not(.m-done) { transform: scale(1.12); }
+html.m-js [data-m="pop"]:not(.m-in):not(.m-done) { transform: scale(.6); --m-ease: var(--m-ease-back); }
+html.m-js [data-m="blur"]:not(.m-in):not(.m-done) { filter: blur(14px); transform: translateY(10px) scale(.985); }
+html.m-js [data-m="flip"]:not(.m-in):not(.m-done) { transform: perspective(900px) rotateX(-62deg) translateY(14px); transform-origin: 50% 0; }
+html.m-js [data-m="tilt"]:not(.m-in):not(.m-done) { transform: perspective(900px) rotateY(24deg) translateX(-18px) scale(.96); transform-origin: 0 50%; }
+html.m-js [data-m="wipe-x"]:not(.m-in):not(.m-done) { clip-path: inset(0 100% 0 0); opacity: 1; }
+html.m-js [data-m="wipe-y"]:not(.m-in):not(.m-done) { clip-path: inset(100% 0 0 0); opacity: 1; }
+html.m-js [data-m="iris"]:not(.m-in):not(.m-done) { clip-path: circle(0% at 50% 50%); opacity: 1; }
+html.m-js [data-m="glow"]:not(.m-in):not(.m-done) { filter: brightness(2.2) saturate(1.6) blur(6px); transform: scale(1.04); }
+html.m-js [data-m="spring"]:not(.m-in):not(.m-done) { transform: translateY(calc(var(--m-dist) * 1.4)) scale(.94); --m-ease: var(--m-ease-spring); --m-dur: var(--m-dur-xl); }
+html.m-js [data-m="rise"].m-in, html.m-js [data-m="drop"].m-in, html.m-js [data-m="slide-l"].m-in, html.m-js [data-m="slide-r"].m-in, html.m-js [data-m="scale"].m-in, html.m-js [data-m="zoom"].m-in, html.m-js [data-m="pop"].m-in, html.m-js [data-m="blur"].m-in, html.m-js [data-m="flip"].m-in, html.m-js [data-m="tilt"].m-in, html.m-js [data-m="glow"].m-in, html.m-js [data-m="spring"].m-in { opacity: 1; transform: none; filter: none; }
+html.m-js [data-m="wipe-x"].m-in, html.m-js [data-m="wipe-y"].m-in { clip-path: inset(0 0 0 0); }
+html.m-js [data-m="iris"].m-in { clip-path: circle(150% at 50% 50%); }
+html.m-js [data-m="wipe-bx"]:not(.m-in):not(.m-done) { clip-path: inset(-10px 100% -10px -10px); opacity: 1; }
+html.m-js [data-m="wipe-d"]:not(.m-in):not(.m-done) { clip-path: inset(-12px -12px 100% -12px); opacity: 1; }
+html.m-js [data-m="bright"]:not(.m-in):not(.m-done) { filter: brightness(2.4) saturate(1.5) blur(5px); }
+html.m-js [data-m="wipe-bx"].m-in, html.m-js [data-m="wipe-d"].m-in { clip-path: inset(-10px); }
+html.m-js [data-m="bright"].m-in { opacity: 1; filter: none; }
+html.m-js [data-m="wipe-bx"].m-out { clip-path: inset(-10px -10px -10px 100%); opacity: 1; }
+html.m-js [data-m="wipe-d"].m-out { clip-path: inset(100% -12px -12px -12px); opacity: 1; }
+html.m-js [data-m="bright"].m-out { filter: brightness(2) blur(5px); }
+/* exit: add .m-out (JEVM.out) — reverse choreography, faster */
+html.m-js [data-m].m-out { opacity: 0; transition-duration: calc(var(--m-dur-md) / var(--m-speed)); transition-timing-function: var(--m-ease-in); transition-delay: calc(var(--m-i) * 30ms); }
+html.m-js [data-m="rise"].m-out { transform: translateY(calc(var(--m-dist) * -.7)); }
+html.m-js [data-m="drop"].m-out { transform: translateY(calc(var(--m-dist) * .7)); }
+html.m-js [data-m="slide-l"].m-out { transform: translateX(calc(var(--m-dist) * 1.2)); }
+html.m-js [data-m="slide-r"].m-out { transform: translateX(calc(var(--m-dist) * -1.2)); }
+html.m-js [data-m="scale"].m-out, html.m-js [data-m="pop"].m-out, html.m-js [data-m="spring"].m-out { transform: scale(.94); }
+html.m-js [data-m="zoom"].m-out { transform: scale(.9); }
+html.m-js [data-m="blur"].m-out { filter: blur(10px); }
+html.m-js [data-m="wipe-x"].m-out { clip-path: inset(0 0 0 100%); opacity: 1; }
+html.m-js [data-m="wipe-y"].m-out { clip-path: inset(0 0 100% 0); opacity: 1; }
+html.m-js [data-m="iris"].m-out { clip-path: circle(0% at 50% 50%); opacity: 1; }
+html.m-js [data-m].m-done { transition: none; clip-path: none; filter: none; }   /* after the entrance finished: never fight the component's own transitions */
+
+/* ---------- loops (ambient life) ---------- */
+[data-m-loop] { animation-duration: calc(var(--m-loop-dur, 4s) / var(--m-speed)); animation-iteration-count: infinite; animation-timing-function: var(--m-ease-io); animation-delay: calc(var(--m-i) * -380ms); }
+[data-m-loop="breathe"] { animation-name: m-breathe; }
+[data-m-loop="float"] { animation-name: m-float; --m-loop-dur: 5.5s; }
+[data-m-loop="pulse"] { animation-name: m-pulse; --m-loop-dur: 2s; }
+[data-m-loop="glow"] { animation-name: m-glowloop; --m-loop-dur: 3s; }
+[data-m-loop="shimmer"] { animation-name: m-shimmer; --m-loop-dur: 3.4s; background-size: 220% 100%; }
+[data-m-loop="sweep"] { animation-name: m-sweep; --m-loop-dur: 4.5s; }
+[data-m-loop="flicker"] { animation-name: m-flicker; --m-loop-dur: 5s; animation-timing-function: steps(1); }
+[data-m-loop="sway"] { animation-name: m-sway; --m-loop-dur: 6s; }
+[data-m-loop="orbit"] { animation-name: m-orbit; --m-loop-dur: 14s; animation-timing-function: linear; }
+[data-m-loop="ring"] { animation-name: m-ring; --m-loop-dur: 2.4s; animation-timing-function: var(--m-ease-out); }
+@keyframes m-breathe { 50% { transform: scale(1.025); } }
+@keyframes m-float { 50% { transform: translateY(-6px); } }
+@keyframes m-pulse { 50% { opacity: .45; transform: scale(.88); } }
+@keyframes m-glowloop { 50% { filter: drop-shadow(0 0 14px var(--m-glow)) brightness(1.15); } }
+@keyframes m-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+@keyframes m-sweep { 0% { transform: translateX(-130%) skewX(-18deg); opacity: 0; } 15%, 70% { opacity: .9; } 100% { transform: translateX(260%) skewX(-18deg); opacity: 0; } }
+@keyframes m-flicker { 0%, 100% { opacity: 1; } 91% { opacity: 1; } 92% { opacity: .55; } 93% { opacity: 1; } 95% { opacity: .7; } 96% { opacity: 1; } }
+@keyframes m-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+@keyframes m-orbit { to { transform: rotate(360deg); } }
+@keyframes m-ring { 0% { box-shadow: 0 0 0 0 var(--m-glow); opacity: 1; } 100% { box-shadow: 0 0 0 18px transparent; opacity: 1; } }
+.m-paused [data-m-loop], [data-m-loop].m-paused, .m-off [data-m-loop] { animation-play-state: paused; }
+
+/* ---------- text: letters/words (JEVM.split) ---------- */
+.m-split .m-ch { display: inline-block; white-space: pre; }
+html.m-js [data-m-split]:not(.m-in) .m-ch { opacity: 0; transform: translateY(.55em) rotate(2deg); filter: blur(6px); }
+html.m-js [data-m-split] .m-ch { transition: opacity .7s var(--m-ease-out) calc(var(--m-delay) + var(--m-i) * 28ms), transform .8s var(--m-ease-out) calc(var(--m-delay) + var(--m-i) * 28ms), filter .7s var(--m-ease-out) calc(var(--m-delay) + var(--m-i) * 28ms); }
+html.m-js [data-m-split].m-in .m-ch { opacity: 1; transform: none; filter: none; }
+
+/* ---------- control bar of standalone component pages ---------- */
+.m-bar { position: fixed; right: 10px; bottom: 8px; z-index: 50; display: flex; gap: 6px; align-items: center; font: 10px/1 var(--mono, ui-monospace, monospace); letter-spacing: .1em; text-transform: uppercase; color: #8d8499; background: rgba(8, 4, 14, .72); border: 1px solid rgba(255, 255, 255, .12); border-radius: 99px; padding: 5px 6px 5px 12px; backdrop-filter: blur(8px); }
+.m-bar b { color: #ff7ab3; font-weight: 700; }
+.m-bar button { all: unset; cursor: pointer; padding: 6px 10px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .14); color: #f4eef6; transition: .2s; }
+.m-bar button:hover, .m-bar button:focus-visible { background: rgba(255, 46, 110, .25); border-color: #ff2e6e; }
+.m-bar button[aria-pressed="true"] { background: rgba(255, 46, 110, .3); border-color: #ff2e6e; }
+@media (max-width: 520px) { .m-bar { left: 10px; right: 10px; justify-content: space-between; } }
+
+/* ---------- degrade: low tier, reduced motion ---------- */
+html[data-tier="1"] [data-m="blur"]:not(.m-in), html[data-tier="1"] [data-m="glow"]:not(.m-in) { filter: none !important; }
+html[data-tier="1"] [data-m-loop="glow"] { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  html.m-js [data-m], html.m-js [data-m]:not(.m-in), html.m-js [data-m-split] .m-ch { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; transition: none !important; }
+  [data-m-loop] { animation: none !important; }
+}
+
+/* once the entrance is done, drop the clip so glows/tooltips are never clipped and the page reads fully visible */
+html.m-js [data-m="wipe-x"].m-done, html.m-js [data-m="wipe-y"].m-done, html.m-js [data-m="iris"].m-done { clip-path: none; }
 </style></head><body class="cmp">
 
 
@@ -1738,5 +1847,66 @@ JEV.mod('desk-globe', () => {
   else window.JEV.boot();
 })();
 
+</script>
+<script>
+/* JEV motion engine (vanilla, ~3 KB). API: JEVM.apply(config) · JEVM.play(root) · JEVM.out(root) · JEVM.replay(root) · JEVM.split(el) · JEVM.count(el, to, opts)
+ * · JEVM.spring(stiffness, damping) -> CSS linear() string · JEVM.speed(x)
+ * config: { root:{enter,exit,dur,delay,ease,dist}, items:[{sel, enter, stagger:true|ms, dur, delay, ease, dist, split, count}], loops:[{sel, loop, dur}], ui:true }
+ * Reuse: copy motion.css + motion.js next to your page, add data-m="rise" (enter) and/or data-m-loop="breathe" (ambient) to any element. */
+(function (root) {
+  'use strict';
+  var doc = document, html = doc.documentElement, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  html.classList.add('m-js');
+  var ENTER = ['fade', 'rise', 'drop', 'slide-l', 'slide-r', 'scale', 'zoom', 'pop', 'blur', 'flip', 'tilt', 'wipe-x', 'wipe-y', 'wipe-bx', 'wipe-d', 'iris', 'glow', 'spring', 'bright'];
+  var LOOPS = ['breathe', 'float', 'pulse', 'glow', 'shimmer', 'sweep', 'flicker', 'sway', 'orbit', 'ring'];
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || doc).querySelectorAll(s)); };
+  var targets = [];
+  function setVar(el, k, v) { if (v != null) el.style.setProperty(k, typeof v === 'number' ? v + 'ms' : v); }
+
+  function mark(el, o, idx) {
+    el.classList.add('m-t'); el.setAttribute('data-m', o.enter || 'rise');
+    if (o.exit) el.setAttribute('data-m-exit', o.exit);
+    setVar(el, '--m-dur', o.dur); setVar(el, '--m-delay', o.delay); if (o.ease) el.style.setProperty('--m-ease', o.ease); if (o.dist != null) el.style.setProperty('--m-dist', o.dist + 'px');
+    el.style.setProperty('--m-i', idx || 0); targets.push(el);
+  }
+  function stagger(els, ms) { if (typeof ms === 'number') els.forEach(function (e) { e.style.setProperty('--m-stagger', ms + 'ms'); }); }
+
+  function apply(cfg) {
+    cfg = cfg || {};
+    var stage = $$('.cmp-stage')[0] || doc.body;
+    if (cfg.root) mark(stage, cfg.root, 0);
+    (cfg.items || []).forEach(function (it) {
+      var els = $$(it.sel, stage); if (!els.length && it.sel[0] !== '.') els = $$(it.sel);
+      els.forEach(function (e, i) { mark(e, it, it.stagger ? i : 0); if (it.split) split(e); if (it.count != null) e.setAttribute('data-m-count', it.count); });
+      if (typeof it.stagger === 'number') stagger(els, it.stagger);
+    });
+    (cfg.loops || []).forEach(function (l) { $$(l.sel, stage).forEach(function (e, i) { e.setAttribute('data-m-loop', l.loop); if (l.dur) e.style.setProperty('--m-loop-dur', l.dur + 'ms'); e.style.setProperty('--m-i', i); }); });
+    if (cfg.ui !== false) bar(cfg);
+    start();
+  }
+  function trigger(el) { el.classList.remove('m-out', 'm-done'); void el.offsetWidth; el.classList.add('m-in'); var d = parseFloat(getComputedStyle(el).transitionDuration) * 1000 + 1400 + (parseFloat(el.style.getPropertyValue('--m-i')) || 0) * 120; clearTimeout(el._md); el._md = setTimeout(function () { el.classList.add('m-done'); }, d); var c = el.getAttribute('data-m-count'); if (c != null) count(el, +c); }
+  function adopt() { $$('[data-m]:not(.m-t)').forEach(function (e) { if (ENTER.indexOf(e.getAttribute('data-m')) >= 0) { e.classList.add('m-t'); if (targets.indexOf(e) < 0) targets.push(e); } }); }
+  function start() { adopt(); if (reduce) { targets.forEach(function (e) { e.classList.add('m-in', 'm-done'); }); return; } requestAnimationFrame(function () { requestAnimationFrame(function () { targets.forEach(trigger); }); }); }
+  function play(r) { (r ? $$('[data-m]', r).concat(r.hasAttribute && r.hasAttribute('data-m') ? [r] : []) : targets).forEach(trigger); }
+  function out(r) { (r ? $$('[data-m]', r) : targets).forEach(function (e) { e.classList.remove('m-in', 'm-done'); e.classList.add('m-out'); }); }
+  function replay(r) { var els = r ? $$('[data-m]', r) : targets; els.forEach(function (e) { e.classList.remove('m-in', 'm-done', 'm-out'); e.querySelectorAll && void e.offsetWidth; }); setTimeout(function () { els.forEach(trigger); }, 60); }
+
+  function split(el) { if (el._split) return; el._split = 1; el.setAttribute('data-m-split', ''); el.classList.add('m-split'); var txt = el.textContent; el.setAttribute('aria-label', txt); el.textContent = ''; var i = 0;
+    txt.split(/(\s+)/).forEach(function (w) { if (/^\s+$/.test(w)) { el.appendChild(doc.createTextNode(w)); return; } var s = doc.createElement('span'); s.style.display = 'inline-block'; s.setAttribute('aria-hidden', 'true'); w.split('').forEach(function (c) { var ch = doc.createElement('span'); ch.className = 'm-ch'; ch.textContent = c; ch.style.setProperty('--m-i', i++); s.appendChild(ch); }); el.appendChild(s); });
+    if (!el.hasAttribute('data-m')) { el.classList.add('m-t'); el.setAttribute('data-m', 'fade'); targets.push(el); } }
+  function count(el, to, o) { o = o || {}; var from = o.from || 0, dur = reduce ? 1 : (o.dur || 1400), t0 = performance.now(), fmt = o.fmt || function (v) { return Math.round(v).toLocaleString('en-US'); }; (function f(now) { var p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 4); el.textContent = fmt(from + (to - from) * e); if (p < 1) requestAnimationFrame(f); })(t0); }
+  /* spring -> CSS linear() easing */
+  function spring(k, c) { k = k || 170; c = c || 14; var pts = [], x = 0, v = 0, dt = 1 / 120, n = 0; for (var t = 0; t < 1.6 && n < 400; t += dt, n++) { var a = -k * (x - 1) - c * v; v += a * dt; x += v * dt; pts.push(x); } var step = Math.max(1, Math.floor(pts.length / 36)), out = []; for (var i = 0; i < pts.length; i += step) out.push(+pts[i].toFixed(3)); out.push(1); return 'linear(' + [0].concat(out).join(',') + ')'; }
+  function speed(x) { html.style.setProperty('--m-speed', x); }
+
+  function bar(cfg) { if (doc.querySelector('.m-bar')) return; var b = doc.createElement('div'); b.className = 'm-bar'; b.innerHTML = '<b>motion</b><button data-a="replay" type="button">&#9654; replay</button><button data-a="out" type="button">exit</button><button data-a="speed" type="button" aria-pressed="false">0.5x</button><button data-a="loops" type="button" aria-pressed="true">loops</button>'; doc.body.appendChild(b);
+    b.addEventListener('click', function (e) { var a = e.target.getAttribute && e.target.getAttribute('data-a'); if (!a) return; if (a === 'replay') replay(); else if (a === 'out') out(); else if (a === 'speed') { var on = e.target.getAttribute('aria-pressed') !== 'true'; e.target.setAttribute('aria-pressed', on); speed(on ? .5 : 1); } else if (a === 'loops') { var on2 = e.target.getAttribute('aria-pressed') !== 'true'; e.target.setAttribute('aria-pressed', on2); html.classList.toggle('m-paused', !on2); } }); }
+  document.addEventListener('visibilitychange', function () { html.classList.toggle('m-paused', document.hidden); });
+  root.JEVM = { apply: apply, play: play, out: out, replay: replay, split: split, count: count, spring: spring, speed: speed, ENTER: ENTER, LOOPS: LOOPS };
+})(window);
+
+</script>
+<script>
+(function(){var cfg={"root":{"enter":"fade","dur":400},"items":[{"sel":".dkw-world .ph","enter":"wipe-x","dur":600,"delay":200},{"sel":".dkw-world .ph .pk","enter":"pop","dur":500,"delay":320},{"sel":".dkw-pt > b:not(.pk)","enter":"fade","dur":300,"delay":400,"split":true},{"sel":".dkw-ph-s","enter":"fade","dur":500,"delay":620},{"sel":".dkw-body","enter":"iris","dur":1500,"delay":350},{"sel":".dkw-cap","enter":"fade","dur":600,"delay":1200},{"sel":".dkw-ob .orb","enter":"pop","dur":700,"delay":900,"stagger":110},{"sel":".dkw-lg span","enter":"rise","dur":500,"delay":1300,"stagger":80,"dist":8},{"sel":".dkw-hint","enter":"fade","dur":600,"delay":1500}],"loops":[{"sel":"#dkw-world .pk","loop":"glow","dur":3200}]};function go(){JEVM.apply(cfg)}if(document.readyState==='complete')setTimeout(go,60);else addEventListener('load',function(){setTimeout(go,60)})})();
 </script>
 </body></html>

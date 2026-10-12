@@ -20,5 +20,49 @@
     "builds/_demo-odometer",
     "builds/_end",
     "builds/_responsive"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-oc",
+          "enter": "rise",
+          "dist": 18,
+          "stagger": 120,
+          "dur": 800,
+          "delay": 100
+        },
+        {
+          "sel": ".bld-oc label",
+          "enter": "fade",
+          "stagger": 120,
+          "dur": 600,
+          "delay": 350
+        },
+        {
+          "sel": ".bld-ov",
+          "enter": "bright",
+          "stagger": 120,
+          "dur": 1000,
+          "delay": 450
+        },
+        {
+          "sel": ".bld-foot > span",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 600,
+          "delay": 1100
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

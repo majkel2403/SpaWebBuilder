@@ -13,5 +13,85 @@
     "component.css"
   ],
   "derived": false,
-  "derivedNote": "demo of the panel shell; the real shell css lives in hour/_grid, which has no html of its own"
+  "derivedNote": "demo of the panel shell; the real shell css lives in hour/_grid, which has no html of its own",
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hr-p",
+          "enter": "rise",
+          "dist": 22,
+          "dur": 850,
+          "stagger": 110
+        },
+        {
+          "sel": ".hr-ph .hr-tag",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 200,
+          "dist": 10,
+          "stagger": 110
+        },
+        {
+          "sel": ".hr-ph .hr-ps",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 300,
+          "dist": 10,
+          "stagger": 110
+        },
+        {
+          "sel": ".hr-ph .hr-badge",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 380,
+          "stagger": 110
+        },
+        {
+          "sel": ".hr-t",
+          "enter": "rise",
+          "dur": 800,
+          "delay": 380,
+          "dist": 14,
+          "stagger": 110
+        },
+        {
+          "sel": ".hr-note span",
+          "enter": "rise",
+          "stagger": 60,
+          "dur": 600,
+          "delay": 520,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-foot",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 950,
+          "stagger": 110
+        },
+        {
+          "sel": ".hr-fig",
+          "enter": "zoom",
+          "dur": 1100,
+          "delay": 800,
+          "stagger": 110
+        },
+        {
+          "sel": ".hr-slot",
+          "enter": "blur",
+          "dur": 800,
+          "delay": 900
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

@@ -16,5 +16,85 @@
     "component.js"
   ],
   "derived": false,
-  "derivedNote": "the last-answer chip is woven into the Jev mascot / comet code of build-trio (landDecision shares hop(), jevAv, spawnPacket); no separable chunk"
+  "derivedNote": "the last-answer chip is woven into the Jev mascot / comet code of build-trio (landDecision shares hop(), jevAv, spawnPacket); no separable chunk",
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hr-p",
+          "enter": "scale",
+          "dur": 800
+        },
+        {
+          "sel": ".hr-ph .hr-tag",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 200,
+          "dist": 10,
+          "split": true
+        },
+        {
+          "sel": ".hr-ph .hr-ps",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 300,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-ph .hr-badge",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 380
+        },
+        {
+          "sel": ".hr-t",
+          "enter": "rise",
+          "dur": 800,
+          "delay": 380,
+          "dist": 14
+        },
+        {
+          "sel": ".hr-note span",
+          "enter": "rise",
+          "stagger": 60,
+          "dur": 600,
+          "delay": 520,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-foot",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 950
+        },
+        {
+          "sel": ".hr-fig",
+          "enter": "zoom",
+          "dur": 1100,
+          "delay": 800
+        },
+        {
+          "sel": ".hr-chips .hr-last",
+          "enter": "pop",
+          "stagger": 110,
+          "dur": 800,
+          "delay": 650,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hr-last[data-d=execute] i",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

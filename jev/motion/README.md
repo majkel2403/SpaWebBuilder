@@ -4,7 +4,7 @@ Premium motion for any element, and a ready choreography for each component page
 
 **Use it anywhere**: copy `motion.css` + `motion.js`, then
 ```html
-<div data-m="rise" data-m-delay="120">...</div>          <!-- entrance: fade rise drop slide-l slide-r scale zoom pop blur flip tilt wipe-x wipe-y iris glow spring -->
+<div data-m="rise" data-m-delay="120">...</div>          <!-- entrance: fade rise drop slide-l slide-r scale zoom pop blur flip tilt wipe-x wipe-y wipe-bx wipe-d iris glow spring bright -->
 <ul data-m-stagger><li>..</li><li>..</li></ul>           <!-- or JEVM.apply({items:[{sel:'li',enter:'rise',stagger:70}]}) -->
 <span data-m-loop="pulse"></span>                          <!-- ambient: breathe float pulse glow shimmer sweep flicker sway orbit ring -->
 <h2 id="t"></h2><script>JEVM.split(document.getElementById('t'))</script>   <!-- letter-by-letter -->

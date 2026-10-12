@@ -19,5 +19,29 @@
     "self",
     "hero/_detail",
     "hero/_hls-post"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 350
+      },
+      "items": [
+        {
+          "sel": ".hero-legend span",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 300,
+          "stagger": 110,
+          "dist": 12
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hero-dot-ex",
+          "loop": "pulse"
+        }
+      ]
+    }
+  }
 }

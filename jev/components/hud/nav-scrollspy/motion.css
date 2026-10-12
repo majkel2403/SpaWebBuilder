@@ -1,0 +1,4 @@
+/* nav-scrollspy motion: bespoke bits. Inside no-preference so reduced motion shows the final state at once. */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js .spy a[data-m].m-done { transition: color .25s, background .25s; }
+}

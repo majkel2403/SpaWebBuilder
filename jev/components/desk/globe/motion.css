@@ -1,0 +1,2 @@
+/* once the entrance is done, drop the clip so glows/tooltips are never clipped and the page reads fully visible */
+html.m-js [data-m="wipe-x"].m-done, html.m-js [data-m="wipe-y"].m-done, html.m-js [data-m="iris"].m-done { clip-path: none; }

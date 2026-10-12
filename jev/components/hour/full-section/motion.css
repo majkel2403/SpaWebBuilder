@@ -1,0 +1,19 @@
+/* hour motion: shared bits. Everything sits inside no-preference so reduced motion shows the final state at once. */
+@media (prefers-reduced-motion: no-preference) {
+  /* clip-path presets are released after the entrance so glows and shadows are never cut */
+  html.m-js [data-m="wipe-x"].m-done, html.m-js [data-m="wipe-y"].m-done, html.m-js [data-m="iris"].m-done { clip-path: none; }
+  /* neon edge: draws left to right once the card content arrives, retracts on exit, then flickers like a sign */
+  html.m-js .hr-p > .hr-edge { transform-origin: 0 50%; }
+  html.m-js .hr-p:not(:has(.m-in)) > .hr-edge { transform: scaleX(0); transition: transform .45s var(--m-ease-in); }
+  html.m-js .hr-p:has(.m-in) > .hr-edge { animation: hrm-edge 1.2s var(--m-ease-out) .2s both, m-flicker 5.2s steps(1) 2.4s infinite; }
+}
+@keyframes hrm-edge { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: no-preference) {
+  /* the ring turns in while the iris opens */
+  html.m-js .hr-ringbox.m-in .hr-ring { animation: hrm-spin 1.5s var(--m-ease-out) .6s both; }
+}
+@keyframes hrm-spin { from { transform: rotate(-110deg) scale(.88); } to { transform: none; } }
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js .hr-chip.m-done { transition: border-color .3s, box-shadow .3s, background .3s; }
+  html.m-js .hr-arm.m-done { transition: border-color .5s, background .6s, box-shadow .6s; }
+}

@@ -26,5 +26,117 @@
     "hour/_fx-b",
     "hour/_close",
     "hour/_solo-b"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hr-ph .hr-tag",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 350,
+          "dist": 10,
+          "split": true
+        },
+        {
+          "sel": ".hr-ph .hr-ps",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 450,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-ph .hr-badge",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 530
+        },
+        {
+          "sel": ".hr-t",
+          "enter": "rise",
+          "dur": 800,
+          "delay": 530,
+          "dist": 14
+        },
+        {
+          "sel": ".hr-note span",
+          "enter": "rise",
+          "stagger": 60,
+          "dur": 600,
+          "delay": 670,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-ringbox",
+          "enter": "iris",
+          "dur": 1100,
+          "delay": 600
+        },
+        {
+          "sel": ".hr-clockbox",
+          "enter": "zoom",
+          "dur": 800,
+          "delay": 850
+        },
+        {
+          "sel": "#hr-sws li",
+          "enter": "slide-r",
+          "stagger": 80,
+          "dur": 800,
+          "delay": 700
+        },
+        {
+          "sel": ".hr-g-r",
+          "enter": "wipe-x",
+          "stagger": 70,
+          "dur": 700,
+          "delay": 950
+        },
+        {
+          "sel": ".hr-g-axis",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1200
+        },
+        {
+          "sel": ".hr-g-ph",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1250
+        },
+        {
+          "sel": ".hr-arm",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 1150,
+          "dist": 16
+        },
+        {
+          "sel": ".hr-foot",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1200
+        },
+        {
+          "sel": ".hr-fig",
+          "enter": "zoom",
+          "dur": 1100,
+          "delay": 1050
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hr-clockbox .hr-clock",
+          "loop": "glow"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

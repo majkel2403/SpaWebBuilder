@@ -32,5 +32,155 @@
     "hour/_fx-a",
     "hour/_close",
     "hour/_solo-a"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hr-ph .hr-tag",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 350,
+          "dist": 10,
+          "split": true
+        },
+        {
+          "sel": ".hr-ph .hr-ps",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 450,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-ph .hr-badge",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 530
+        },
+        {
+          "sel": ".hr-t",
+          "enter": "rise",
+          "dur": 800,
+          "delay": 530,
+          "dist": 14
+        },
+        {
+          "sel": ".hr-note span",
+          "enter": "rise",
+          "stagger": 60,
+          "dur": 600,
+          "delay": 670,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-stage .hr-cv",
+          "enter": "wipe-x",
+          "dur": 1300,
+          "delay": 600
+        },
+        {
+          "sel": ".hr-trio .hr-ag",
+          "enter": "rise",
+          "stagger": 150,
+          "dur": 900,
+          "delay": 550,
+          "dist": 26,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        },
+        {
+          "sel": ".hr-ag .hr-al",
+          "enter": "fade",
+          "stagger": 150,
+          "dur": 600,
+          "delay": 850
+        },
+        {
+          "sel": ".hr-ag .hr-as",
+          "enter": "fade",
+          "stagger": 150,
+          "dur": 600,
+          "delay": 950
+        },
+        {
+          "sel": ".hr-lbl",
+          "enter": "fade",
+          "stagger": 100,
+          "dur": 600,
+          "delay": 1100
+        },
+        {
+          "sel": "#hr-last",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 1250,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        },
+        {
+          "sel": ".hr-tapebox .hr-cap > span",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1000,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-tapebox .hr-leg",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1100
+        },
+        {
+          "sel": ".hr-tape",
+          "enter": "wipe-x",
+          "dur": 1200,
+          "delay": 1000
+        },
+        {
+          "sel": ".hr-rules .hr-chip",
+          "enter": "tilt",
+          "stagger": 90,
+          "dur": 800,
+          "delay": 1100
+        },
+        {
+          "sel": ".hr-cap2",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1350
+        },
+        {
+          "sel": "#hr-a-stats > div",
+          "enter": "rise",
+          "stagger": 80,
+          "dur": 600,
+          "delay": 1150,
+          "dist": 12
+        },
+        {
+          "sel": ".hr-foot",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1250
+        },
+        {
+          "sel": ".hr-fig",
+          "enter": "zoom",
+          "dur": 1100,
+          "delay": 1100
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hr-lbl",
+          "loop": "glow"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

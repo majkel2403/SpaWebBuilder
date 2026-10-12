@@ -15,5 +15,50 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".code-win",
+          "enter": "scale",
+          "dur": 800
+        },
+        {
+          "sel": ".cx-hp-term",
+          "enter": "wipe-d",
+          "dur": 800,
+          "delay": 250
+        },
+        {
+          "sel": ".cx-hp-ln",
+          "enter": "wipe-x",
+          "stagger": 180,
+          "dur": 600,
+          "delay": 400
+        },
+        {
+          "sel": ".code-status",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 800
+        },
+        {
+          "sel": ".code-q",
+          "enter": "pop",
+          "stagger": 110,
+          "dur": 600,
+          "delay": 1000
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

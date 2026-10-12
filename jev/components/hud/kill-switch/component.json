@@ -1,1 +1,78 @@
-{ "title": "Kill switch", "description": "The pill-shaped kill switch: one click halts every simulated order into human review and tints the whole page red, shown with a live execute / review / skip tally.", "width": "720px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }
+{
+  "title": "Kill switch",
+  "description": "The pill-shaped kill switch: one click halts every simulated order into human review and tints the whole page red, shown with a live execute / review / skip tally.",
+  "width": "720px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".ks-wrap",
+          "enter": "scale",
+          "dur": 900,
+          "delay": 100
+        },
+        {
+          "sel": ".ks-wrap .ph",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 450
+        },
+        {
+          "sel": ".ks-body .kill",
+          "enter": "pop",
+          "dur": 900,
+          "delay": 650,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        },
+        {
+          "sel": ".ks-note",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 800,
+          "dist": 10
+        },
+        {
+          "sel": ".ks-tally > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 950,
+          "stagger": 90,
+          "dist": 12
+        },
+        {
+          "sel": ".ks-log",
+          "enter": "wipe-x",
+          "dur": 900,
+          "delay": 1100
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".ks-body .kill",
+          "loop": "glow",
+          "dur": 3200
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}

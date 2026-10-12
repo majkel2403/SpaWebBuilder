@@ -19,5 +19,49 @@
     "self",
     "hero/_detail",
     "hero/_hdc-post"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 350
+      },
+      "items": [
+        {
+          "sel": ".hero-chip",
+          "enter": "arc",
+          "dur": 900,
+          "delay": 250
+        },
+        {
+          "sel": ".hero-c-top",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 500
+        },
+        {
+          "sel": ".hero-c-body > *",
+          "enter": "fade",
+          "dur": 450,
+          "delay": 650,
+          "stagger": 55
+        },
+        {
+          "sel": ".hero-badge",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 1050
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hero-c-top .lamp",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

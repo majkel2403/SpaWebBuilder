@@ -175,5 +175,616 @@
       "desk/_world-interact",
       "desk/_world-tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkt-bar .dkt-wm",
+          "enter": "slide-l",
+          "dur": 700,
+          "delay": 150,
+          "dist": 14
+        },
+        {
+          "sel": ".dkt-bar .dkt-pu label",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 350
+        },
+        {
+          "sel": ".dkt-bar .dkt-pu canvas",
+          "enter": "wipe-x",
+          "dur": 900,
+          "delay": 400
+        },
+        {
+          "sel": ".dkt-bar .dkt-kvs > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 450,
+          "stagger": 90,
+          "dist": 10
+        },
+        {
+          "sel": ".dkt-bar .dkt-clk",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 550,
+          "dist": 12
+        },
+        {
+          "sel": ".dkt-bar .dkt-mq",
+          "enter": "wipe-x",
+          "dur": 1000,
+          "delay": 600
+        },
+        {
+          "sel": "#dkt-pnl .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 150
+        },
+        {
+          "sel": "#dkt-pnl .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 270
+        },
+        {
+          "sel": "#dkt-pnl .ph > span:first-child > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 350,
+          "split": true
+        },
+        {
+          "sel": "#dkt-pnl .dkt-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 570
+        },
+        {
+          "sel": "#dkt-pnl .ph > span:last-child",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 550,
+          "dist": 12
+        },
+        {
+          "sel": "#dkt-pnl .dkt-acct",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 500
+        },
+        {
+          "sel": "#dkt-pnl .dkt-big",
+          "enter": "spring",
+          "dur": 1200,
+          "delay": 570,
+          "dist": 16,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": "#dkt-pnl .dkt-r2",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 790,
+          "dist": 10
+        },
+        {
+          "sel": "#dkt-pnl .dkt-pcw",
+          "enter": "wipe-x",
+          "dur": 1200,
+          "delay": 850
+        },
+        {
+          "sel": "#dkt-pnl .dkt-wl",
+          "enter": "wipe-x",
+          "dur": 1000,
+          "delay": 1000
+        },
+        {
+          "sel": "#dkt-pnl .dkt-pb",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1050,
+          "stagger": 90,
+          "dist": 10
+        },
+        {
+          "sel": "#dkt-pnl .dkt-stats > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1200,
+          "stagger": 80,
+          "dist": 10
+        },
+        {
+          "sel": "#dkt-tape .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": "#dkt-tape .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#dkt-tape .ph > span:first-child > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 450,
+          "split": true
+        },
+        {
+          "sel": "#dkt-tape .dkt-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#dkt-tape .ph > span:last-child",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 650,
+          "dist": 12
+        },
+        {
+          "sel": "#dkt-tape .dkt-px",
+          "enter": "spring",
+          "dur": 1200,
+          "delay": 670,
+          "dist": 14,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": "#dkt-tape .dkt-pxp",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 900
+        },
+        {
+          "sel": "#dkt-tape .dkt-chips .dkt-chip",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 850,
+          "stagger": 70
+        },
+        {
+          "sel": "#dkt-tape .dkt-tc",
+          "enter": "wipe-x",
+          "dur": 1500,
+          "delay": 850
+        },
+        {
+          "sel": "#dkt-tape .dkt-lg > span",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1350,
+          "stagger": 80
+        },
+        {
+          "sel": "#dkw-world .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 450
+        },
+        {
+          "sel": "#dkw-world .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 570
+        },
+        {
+          "sel": "#dkw-world .dkw-pt > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 650,
+          "split": true
+        },
+        {
+          "sel": "#dkw-world .dkw-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 870
+        },
+        {
+          "sel": "#dkw-world .dkw-stg",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 850,
+          "dist": 12
+        },
+        {
+          "sel": "#dkw-world .dkw-body",
+          "enter": "iris",
+          "dur": 1600,
+          "delay": 600
+        },
+        {
+          "sel": "#dkw-world .dkw-feeds .dkw-ch",
+          "enter": "slide-l",
+          "dur": 500,
+          "delay": 900,
+          "dist": 12
+        },
+        {
+          "sel": "#dkw-world .dkw-or",
+          "enter": "scale",
+          "dur": 700,
+          "delay": 1000
+        },
+        {
+          "sel": "#dkw-world .dkw-vl > li",
+          "enter": "slide-l",
+          "dur": 500,
+          "delay": 1150,
+          "stagger": 60,
+          "dist": 10
+        },
+        {
+          "sel": "#dkw-world .dkw-cap",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1350
+        },
+        {
+          "sel": "#dkw-world .dkw-ob .orb",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 1200,
+          "stagger": 100
+        },
+        {
+          "sel": "#dkw-world .dkw-lg span",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 1650,
+          "stagger": 80,
+          "dist": 8
+        },
+        {
+          "sel": "#dkw-world .dkw-hint",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1750
+        },
+        {
+          "sel": "#dkw-world .dkw-tix .dkw-ch",
+          "enter": "slide-r",
+          "dur": 500,
+          "delay": 900,
+          "dist": 12
+        },
+        {
+          "sel": "#dkw-world .dkw-tk1",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1100,
+          "dist": 10
+        },
+        {
+          "sel": "#dkw-world .dkw-tk2",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1170,
+          "dist": 10
+        },
+        {
+          "sel": "#dkw-world .dkw-kv > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1250,
+          "stagger": 80,
+          "dist": 10
+        },
+        {
+          "sel": "#dkw-world .dkw-rail",
+          "enter": "wipe-x",
+          "dur": 900,
+          "delay": 1350
+        },
+        {
+          "sel": "#dkw-world .dkw-rl span",
+          "enter": "fade",
+          "dur": 400,
+          "delay": 1500,
+          "stagger": 60
+        },
+        {
+          "sel": "#dkw-world .dkw-now",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 1550,
+          "dist": 10
+        },
+        {
+          "sel": "#dkw-world .dkw-cd",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1650
+        },
+        {
+          "sel": "#dkw-world .dkw-ar .orb",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 1350,
+          "stagger": 90
+        },
+        {
+          "sel": "#dkw-world .dkw-an",
+          "enter": "slide-l",
+          "dur": 600,
+          "delay": 1430,
+          "stagger": 90,
+          "dist": 10
+        },
+        {
+          "sel": "#dkw-world .dkw-av",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1530,
+          "stagger": 90
+        },
+        {
+          "sel": "#dkw-world .dkw-ab",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 1610,
+          "stagger": 90
+        },
+        {
+          "sel": ".dkw-tab .orb",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 1750,
+          "stagger": 70
+        },
+        {
+          "sel": ".dkw-tn",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1830,
+          "stagger": 70,
+          "dist": 10
+        },
+        {
+          "sel": ".dkw-ts",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1950,
+          "stagger": 70
+        },
+        {
+          "sel": "#dkb-bayes .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 900
+        },
+        {
+          "sel": "#dkb-bayes .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 1020
+        },
+        {
+          "sel": "#dkb-bayes .dkb-t > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 1100,
+          "split": true
+        },
+        {
+          "sel": "#dkb-bayes .dkb-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1320
+        },
+        {
+          "sel": "#dkb-bayes .dkb-hn",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 1300,
+          "dist": 12
+        },
+        {
+          "sel": "#dkb-bayes .dkb-big",
+          "enter": "spring",
+          "dur": 1200,
+          "delay": 1150,
+          "dist": 16,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": "#dkb-bayes .dkb-rg",
+          "enter": "iris",
+          "dur": 1000,
+          "delay": 1300
+        },
+        {
+          "sel": "#dkb-bayes .dkb-kv > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1450,
+          "stagger": 90,
+          "dist": 10
+        },
+        {
+          "sel": "#dkb-bayes .dkb-cvw",
+          "enter": "wipe-x",
+          "dur": 1200,
+          "delay": 1400
+        },
+        {
+          "sel": "#dkb-bayes .dkb-lgi",
+          "enter": "slide-l",
+          "dur": 600,
+          "delay": 1750,
+          "stagger": 100,
+          "dist": 10
+        },
+        {
+          "sel": "#dkb-log .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 1000
+        },
+        {
+          "sel": "#dkb-log .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 1120
+        },
+        {
+          "sel": "#dkb-log .dkb-t > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 1200,
+          "split": true
+        },
+        {
+          "sel": "#dkb-log .dkb-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1420
+        },
+        {
+          "sel": "#dkb-log .dkb-hn",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 1400,
+          "dist": 12
+        },
+        {
+          "sel": "#dkb-chips .dkb-ch",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 1300,
+          "stagger": 60,
+          "dist": 10
+        },
+        {
+          "sel": "#dkb-log .dkb-rows",
+          "enter": "wipe-x",
+          "dur": 900,
+          "delay": 1400
+        },
+        {
+          "sel": "#dkb-log .dkb-rl > li",
+          "enter": "wipe-x",
+          "dur": 500,
+          "delay": 1550,
+          "stagger": 70
+        },
+        {
+          "sel": "#dkb-drift .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 1100
+        },
+        {
+          "sel": "#dkb-drift .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 1220
+        },
+        {
+          "sel": "#dkb-drift .dkb-t > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 1300,
+          "split": true
+        },
+        {
+          "sel": "#dkb-drift .dkb-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1520
+        },
+        {
+          "sel": "#dkb-drift .dkb-hn",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 1500,
+          "dist": 12
+        },
+        {
+          "sel": "#dkb-drift .dkb-big",
+          "enter": "spring",
+          "dur": 1200,
+          "delay": 1350,
+          "dist": 16,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": "#dkb-drift .dkb-kv > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1600,
+          "stagger": 90,
+          "dist": 10
+        },
+        {
+          "sel": "#dkb-drift .dkb-cvw",
+          "enter": "wipe-x",
+          "dur": 1500,
+          "delay": 1500
+        },
+        {
+          "sel": "#dkb-drift .dkb-df",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 2000,
+          "dist": 10
+        }
+      ],
+      "loops": [
+        {
+          "sel": "#dkt-pnl .pk",
+          "loop": "glow",
+          "dur": 3200
+        },
+        {
+          "sel": "#dkt-tape .pk",
+          "loop": "glow",
+          "dur": 3200
+        },
+        {
+          "sel": "#dkw-world .pk",
+          "loop": "glow",
+          "dur": 3200
+        },
+        {
+          "sel": "#dkb-bayes .pk",
+          "loop": "glow",
+          "dur": 3200
+        },
+        {
+          "sel": "#dkb-log .pk",
+          "loop": "glow",
+          "dur": 3200
+        },
+        {
+          "sel": "#dkb-drift .pk",
+          "loop": "glow",
+          "dur": 3200
+        },
+        {
+          "sel": "#dkb-bayes .dkb-rg",
+          "loop": "breathe",
+          "dur": 5000
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

@@ -1,0 +1,7 @@
+/* fx motion: left-anchored radial wipe (clip-path only) - reads left to right, never clips glows at the edges */
+html.m-js [data-m="lwipe"]:not(.m-in):not(.m-done){opacity:1;clip-path:circle(0% at 0 50%)}
+html.m-js [data-m="lwipe"].m-in{opacity:1;clip-path:circle(180% at 0 50%)}
+html.m-js [data-m="lwipe"].m-out{opacity:1;clip-path:circle(0% at 100% 50%)}
+/* arm fix: the hidden pre-state is applied instantly, so a delayed entrance starts from hidden on first load (otherwise the delay keeps the element visible and nothing animates) */
+html.m-js [data-m]:not(.m-in):not(.m-done):not(.m-out){transition:none}
+html.m-js [data-m-split]:not(.m-in):not(.m-out) .m-ch{transition:none}

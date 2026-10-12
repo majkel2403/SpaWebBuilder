@@ -1,0 +1,5 @@
+/* draw: left-to-right reveal along the axis; a clip-path animation, so nothing stays clipped once it ends (exit is a fade) */
+html.m-js [data-m="draw"]:not(.m-in):not(.m-done):not(.m-out) { opacity: 1; clip-path: inset(0 100% 0 0); }
+html.m-js [data-m="draw"].m-in { animation: dkmDraw calc(var(--m-dur, 900ms) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay, 0ms) + var(--m-i, 0) * var(--m-stagger, 70ms)) / var(--m-speed)) backwards; }
+@keyframes dkmDraw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@media (prefers-reduced-motion: reduce) { html.m-js [data-m="draw"] { clip-path: none !important; animation: none !important; opacity: 1 !important; } }

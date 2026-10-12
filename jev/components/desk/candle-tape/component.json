@@ -29,5 +29,91 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": "#dkt-tape .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": "#dkt-tape .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#dkt-tape .ph > span:first-child > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 450,
+          "split": true
+        },
+        {
+          "sel": "#dkt-tape .dkt-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#dkt-tape .ph > span:last-child",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 650,
+          "dist": 12
+        },
+        {
+          "sel": ".dkt-px",
+          "enter": "spring",
+          "dur": 1200,
+          "delay": 450,
+          "dist": 14,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": ".dkt-pxp",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 700
+        },
+        {
+          "sel": ".dkt-chips .dkt-chip",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 650,
+          "stagger": 70
+        },
+        {
+          "sel": ".dkt-tc",
+          "enter": "wipe-x",
+          "dur": 1500,
+          "delay": 650
+        },
+        {
+          "sel": ".dkt-lg > span",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1150,
+          "stagger": 80
+        }
+      ],
+      "loops": [
+        {
+          "sel": "#dkt-tape .pk",
+          "loop": "glow",
+          "dur": 3200
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

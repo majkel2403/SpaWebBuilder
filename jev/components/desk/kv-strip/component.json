@@ -15,5 +15,33 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": "#dkkv",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 150
+        },
+        {
+          "sel": ".dkt-kvs > div",
+          "enter": "rise",
+          "dur": 650,
+          "delay": 450,
+          "stagger": 110,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

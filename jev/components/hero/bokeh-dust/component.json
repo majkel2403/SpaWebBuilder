@@ -15,5 +15,29 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 500
+      },
+      "items": [
+        {
+          "sel": "#hbdCv",
+          "enter": "fade",
+          "dur": 1800,
+          "delay": 100
+        },
+        {
+          "sel": ".hbd-note",
+          "enter": "rise",
+          "dur": 800,
+          "delay": 1000,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    }
+  }
 }

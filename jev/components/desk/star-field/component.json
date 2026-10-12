@@ -15,5 +15,38 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 500
+      },
+      "items": [
+        {
+          "sel": "#dkx-stars",
+          "enter": "fade",
+          "dur": 1500,
+          "delay": 100,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".dkx-sky",
+          "enter": "fade",
+          "dur": 300
+        },
+        {
+          "sel": ".dkx-cap",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 1000,
+          "dist": 8
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

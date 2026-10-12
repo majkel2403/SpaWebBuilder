@@ -15,5 +15,30 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkx-cap",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 100
+        },
+        {
+          "sel": ".dkw-vl > li",
+          "enter": "slide-l",
+          "dur": 750,
+          "delay": 250,
+          "stagger": 120,
+          "dist": 14
+        }
+      ],
+      "loops": []
+    }
+  }
 }

@@ -1,6 +1,6 @@
 {
   "title": "World card",
-  "description": "Eight venues on a draggable dotted globe, global feeds, a ticket in flight and six agents in orbit \u2014 the full desk-world section.",
+  "description": "Eight venues on a draggable dotted globe, global feeds, a ticket in flight and six agents in orbit — the full desk-world section.",
   "width": "1320px",
   "needs": {
     "fx": true,
@@ -46,5 +46,54 @@
     "desk/_world-tail",
     "desk/_world-responsive",
     "desk/_world-sa-close"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkw-ph",
+          "enter": "fade",
+          "dur": 400,
+          "delay": 120
+        },
+        {
+          "sel": ".dkw-pt > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 250,
+          "split": true
+        },
+        {
+          "sel": ".dkw-ph-s",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 600
+        },
+        {
+          "sel": ".dkw-stg",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 500,
+          "dist": 8
+        },
+        {
+          "sel": ".dkw-body",
+          "enter": "iris",
+          "dur": 1300,
+          "delay": 200,
+          "ease": "var(--m-ease-out)"
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".dkw-pt .pk",
+          "loop": "glow"
+        }
+      ]
+    }
+  }
 }

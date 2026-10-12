@@ -15,5 +15,43 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hjm-panel",
+          "enter": "zoom",
+          "dur": 1000,
+          "delay": 100
+        },
+        {
+          "sel": ".hjm-head",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 450,
+          "dist": 10
+        },
+        {
+          "sel": "#hjmCv",
+          "enter": "iris",
+          "dur": 1400,
+          "delay": 550,
+          "ease": "var(--m-ease-out)"
+        },
+        {
+          "sel": "#hjmFire",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1300,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    }
+  }
 }

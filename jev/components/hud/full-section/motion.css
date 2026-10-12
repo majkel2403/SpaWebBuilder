@@ -1,0 +1,8 @@
+/* full-section motion: bespoke bits. Inside no-preference so reduced motion shows the final state at once. */
+@media (prefers-reduced-motion: no-preference) {
+  /* controls keep their own hover/press transitions once the entrance has released them */
+  html.m-js .nav a[data-m].m-done { transition: color .25s, background .25s; }
+  html.m-js .hud-help[data-m].m-done { transition: color .25s, border-color .25s, background .25s; }
+  html.m-js .kill[data-m].m-done { transition: .3s; }
+  html.m-js .kill[data-m].m-done:active { transform: scale(.95); }
+}

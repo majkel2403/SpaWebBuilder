@@ -1,0 +1,10 @@
+/* code family: wipe-d = a reveal that reads top -> bottom like lines of code being printed */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js [data-m="wipe-d"]:not(.m-in):not(.m-done) { clip-path: inset(0 0 100% 0); opacity: 1; }
+  html.m-js [data-m="wipe-d"].m-in { clip-path: inset(0 0 0 0); opacity: 1; }
+  html.m-js [data-m="wipe-d"].m-out { clip-path: inset(0 0 100% 0); opacity: 1; }
+}
+/* code family: wipes release their clip-path once done (no clipped shadows / glows afterwards). */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js [data-m="wipe-x"].m-in.m-done, html.m-js [data-m="wipe-d"].m-in.m-done { clip-path: none; }
+}

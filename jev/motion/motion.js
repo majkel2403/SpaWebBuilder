@@ -6,14 +6,14 @@
   'use strict';
   var doc = document, html = doc.documentElement, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   html.classList.add('m-js');
-  var ENTER = ['fade', 'rise', 'drop', 'slide-l', 'slide-r', 'scale', 'zoom', 'pop', 'blur', 'flip', 'tilt', 'wipe-x', 'wipe-y', 'iris', 'glow', 'spring'];
+  var ENTER = ['fade', 'rise', 'drop', 'slide-l', 'slide-r', 'scale', 'zoom', 'pop', 'blur', 'flip', 'tilt', 'wipe-x', 'wipe-y', 'wipe-bx', 'wipe-d', 'iris', 'glow', 'spring', 'bright'];
   var LOOPS = ['breathe', 'float', 'pulse', 'glow', 'shimmer', 'sweep', 'flicker', 'sway', 'orbit', 'ring'];
   var $$ = function (s, r) { return Array.prototype.slice.call((r || doc).querySelectorAll(s)); };
   var targets = [];
   function setVar(el, k, v) { if (v != null) el.style.setProperty(k, typeof v === 'number' ? v + 'ms' : v); }
 
   function mark(el, o, idx) {
-    el.setAttribute('data-m', o.enter || 'rise');
+    el.classList.add('m-t'); el.setAttribute('data-m', o.enter || 'rise');
     if (o.exit) el.setAttribute('data-m-exit', o.exit);
     setVar(el, '--m-dur', o.dur); setVar(el, '--m-delay', o.delay); if (o.ease) el.style.setProperty('--m-ease', o.ease); if (o.dist != null) el.style.setProperty('--m-dist', o.dist + 'px');
     el.style.setProperty('--m-i', idx || 0); targets.push(el);
@@ -34,14 +34,15 @@
     start();
   }
   function trigger(el) { el.classList.remove('m-out', 'm-done'); void el.offsetWidth; el.classList.add('m-in'); var d = parseFloat(getComputedStyle(el).transitionDuration) * 1000 + 1400 + (parseFloat(el.style.getPropertyValue('--m-i')) || 0) * 120; clearTimeout(el._md); el._md = setTimeout(function () { el.classList.add('m-done'); }, d); var c = el.getAttribute('data-m-count'); if (c != null) count(el, +c); }
-  function start() { if (reduce) { targets.forEach(function (e) { e.classList.add('m-in', 'm-done'); }); return; } requestAnimationFrame(function () { requestAnimationFrame(function () { targets.forEach(trigger); }); }); }
+  function adopt() { $$('[data-m]:not(.m-t)').forEach(function (e) { if (ENTER.indexOf(e.getAttribute('data-m')) >= 0) { e.classList.add('m-t'); if (targets.indexOf(e) < 0) targets.push(e); } }); }
+  function start() { adopt(); if (reduce) { targets.forEach(function (e) { e.classList.add('m-in', 'm-done'); }); return; } requestAnimationFrame(function () { requestAnimationFrame(function () { targets.forEach(trigger); }); }); }
   function play(r) { (r ? $$('[data-m]', r).concat(r.hasAttribute && r.hasAttribute('data-m') ? [r] : []) : targets).forEach(trigger); }
   function out(r) { (r ? $$('[data-m]', r) : targets).forEach(function (e) { e.classList.remove('m-in', 'm-done'); e.classList.add('m-out'); }); }
   function replay(r) { var els = r ? $$('[data-m]', r) : targets; els.forEach(function (e) { e.classList.remove('m-in', 'm-done', 'm-out'); e.querySelectorAll && void e.offsetWidth; }); setTimeout(function () { els.forEach(trigger); }, 60); }
 
   function split(el) { if (el._split) return; el._split = 1; el.setAttribute('data-m-split', ''); el.classList.add('m-split'); var txt = el.textContent; el.setAttribute('aria-label', txt); el.textContent = ''; var i = 0;
     txt.split(/(\s+)/).forEach(function (w) { if (/^\s+$/.test(w)) { el.appendChild(doc.createTextNode(w)); return; } var s = doc.createElement('span'); s.style.display = 'inline-block'; s.setAttribute('aria-hidden', 'true'); w.split('').forEach(function (c) { var ch = doc.createElement('span'); ch.className = 'm-ch'; ch.textContent = c; ch.style.setProperty('--m-i', i++); s.appendChild(ch); }); el.appendChild(s); });
-    if (!el.hasAttribute('data-m')) { el.setAttribute('data-m', 'fade'); targets.push(el); } }
+    if (!el.hasAttribute('data-m')) { el.classList.add('m-t'); el.setAttribute('data-m', 'fade'); targets.push(el); } }
   function count(el, to, o) { o = o || {}; var from = o.from || 0, dur = reduce ? 1 : (o.dur || 1400), t0 = performance.now(), fmt = o.fmt || function (v) { return Math.round(v).toLocaleString('en-US'); }; (function f(now) { var p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 4); el.textContent = fmt(from + (to - from) * e); if (p < 1) requestAnimationFrame(f); })(t0); }
   /* spring -> CSS linear() easing */
   function spring(k, c) { k = k || 170; c = c || 14; var pts = [], x = 0, v = 0, dt = 1 / 120, n = 0; for (var t = 0; t < 1.6 && n < 400; t += dt, n++) { var a = -k * (x - 1) - c * v; v += a * dt; x += v * dt; pts.push(x); } var step = Math.max(1, Math.floor(pts.length / 36)), out = []; for (var i = 0; i < pts.length; i += step) out.push(+pts[i].toFixed(3)); out.push(1); return 'linear(' + [0].concat(out).join(',') + ')'; }

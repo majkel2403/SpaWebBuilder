@@ -15,5 +15,56 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".code-win",
+          "enter": "scale",
+          "dur": 800
+        },
+        {
+          "sel": ".code-bar",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 250
+        },
+        {
+          "sel": ".code-dots i",
+          "enter": "pop",
+          "stagger": 90,
+          "dur": 450,
+          "delay": 450
+        },
+        {
+          "sel": ".code-title",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 650,
+          "dist": 8
+        },
+        {
+          "sel": ".code-eq",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 900
+        },
+        {
+          "sel": ".cx-wb-body",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 900
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

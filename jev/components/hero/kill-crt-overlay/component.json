@@ -15,5 +15,66 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hkc-net",
+          "enter": "fade",
+          "dur": 800,
+          "delay": 100
+        },
+        {
+          "sel": ".hkc-chip",
+          "enter": "drop",
+          "dur": 700,
+          "delay": 700,
+          "dist": 12
+        },
+        {
+          "sel": ".hkc-card",
+          "enter": "arc",
+          "dur": 900,
+          "delay": 900,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hkc-eyebrow",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1200
+        },
+        {
+          "sel": ".hkc-sub b",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1300,
+          "stagger": 110,
+          "dist": 10
+        },
+        {
+          "sel": ".hkc-bar .hbtn",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1300,
+          "stagger": 90,
+          "dist": 12
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hkc-chip .lamp",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

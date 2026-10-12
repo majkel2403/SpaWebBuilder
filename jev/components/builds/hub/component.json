@@ -23,5 +23,170 @@
     "builds/_responsive",
     "builds/_hub-spectacle",
     "builds/_reduce"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": "#bld-core",
+          "enter": "fade",
+          "dur": 800,
+          "delay": 0
+        },
+        {
+          "sel": "#bld-hub .bld-ring",
+          "enter": "scale",
+          "stagger": 180,
+          "dur": 1400,
+          "delay": 100
+        },
+        {
+          "sel": "#bld-hub .bld-core-box",
+          "enter": "bright",
+          "dur": 1000,
+          "delay": 200
+        },
+        {
+          "sel": "#bld-hub .bld-core-hd",
+          "enter": "drop",
+          "dist": 10,
+          "dur": 700,
+          "delay": 560
+        },
+        {
+          "sel": "#bld-hub .bld-core-body > *:not(.bld-wmw)",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 650,
+          "delay": 760
+        },
+        {
+          "sel": "#bld-colL",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 300
+        },
+        {
+          "sel": "#bld-colR",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 420
+        },
+        {
+          "sel": "#bld-colL .bld-hd",
+          "enter": "slide-l",
+          "dist": 10,
+          "stagger": 60,
+          "dur": 700,
+          "delay": 450
+        },
+        {
+          "sel": "#bld-colR .bld-hd",
+          "enter": "slide-r",
+          "dist": 10,
+          "stagger": 60,
+          "dur": 700,
+          "delay": 560
+        },
+        {
+          "sel": ".bld-col .bld-ci > :nth-child(2), .bld-col .bld-ci > :nth-child(3)",
+          "enter": "fade",
+          "stagger": 30,
+          "dur": 600,
+          "delay": 650
+        },
+        {
+          "sel": ".bld-col .bld-m",
+          "enter": "wipe-bx",
+          "stagger": 60,
+          "dur": 900,
+          "delay": 800
+        },
+        {
+          "sel": "#bld-cv",
+          "enter": "fade",
+          "dur": 1100,
+          "delay": 700
+        },
+        {
+          "sel": ".bld-gap",
+          "enter": "fade",
+          "stagger": 260,
+          "dur": 600,
+          "delay": 900
+        },
+        {
+          "sel": "#bld-prims",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1000
+        },
+        {
+          "sel": "#bld-prims .bld-hd",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 100,
+          "dur": 650,
+          "delay": 1050
+        },
+        {
+          "sel": "#bld-prims .bld-m",
+          "enter": "wipe-bx",
+          "stagger": 100,
+          "dur": 800,
+          "delay": 1250
+        },
+        {
+          "sel": "#bld-decs",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1200
+        },
+        {
+          "sel": "#bld-decs .bld-hd",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 70,
+          "dur": 650,
+          "delay": 1250
+        },
+        {
+          "sel": "#bld-decs .bld-m",
+          "enter": "wipe-bx",
+          "stagger": 70,
+          "dur": 800,
+          "delay": 1450
+        },
+        {
+          "sel": ".bld-rules-w",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 1450
+        },
+        {
+          "sel": ".bld-fig, .bld-cap",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1700
+        },
+        {
+          "sel": ".bld-foot > span",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 600,
+          "delay": 1800
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

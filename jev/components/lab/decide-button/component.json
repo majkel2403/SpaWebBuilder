@@ -119,5 +119,51 @@
       "lab/_demo",
       "lab/_tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".lab-ctl",
+          "enter": "blur",
+          "dur": 800
+        },
+        {
+          "sel": ".lab-sub",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 200
+        },
+        {
+          "sel": ".lab-magw",
+          "enter": "pop",
+          "dur": 1000,
+          "delay": 420,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".lab-go-t, .lab-kbd, .lab-go-i",
+          "enter": "rise",
+          "stagger": 90,
+          "dur": 600,
+          "delay": 800,
+          "dist": 8
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".lab-magw",
+          "loop": "glow",
+          "dur": 3600
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

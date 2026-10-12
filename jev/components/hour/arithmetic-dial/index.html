@@ -392,8 +392,8 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
   --m-glow: var(--cc, #ff2e6e);
 }
 /* ---------- entrance: hidden state (only when JS is running) ---------- */
-html.m-js [data-m]:not(.m-in):not(.m-done) { opacity: 0; will-change: opacity, transform; }
-html.m-js [data-m] { transition: opacity calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
+html.m-js .m-t[data-m]:not(.m-in):not(.m-done) { opacity: 0; will-change: opacity, transform; }
+html.m-js .m-t[data-m] { transition: opacity calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
   transform calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
   filter calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
   clip-path calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)); }
@@ -416,6 +416,14 @@ html.m-js [data-m="spring"]:not(.m-in):not(.m-done) { transform: translateY(calc
 html.m-js [data-m="rise"].m-in, html.m-js [data-m="drop"].m-in, html.m-js [data-m="slide-l"].m-in, html.m-js [data-m="slide-r"].m-in, html.m-js [data-m="scale"].m-in, html.m-js [data-m="zoom"].m-in, html.m-js [data-m="pop"].m-in, html.m-js [data-m="blur"].m-in, html.m-js [data-m="flip"].m-in, html.m-js [data-m="tilt"].m-in, html.m-js [data-m="glow"].m-in, html.m-js [data-m="spring"].m-in { opacity: 1; transform: none; filter: none; }
 html.m-js [data-m="wipe-x"].m-in, html.m-js [data-m="wipe-y"].m-in { clip-path: inset(0 0 0 0); }
 html.m-js [data-m="iris"].m-in { clip-path: circle(150% at 50% 50%); }
+html.m-js [data-m="wipe-bx"]:not(.m-in):not(.m-done) { clip-path: inset(-10px 100% -10px -10px); opacity: 1; }
+html.m-js [data-m="wipe-d"]:not(.m-in):not(.m-done) { clip-path: inset(-12px -12px 100% -12px); opacity: 1; }
+html.m-js [data-m="bright"]:not(.m-in):not(.m-done) { filter: brightness(2.4) saturate(1.5) blur(5px); }
+html.m-js [data-m="wipe-bx"].m-in, html.m-js [data-m="wipe-d"].m-in { clip-path: inset(-10px); }
+html.m-js [data-m="bright"].m-in { opacity: 1; filter: none; }
+html.m-js [data-m="wipe-bx"].m-out { clip-path: inset(-10px -10px -10px 100%); opacity: 1; }
+html.m-js [data-m="wipe-d"].m-out { clip-path: inset(100% -12px -12px -12px); opacity: 1; }
+html.m-js [data-m="bright"].m-out { filter: brightness(2) blur(5px); }
 /* exit: add .m-out (JEVM.out) — reverse choreography, faster */
 html.m-js [data-m].m-out { opacity: 0; transition-duration: calc(var(--m-dur-md) / var(--m-speed)); transition-timing-function: var(--m-ease-in); transition-delay: calc(var(--m-i) * 30ms); }
 html.m-js [data-m="rise"].m-out { transform: translateY(calc(var(--m-dist) * -.7)); }
@@ -428,7 +436,7 @@ html.m-js [data-m="blur"].m-out { filter: blur(10px); }
 html.m-js [data-m="wipe-x"].m-out { clip-path: inset(0 0 0 100%); opacity: 1; }
 html.m-js [data-m="wipe-y"].m-out { clip-path: inset(0 0 100% 0); opacity: 1; }
 html.m-js [data-m="iris"].m-out { clip-path: circle(0% at 50% 50%); opacity: 1; }
-html.m-js [data-m].m-done { transition: none; }   /* after the entrance finished: never fight the component's own transitions */
+html.m-js [data-m].m-done { transition: none; clip-path: none; filter: none; }   /* after the entrance finished: never fight the component's own transitions */
 
 /* ---------- loops (ambient life) ---------- */
 [data-m-loop] { animation-duration: calc(var(--m-loop-dur, 4s) / var(--m-speed)); animation-iteration-count: infinite; animation-timing-function: var(--m-ease-io); animation-delay: calc(var(--m-i) * -380ms); }
@@ -476,6 +484,16 @@ html[data-tier="1"] [data-m-loop="glow"] { animation: none; }
   [data-m-loop] { animation: none !important; }
 }
 
+/* hour motion: shared bits. Everything sits inside no-preference so reduced motion shows the final state at once. */
+@media (prefers-reduced-motion: no-preference) {
+  /* clip-path presets are released after the entrance so glows and shadows are never cut */
+  html.m-js [data-m="wipe-x"].m-done, html.m-js [data-m="wipe-y"].m-done, html.m-js [data-m="iris"].m-done { clip-path: none; }
+  /* neon edge: draws left to right once the card content arrives, retracts on exit, then flickers like a sign */
+  html.m-js .hr-p > .hr-edge { transform-origin: 0 50%; }
+  html.m-js .hr-p:not(:has(.m-in)) > .hr-edge { transform: scaleX(0); transition: transform .45s var(--m-ease-in); }
+  html.m-js .hr-p:has(.m-in) > .hr-edge { animation: hrm-edge 1.2s var(--m-ease-out) .2s both, m-flicker 5.2s steps(1) 2.4s infinite; }
+}
+@keyframes hrm-edge { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 </style></head><body class="cmp">
 
 
@@ -1472,14 +1490,14 @@ JEV.mod('hour', () => {
   'use strict';
   var doc = document, html = doc.documentElement, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   html.classList.add('m-js');
-  var ENTER = ['fade', 'rise', 'drop', 'slide-l', 'slide-r', 'scale', 'zoom', 'pop', 'blur', 'flip', 'tilt', 'wipe-x', 'wipe-y', 'iris', 'glow', 'spring'];
+  var ENTER = ['fade', 'rise', 'drop', 'slide-l', 'slide-r', 'scale', 'zoom', 'pop', 'blur', 'flip', 'tilt', 'wipe-x', 'wipe-y', 'wipe-bx', 'wipe-d', 'iris', 'glow', 'spring', 'bright'];
   var LOOPS = ['breathe', 'float', 'pulse', 'glow', 'shimmer', 'sweep', 'flicker', 'sway', 'orbit', 'ring'];
   var $$ = function (s, r) { return Array.prototype.slice.call((r || doc).querySelectorAll(s)); };
   var targets = [];
   function setVar(el, k, v) { if (v != null) el.style.setProperty(k, typeof v === 'number' ? v + 'ms' : v); }
 
   function mark(el, o, idx) {
-    el.setAttribute('data-m', o.enter || 'rise');
+    el.classList.add('m-t'); el.setAttribute('data-m', o.enter || 'rise');
     if (o.exit) el.setAttribute('data-m-exit', o.exit);
     setVar(el, '--m-dur', o.dur); setVar(el, '--m-delay', o.delay); if (o.ease) el.style.setProperty('--m-ease', o.ease); if (o.dist != null) el.style.setProperty('--m-dist', o.dist + 'px');
     el.style.setProperty('--m-i', idx || 0); targets.push(el);
@@ -1500,14 +1518,15 @@ JEV.mod('hour', () => {
     start();
   }
   function trigger(el) { el.classList.remove('m-out', 'm-done'); void el.offsetWidth; el.classList.add('m-in'); var d = parseFloat(getComputedStyle(el).transitionDuration) * 1000 + 1400 + (parseFloat(el.style.getPropertyValue('--m-i')) || 0) * 120; clearTimeout(el._md); el._md = setTimeout(function () { el.classList.add('m-done'); }, d); var c = el.getAttribute('data-m-count'); if (c != null) count(el, +c); }
-  function start() { if (reduce) { targets.forEach(function (e) { e.classList.add('m-in', 'm-done'); }); return; } requestAnimationFrame(function () { requestAnimationFrame(function () { targets.forEach(trigger); }); }); }
+  function adopt() { $$('[data-m]:not(.m-t)').forEach(function (e) { if (ENTER.indexOf(e.getAttribute('data-m')) >= 0) { e.classList.add('m-t'); if (targets.indexOf(e) < 0) targets.push(e); } }); }
+  function start() { adopt(); if (reduce) { targets.forEach(function (e) { e.classList.add('m-in', 'm-done'); }); return; } requestAnimationFrame(function () { requestAnimationFrame(function () { targets.forEach(trigger); }); }); }
   function play(r) { (r ? $$('[data-m]', r).concat(r.hasAttribute && r.hasAttribute('data-m') ? [r] : []) : targets).forEach(trigger); }
   function out(r) { (r ? $$('[data-m]', r) : targets).forEach(function (e) { e.classList.remove('m-in', 'm-done'); e.classList.add('m-out'); }); }
   function replay(r) { var els = r ? $$('[data-m]', r) : targets; els.forEach(function (e) { e.classList.remove('m-in', 'm-done', 'm-out'); e.querySelectorAll && void e.offsetWidth; }); setTimeout(function () { els.forEach(trigger); }, 60); }
 
   function split(el) { if (el._split) return; el._split = 1; el.setAttribute('data-m-split', ''); el.classList.add('m-split'); var txt = el.textContent; el.setAttribute('aria-label', txt); el.textContent = ''; var i = 0;
     txt.split(/(\s+)/).forEach(function (w) { if (/^\s+$/.test(w)) { el.appendChild(doc.createTextNode(w)); return; } var s = doc.createElement('span'); s.style.display = 'inline-block'; s.setAttribute('aria-hidden', 'true'); w.split('').forEach(function (c) { var ch = doc.createElement('span'); ch.className = 'm-ch'; ch.textContent = c; ch.style.setProperty('--m-i', i++); s.appendChild(ch); }); el.appendChild(s); });
-    if (!el.hasAttribute('data-m')) { el.setAttribute('data-m', 'fade'); targets.push(el); } }
+    if (!el.hasAttribute('data-m')) { el.classList.add('m-t'); el.setAttribute('data-m', 'fade'); targets.push(el); } }
   function count(el, to, o) { o = o || {}; var from = o.from || 0, dur = reduce ? 1 : (o.dur || 1400), t0 = performance.now(), fmt = o.fmt || function (v) { return Math.round(v).toLocaleString('en-US'); }; (function f(now) { var p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 4); el.textContent = fmt(from + (to - from) * e); if (p < 1) requestAnimationFrame(f); })(t0); }
   /* spring -> CSS linear() easing */
   function spring(k, c) { k = k || 170; c = c || 14; var pts = [], x = 0, v = 0, dt = 1 / 120, n = 0; for (var t = 0; t < 1.6 && n < 400; t += dt, n++) { var a = -k * (x - 1) - c * v; v += a * dt; x += v * dt; pts.push(x); } var step = Math.max(1, Math.floor(pts.length / 36)), out = []; for (var i = 0; i < pts.length; i += step) out.push(+pts[i].toFixed(3)); out.push(1); return 'linear(' + [0].concat(out).join(',') + ')'; }
@@ -1521,6 +1540,6 @@ JEV.mod('hour', () => {
 
 </script>
 <script>
-(function(){var cfg={"root":{"enter":"fade","dur":500},"items":[{"sel":".hr-d","enter":"blur","dur":900},{"sel":".hr-d > *","enter":"rise","stagger":90,"dur":700,"delay":150}],"loops":[{"sel":".hr-d .hr-knob, .hr-d [class*=needle]","loop":"glow"}]};function go(){JEVM.apply(cfg)}if(document.readyState==='complete')setTimeout(go,60);else addEventListener('load',function(){setTimeout(go,60)})})();
+(function(){var cfg={"root":{"enter":"fade","dur":400},"items":[{"sel":".hr-ph .hr-tag","enter":"fade","dur":300,"delay":350,"dist":10,"split":true},{"sel":".hr-ph .hr-ps","enter":"rise","dur":600,"delay":450,"dist":10},{"sel":".hr-ph .hr-badge","enter":"pop","dur":600,"delay":530},{"sel":".hr-t","enter":"rise","dur":800,"delay":530,"dist":14},{"sel":".hr-note span","enter":"rise","stagger":60,"dur":600,"delay":670,"dist":10},{"sel":".hr-gauge","enter":"iris","dur":1200,"delay":600,"ease":"linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"},{"sel":".hr-read .hr-rl","enter":"rise","stagger":70,"dur":600,"delay":750,"dist":10},{"sel":".hr-ret","enter":"pop","dur":800,"delay":850,"ease":"linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"},{"sel":".hr-capv","enter":"pop","dur":800,"delay":1000,"ease":"linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"},{"sel":".hr-small","enter":"fade","dur":600,"delay":1100},{"sel":".hr-rng","enter":"wipe-x","dur":900,"delay":900},{"sel":".hr-pre","enter":"rise","dur":600,"delay":1100,"dist":10},{"sel":".hr-eq","enter":"fade","dur":600,"delay":1150},{"sel":".hr-key","enter":"rise","dur":600,"delay":1250,"dist":10},{"sel":".hr-foot","enter":"fade","dur":600,"delay":1200},{"sel":".hr-fig","enter":"zoom","dur":1100,"delay":1050}],"loops":[{"sel":".hr-knob","loop":"glow"}]};function go(){JEVM.apply(cfg)}if(document.readyState==='complete')setTimeout(go,60);else addEventListener('load',function(){setTimeout(go,60)})})();
 </script>
 </body></html>

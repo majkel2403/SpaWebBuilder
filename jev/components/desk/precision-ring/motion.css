@@ -1,0 +1,5 @@
+/* ring weight sweeps from 0 to its value (--dkb-w is a registered number), cell by cell */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js .dkprg-cell.m-in .dkb-rg { animation: dkmRing 1.3s var(--m-ease-out) backwards; animation-delay: calc(var(--m-delay, 0ms) + var(--m-i, 0) * var(--m-stagger, 70ms) + 120ms); }
+  @keyframes dkmRing { from { --dkb-w: 0; } }
+}

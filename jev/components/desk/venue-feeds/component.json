@@ -15,5 +15,55 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkw-ch",
+          "enter": "drop",
+          "dur": 500,
+          "delay": 150,
+          "dist": 8
+        },
+        {
+          "sel": ".dkw-or",
+          "enter": "zoom",
+          "dur": 800,
+          "delay": 300
+        },
+        {
+          "sel": ".dkw-orp",
+          "enter": "spring",
+          "dur": 1200,
+          "delay": 550,
+          "dist": 14,
+          "ease": "linear(0,0.018,0.299,0.703,1.034,1.209,1.235,1.167,1.07,0.991,0.95,0.944,0.96,0.983,1.002,1.012,1.013,1.009,1.004,0.999,0.997,0.997,0.998,0.999,1,1.001,1.001,1.001,1,1,1,1,1,1,1,1,1,1,1,1,1)"
+        },
+        {
+          "sel": ".dkw-ocv",
+          "enter": "draw",
+          "dur": 1000,
+          "delay": 700,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".dkw-vl > li",
+          "enter": "slide-l",
+          "dur": 700,
+          "delay": 750,
+          "stagger": 75,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

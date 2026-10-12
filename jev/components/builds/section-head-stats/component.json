@@ -25,5 +25,54 @@
     "builds/_drive",
     "builds/_end",
     "builds/_responsive"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".eb",
+          "enter": "wipe-bx",
+          "dur": 800,
+          "delay": 100
+        },
+        {
+          "sel": ".bld-lede",
+          "enter": "rise",
+          "dist": 14,
+          "dur": 800,
+          "delay": 700
+        },
+        {
+          "sel": ".bld-stats",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 900
+        },
+        {
+          "sel": ".bld-stats > div",
+          "enter": "rise",
+          "dist": 12,
+          "stagger": 90,
+          "dur": 700,
+          "delay": 950
+        },
+        {
+          "sel": ".bld-foot > span",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 600,
+          "delay": 1400
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

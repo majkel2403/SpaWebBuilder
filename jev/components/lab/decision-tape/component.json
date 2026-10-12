@@ -107,5 +107,46 @@
       "lab/_demo",
       "lab/_tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".lab-tape",
+          "enter": "blur",
+          "dur": 800
+        },
+        {
+          "sel": ".lab-ph > .lab-tag, .lab-ph > .lab-ps, .lab-ph > .lab-tools",
+          "enter": "rise",
+          "stagger": 90,
+          "dur": 600,
+          "delay": 200,
+          "dist": 10
+        },
+        {
+          "sel": ".lab-tp > li",
+          "enter": "slide-l",
+          "stagger": 110,
+          "dur": 800,
+          "delay": 450,
+          "dist": 16
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".lab-tag",
+          "loop": "glow",
+          "dur": 3600
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

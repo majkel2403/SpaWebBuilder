@@ -111,5 +111,50 @@
       "lab/_demo",
       "lab/_tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".lab-ctl",
+          "enter": "blur",
+          "dur": 800
+        },
+        {
+          "sel": ".lab-sub",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 200
+        },
+        {
+          "sel": ".lab-row",
+          "enter": "slide-l",
+          "stagger": 80,
+          "dur": 800,
+          "delay": 350,
+          "dist": 14
+        },
+        {
+          "sel": ".lab-rng .lab-fill",
+          "enter": "wipe-x",
+          "stagger": 80,
+          "dur": 900,
+          "delay": 650
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".lab-dzk",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

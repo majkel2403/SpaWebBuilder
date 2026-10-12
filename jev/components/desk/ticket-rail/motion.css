@@ -1,0 +1,13 @@
+/* draw: left-to-right reveal along the axis; a clip-path animation, so nothing stays clipped once it ends (exit is a fade) */
+html.m-js [data-m="draw"]:not(.m-in):not(.m-done):not(.m-out) { opacity: 1; clip-path: inset(0 100% 0 0); }
+html.m-js [data-m="draw"].m-in { animation: dkmDraw calc(var(--m-dur, 900ms) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay, 0ms) + var(--m-i, 0) * var(--m-stagger, 70ms)) / var(--m-speed)) backwards; }
+@keyframes dkmDraw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@media (prefers-reduced-motion: reduce) { html.m-js [data-m="draw"] { clip-path: none !important; animation: none !important; opacity: 1 !important; } }
+
+/* stage rail: the progress fill draws in and the marker drops on after the dots */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js .dkw-rail.m-in .dkw-mk { animation: dkmMk .9s var(--m-ease-spring) .8s backwards; }
+  html.m-js .dkw-rail.m-in .dkw-rfl { animation: dkmFl 1s var(--m-ease-out) .5s backwards; }
+  @keyframes dkmMk { from { scale: 0; opacity: 0; } }
+  @keyframes dkmFl { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+}

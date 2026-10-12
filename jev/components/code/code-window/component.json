@@ -61,5 +61,56 @@
     "code/_tail",
     "code/_u-phosphor-log",
     "code/_spectacle-b"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".code-glow",
+          "enter": "fade",
+          "dur": 1400,
+          "delay": 150
+        },
+        {
+          "sel": ".code-win .code-bar",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 400
+        },
+        {
+          "sel": ".code-win .code-pane",
+          "enter": "rise",
+          "stagger": 110,
+          "dur": 850,
+          "delay": 550,
+          "dist": 24
+        },
+        {
+          "sel": ".code-win .code-status",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 1050
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".code-pd",
+          "loop": "glow",
+          "dur": 3800
+        },
+        {
+          "sel": ".code-glow",
+          "loop": "breathe",
+          "dur": 6000
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

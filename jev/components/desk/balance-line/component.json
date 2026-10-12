@@ -15,5 +15,71 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": "#dkbl .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": "#dkbl .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#dkbl .ph > span:first-child > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 450,
+          "split": true
+        },
+        {
+          "sel": "#dkbl .dkt-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#dkbl .ph > span:last-child",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 650,
+          "dist": 12
+        },
+        {
+          "sel": ".dkbl-w",
+          "enter": "wipe-x",
+          "dur": 1400,
+          "delay": 550
+        },
+        {
+          "sel": ".dkbl-ft span",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1100,
+          "stagger": 120,
+          "dist": 10
+        }
+      ],
+      "loops": [
+        {
+          "sel": "#dkbl .pk",
+          "loop": "glow",
+          "dur": 3200
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

@@ -12,8 +12,8 @@
   --m-glow: var(--cc, #ff2e6e);
 }
 /* ---------- entrance: hidden state (only when JS is running) ---------- */
-html.m-js [data-m]:not(.m-in):not(.m-done) { opacity: 0; will-change: opacity, transform; }
-html.m-js [data-m] { transition: opacity calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
+html.m-js .m-t[data-m]:not(.m-in):not(.m-done) { opacity: 0; will-change: opacity, transform; }
+html.m-js .m-t[data-m] { transition: opacity calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
   transform calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
   filter calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
   clip-path calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)); }
@@ -36,6 +36,14 @@ html.m-js [data-m="spring"]:not(.m-in):not(.m-done) { transform: translateY(calc
 html.m-js [data-m="rise"].m-in, html.m-js [data-m="drop"].m-in, html.m-js [data-m="slide-l"].m-in, html.m-js [data-m="slide-r"].m-in, html.m-js [data-m="scale"].m-in, html.m-js [data-m="zoom"].m-in, html.m-js [data-m="pop"].m-in, html.m-js [data-m="blur"].m-in, html.m-js [data-m="flip"].m-in, html.m-js [data-m="tilt"].m-in, html.m-js [data-m="glow"].m-in, html.m-js [data-m="spring"].m-in { opacity: 1; transform: none; filter: none; }
 html.m-js [data-m="wipe-x"].m-in, html.m-js [data-m="wipe-y"].m-in { clip-path: inset(0 0 0 0); }
 html.m-js [data-m="iris"].m-in { clip-path: circle(150% at 50% 50%); }
+html.m-js [data-m="wipe-bx"]:not(.m-in):not(.m-done) { clip-path: inset(-10px 100% -10px -10px); opacity: 1; }
+html.m-js [data-m="wipe-d"]:not(.m-in):not(.m-done) { clip-path: inset(-12px -12px 100% -12px); opacity: 1; }
+html.m-js [data-m="bright"]:not(.m-in):not(.m-done) { filter: brightness(2.4) saturate(1.5) blur(5px); }
+html.m-js [data-m="wipe-bx"].m-in, html.m-js [data-m="wipe-d"].m-in { clip-path: inset(-10px); }
+html.m-js [data-m="bright"].m-in { opacity: 1; filter: none; }
+html.m-js [data-m="wipe-bx"].m-out { clip-path: inset(-10px -10px -10px 100%); opacity: 1; }
+html.m-js [data-m="wipe-d"].m-out { clip-path: inset(100% -12px -12px -12px); opacity: 1; }
+html.m-js [data-m="bright"].m-out { filter: brightness(2) blur(5px); }
 /* exit: add .m-out (JEVM.out) — reverse choreography, faster */
 html.m-js [data-m].m-out { opacity: 0; transition-duration: calc(var(--m-dur-md) / var(--m-speed)); transition-timing-function: var(--m-ease-in); transition-delay: calc(var(--m-i) * 30ms); }
 html.m-js [data-m="rise"].m-out { transform: translateY(calc(var(--m-dist) * -.7)); }
@@ -48,7 +56,7 @@ html.m-js [data-m="blur"].m-out { filter: blur(10px); }
 html.m-js [data-m="wipe-x"].m-out { clip-path: inset(0 0 0 100%); opacity: 1; }
 html.m-js [data-m="wipe-y"].m-out { clip-path: inset(0 0 100% 0); opacity: 1; }
 html.m-js [data-m="iris"].m-out { clip-path: circle(0% at 50% 50%); opacity: 1; }
-html.m-js [data-m].m-done { transition: none; }   /* after the entrance finished: never fight the component's own transitions */
+html.m-js [data-m].m-done { transition: none; clip-path: none; filter: none; }   /* after the entrance finished: never fight the component's own transitions */
 
 /* ---------- loops (ambient life) ---------- */
 [data-m-loop] { animation-duration: calc(var(--m-loop-dur, 4s) / var(--m-speed)); animation-iteration-count: infinite; animation-timing-function: var(--m-ease-io); animation-delay: calc(var(--m-i) * -380ms); }

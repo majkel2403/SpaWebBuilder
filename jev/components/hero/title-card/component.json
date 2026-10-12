@@ -19,5 +19,49 @@
     "self",
     "hero/_card-fx",
     "hero/_htc-post"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hero-card",
+          "enter": "arc",
+          "dur": 1000,
+          "delay": 200,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hero-eyebrow",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 600
+        },
+        {
+          "sel": ".hero-sub b",
+          "enter": "rise",
+          "dur": 650,
+          "delay": 1100,
+          "stagger": 130,
+          "dist": 10
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hero-eyebrow .lamp",
+          "loop": "pulse"
+        },
+        {
+          "sel": ".hero-card",
+          "loop": "glow"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

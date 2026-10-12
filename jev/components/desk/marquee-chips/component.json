@@ -36,5 +36,34 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkt-mq",
+          "enter": "draw",
+          "dur": 1000,
+          "delay": 150,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".dkt-ms .dkt-c",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 350,
+          "stagger": 50,
+          "dist": 10
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

@@ -29,5 +29,74 @@
     "builds/_end",
     "builds/_responsive",
     "builds/_one-col"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-tiles",
+          "enter": "blur",
+          "dur": 800,
+          "delay": 60
+        },
+        {
+          "sel": "#bld-t-own .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 160
+        },
+        {
+          "sel": "#bld-t-own .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 420
+        },
+        {
+          "sel": "#bld-t-own .bld-or",
+          "enter": "slide-l",
+          "dist": 10,
+          "stagger": 75,
+          "dur": 650,
+          "delay": 380
+        },
+        {
+          "sel": "#bld-t-own .bld-or .tr",
+          "enter": "wipe-bx",
+          "stagger": 75,
+          "dur": 850,
+          "delay": 560
+        },
+        {
+          "sel": "#bld-t-own .bld-or em",
+          "enter": "fade",
+          "stagger": 75,
+          "dur": 500,
+          "delay": 860
+        },
+        {
+          "sel": ".bld-foot > span",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 600,
+          "delay": 1000
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".bld-th i",
+          "loop": "flicker"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

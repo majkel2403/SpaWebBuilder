@@ -15,5 +15,62 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-rb-row",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 40
+        },
+        {
+          "sel": ".bld-rb-row .bld-hd",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 180,
+          "dur": 650,
+          "delay": 220
+        },
+        {
+          "sel": ".bld-rb-row .bld-ci > :nth-child(2)",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 180,
+          "dur": 650,
+          "delay": 380
+        },
+        {
+          "sel": ".bld-rb-row .bld-ci > :nth-child(3)",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 180,
+          "dur": 650,
+          "delay": 500
+        },
+        {
+          "sel": ".bld-rb-row .bld-m",
+          "enter": "wipe-bx",
+          "stagger": 180,
+          "dur": 900,
+          "delay": 720
+        },
+        {
+          "sel": "#bld-rb-cv",
+          "enter": "fade",
+          "dur": 1100,
+          "delay": 650
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

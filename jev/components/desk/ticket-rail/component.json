@@ -15,5 +15,62 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkx-cap",
+          "enter": "drop",
+          "dur": 500,
+          "delay": 100,
+          "dist": 8
+        },
+        {
+          "sel": ".dkw-rail",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 200
+        },
+        {
+          "sel": ".dkw-rln",
+          "enter": "draw",
+          "dur": 1000,
+          "delay": 250,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".dkw-sd",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 300,
+          "stagger": 150,
+          "ease": "linear(0,0.018,0.299,0.703,1.034,1.209,1.235,1.167,1.07,0.991,0.95,0.944,0.96,0.983,1.002,1.012,1.013,1.009,1.004,0.999,0.997,0.997,0.998,0.999,1,1.001,1.001,1.001,1,1,1,1,1,1,1,1,1,1,1,1,1)"
+        },
+        {
+          "sel": ".dkw-rl span",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 450,
+          "stagger": 150,
+          "dist": 8
+        },
+        {
+          "sel": ".dkw-now",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 1000,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

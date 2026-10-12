@@ -15,5 +15,64 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": "#dkcf .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": "#dkcf .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#dkcf .dkb-t > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 450,
+          "split": true
+        },
+        {
+          "sel": "#dkcf .dkb-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#dkcf .dkb-hn",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 650,
+          "dist": 12
+        },
+        {
+          "sel": "#dkcf-chips .dkb-ch",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 550,
+          "stagger": 80
+        },
+        {
+          "sel": ".dkb-foot",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1100
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

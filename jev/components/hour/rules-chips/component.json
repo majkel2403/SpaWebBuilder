@@ -27,5 +27,37 @@
     "hour/_solo-css",
     "hour/_close",
     "hour/_solo-chips"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hr-p",
+          "enter": "scale",
+          "dur": 800
+        },
+        {
+          "sel": ".hr-chip",
+          "enter": "tilt",
+          "stagger": 110,
+          "dur": 800,
+          "delay": 350
+        },
+        {
+          "sel": ".hr-cap2",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 850
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

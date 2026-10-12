@@ -36,5 +36,150 @@
     "builds/_drive",
     "builds/_end",
     "builds/_responsive"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": "#bld-tr",
+          "enter": "wipe-d",
+          "dur": 900,
+          "delay": 50
+        },
+        {
+          "sel": ".bld-tiles",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 200
+        },
+        {
+          "sel": "#bld-t-stream .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 300
+        },
+        {
+          "sel": "#bld-t-stream .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 560
+        },
+        {
+          "sel": "#bld-t-stream .bld-dsw",
+          "enter": "wipe-d",
+          "dur": 1100,
+          "delay": 550
+        },
+        {
+          "sel": "#bld-t-stream .bld-tn",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1300
+        },
+        {
+          "sel": "#bld-t-lat .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 410
+        },
+        {
+          "sel": "#bld-t-lat .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#bld-t-lat .bld-lr",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 55,
+          "dur": 600,
+          "delay": 630
+        },
+        {
+          "sel": "#bld-t-lat .bld-lr .tr",
+          "enter": "wipe-bx",
+          "stagger": 55,
+          "dur": 850,
+          "delay": 770
+        },
+        {
+          "sel": "#bld-t-lat .bld-lr b",
+          "enter": "fade",
+          "stagger": 55,
+          "dur": 500,
+          "delay": 1050
+        },
+        {
+          "sel": "#bld-t-lat .bld-lt ~ *",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1410
+        },
+        {
+          "sel": "#bld-t-cost .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 520
+        },
+        {
+          "sel": "#bld-t-cost .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 780
+        },
+        {
+          "sel": "#bld-t-cost .bld-cost-v",
+          "enter": "bright",
+          "dur": 1000,
+          "delay": 770
+        },
+        {
+          "sel": "#bld-t-cost .bld-cost-s",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1170
+        },
+        {
+          "sel": "#bld-t-cost .bld-cl li",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 100,
+          "dur": 650,
+          "delay": 1270
+        },
+        {
+          "sel": ".bld-vt ~ *",
+          "enter": "fade",
+          "dur": 400,
+          "delay": 900
+        },
+        {
+          "sel": ".bld-foot > span",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 600,
+          "delay": 1300
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".bld-th i",
+          "loop": "flicker"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

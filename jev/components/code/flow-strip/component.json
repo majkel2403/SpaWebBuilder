@@ -15,5 +15,40 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".code-flow",
+          "enter": "fade",
+          "dur": 400
+        },
+        {
+          "sel": ".code-fn",
+          "enter": "spring",
+          "stagger": 240,
+          "dur": 900,
+          "delay": 100,
+          "dist": 14,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".code-fw",
+          "enter": "wipe-x",
+          "stagger": 240,
+          "dur": 420,
+          "delay": 330
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

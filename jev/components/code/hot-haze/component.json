@@ -12,5 +12,61 @@
   "css": [
     "component.css"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".code-pane",
+          "enter": "glow",
+          "dur": 1100
+        },
+        {
+          "sel": ".code-pane .code-ph",
+          "enter": "wipe-x",
+          "dur": 650,
+          "delay": 220
+        },
+        {
+          "sel": ".code-pane .code-pd",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 420
+        },
+        {
+          "sel": ".code-pane .code-ph .code-meta",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 700
+        },
+        {
+          "sel": ".cx-hh-view",
+          "enter": "wipe-d",
+          "dur": 1100,
+          "delay": 380,
+          "ease": "var(--m-ease-out)"
+        },
+        {
+          "sel": ".code-tag",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 600
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".code-pd",
+          "loop": "glow",
+          "dur": 3200
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

@@ -15,5 +15,59 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hpl-net",
+          "enter": "zoom",
+          "dur": 1200,
+          "delay": 100
+        },
+        {
+          "sel": ".hpl-chip",
+          "enter": "drop",
+          "dur": 700,
+          "delay": 800,
+          "dist": 12
+        },
+        {
+          "sel": ".hpl-legend",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1000,
+          "dist": 10
+        },
+        {
+          "sel": ".hpl-card",
+          "enter": "arc",
+          "dur": 900,
+          "delay": 1000,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hpl-bar > *",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1250,
+          "stagger": 80,
+          "dist": 12
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hpl-chip .lamp",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

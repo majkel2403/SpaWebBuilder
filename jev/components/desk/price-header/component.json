@@ -15,5 +15,66 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".ph",
+          "enter": "fade",
+          "dur": 400,
+          "delay": 120
+        },
+        {
+          "sel": ".ph > span:first-child > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 240,
+          "split": true
+        },
+        {
+          "sel": ".dkt-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 500
+        },
+        {
+          "sel": ".dkt-sig",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 420,
+          "dist": 8
+        },
+        {
+          "sel": ".dkt-pxv",
+          "enter": "spring",
+          "dur": 1300,
+          "delay": 450,
+          "dist": 20,
+          "ease": "linear(0,0.018,0.299,0.703,1.034,1.209,1.235,1.167,1.07,0.991,0.95,0.944,0.96,0.983,1.002,1.012,1.013,1.009,1.004,0.999,0.997,0.997,0.998,0.999,1,1.001,1.001,1.001,1,1,1,1,1,1,1,1,1,1,1,1,1)"
+        },
+        {
+          "sel": ".dkt-pxp",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 850,
+          "ease": "linear(0,0.022,0.331,0.709,0.972,1.088,1.101,1.068,1.029,1.002,0.991,0.99,0.993,0.997,1,1.001,1.001,1.001,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)"
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".ph .pk",
+          "loop": "glow"
+        },
+        {
+          "sel": ".dkt-pxp i",
+          "loop": "pulse"
+        }
+      ]
+    }
+  }
 }

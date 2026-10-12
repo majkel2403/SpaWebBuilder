@@ -15,5 +15,64 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".ph",
+          "enter": "fade",
+          "dur": 400,
+          "delay": 120
+        },
+        {
+          "sel": ".ph > span:first-child > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 240,
+          "split": true
+        },
+        {
+          "sel": ".dkt-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 500
+        },
+        {
+          "sel": ".dkt-sig",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 420,
+          "dist": 8
+        },
+        {
+          "sel": ".dkws-b .dkt-wl",
+          "enter": "draw",
+          "dur": 1400,
+          "delay": 400,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".dkws-b .dkt-pb",
+          "enter": "rise",
+          "dur": 650,
+          "delay": 1000,
+          "dist": 10
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".ph .pk",
+          "loop": "glow"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

@@ -1,0 +1,7 @@
+/* stage rail: the progress fill draws in and the marker drops on after the dots */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js .dkw-rail.m-in .dkw-mk { animation: dkmMk .9s var(--m-ease-spring) .8s backwards; }
+  html.m-js .dkw-rail.m-in .dkw-rfl { animation: dkmFl 1s var(--m-ease-out) .5s backwards; }
+  @keyframes dkmMk { from { scale: 0; opacity: 0; } }
+  @keyframes dkmFl { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+}

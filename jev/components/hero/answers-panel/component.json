@@ -15,5 +15,52 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".aps-bg",
+          "enter": "fade",
+          "dur": 900,
+          "delay": 80
+        },
+        {
+          "sel": "#aps-static",
+          "enter": "arc",
+          "dur": 1300,
+          "delay": 300,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": "#aps-live",
+          "enter": "arc",
+          "dur": 1300,
+          "delay": 300,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".aps-legend span",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1100,
+          "stagger": 70,
+          "dist": 10
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".aps-dot",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

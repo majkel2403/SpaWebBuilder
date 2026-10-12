@@ -15,5 +15,89 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkw-ph",
+          "enter": "fade",
+          "dur": 400,
+          "delay": 120
+        },
+        {
+          "sel": ".dkw-tix",
+          "enter": "flip",
+          "dur": 1100,
+          "delay": 250,
+          "ease": "var(--m-ease-out)"
+        },
+        {
+          "sel": ".dkw-ch",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 600
+        },
+        {
+          "sel": ".dkw-tk1",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 650,
+          "dist": 10
+        },
+        {
+          "sel": ".dkw-tk2",
+          "enter": "spring",
+          "dur": 1000,
+          "delay": 750,
+          "dist": 14,
+          "ease": "linear(0,0.018,0.299,0.703,1.034,1.209,1.235,1.167,1.07,0.991,0.95,0.944,0.96,0.983,1.002,1.012,1.013,1.009,1.004,0.999,0.997,0.997,0.998,0.999,1,1.001,1.001,1.001,1,1,1,1,1,1,1,1,1,1,1,1,1)"
+        },
+        {
+          "sel": ".dkw-kv > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 900,
+          "stagger": 80,
+          "dist": 10
+        },
+        {
+          "sel": ".dkw-rl span",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1100,
+          "stagger": 80
+        },
+        {
+          "sel": ".dkw-now",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1250,
+          "dist": 10
+        },
+        {
+          "sel": ".dkw-cd",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1350
+        },
+        {
+          "sel": ".dkw-ag .dkw-ar",
+          "enter": "pop",
+          "dur": 800,
+          "delay": 1000,
+          "stagger": 90,
+          "ease": "linear(0,0.018,0.299,0.703,1.034,1.209,1.235,1.167,1.07,0.991,0.95,0.944,0.96,0.983,1.002,1.012,1.013,1.009,1.004,0.999,0.997,0.997,0.998,0.999,1,1.001,1.001,1.001,1,1,1,1,1,1,1,1,1,1,1,1,1)"
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

@@ -1,0 +1,14 @@
+/* fx/glitch-rgb-split motion: heading arrives as a red/cyan split that collapses (filter + transform only) */
+html.m-js [data-m="glitch"]:not(.m-in):not(.m-done){opacity:0}
+html.m-js [data-m="glitch"].m-in{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+html.m-js [data-m="glitch"].m-in:not(.m-done){animation:mgl-in .6s steps(1,end) both}
+@keyframes mgl-in{0%{transform:translateX(-7px);filter:drop-shadow(5px 0 rgba(255,20,70,.8)) drop-shadow(-5px 0 rgba(0,235,255,.8))}
+ 15%{transform:translateX(6px) skewX(-4deg);filter:drop-shadow(-4px 0 rgba(255,20,70,.7)) drop-shadow(4px 0 rgba(0,235,255,.7))}
+ 30%{transform:translateX(-3px);filter:drop-shadow(3px 0 rgba(255,20,70,.55)) drop-shadow(-3px 0 rgba(0,235,255,.55))}
+ 50%{transform:translateX(2px);filter:drop-shadow(-2px 0 rgba(255,20,70,.4)) drop-shadow(2px 0 rgba(0,235,255,.4))}
+ 70%{transform:translateX(-1px);filter:drop-shadow(1px 0 rgba(255,20,70,.25)) drop-shadow(-1px 0 rgba(0,235,255,.25))}
+ 100%{transform:none;filter:none}}}
+/* arm fix: the hidden pre-state is applied instantly, so a delayed entrance starts from hidden on first load (otherwise the delay keeps the element visible and nothing animates) */
+html.m-js [data-m]:not(.m-in):not(.m-done):not(.m-out){transition:none}
+html.m-js [data-m-split]:not(.m-in):not(.m-out) .m-ch{transition:none}

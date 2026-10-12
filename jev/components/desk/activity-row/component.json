@@ -15,5 +15,78 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": "#dkar .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": "#dkar .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#dkar .dkb-t > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 450,
+          "split": true
+        },
+        {
+          "sel": "#dkar .dkb-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#dkar .dkb-hn",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 650,
+          "dist": 12
+        },
+        {
+          "sel": ".dkar-cap",
+          "enter": "slide-l",
+          "dur": 500,
+          "delay": 500,
+          "stagger": 300,
+          "dist": 10
+        },
+        {
+          "sel": ".dkar-list",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 650,
+          "stagger": 250
+        },
+        {
+          "sel": ".dkb-foot",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1200
+        }
+      ],
+      "loops": [
+        {
+          "sel": "#dkar .pk",
+          "loop": "glow",
+          "dur": 3200
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

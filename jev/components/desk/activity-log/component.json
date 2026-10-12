@@ -26,5 +26,78 @@
     "desk/_bottom-init-log",
     "desk/_bottom-close",
     "desk/_bottom-css-resp"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": "#dkb-log .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": "#dkb-log .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#dkb-log .dkb-t > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 450,
+          "split": true
+        },
+        {
+          "sel": "#dkb-log .dkb-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#dkb-log .dkb-hn",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 650,
+          "dist": 12
+        },
+        {
+          "sel": "#dkb-chips .dkb-ch",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 550,
+          "stagger": 60,
+          "dist": 10
+        },
+        {
+          "sel": ".dkb-rows",
+          "enter": "wipe-x",
+          "dur": 900,
+          "delay": 650
+        },
+        {
+          "sel": ".dkb-rl > li",
+          "enter": "wipe-x",
+          "dur": 500,
+          "delay": 800,
+          "stagger": 70
+        }
+      ],
+      "loops": [
+        {
+          "sel": "#dkb-log .pk",
+          "loop": "glow",
+          "dur": 3200
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

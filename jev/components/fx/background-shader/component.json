@@ -1,1 +1,74 @@
-{ "title": "Background shader", "description": "A WebGL plasma, aurora and god-ray background rendered in a worker, reacting to the pointer, kill switch, decisions and price ticks.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }
+{
+  "title": "Background shader",
+  "description": "A WebGL plasma, aurora and god-ray background rendered in a worker, reacting to the pointer, kill switch, decisions and price ticks.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "motion": {
+    "config": {
+      "items": [
+        {
+          "sel": "#fx-bgf",
+          "enter": "fade",
+          "dur": 1200
+        },
+        {
+          "sel": "#fx-bg",
+          "enter": "fade",
+          "dur": 1800,
+          "delay": 200
+        },
+        {
+          "sel": ".fxd-card",
+          "enter": "rise",
+          "dur": 1300,
+          "delay": 350,
+          "dist": 24,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": ".fxd-eb",
+          "enter": "fade",
+          "split": true,
+          "dur": 500,
+          "delay": 650
+        },
+        {
+          "sel": ".fxd-h",
+          "enter": "blur",
+          "dur": 900,
+          "delay": 790
+        },
+        {
+          "sel": ".fxd-p",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 970,
+          "dist": 14
+        },
+        {
+          "sel": ".fxd-row",
+          "enter": "rise",
+          "stagger": 90,
+          "dur": 700,
+          "delay": 1130,
+          "dist": 12
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}

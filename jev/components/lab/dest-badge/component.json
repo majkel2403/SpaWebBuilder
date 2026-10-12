@@ -110,5 +110,83 @@
       "lab/_demo",
       "lab/_tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": "#lab-s4",
+          "enter": "blur",
+          "dur": 800
+        },
+        {
+          "sel": ".lab-sh .lab-n",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 260,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".lab-sh h3",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 320,
+          "split": true
+        },
+        {
+          "sel": ".lab-sh .lab-sd",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 560
+        },
+        {
+          "sel": ".lab-sh .lab-sb",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 640,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".lab-dest",
+          "enter": "iris",
+          "dur": 1000,
+          "delay": 480
+        },
+        {
+          "sel": ".lab-dest-t",
+          "enter": "glow",
+          "dur": 900,
+          "delay": 800
+        },
+        {
+          "sel": ".lab-dest small",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1100,
+          "dist": 8
+        },
+        {
+          "sel": ".lab-codeline",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1300,
+          "dist": 8
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".lab-dest-r",
+          "loop": "breathe",
+          "dur": 3600
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

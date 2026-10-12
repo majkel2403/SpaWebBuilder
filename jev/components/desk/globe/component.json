@@ -15,5 +15,83 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkw-world .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 200
+        },
+        {
+          "sel": ".dkw-world .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 320
+        },
+        {
+          "sel": ".dkw-pt > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 400,
+          "split": true
+        },
+        {
+          "sel": ".dkw-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 620
+        },
+        {
+          "sel": ".dkw-body",
+          "enter": "iris",
+          "dur": 1500,
+          "delay": 350
+        },
+        {
+          "sel": ".dkw-cap",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1200
+        },
+        {
+          "sel": ".dkw-ob .orb",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 900,
+          "stagger": 110
+        },
+        {
+          "sel": ".dkw-lg span",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 1300,
+          "stagger": 80,
+          "dist": 8
+        },
+        {
+          "sel": ".dkw-hint",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1500
+        }
+      ],
+      "loops": [
+        {
+          "sel": "#dkw-world .pk",
+          "loop": "glow",
+          "dur": 3200
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

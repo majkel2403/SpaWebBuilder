@@ -15,5 +15,54 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hep-panel",
+          "enter": "scale",
+          "dur": 800,
+          "delay": 100
+        },
+        {
+          "sel": ".hep-head",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 450,
+          "dist": 10
+        },
+        {
+          "sel": "#hepCv",
+          "enter": "arc",
+          "dur": 1200,
+          "delay": 600,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hep-foot span",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1200,
+          "stagger": 120,
+          "dist": 8
+        },
+        {
+          "sel": "#hepFire",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1300,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

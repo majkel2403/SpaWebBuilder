@@ -1,0 +1,10 @@
+/* shortcuts-dialog motion: bespoke bits. Inside no-preference so reduced motion shows the final state at once. */
+@media (prefers-reduced-motion: no-preference) {
+  /* clip-path presets are released after the entrance so glows and shadows are never cut */
+  html.m-js [data-m="wipe-x"].m-done, html.m-js [data-m="wipe-y"].m-done, html.m-js [data-m="iris"].m-done { clip-path: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js .sd-btn.m-done { --m-glow: rgba(255, 46, 110, .55); animation: mx-ring 3.2s var(--m-ease-out) infinite; }
+  html.m-js .sd-btn[data-m].m-done { transition: color .25s, border-color .25s, background .25s; }
+}
+@keyframes mx-ring { 0% { box-shadow: 0 0 0 0 var(--m-glow); } 70%, 100% { box-shadow: 0 0 0 12px transparent; } }

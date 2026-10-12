@@ -14,5 +14,61 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hx-read",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 100,
+          "dist": 20
+        },
+        {
+          "sel": ".hx-sw",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 420,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        },
+        {
+          "sel": ".hx-tint-sec .h2",
+          "enter": "wipe-x",
+          "dur": 800,
+          "delay": 500,
+          "stagger": 110
+        },
+        {
+          "sel": ".hx-edge",
+          "enter": "wipe-x",
+          "dur": 900,
+          "delay": 750,
+          "stagger": 110
+        },
+        {
+          "sel": ".hx-tint-sec .lede",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 950,
+          "stagger": 110,
+          "dist": 10
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hx-sw",
+          "loop": "glow",
+          "dur": 3600
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

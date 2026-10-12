@@ -1,0 +1,6 @@
+/* "arc": directional radial wipe, a circular wavefront travelling left to right (reading flow). Ends on a circle() larger than any box so shadows are not clipped. */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js [data-m="arc"]:not(.m-in):not(.m-done) { clip-path: circle(0% at 0% 50%); opacity: 1; }
+  html.m-js [data-m="arc"].m-in { clip-path: circle(190% at 0% 50%); opacity: 1; }
+  html.m-js [data-m="arc"].m-out { clip-path: circle(0% at 100% 50%); opacity: 1; }
+}

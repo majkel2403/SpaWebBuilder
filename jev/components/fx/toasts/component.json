@@ -1,1 +1,63 @@
-{ "title": "Toasts", "description": "Glass toast pills with icon, countdown bar, hover-to-hold and tap or swipe to dismiss; info, ok and kill variants, max two stacked.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }
+{
+  "title": "Toasts",
+  "description": "Glass toast pills with icon, countdown bar, hover-to-hold and tap or swipe to dismiss; info, ok and kill variants, max two stacked.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "motion": {
+    "config": {
+      "items": [
+        {
+          "sel": ".fxd-card",
+          "enter": "rise",
+          "dur": 1100,
+          "delay": 0,
+          "dist": 30,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": ".fxd-eb",
+          "enter": "fade",
+          "split": true,
+          "dur": 500,
+          "delay": 450
+        },
+        {
+          "sel": ".fxd-h",
+          "enter": "blur",
+          "dur": 900,
+          "delay": 590
+        },
+        {
+          "sel": ".fxd-p",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 770,
+          "dist": 14
+        },
+        {
+          "sel": ".fxd-row",
+          "enter": "rise",
+          "stagger": 90,
+          "dur": 700,
+          "delay": 930,
+          "dist": 12
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}

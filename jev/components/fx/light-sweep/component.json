@@ -1,1 +1,71 @@
-{ "title": "Light sweep", "description": "A skewed highlight band that sweeps once across a heading or any box, on view, on hover or on demand.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": [ "component.html" ], "css": [ "component.css" ], "js": [ "component.js" ] }
+{
+  "title": "Light sweep",
+  "description": "A skewed highlight band that sweeps once across a heading or any box, on view, on hover or on demand.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".fxd-stage",
+          "enter": "scale",
+          "dur": 800
+        },
+        {
+          "sel": ".fxd-eb",
+          "enter": "fade",
+          "split": true,
+          "dur": 500,
+          "delay": 250
+        },
+        {
+          "sel": ".fxd-stage .h2",
+          "enter": "lwipe",
+          "dur": 1000,
+          "delay": 380
+        },
+        {
+          "sel": ".fxd-p",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 650,
+          "dist": 14
+        },
+        {
+          "sel": ".fxd-tile",
+          "enter": "rise",
+          "stagger": 120,
+          "dur": 800,
+          "delay": 800,
+          "dist": 20
+        },
+        {
+          "sel": ".fxd-row",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 1100,
+          "dist": 10
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}

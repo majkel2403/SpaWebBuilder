@@ -26,5 +26,241 @@
     "builds/_drive",
     "builds/_end",
     "builds/_responsive"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-tiles",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 40
+        },
+        {
+          "sel": "#bld-t-stream .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 0
+        },
+        {
+          "sel": "#bld-t-stream .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 260
+        },
+        {
+          "sel": "#bld-t-stream .bld-dsw",
+          "enter": "wipe-d",
+          "dur": 1100,
+          "delay": 250
+        },
+        {
+          "sel": "#bld-t-stream .bld-tn",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1000
+        },
+        {
+          "sel": "#bld-t-lat .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 110
+        },
+        {
+          "sel": "#bld-t-lat .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#bld-t-lat .bld-lr",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 55,
+          "dur": 600,
+          "delay": 330
+        },
+        {
+          "sel": "#bld-t-lat .bld-lr .tr",
+          "enter": "wipe-bx",
+          "stagger": 55,
+          "dur": 850,
+          "delay": 470
+        },
+        {
+          "sel": "#bld-t-lat .bld-lr b",
+          "enter": "fade",
+          "stagger": 55,
+          "dur": 500,
+          "delay": 750
+        },
+        {
+          "sel": "#bld-t-lat .bld-lt ~ *",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1110
+        },
+        {
+          "sel": "#bld-t-cost .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 220
+        },
+        {
+          "sel": "#bld-t-cost .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 480
+        },
+        {
+          "sel": "#bld-t-cost .bld-cost-v",
+          "enter": "bright",
+          "dur": 1000,
+          "delay": 470
+        },
+        {
+          "sel": "#bld-t-cost .bld-cost-s",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 870
+        },
+        {
+          "sel": "#bld-t-cost .bld-cl li",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 100,
+          "dur": 650,
+          "delay": 970
+        },
+        {
+          "sel": "#bld-t-mix .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 330
+        },
+        {
+          "sel": "#bld-t-mix .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 590
+        },
+        {
+          "sel": "#bld-t-mix .bld-mr",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 100,
+          "dur": 650,
+          "delay": 580
+        },
+        {
+          "sel": "#bld-t-mix .bld-mr .tr",
+          "enter": "wipe-bx",
+          "stagger": 100,
+          "dur": 1000,
+          "delay": 750
+        },
+        {
+          "sel": "#bld-t-mix .bld-tb > p",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1330
+        },
+        {
+          "sel": "#bld-t-run .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 440
+        },
+        {
+          "sel": "#bld-t-run .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 700
+        },
+        {
+          "sel": "#bld-t-run .bld-rr",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 110,
+          "dur": 650,
+          "delay": 690
+        },
+        {
+          "sel": "#bld-t-run .bld-sg",
+          "enter": "wipe-bx",
+          "stagger": 110,
+          "dur": 1000,
+          "delay": 890
+        },
+        {
+          "sel": "#bld-t-run .bld-tn",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1440
+        },
+        {
+          "sel": "#bld-t-own .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 550
+        },
+        {
+          "sel": "#bld-t-own .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 810
+        },
+        {
+          "sel": "#bld-t-own .bld-or",
+          "enter": "slide-l",
+          "dist": 10,
+          "stagger": 75,
+          "dur": 650,
+          "delay": 770
+        },
+        {
+          "sel": "#bld-t-own .bld-or .tr",
+          "enter": "wipe-bx",
+          "stagger": 75,
+          "dur": 850,
+          "delay": 950
+        },
+        {
+          "sel": "#bld-t-own .bld-or em",
+          "enter": "fade",
+          "stagger": 75,
+          "dur": 500,
+          "delay": 1250
+        },
+        {
+          "sel": ".bld-foot > span",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 600,
+          "delay": 1300
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".bld-th i",
+          "loop": "flicker"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

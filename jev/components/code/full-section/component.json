@@ -128,5 +128,86 @@
       "code/_seek",
       "code/_tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".code-glow",
+          "enter": "fade",
+          "dur": 1400,
+          "delay": 150
+        },
+        {
+          "sel": ".code-head .eb",
+          "enter": "drop",
+          "dur": 600,
+          "delay": 80,
+          "dist": 14
+        },
+        {
+          "sel": ".code-head .lede",
+          "enter": "rise",
+          "dur": 800,
+          "delay": 420,
+          "dist": 16
+        },
+        {
+          "sel": ".code-fn",
+          "enter": "spring",
+          "stagger": 200,
+          "dur": 900,
+          "delay": 650,
+          "dist": 14,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".code-fw",
+          "enter": "wipe-x",
+          "stagger": 200,
+          "dur": 380,
+          "delay": 860
+        },
+        {
+          "sel": ".code-win .code-bar",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 700
+        },
+        {
+          "sel": ".code-win .code-pane",
+          "enter": "rise",
+          "stagger": 110,
+          "dur": 850,
+          "delay": 850,
+          "dist": 24
+        },
+        {
+          "sel": ".code-win .code-status",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 1350
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".code-pd",
+          "loop": "glow",
+          "dur": 3800
+        },
+        {
+          "sel": ".code-glow",
+          "loop": "breathe",
+          "dur": 6000
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

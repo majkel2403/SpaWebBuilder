@@ -102,5 +102,38 @@
       "lab/_demo",
       "lab/_tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".lab-pph > .lab-tag, .lab-pph > .lab-ps, .lab-pph > .lab-stat",
+          "enter": "rise",
+          "stagger": 90,
+          "dur": 600,
+          "delay": 150,
+          "dist": 10
+        },
+        {
+          "sel": ".lab-prog",
+          "enter": "wipe-x",
+          "dur": 1100,
+          "delay": 500
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".lab-stat .lamp",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

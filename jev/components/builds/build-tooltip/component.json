@@ -15,5 +15,33 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-tipt",
+          "enter": "rise",
+          "dist": 8,
+          "dur": 650,
+          "delay": 100
+        },
+        {
+          "sel": ".bld-tp",
+          "enter": "pop",
+          "stagger": 90,
+          "dur": 800,
+          "delay": 260
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

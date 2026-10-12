@@ -29,5 +29,64 @@
     "builds/_end",
     "builds/_responsive",
     "builds/_one-col"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-tiles",
+          "enter": "blur",
+          "dur": 800,
+          "delay": 60
+        },
+        {
+          "sel": "#bld-t-stream .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 160
+        },
+        {
+          "sel": "#bld-t-stream .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 420
+        },
+        {
+          "sel": "#bld-t-stream .bld-dsw",
+          "enter": "wipe-d",
+          "dur": 1100,
+          "delay": 410
+        },
+        {
+          "sel": "#bld-t-stream .bld-tn",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1160
+        },
+        {
+          "sel": ".bld-foot > span",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 600,
+          "delay": 1000
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".bld-th i",
+          "loop": "flicker"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

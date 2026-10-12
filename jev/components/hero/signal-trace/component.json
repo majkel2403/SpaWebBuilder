@@ -15,5 +15,53 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hst-net",
+          "enter": "fade",
+          "dur": 800,
+          "delay": 100
+        },
+        {
+          "sel": "#hstStatic",
+          "enter": "arc",
+          "dur": 1300,
+          "delay": 250,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": "#hstLive",
+          "enter": "arc",
+          "dur": 1300,
+          "delay": 250,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hst-path",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 1100,
+          "dist": 10
+        },
+        {
+          "sel": ".hst-bar .hbtn",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1250,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

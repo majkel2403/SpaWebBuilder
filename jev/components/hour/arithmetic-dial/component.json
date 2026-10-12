@@ -31,28 +31,128 @@
     "config": {
       "root": {
         "enter": "fade",
-        "dur": 500
+        "dur": 400
       },
       "items": [
         {
-          "sel": ".hr-d",
-          "enter": "blur",
-          "dur": 900
+          "sel": ".hr-ph .hr-tag",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 350,
+          "dist": 10,
+          "split": true
         },
         {
-          "sel": ".hr-d > *",
+          "sel": ".hr-ph .hr-ps",
           "enter": "rise",
-          "stagger": 90,
-          "dur": 700,
-          "delay": 150
+          "dur": 600,
+          "delay": 450,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-ph .hr-badge",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 530
+        },
+        {
+          "sel": ".hr-t",
+          "enter": "rise",
+          "dur": 800,
+          "delay": 530,
+          "dist": 14
+        },
+        {
+          "sel": ".hr-note span",
+          "enter": "rise",
+          "stagger": 60,
+          "dur": 600,
+          "delay": 670,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-gauge",
+          "enter": "iris",
+          "dur": 1200,
+          "delay": 600,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        },
+        {
+          "sel": ".hr-read .hr-rl",
+          "enter": "rise",
+          "stagger": 70,
+          "dur": 600,
+          "delay": 750,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-ret",
+          "enter": "pop",
+          "dur": 800,
+          "delay": 850,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        },
+        {
+          "sel": ".hr-capv",
+          "enter": "pop",
+          "dur": 800,
+          "delay": 1000,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        },
+        {
+          "sel": ".hr-small",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1100
+        },
+        {
+          "sel": ".hr-rng",
+          "enter": "wipe-x",
+          "dur": 900,
+          "delay": 900
+        },
+        {
+          "sel": ".hr-pre",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1100,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-eq",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1150
+        },
+        {
+          "sel": ".hr-key",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1250,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-foot",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1200
+        },
+        {
+          "sel": ".hr-fig",
+          "enter": "zoom",
+          "dur": 1100,
+          "delay": 1050
         }
       ],
       "loops": [
         {
-          "sel": ".hr-d .hr-knob, .hr-d [class*=needle]",
+          "sel": ".hr-knob",
           "loop": "glow"
         }
       ]
-    }
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

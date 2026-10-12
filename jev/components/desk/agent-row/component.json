@@ -15,5 +15,48 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkw-ar .orb",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 300,
+          "stagger": 100
+        },
+        {
+          "sel": ".dkw-an",
+          "enter": "slide-l",
+          "dur": 600,
+          "delay": 380,
+          "stagger": 100,
+          "dist": 12
+        },
+        {
+          "sel": ".dkw-av",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 520,
+          "stagger": 100
+        },
+        {
+          "sel": ".dkw-ab",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 600,
+          "stagger": 100
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

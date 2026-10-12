@@ -1,0 +1,7 @@
+/* once the entrance is done, drop the clip so glows/tooltips are never clipped and the page reads fully visible */
+html.m-js [data-m="wipe-x"].m-done, html.m-js [data-m="wipe-y"].m-done, html.m-js [data-m="iris"].m-done { clip-path: none; }
+/* restores what the engine's .m-in/.m-done rules would override on toggle chips (muted state, hover transitions) */
+html.m-js .dkb-ch[data-m].m-done, html.m-js .dkt-chip[data-m].m-done { transition: background-color .3s, border-color .3s, color .3s, opacity .3s, box-shadow .3s; }
+html.m-js .dkb-ch[data-m].m-in[aria-pressed="false"], html.m-js .dkb-ch[data-m].m-in.off { opacity: .5; }
+html.m-js .dkb-r[data-m].m-done { transition: background-color .5s, opacity .35s, filter .35s; }
+html.m-js .dkb-r[data-m].m-in.mute { opacity: .2; filter: saturate(.2); }

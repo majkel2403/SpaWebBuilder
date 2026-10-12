@@ -1,1 +1,64 @@
-{ "title": "Camera push intro", "description": "A one-shot zoom-blur streak burst with a chromatic text split that settles, as when the boot overlay lifts.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": [ "component.html" ], "css": [ "component.css" ], "js": [ "component.js" ] }
+{
+  "title": "Camera push intro",
+  "description": "A one-shot zoom-blur streak burst with a chromatic text split that settles, as when the boot overlay lifts.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".fxd-stage",
+          "enter": "zoom",
+          "dur": 1300,
+          "delay": 0
+        },
+        {
+          "sel": ".fxd-eb",
+          "enter": "fade",
+          "split": true,
+          "dur": 500,
+          "delay": 350
+        },
+        {
+          "sel": ".fxd-h",
+          "enter": "zoom",
+          "dur": 1000,
+          "delay": 450
+        },
+        {
+          "sel": ".fxd-p",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 750,
+          "dist": 14
+        },
+        {
+          "sel": ".fxd-row",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 950,
+          "dist": 12
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}

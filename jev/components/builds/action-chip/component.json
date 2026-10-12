@@ -15,5 +15,53 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-ac-live .bld-dots",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 120
+        },
+        {
+          "sel": "#bld-chip",
+          "enter": "spring",
+          "dist": 8,
+          "dur": 1100,
+          "delay": 300,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": "#bld-last",
+          "enter": "wipe-bx",
+          "dur": 900,
+          "delay": 520
+        },
+        {
+          "sel": ".bld-ac-t",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 850
+        },
+        {
+          "sel": ".bld-ac-row .bld-chip",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 80,
+          "dur": 650,
+          "delay": 950
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

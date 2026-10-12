@@ -1,1 +1,63 @@
-{ "title": "Boot log terminal", "description": "An inline terminal card that types five check lines with scrambling glyphs, resolves each with a green status and fills a tick-by-tick progress bar.", "width": "640px", "needs": { "fx": false, "hud": false }, "html": [ "component.html" ], "css": [ "component.css" ], "js": [ "component.js" ] }
+{
+  "title": "Boot log terminal",
+  "description": "An inline terminal card that types five check lines with scrambling glyphs, resolves each with a green status and fills a tick-by-tick progress bar.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".fx-bx",
+          "enter": "scale",
+          "dur": 800,
+          "delay": 80,
+          "ease": "var(--m-ease-out)"
+        },
+        {
+          "sel": ".fx-bhead",
+          "enter": "lwipe",
+          "dur": 700,
+          "delay": 300
+        },
+        {
+          "sel": ".fx-bbar",
+          "enter": "lwipe",
+          "dur": 1000,
+          "delay": 550
+        },
+        {
+          "sel": ".fx-bmeta",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 900,
+          "dist": 8
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".fx-bhead b",
+          "loop": "glow"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}

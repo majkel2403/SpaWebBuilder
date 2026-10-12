@@ -15,5 +15,38 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkt-stats > div",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 200,
+          "stagger": 95,
+          "dist": 16
+        },
+        {
+          "sel": ".dkt-stats label",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 450,
+          "stagger": 95
+        },
+        {
+          "sel": ".dkt-ring",
+          "enter": "iris",
+          "dur": 900,
+          "delay": 650,
+          "ease": "linear(0,0.013,0.2,0.471,0.718,0.898,1.006,1.054,1.064,1.054,1.037,1.021,1.008,1.001,0.997,0.996,0.996,0.997,0.998,0.999,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)"
+        }
+      ],
+      "loops": []
+    }
+  }
 }

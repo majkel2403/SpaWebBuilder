@@ -1,0 +1,17 @@
+/* builds motion: bespoke enter presets (bleed-safe clip wipes + brightness flash). transform/opacity/clip-path/filter only; inert under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js [data-m="wipe-bx"]:not(.m-in):not(.m-done) { clip-path: inset(-10px 100% -10px -10px); opacity: 1; }
+  html.m-js [data-m="wipe-bx"].m-in { clip-path: inset(-10px); }
+  html.m-js [data-m="wipe-bx"].m-out { clip-path: inset(-10px -10px -10px 100%); opacity: 1; }
+  html.m-js [data-m="wipe-d"]:not(.m-in):not(.m-done) { clip-path: inset(-12px -12px 100% -12px); opacity: 1; }
+  html.m-js [data-m="wipe-d"].m-in { clip-path: inset(-12px); }
+  html.m-js [data-m="wipe-d"].m-out { clip-path: inset(100% -12px -12px -12px); opacity: 1; }
+  html.m-js [data-m="wipe-bx"].m-done, html.m-js [data-m="wipe-d"].m-done { clip-path: none; }
+  html.m-js [data-m="bright"]:not(.m-in):not(.m-done) { filter: brightness(2.4) saturate(1.5) blur(5px); }
+  html.m-js [data-m="bright"].m-in { opacity: 1; filter: none; }
+  html.m-js [data-m="bright"].m-out { filter: brightness(1.6) blur(6px); }
+}
+/* decision cards carry their own data-m="<index>" attribute: keep it from being treated as a motion preset */
+html.m-js .bld-d[data-m]:not(.m-in):not(.m-done) { opacity: 1; transform: none; filter: none; }
+html.m-js .bld-pre .bld-d[data-m]:not(.m-in):not(.m-done) { opacity: 0; }
+html.m-js .bld-d[data-m] { transition: opacity .7s var(--ease) var(--d, 0s), box-shadow .35s var(--ease), border-color .35s; }

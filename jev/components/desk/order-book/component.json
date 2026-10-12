@@ -15,5 +15,31 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkt-obc",
+          "enter": "iris",
+          "dur": 1300,
+          "delay": 200,
+          "ease": "var(--m-ease-out)"
+        },
+        {
+          "sel": ".dkt-lg span",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 900,
+          "stagger": 110,
+          "dist": 8
+        }
+      ],
+      "loops": []
+    }
+  }
 }

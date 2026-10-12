@@ -35,5 +35,38 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkt-wm",
+          "enter": "slide-l",
+          "dur": 700,
+          "delay": 150,
+          "dist": 14
+        },
+        {
+          "sel": ".dkt-pu label",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 450
+        },
+        {
+          "sel": ".dkt-pu canvas",
+          "enter": "wipe-x",
+          "dur": 1200,
+          "delay": 550
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

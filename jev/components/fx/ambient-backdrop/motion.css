@@ -1,0 +1,4 @@
+/* fx/ambient-backdrop motion */
+/* arm fix: the hidden pre-state is applied instantly, so a delayed entrance starts from hidden on first load (otherwise the delay keeps the element visible and nothing animates) */
+html.m-js [data-m]:not(.m-in):not(.m-done):not(.m-out){transition:none}
+html.m-js [data-m-split]:not(.m-in):not(.m-out) .m-ch{transition:none}

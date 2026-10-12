@@ -15,5 +15,34 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-rr",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 110,
+          "dur": 650,
+          "delay": 150
+        },
+        {
+          "sel": ".bld-sg",
+          "enter": "wipe-bx",
+          "stagger": 110,
+          "dur": 1000,
+          "delay": 350
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

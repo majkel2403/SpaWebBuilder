@@ -94,5 +94,197 @@
       "builds/_frame",
       "builds/_end"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-head .eb",
+          "enter": "wipe-bx",
+          "dur": 800,
+          "delay": 100
+        },
+        {
+          "sel": ".bld-head .bld-lede",
+          "enter": "rise",
+          "dist": 14,
+          "dur": 800,
+          "delay": 600
+        },
+        {
+          "sel": ".bld-stats",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 800
+        },
+        {
+          "sel": ".bld-stats > div",
+          "enter": "rise",
+          "dist": 12,
+          "stagger": 80,
+          "dur": 700,
+          "delay": 850
+        },
+        {
+          "sel": "#bld-core",
+          "enter": "fade",
+          "dur": 800,
+          "delay": 900
+        },
+        {
+          "sel": "#bld-hub .bld-ring",
+          "enter": "scale",
+          "stagger": 180,
+          "dur": 1400,
+          "delay": 1000
+        },
+        {
+          "sel": "#bld-hub .bld-core-box",
+          "enter": "bright",
+          "dur": 1000,
+          "delay": 1100
+        },
+        {
+          "sel": "#bld-hub .bld-core-hd",
+          "enter": "drop",
+          "dist": 10,
+          "dur": 700,
+          "delay": 1460
+        },
+        {
+          "sel": "#bld-hub .bld-core-body > *:not(.bld-wmw)",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 650,
+          "delay": 1660
+        },
+        {
+          "sel": "#bld-colL",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 1200
+        },
+        {
+          "sel": "#bld-colR",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 1320
+        },
+        {
+          "sel": "#bld-colL .bld-hd",
+          "enter": "slide-l",
+          "dist": 10,
+          "stagger": 60,
+          "dur": 700,
+          "delay": 1350
+        },
+        {
+          "sel": "#bld-colR .bld-hd",
+          "enter": "slide-r",
+          "dist": 10,
+          "stagger": 60,
+          "dur": 700,
+          "delay": 1460
+        },
+        {
+          "sel": ".bld-col .bld-ci > :nth-child(2), .bld-col .bld-ci > :nth-child(3)",
+          "enter": "fade",
+          "stagger": 30,
+          "dur": 600,
+          "delay": 1550
+        },
+        {
+          "sel": ".bld-col .bld-m",
+          "enter": "wipe-bx",
+          "stagger": 60,
+          "dur": 900,
+          "delay": 1700
+        },
+        {
+          "sel": "#bld-cv",
+          "enter": "fade",
+          "dur": 1100,
+          "delay": 1600
+        },
+        {
+          "sel": ".bld-gap",
+          "enter": "fade",
+          "stagger": 260,
+          "dur": 600,
+          "delay": 1800
+        },
+        {
+          "sel": "#bld-prims",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1900
+        },
+        {
+          "sel": "#bld-prims .bld-hd",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 100,
+          "dur": 650,
+          "delay": 1950
+        },
+        {
+          "sel": "#bld-prims .bld-m",
+          "enter": "wipe-bx",
+          "stagger": 100,
+          "dur": 800,
+          "delay": 2150
+        },
+        {
+          "sel": "#bld-decs",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 2100
+        },
+        {
+          "sel": "#bld-decs .bld-hd",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 70,
+          "dur": 650,
+          "delay": 2150
+        },
+        {
+          "sel": "#bld-decs .bld-m",
+          "enter": "wipe-bx",
+          "stagger": 70,
+          "dur": 800,
+          "delay": 2350
+        },
+        {
+          "sel": ".bld-rules-w",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 2350
+        },
+        {
+          "sel": ".bld-fig, .bld-cap",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 2600
+        },
+        {
+          "sel": ".bld-foot > span",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 600,
+          "delay": 2800
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

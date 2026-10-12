@@ -15,5 +15,109 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": "#dkab .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": "#dkab .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#dkab .dkb-t > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 450,
+          "split": true
+        },
+        {
+          "sel": "#dkab .dkb-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#dkab .dkb-hn",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 650,
+          "dist": 12
+        },
+        {
+          "sel": ".dkab-sec > label",
+          "enter": "slide-l",
+          "dur": 500,
+          "delay": 500,
+          "stagger": 120,
+          "dist": 10
+        },
+        {
+          "sel": "#dkab-dots > *",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 600,
+          "stagger": 60
+        },
+        {
+          "sel": "#dkab-tags > *",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 720,
+          "stagger": 60,
+          "dist": 8
+        },
+        {
+          "sel": "#dkab-chips > *",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 840,
+          "stagger": 60,
+          "dist": 8
+        },
+        {
+          "sel": "#dkab-pills > *",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 960,
+          "stagger": 60,
+          "dist": 8
+        },
+        {
+          "sel": ".dkab-sec:last-child .dkab-row",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1000
+        },
+        {
+          "sel": ".dkab-sec:last-child .dkab-row > *:not(.off)",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 1050,
+          "stagger": 100
+        },
+        {
+          "sel": ".dkb-foot",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1250
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

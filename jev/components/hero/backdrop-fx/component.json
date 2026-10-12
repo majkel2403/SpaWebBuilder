@@ -21,5 +21,32 @@
     "hero/_bf-mid",
     "hero/_rule",
     "hero/_bf-post"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hero-bg",
+          "enter": "iris",
+          "dur": 1500,
+          "delay": 100,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hero-rule",
+          "enter": "arc",
+          "dur": 1300,
+          "delay": 800
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

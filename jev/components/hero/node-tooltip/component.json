@@ -15,5 +15,35 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hnt-net",
+          "enter": "zoom",
+          "dur": 1100,
+          "delay": 100
+        },
+        {
+          "sel": ".hnt-hint",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 1200
+        },
+        {
+          "sel": ".hnt-bar .hbtn",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1050,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    }
+  }
 }

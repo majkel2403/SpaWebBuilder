@@ -60,5 +60,76 @@
     "js": [
       "hero/_js"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 500
+      },
+      "items": [
+        {
+          "sel": ".hero-bg",
+          "enter": "iris",
+          "dur": 1500,
+          "delay": 100,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hero-plane",
+          "enter": "arc",
+          "dur": 1500,
+          "delay": 350,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hero-fig",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 800
+        },
+        {
+          "sel": ".hero-chip",
+          "enter": "drop",
+          "dur": 800,
+          "delay": 1000,
+          "dist": 12
+        },
+        {
+          "sel": ".hero-card",
+          "enter": "arc",
+          "dur": 1000,
+          "delay": 1100,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hero-legend span",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1500,
+          "stagger": 80,
+          "dist": 10
+        },
+        {
+          "sel": ".hero-rule",
+          "enter": "arc",
+          "dur": 1300,
+          "delay": 900
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hero-chip .lamp",
+          "loop": "pulse"
+        },
+        {
+          "sel": ".hero-eyebrow .lamp",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

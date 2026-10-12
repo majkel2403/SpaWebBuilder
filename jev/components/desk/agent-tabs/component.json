@@ -15,5 +15,38 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkw-tab .orb",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 300,
+          "stagger": 90
+        },
+        {
+          "sel": ".dkw-tn",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 400,
+          "stagger": 90,
+          "dist": 10
+        },
+        {
+          "sel": ".dkw-ts",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 560,
+          "stagger": 90
+        }
+      ],
+      "loops": []
+    }
+  }
 }

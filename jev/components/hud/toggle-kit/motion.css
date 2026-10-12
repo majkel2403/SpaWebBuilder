@@ -1,0 +1,5 @@
+/* toggle-kit motion: bespoke bits. Inside no-preference so reduced motion shows the final state at once. */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js .sw[data-bind].m-done { --m-glow: color-mix(in srgb, var(--cc, #ff2e6e) 60%, transparent); animation: mx-ring 3.4s var(--m-ease-out) infinite; }
+}
+@keyframes mx-ring { 0% { box-shadow: 0 0 0 0 var(--m-glow); } 70%, 100% { box-shadow: 0 0 0 12px transparent; } }

@@ -14,5 +14,77 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hx-cards .card",
+          "enter": "rise",
+          "dur": 850,
+          "delay": 150,
+          "stagger": 110,
+          "dist": 30
+        },
+        {
+          "sel": ".card .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 520,
+          "stagger": 110
+        },
+        {
+          "sel": ".card h3",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 640,
+          "stagger": 110,
+          "dist": 10
+        },
+        {
+          "sel": ".card .hx-card-b p",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 740,
+          "stagger": 110,
+          "dist": 10
+        },
+        {
+          "sel": ".card .big",
+          "enter": "pop",
+          "dur": 800,
+          "delay": 860,
+          "stagger": 110,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        },
+        {
+          "sel": ".card .sub",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1000,
+          "stagger": 110
+        },
+        {
+          "sel": ".hx-note",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 1250
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".card .big.up",
+          "loop": "glow",
+          "dur": 3400
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

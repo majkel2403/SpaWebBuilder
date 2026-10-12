@@ -1,0 +1,10 @@
+/* lab motion: release clip-path after the entrance so glows are not cut, and restore the component's own transitions that the engine drops on .m-done */
+@media (prefers-reduced-motion: no-preference) {
+  html.m-js [data-m].m-done { clip-path: none; }
+  html.m-js .lab-st[data-m].m-done { transition: border-color .45s, box-shadow .45s; }
+  html.m-js .lab-st > [data-m]:not(.m-done):not(.m-out):not(.lab-scan):not(.lab-edge) { transition: opacity calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)), transform calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)); }
+  html.m-js .lab-fo[data-m].m-done { transition: border-color .4s, box-shadow .4s; }
+  html.m-js .lab-sc[data-m].m-done { transition: border-color .25s, background .25s, box-shadow .25s, transform .25s var(--ease), color .25s; }
+  html.m-js .lab-sc[data-m].m-done:hover { transform: translateY(-1px); }
+  html.m-js .lab-sc[data-m].m-done:active { transform: translateY(0) scale(.97); }
+}

@@ -30,5 +30,72 @@
     "builds/_end",
     "builds/_responsive",
     "builds/_one-col"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450,
+        "delay": 0
+      },
+      "items": [
+        {
+          "sel": ".bld-tiles",
+          "enter": "blur",
+          "dur": 800,
+          "delay": 60
+        },
+        {
+          "sel": "#bld-t-cost .bld-th",
+          "enter": "rise",
+          "dist": 12,
+          "dur": 650,
+          "delay": 160
+        },
+        {
+          "sel": "#bld-t-cost .bld-th em",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 420
+        },
+        {
+          "sel": "#bld-t-cost .bld-cost-v",
+          "enter": "bright",
+          "dur": 1000,
+          "delay": 410
+        },
+        {
+          "sel": "#bld-t-cost .bld-cost-s",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 810
+        },
+        {
+          "sel": "#bld-t-cost .bld-cl li",
+          "enter": "rise",
+          "dist": 10,
+          "stagger": 100,
+          "dur": 650,
+          "delay": 910
+        },
+        {
+          "sel": ".bld-foot > span",
+          "enter": "rise",
+          "dist": 8,
+          "stagger": 90,
+          "dur": 600,
+          "delay": 1000
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".bld-th i",
+          "loop": "flicker"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

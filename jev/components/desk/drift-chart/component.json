@@ -27,5 +27,86 @@
     "desk/_bottom-init-drift",
     "desk/_bottom-close",
     "desk/_bottom-css-resp"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": "#dkb-drift .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": "#dkb-drift .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#dkb-drift .dkb-t > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 450,
+          "split": true
+        },
+        {
+          "sel": "#dkb-drift .dkb-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#dkb-drift .dkb-hn",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 650,
+          "dist": 12
+        },
+        {
+          "sel": ".dkb-big",
+          "enter": "spring",
+          "dur": 1200,
+          "delay": 500,
+          "dist": 16,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": ".dkb-kv > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 750,
+          "stagger": 90,
+          "dist": 10
+        },
+        {
+          "sel": ".dkb-cvw",
+          "enter": "wipe-x",
+          "dur": 1500,
+          "delay": 650
+        },
+        {
+          "sel": ".dkb-df",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1150,
+          "dist": 10
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".dkb-kd",
+          "loop": "glow",
+          "dur": 2600
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

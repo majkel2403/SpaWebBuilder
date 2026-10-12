@@ -15,5 +15,68 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".code-win",
+          "enter": "scale",
+          "dur": 800
+        },
+        {
+          "sel": ".cx-sb-body",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": ".code-status",
+          "enter": "wipe-x",
+          "dur": 650,
+          "delay": 450
+        },
+        {
+          "sel": ".code-st-a, .code-st-b",
+          "enter": "fade",
+          "stagger": 120,
+          "dur": 500,
+          "delay": 700
+        },
+        {
+          "sel": ".code-q",
+          "enter": "pop",
+          "stagger": 110,
+          "dur": 600,
+          "delay": 850
+        },
+        {
+          "sel": ".code-qbar",
+          "enter": "wipe-x",
+          "dur": 500,
+          "delay": 1150
+        },
+        {
+          "sel": ".cx-sb-hint",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1100,
+          "dist": 10
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".code-st-a .lamp",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

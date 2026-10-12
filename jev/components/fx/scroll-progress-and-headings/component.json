@@ -1,1 +1,41 @@
-{ "title": "Scroll progress and headings", "description": "A pink scroll-progress hairline with a tick per section, split-letter heading reveals with a one-shot light sweep, and staggered blur-in section reveals.", "width": "1100px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }
+{
+  "title": "Scroll progress and headings",
+  "description": "A pink scroll-progress hairline with a tick per section, split-letter heading reveals with a one-shot light sweep, and staggered blur-in section reveals.",
+  "width": "1100px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "motion": {
+    "config": {
+      "items": [
+        {
+          "sel": ".fxs-hint",
+          "enter": "drop",
+          "split": false,
+          "dur": 900,
+          "delay": 300,
+          "dist": 14
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".fxs-hint",
+          "loop": "float"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}

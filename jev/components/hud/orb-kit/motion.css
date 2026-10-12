@@ -1,0 +1,6 @@
+/* orb-kit motion: bespoke bits. Inside no-preference so reduced motion shows the final state at once. */
+@media (prefers-reduced-motion: no-preference) {
+  /* orbs drift on the independent translate property, so hover/widen/halt transforms of the orb itself stay untouched */
+  html.m-js .hx-orb-cell.m-done { animation: orbm-float 6s var(--m-ease-io) infinite; animation-delay: calc(var(--m-i, 0) * -820ms); }
+}
+@keyframes orbm-float { 50% { translate: 0 -6px; } }

@@ -15,5 +15,66 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hfm-card",
+          "enter": "scale",
+          "dur": 800,
+          "delay": 100
+        },
+        {
+          "sel": ".hfm-head",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 450,
+          "dist": 10
+        },
+        {
+          "sel": ".hfm-track",
+          "enter": "arc",
+          "dur": 1000,
+          "delay": 650,
+          "ease": "var(--m-ease-io)"
+        },
+        {
+          "sel": ".hfm-scale span",
+          "enter": "rise",
+          "dur": 500,
+          "delay": 1200,
+          "stagger": 60,
+          "dist": 8
+        },
+        {
+          "sel": ".hfm-ctl",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1250,
+          "dist": 10
+        },
+        {
+          "sel": "#hfmFire",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1350,
+          "dist": 12
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hfm-read",
+          "loop": "pulse"
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

@@ -25,5 +25,102 @@
     "hour/_solo-css",
     "hour/_close",
     "hour/_solo-end"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hr-ph .hr-tag",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 350,
+          "dist": 10,
+          "split": true
+        },
+        {
+          "sel": ".hr-ph .hr-ps",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 450,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-ph .hr-badge",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 530
+        },
+        {
+          "sel": ".hr-t",
+          "enter": "rise",
+          "dur": 800,
+          "delay": 530,
+          "dist": 14
+        },
+        {
+          "sel": ".hr-note span",
+          "enter": "rise",
+          "stagger": 60,
+          "dur": 600,
+          "delay": 670,
+          "dist": 10
+        },
+        {
+          "sel": ".hr-col-a",
+          "enter": "rise",
+          "dur": 900,
+          "delay": 650,
+          "dist": 24
+        },
+        {
+          "sel": ".hr-mtxt p",
+          "enter": "rise",
+          "stagger": 80,
+          "dur": 700,
+          "delay": 800,
+          "dist": 12
+        },
+        {
+          "sel": ".hr-bin",
+          "enter": "zoom",
+          "dur": 900,
+          "delay": 950
+        },
+        {
+          "sel": ".hr-col-b",
+          "enter": "rise",
+          "dur": 900,
+          "delay": 1050,
+          "dist": 24
+        },
+        {
+          "sel": ".hr-warn p",
+          "enter": "slide-l",
+          "stagger": 90,
+          "dur": 700,
+          "delay": 1200
+        },
+        {
+          "sel": ".hr-foot",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1200
+        },
+        {
+          "sel": ".hr-fig",
+          "enter": "zoom",
+          "dur": 1100,
+          "delay": 1050
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

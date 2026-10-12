@@ -179,5 +179,155 @@
       "lab/_copy",
       "lab/_tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".lab-head .eb",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 100,
+          "dist": 10
+        },
+        {
+          "sel": ".lab-head .lede",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 350,
+          "dist": 12
+        },
+        {
+          "sel": ".lab-pill",
+          "enter": "pop",
+          "stagger": 90,
+          "dur": 700,
+          "delay": 500,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".lab-ctl",
+          "enter": "tilt",
+          "dur": 1000,
+          "delay": 350
+        },
+        {
+          "sel": ".lab-tape",
+          "enter": "rise",
+          "dur": 900,
+          "delay": 650,
+          "dist": 24
+        },
+        {
+          "sel": ".lab-ctl .lab-sc",
+          "enter": "pop",
+          "stagger": 50,
+          "dur": 700,
+          "delay": 800,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".lab-ctl .lab-row",
+          "enter": "slide-l",
+          "stagger": 60,
+          "dur": 800,
+          "delay": 950,
+          "dist": 14
+        },
+        {
+          "sel": ".lab-magw",
+          "enter": "pop",
+          "dur": 900,
+          "delay": 1200,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".lab-pph > *",
+          "enter": "rise",
+          "stagger": 80,
+          "dur": 600,
+          "delay": 700,
+          "dist": 10
+        },
+        {
+          "sel": ".lab-st",
+          "enter": "rise",
+          "stagger": 150,
+          "dur": 900,
+          "delay": 850,
+          "dist": 24
+        },
+        {
+          "sel": ".lab-sh .lab-n",
+          "enter": "pop",
+          "stagger": 150,
+          "dur": 700,
+          "delay": 1100,
+          "ease": "linear(0,.17 4%,.52 9%,.86 14%,1.06 19%,1.12 23%,1.1 27%,1.03 33%,.98 40%,.99 47%,1 60%,1)"
+        },
+        {
+          "sel": ".lab-sh h3",
+          "enter": "fade",
+          "stagger": 150,
+          "dur": 600,
+          "delay": 1170
+        },
+        {
+          "sel": ".lab-ft",
+          "enter": "rise",
+          "stagger": 45,
+          "dur": 700,
+          "delay": 1250,
+          "dist": 14
+        },
+        {
+          "sel": ".lab-q",
+          "enter": "zoom",
+          "stagger": 110,
+          "dur": 800,
+          "delay": 1400
+        },
+        {
+          "sel": ".lab-gt",
+          "enter": "wipe-x",
+          "dur": 1000,
+          "delay": 1550
+        },
+        {
+          "sel": ".lab-jsw",
+          "enter": "wipe-x",
+          "dur": 1000,
+          "delay": 1700
+        },
+        {
+          "sel": ".lab-dest",
+          "enter": "iris",
+          "dur": 900,
+          "delay": 1850
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".lab-stat .lamp",
+          "loop": "pulse"
+        },
+        {
+          "sel": ".lab-bdg .lamp",
+          "loop": "pulse"
+        },
+        {
+          "sel": ".lab-magw",
+          "loop": "glow",
+          "dur": 3600
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

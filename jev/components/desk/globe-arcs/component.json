@@ -15,5 +15,33 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkx-globe",
+          "enter": "iris",
+          "dur": 1500,
+          "delay": 150
+        },
+        {
+          "sel": ".dkx-lg span",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1000,
+          "stagger": 100,
+          "dist": 10
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

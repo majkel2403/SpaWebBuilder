@@ -15,5 +15,33 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 500
+      },
+      "items": [
+        {
+          "sel": "#dkx-planet",
+          "enter": "iris",
+          "dur": 1600,
+          "delay": 150,
+          "ease": "var(--m-ease-out)"
+        },
+        {
+          "sel": ".dkx-cap",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 1000,
+          "dist": 8
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

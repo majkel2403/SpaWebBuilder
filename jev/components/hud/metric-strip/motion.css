@@ -1,0 +1,5 @@
+/* metric-strip motion: bespoke bits. Inside no-preference so reduced motion shows the final state at once. */
+@media (prefers-reduced-motion: no-preference) {
+  /* clip-path presets are released after the entrance so glows and shadows are never cut */
+  html.m-js [data-m="wipe-x"].m-done, html.m-js [data-m="wipe-y"].m-done, html.m-js [data-m="iris"].m-done { clip-path: none; }
+}

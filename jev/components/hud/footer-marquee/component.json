@@ -14,5 +14,47 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hx-box",
+          "enter": "rise",
+          "dur": 750,
+          "delay": 150,
+          "stagger": 160,
+          "dist": 22
+        },
+        {
+          "sel": ".hx-lab",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 450,
+          "stagger": 160
+        },
+        {
+          "sel": ".hx-frame",
+          "enter": "wipe-x",
+          "dur": 1000,
+          "delay": 600,
+          "stagger": 220
+        },
+        {
+          "sel": ".hx-note",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1300
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

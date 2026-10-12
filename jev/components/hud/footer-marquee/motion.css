@@ -1,0 +1,11 @@
+/* footer-marquee motion: bespoke bits. Inside no-preference so reduced motion shows the final state at once. */
+@media (prefers-reduced-motion: no-preference) {
+  /* clip-path presets are released after the entrance so glows and shadows are never cut */
+  html.m-js [data-m="wipe-x"].m-done, html.m-js [data-m="wipe-y"].m-done, html.m-js [data-m="iris"].m-done { clip-path: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* a bright scan bar crosses each ticker frame now and then, like a lit sign */
+  html.m-js .hx-frame { position: relative; }
+  html.m-js .hx-frame.m-done::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 18%; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(255, 46, 110, .16), transparent); animation: fmq-scan 6.5s var(--m-ease-io) infinite; animation-delay: calc(var(--m-i, 0) * -3.2s); }
+}
+@keyframes fmq-scan { 0% { transform: translateX(-120%); } 55%, 100% { transform: translateX(640%); } }

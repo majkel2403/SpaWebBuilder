@@ -14,5 +14,59 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hx-box",
+          "enter": "rise",
+          "dur": 750,
+          "delay": 120,
+          "stagger": 80,
+          "dist": 24
+        },
+        {
+          "sel": ".hx-lab",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 420,
+          "stagger": 80
+        },
+        {
+          "sel": ".hx-od-val",
+          "enter": "fade",
+          "dur": 160,
+          "delay": 600,
+          "stagger": 130
+        },
+        {
+          "sel": ".hx-btn",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1100
+        },
+        {
+          "sel": ".hx-note",
+          "enter": "fade",
+          "dur": 600,
+          "delay": 1250
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hx-od-big.hot",
+          "loop": "glow",
+          "dur": 3400
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

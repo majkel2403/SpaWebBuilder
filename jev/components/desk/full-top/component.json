@@ -65,5 +65,217 @@
       "desk/candle-tape",
       "desk/_top-tail"
     ]
+  },
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".dkt-bar .dkt-wm",
+          "enter": "slide-l",
+          "dur": 700,
+          "delay": 150,
+          "dist": 14
+        },
+        {
+          "sel": ".dkt-bar .dkt-pu label",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 350
+        },
+        {
+          "sel": ".dkt-bar .dkt-pu canvas",
+          "enter": "wipe-x",
+          "dur": 900,
+          "delay": 400
+        },
+        {
+          "sel": ".dkt-bar .dkt-kvs > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 450,
+          "stagger": 90,
+          "dist": 10
+        },
+        {
+          "sel": ".dkt-bar .dkt-clk",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 550,
+          "dist": 12
+        },
+        {
+          "sel": ".dkt-bar .dkt-mq",
+          "enter": "wipe-x",
+          "dur": 1000,
+          "delay": 600
+        },
+        {
+          "sel": "#dkt-pnl .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 150
+        },
+        {
+          "sel": "#dkt-pnl .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 270
+        },
+        {
+          "sel": "#dkt-pnl .ph > span:first-child > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 350,
+          "split": true
+        },
+        {
+          "sel": "#dkt-pnl .dkt-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 570
+        },
+        {
+          "sel": "#dkt-pnl .ph > span:last-child",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 550,
+          "dist": 12
+        },
+        {
+          "sel": "#dkt-pnl .dkt-acct",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 500
+        },
+        {
+          "sel": "#dkt-pnl .dkt-big",
+          "enter": "spring",
+          "dur": 1200,
+          "delay": 570,
+          "dist": 16,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": "#dkt-pnl .dkt-r2",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 790,
+          "dist": 10
+        },
+        {
+          "sel": "#dkt-pnl .dkt-pcw",
+          "enter": "wipe-x",
+          "dur": 1200,
+          "delay": 850
+        },
+        {
+          "sel": "#dkt-pnl .dkt-wl",
+          "enter": "wipe-x",
+          "dur": 1000,
+          "delay": 1000
+        },
+        {
+          "sel": "#dkt-pnl .dkt-pb",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1050,
+          "stagger": 90,
+          "dist": 10
+        },
+        {
+          "sel": "#dkt-pnl .dkt-stats > div",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1200,
+          "stagger": 80,
+          "dist": 10
+        },
+        {
+          "sel": "#dkt-tape .ph",
+          "enter": "wipe-x",
+          "dur": 600,
+          "delay": 250
+        },
+        {
+          "sel": "#dkt-tape .ph .pk",
+          "enter": "pop",
+          "dur": 500,
+          "delay": 370
+        },
+        {
+          "sel": "#dkt-tape .ph > span:first-child > b:not(.pk)",
+          "enter": "fade",
+          "dur": 300,
+          "delay": 450,
+          "split": true
+        },
+        {
+          "sel": "#dkt-tape .dkt-ph-s",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 670
+        },
+        {
+          "sel": "#dkt-tape .ph > span:last-child",
+          "enter": "slide-r",
+          "dur": 600,
+          "delay": 650,
+          "dist": 12
+        },
+        {
+          "sel": "#dkt-tape .dkt-px",
+          "enter": "spring",
+          "dur": 1200,
+          "delay": 670,
+          "dist": 14,
+          "ease": "var(--m-ease-spring)"
+        },
+        {
+          "sel": "#dkt-tape .dkt-pxp",
+          "enter": "pop",
+          "dur": 700,
+          "delay": 900
+        },
+        {
+          "sel": "#dkt-tape .dkt-chips .dkt-chip",
+          "enter": "pop",
+          "dur": 600,
+          "delay": 850,
+          "stagger": 70
+        },
+        {
+          "sel": "#dkt-tape .dkt-tc",
+          "enter": "wipe-x",
+          "dur": 1500,
+          "delay": 850
+        },
+        {
+          "sel": "#dkt-tape .dkt-lg > span",
+          "enter": "fade",
+          "dur": 500,
+          "delay": 1350,
+          "stagger": 80
+        }
+      ],
+      "loops": [
+        {
+          "sel": "#dkt-pnl .pk",
+          "loop": "glow",
+          "dur": 3200
+        },
+        {
+          "sel": "#dkt-tape .pk",
+          "loop": "glow",
+          "dur": 3200
+        }
+      ]
+    },
+    "css": [
+      "motion.css"
+    ]
   }
 }

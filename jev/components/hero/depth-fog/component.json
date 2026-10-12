@@ -15,5 +15,37 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".hdf-net",
+          "enter": "blur",
+          "dur": 1500,
+          "delay": 150,
+          "ease": "var(--m-ease-out)"
+        },
+        {
+          "sel": ".hdf-focus",
+          "enter": "fade",
+          "dur": 700,
+          "delay": 1200
+        },
+        {
+          "sel": ".hdf-bar .hbtn",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 1000,
+          "stagger": 90,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    }
+  }
 }

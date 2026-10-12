@@ -15,5 +15,45 @@
   "js": [
     "component.js"
   ],
-  "derived": false
+  "derived": false,
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 450
+      },
+      "items": [
+        {
+          "sel": ".cx-mr-card",
+          "enter": "iris",
+          "dur": 1200,
+          "ease": "var(--m-ease-out)"
+        },
+        {
+          "sel": ".cx-mr-txt small",
+          "enter": "drop",
+          "dur": 600,
+          "delay": 500,
+          "dist": 12
+        },
+        {
+          "sel": ".cx-mr-txt b",
+          "enter": "wipe-x",
+          "dur": 800,
+          "delay": 620
+        },
+        {
+          "sel": ".cx-mr-txt span",
+          "enter": "rise",
+          "dur": 700,
+          "delay": 900,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
 }

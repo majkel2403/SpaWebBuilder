@@ -1,0 +1,8 @@
+/* fx/shockwave-ring motion: a ring fires from the centre while the iris opens (transform/opacity only) */
+@media (prefers-reduced-motion:no-preference){
+html.m-js #fxdWave.m-in:not(.m-done)::after{content:'';position:absolute;left:50%;top:50%;width:360px;height:360px;translate:-50% -50%;border-radius:50%;pointer-events:none;z-index:5;
+ background:radial-gradient(circle closest-side,transparent 0,transparent 80%,rgba(255,77,94,.35) 92%,rgba(255,77,94,.9) 97%,transparent 100%);animation:mshock 1.2s cubic-bezier(.16,.7,.22,1) .1s both}
+@keyframes mshock{0%{scale:.03;opacity:1}70%{opacity:.7}100%{scale:5.5;opacity:0}}}
+/* arm fix: the hidden pre-state is applied instantly, so a delayed entrance starts from hidden on first load (otherwise the delay keeps the element visible and nothing animates) */
+html.m-js [data-m]:not(.m-in):not(.m-done):not(.m-out){transition:none}
+html.m-js [data-m-split]:not(.m-in):not(.m-out) .m-ch{transition:none}

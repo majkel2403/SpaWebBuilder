@@ -1,1 +1,66 @@
-{ "title": "Shortcuts dialog", "description": "The keyboard-shortcuts dialog (? key or button): focus-trapped modal that lists every registered single-key shortcut, with a demo trigger.", "width": "720px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }
+{
+  "title": "Shortcuts dialog",
+  "description": "The keyboard-shortcuts dialog (? key or button): focus-trapped modal that lists every registered single-key shortcut, with a demo trigger.",
+  "width": "720px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 400
+      },
+      "items": [
+        {
+          "sel": ".sd-wrap",
+          "enter": "scale",
+          "dur": 900,
+          "delay": 100
+        },
+        {
+          "sel": ".sd-wrap .ph",
+          "enter": "wipe-x",
+          "dur": 700,
+          "delay": 450
+        },
+        {
+          "sel": ".sd-btn",
+          "enter": "pop",
+          "dur": 800,
+          "delay": 650,
+          "ease": "linear(0,0.013,0.216,0.516,0.791,0.984,1.087,1.118,1.105,1.071,1.037,1.01,0.993,0.987,0.987,0.99,0.994,0.998,1.0,1.001,1.002,1.001,1.001,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1)"
+        },
+        {
+          "sel": ".sd-note",
+          "enter": "rise",
+          "dur": 600,
+          "delay": 820,
+          "dist": 10
+        },
+        {
+          "sel": ".sd-chip",
+          "enter": "rise",
+          "dur": 650,
+          "delay": 1000,
+          "stagger": 110,
+          "dist": 12
+        }
+      ],
+      "loops": []
+    },
+    "css": [
+      "motion.css"
+    ]
+  }
+}
