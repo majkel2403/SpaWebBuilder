@@ -6,20 +6,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { blocks } from './lib/units.mjs';
 const root = path.dirname(fileURLToPath(import.meta.url));
 const arg = (n, d) => { const i = process.argv.indexOf('--' + n); return i > 0 ? process.argv[i + 1] : d; };
 const out = path.resolve(arg('out', path.join(root, 'dist', 'jev.html')));
 const man = JSON.parse(fs.readFileSync(path.join(root, 'page.json'), 'utf8'));
 const rd = (p) => fs.readFileSync(p, 'utf8');
 
-// "src:css/base.css" -> [{name, text}] ; "cmp:hero/full-section:css" -> every css file listed in that component.json
+// "src:css/base.css" -> [{name, text}] ; "cmp:hero/full-section:css" -> that component's blocks (see lib/units.mjs)
 function resolve(ref) {
   const [kind, a, b] = ref.split(':');
   if (kind === 'src') return [{ name: path.basename(a), text: rd(path.join(root, 'src', a)) }];
-  if (kind === 'cmp') {
-    const dir = path.join(root, 'components', a), j = JSON.parse(rd(path.join(dir, 'component.json')));
-    return (j[b] || []).map((f) => ({ name: a + '/' + f, text: rd(path.join(dir, f)) }));
-  }
+  if (kind === 'cmp') return blocks(a, b);
   throw new Error('bad ref ' + ref);
 }
 const all = (list) => list.flatMap(resolve);

@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { blocks } from './lib/units.mjs';
 const root = path.dirname(fileURLToPath(import.meta.url));
 const cdir = path.join(root, 'components');
 const src = (...p) => path.join(root, 'src', ...p);
@@ -29,13 +30,14 @@ for (const g of fs.readdirSync(cdir, { withFileTypes: true }).filter((d) => d.is
     const dir = path.join(cdir, g.name, c.name), jf = path.join(dir, 'component.json');
     if (!fs.existsSync(jf)) continue;
     const m = JSON.parse(rd(jf));
-    comps.push({ group: g.name, name: c.name, ...m });
+    if (!m.hidden) comps.push({ group: g.name, name: c.name, ...m });
     if (only && only !== g.name + '/' + c.name) continue;
-    const files = (list) => (list || []).map((f) => rd(path.join(dir, f)));
+    if (m.hidden) continue;
+    const files = (kind) => blocks(g.name + '/' + c.name, kind).map((x) => x.text);
     const needs = m.needs || {};
-    const css = [base, needs.fx ? fxCss : '', ...files(m.css), stageCss].join('\n');
-    const html = [needs.fx ? fxHtml : '', needs.hud ? hudHtml : '', `<div class="cmp-stage"${m.width ? ` style="--cmp-w:${m.width}"` : ''}>`, ...files(m.html), '</div>', `<div class="cmp-note">jev / ${g.name} / ${c.name}</div>`].join('\n');
-    const js = [engine, core, needs.fx ? fxJs : '', ...files(m.js), main].filter(Boolean)
+    const css = [base, needs.fx ? fxCss : '', ...files('css'), stageCss].join('\n');
+    const html = [needs.fx ? fxHtml : '', needs.hud ? hudHtml : '', `<div class="cmp-stage"${m.width ? ` style="--cmp-w:${m.width}"` : ''}>`, ...files('html'), '</div>', `<div class="cmp-note">jev / ${g.name} / ${c.name}</div>`].join('\n');
+    const js = [engine, core, needs.fx ? fxJs : '', ...files('js'), main].filter(Boolean)
       .map((s) => `<script>\n${esc(s)}\n</script>`).join('\n');
     const page = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
