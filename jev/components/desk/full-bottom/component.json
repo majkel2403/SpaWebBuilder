@@ -1,18 +1,27 @@
 {
   "title": "Desk bottom row",
-  "description": "Bayesian update, six-agent activity log and drift-vs-noise charts side by side, exactly as in the desk section.",
+  "description": "Bayesian update, six-agent activity log and drift-vs-noise charts side by side: the bottom module of the desk section, assembled from the bayes, activity-log and drift-chart units.",
   "width": "1300px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
-  "html": [
-    "component.html"
-  ],
-  "css": [
-    "component.css"
-  ],
-  "js": [
-    "component.js"
+  "section": "desk/full-desk",
+  "derived": true,
+  "compose": [
+    "desk/_bottom-grid-open",
+    "desk/_bottom-head",
+    "desk/_bottom-css-ring",
+    "desk/_bottom-css-wells",
+    "desk/bayes",
+    "desk/activity-log",
+    "desk/drift-chart",
+    "desk/_bottom-beat",
+    "desk/_bottom-init-bayes",
+    "desk/_bottom-init-log",
+    "desk/_bottom-init-drift",
+    "desk/_bottom-close",
+    "desk/_bottom-css-resp",
+    "desk/_bottom-grid-close"
   ]
 }

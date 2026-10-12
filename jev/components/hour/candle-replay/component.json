@@ -6,6 +6,8 @@
     "fx": false,
     "hud": false
   },
+  "derived": true,
+  "section": "hour/full-section",
   "html": [
     "component.html"
   ],
@@ -14,5 +16,16 @@
   ],
   "js": [
     "component.js"
+  ],
+  "compose": [
+    "hour/_head",
+    "hour/_grid",
+    "hour/_solo-open",
+    "self",
+    "hour/_solo-close",
+    "hour/_responsive",
+    "hour/_solo-css",
+    "hour/_close",
+    "hour/_solo-tape"
   ]
 }

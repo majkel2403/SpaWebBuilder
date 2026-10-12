@@ -245,15 +245,29 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
-/* hero / legend-strip — execute / review / skip legend dots with live tallies and an idle hint that pulses until you fire. Prefix hero-. */
+/* ---- legend (bottom-right) ---- */
 .hero-legend { position: absolute; right: clamp(12px, 2vw, 28px); bottom: 11px; z-index: 3; display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 4px 14px; max-width: 70%; pointer-events: none; font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: #a89db3; }
 .hero-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .hero-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 .hero-dot-ex { background: var(--pink); box-shadow: 0 0 8px var(--pink); } .hero-dot-rv { background: var(--amber); box-shadow: 0 0 8px var(--amber); } .hero-dot-sk { background: #8d8499; }
 .hero-leg-sim { color: #8d8499; letter-spacing: .12em; }
 
+/* ---- detail layer: tooltip · chip odometer · idle hint ---- */
+.hero-tip { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity .16s ease; will-change: transform; display: flex; flex-direction: column; gap: 2px; min-width: 128px; max-width: 218px; padding: 8px 11px 7px; border-radius: 8px; font-size: 10px; line-height: 1.45; letter-spacing: .03em; color: #cfc6d8;
+  background: linear-gradient(180deg, rgba(26, 9, 30, .92), rgba(9, 4, 15, .94)); border: 1px solid rgba(255, 90, 156, .5); box-shadow: 0 0 26px rgba(255, 46, 110, .28), 0 8px 24px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .08); }
+.hero-tip.is-on { opacity: 1; }
+.hero-tip-h { font-size: 9.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--pink2); }
+.hero-tip-v { font: 600 20px/1.1 'Fraunces', 'Playfair Display', Georgia, serif; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.hero-net .hero-tip .hero-tip-sp { position: static; inset: auto; width: 100px; height: 22px; clip-path: none; transition: none; opacity: 1; display: block; margin: 2px 0; }
+.hero-tip-w { color: #b8aec4; font-size: 9.5px; }
+.hero-tip-s { color: #7d7389; font-size: 8px; letter-spacing: .2em; text-transform: uppercase; }
+body.killed .hero-tip { border-color: rgba(255, 77, 94, .55); }
+.hero-od { display: inline-block; position: relative; }
+.hero-od-o { position: absolute; left: 0; top: 0; pointer-events: none; font-style: normal; }
 .hero-leg-sim.is-idle { color: var(--pink2); animation: heroIdle 1.7s ease-in-out infinite; }
 @keyframes heroIdle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@media (max-width: 699px) { .hero-tip { min-width: 112px; max-width: 190px; padding: 6px 9px 5px; font-size: 9px; } .hero-tip-v { font-size: 17px; } }
+
 .hls-stage { display: flex; flex-direction: column; align-items: flex-end; gap: 20px; padding: 30px clamp(12px, 3vw, 36px) 16px; border-radius: 14px; background: radial-gradient(90% 90% at 70% 40%, #14061a 0%, #08040d 60%, #05030a 100%); }
 .hls-stage .hero-legend { position: static; max-width: 100%; pointer-events: auto; }
 .hls-n { color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
@@ -270,9 +284,9 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 <div class="cmp-stage" style="--cmp-w:760px">
 <section class="hls-stage" aria-label="Destination legend (simulation)">
-  <div class="hero-legend" id="hlsLegend">
-    <span><i class="hero-dot hero-dot-ex"></i>execute <b class="hls-n" id="hlsEx">0</b></span><span><i class="hero-dot hero-dot-rv"></i>review <b class="hls-n" id="hlsRv">0</b></span><span><i class="hero-dot hero-dot-sk"></i>skip <b class="hls-n" id="hlsSk">0</b></span><span class="hero-leg-sim" id="hlsSim">simulated &middot; no orders sent &middot; tap to fire</span>
-  </div>
+      <div class="hero-legend" aria-hidden="true">
+        <span><i class="hero-dot hero-dot-ex"></i>execute</span><span><i class="hero-dot hero-dot-rv"></i>review</span><span><i class="hero-dot hero-dot-sk"></i>skip</span><span class="hero-leg-sim">simulated &middot; no orders sent &middot; tap the network to fire</span>
+      </div>
   <button class="hls-fire" id="hlsFire" type="button">fire a decision</button>
 </section>
 
@@ -916,18 +930,14 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 </script>
 <script>
-/* hero / legend-strip — destination legend with live tallies (execute / review / skip) and an idle "tap to fire" hint.
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot()
- * Data: JEV.S.dest {execute, review, skip} (updated by core on every JEV.bus 'decision'). */
+/* hero / legend-strip demo driver (standalone only): idle hint + fire button for the real legend markup. Not part of the hero section's source. */
 JEV.mod('hero-legend-strip', () => {
   'use strict';
-  const J = JEV, ex = J.$('#hlsEx'), rv = J.$('#hlsRv'), sk = J.$('#hlsSk'), sim = J.$('#hlsSim'), btn = J.$('#hlsFire');
-  if (!ex || !rv || !sk) return;
+  const J = JEV, sim = J.$('.hero-leg-sim'), btn = J.$('#hlsFire');
+  if (!sim) return;
   let last = performance.now();
-  const paint = () => { ex.textContent = J.fmt(J.S.dest.execute, 0); rv.textContent = J.fmt(J.S.dest.review, 0); sk.textContent = J.fmt(J.S.dest.skip, 0); };
-  paint();
-  J.bus.on('decision', () => { last = performance.now(); paint(); if (sim) sim.classList.remove('is-idle'); });
-  const iv = setInterval(() => { if (J.hidden()) return; if (sim) sim.classList.toggle('is-idle', performance.now() - last > 9000); }, 1000);
+  J.bus.on('decision', () => { last = performance.now(); sim.classList.remove('is-idle'); });
+  setInterval(() => { if (J.hidden()) return; sim.classList.toggle('is-idle', performance.now() - last > 9000); }, 1000);
   if (btn) btn.addEventListener('click', () => J.fire());
 });
 

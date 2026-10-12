@@ -3,9 +3,11 @@
   "description": "Six-agent activity log with per-agent mute/solo filters, live/pause, full-message card and a data-rain backdrop.",
   "width": "560px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
+  "section": "desk/full-desk",
+  "derived": true,
   "html": [
     "component.html"
   ],
@@ -14,5 +16,15 @@
   ],
   "js": [
     "component.js"
+  ],
+  "compose": [
+    "desk/_bottom-head",
+    "desk/_bottom-stub-bayes",
+    "desk/_bottom-stub-drift",
+    "self",
+    "desk/_bottom-beat",
+    "desk/_bottom-init-log",
+    "desk/_bottom-close",
+    "desk/_bottom-css-resp"
   ]
 }

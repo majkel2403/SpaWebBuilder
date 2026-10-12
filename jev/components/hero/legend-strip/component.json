@@ -1,1 +1,23 @@
-{"title":"Destination legend","description":"The execute, review and skip legend dots with live tallies and a pulsing idle hint to fire a decision.","width":"760px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}
+{
+  "title": "Destination legend",
+  "description": "The real execute / review / skip legend of the hero with its idle hint. Markup and css are the section's own chunks; standalone it runs a small demo script.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "section": "hero/full-section",
+  "derived": true,
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "compose": [
+    "hero/_hls-pre",
+    "self",
+    "hero/_detail",
+    "hero/_hls-post"
+  ]
+}

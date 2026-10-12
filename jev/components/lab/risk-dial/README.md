@@ -1,15 +1,15 @@
 # lab / risk-dial
 
-The "risk ok?" flag question: a half-circle gauge whose gradient arc (red - amber - green) fills to `P(risk_ok)` while a needle springs to the same angle, a big serif YES / NO and the probability, and seven reason chips (spread, latency, signal age, loss cap, drawdown, vol, kill switch) with the live value, turning red and glowing when the matching hard threshold is tripped.
+Question "risk ok?": the gauge (YES / NO) and the seven risk-check chips.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
+
+* own chunks: html, css, js
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/risk-dial`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Bus `decision`: `d.pRisk`, `d.riskOk`, `d.state{spread_bps, latency_ms, signal_age_s, daily_pnl, drawdown_pct, vol_1h}`. Bus `kill` refreshes the kill chip (reads `JEV.S.killed`). Thresholds are in `riskChecks()`: spread > 8 bps, latency > 300 ms, age > 45 s, loss >= 80% of the cap, drawdown >= 8%, vol >= 160%.
-
-## Markup
-Gauge SVG: `.lab-gva` dash offset `100 * (1 - p)`, needle `.lab-gnd` rotation `(p - .5) * 180deg`. Chips: `<li class="bad"><span>spread</span><u>9.4</u></li>`.
-
-## Swap in real data
-Feed your own record with `pRisk`, `riskOk` and `state`, or call `show(record, true)`; edit `riskChecks()` to your own limits.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

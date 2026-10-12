@@ -1,9 +1,6 @@
-# desk/bayes — Bayesian update card
+# desk/bayes
 
-Prior x book likelihood = posterior: three live gaussian densities, odometer readout, precision-weight ring, posterior history strip, probe and draggable means. Simulated.
+Bayesian update card: a real CHUNK of the desk section (module desk-bottom), not a copy. component.html/css/js are consecutive pieces of the section source (the init of the bayes card (initBayes, #dkb-bayes)); the page and this standalone are both built from them (see components/UNITS.md).
 
-**Reuse:** copy this folder plus `engine.js`, `core.js`, `base.css` (from `jev/src`); inline them with the component's `component.html/css/js` and call `JEV.boot()` (the shared `main.js` does it). `node jev/build-components.mjs --only desk/bayes` builds a standalone `index.html`.
-
-**Data consumed:** bus `decision` (d.state.edge_bps, d.state.imbalance, d.conf), bus `tick` ({price, dp}), `JEV.S.killed`.
-
-**Swap in real data:** set the prior/book means and sigmas (`B.tmp/B.sp/B.tml/B.tsl`) from your own model inside `nudge()` and the posterior is solved for you.
+Standalone: `compose` = desk/_bottom-head + _bottom-css-ring, _bottom-css-wells, _bottom-stub-log, _bottom-stub-drift, _bottom-beat, _bottom-init-bayes, _bottom-close, _bottom-css-resp (+ itself). The _bottom-stub-* units are empty hidden cards that satisfy the module guard. Needs fx (the .rv reveal).
+Reuse: copy this folder + engine/core/base + the units listed in compose.

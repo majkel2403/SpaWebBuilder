@@ -1,14 +1,16 @@
 # lab / state-controls
 
-The lab's control card on its own: nine input sliders (red bands mark the zones that trip `risk_ok`), seven scenario presets (trend, mean-revert, wide book, stale feed, reversal, stress, random), DECIDE + AUTO, the confidence-floor slider, the kill switch and the hard-rule caps. A live `state.json` readout shows exactly what the card emits.
+The STATE card shell (header "state / nine inputs / sandbox"). Its standalone page shows the whole card: scenario chips, sliders, decide + auto, hard rules and the verdict strip.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
 
-## Data it produces
-`JEV.bus.emit('lab-state', { state, floor, killed, why, decision })` - `why` is `scrub` while a slider moves, otherwise `decide | preset | input | floor | kill`.
-`state` = `edge_bps, imbalance, spread_bps, vol_1h, position_pct, daily_pnl, drawdown_pct, latency_ms, signal_age_s`.
-Floor and kill are two-way via `JEV.setFloor()` / `JEV.setKilled()` and the `floor` / `kill` bus events.
+* own chunks: html, css
+* satellite chunks (hidden units that hold other pieces of this atom's code, kept apart only because the original file interleaves them): `lab/_ctl-open`, `lab/_ctl-close`, `lab/_lower-close`
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/state-controls`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
 
-## Swap in real data
-Subscribe with `JEV.bus.on('lab-state', e => myModel(e.state, e.floor))` and drop the built-in preview (`decideState()` in `component.js`, a wrapper around `JEV.decide`). To drive the sliders from a feed instead, call the row setter `setVal(field, value)` (see `component.js`) or replace `PRESETS` with your own scenarios.
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
+
+## Data
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

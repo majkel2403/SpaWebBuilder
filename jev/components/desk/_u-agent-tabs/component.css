@@ -1,0 +1,19 @@
+/* ---------- six-agent tab strip ---------- */
+.dkw-tabs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.dkw-tab { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; gap: 0 10px; min-height: 60px; padding: 9px 12px; text-align: left; border-radius: 12px; border: 1px solid var(--line); background: var(--panel), var(--bg2); overflow: hidden; transition: border-color .35s, background .35s, box-shadow .35s; }
+.dkw-tab .orb { --s: 28px; grid-row: 1 / span 2; }
+.dkw-tn { min-width: 0; display: block; }
+.dkw-tn i { display: block; font-style: normal; font-size: 8.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--dkw-k); white-space: nowrap; }
+.dkw-tn b { display: block; font: 700 14px/1.2 var(--sans); letter-spacing: .09em; text-transform: uppercase; color: var(--dkw-ink); overflow: hidden; text-overflow: ellipsis; }
+.dkw-ts { grid-column: 2; font-style: normal; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--dkw-k); display: inline-flex; align-items: center; gap: 6px; }
+.dkw-ts::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #7d7590; }
+.dkw-tab[data-st="working"] .dkw-ts { color: var(--ac); } .dkw-tab[data-st="working"] .dkw-ts::before { background: var(--ac); box-shadow: 0 0 8px var(--ac); animation: lampPulse .7s ease-in-out infinite; }
+.dkw-tab[data-st="done"] .dkw-ts { color: var(--green); } .dkw-tab[data-st="done"] .dkw-ts::before { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.dkw-tab[data-st="halted"] .dkw-ts { color: var(--red); } .dkw-tab[data-st="halted"] .dkw-ts::before { background: var(--red); }
+.dkw-tab.is-pin .dkw-ts::after { content: '· pinned'; color: var(--pink2); }
+.dkw-tab::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; transform-origin: 0 50%; transform: scaleX(var(--v, 0)); background: var(--ac); box-shadow: 0 0 10px var(--ac); transition: transform var(--d, 0s) linear; }
+.dkw-tab:hover { border-color: rgba(var(--ac-rgb), .4); }
+.dkw-tab.is-on { border-color: rgba(var(--ac-rgb), .7); background: linear-gradient(180deg, rgba(var(--ac-rgb), .22), rgba(var(--ac-rgb), .05)), var(--bg2); box-shadow: 0 0 28px rgba(var(--ac-rgb), .24), inset 0 -2px 0 var(--ac); }
+.dkw-tab.is-on .dkw-tn b { color: #fff; }
+.dkw-tab.ha, .dkw-tab.hb { animation: dkwAr .8s ease-out; } .dkw-tab.hb { animation-name: dkwArB; }
+

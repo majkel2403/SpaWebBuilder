@@ -1,18 +1,15 @@
 # lab / mini-verdict
 
-The sticky mobile verdict strip of the lab as an atom: action in caps, size, `conf 0.93` and a coloured destination tag in one glass pill whose border and glow take the route's colour (execute green, review amber, skip grey). It pops slightly on each decision. Two static variants show the other routes.
+The sticky one-line verdict strip (action, size, conf, destination) that shows on stacked / mobile layouts.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
 
-## Markup
-```html
-<div class="lab-mini" data-d="execute"><b class="lab-mi-a">buy</b><span class="lab-mi-s">1%</span><span class="lab-mi-c">0.93</span><i class="lab-mi-d">execute</i></div>
-```
-`data-d` = `execute` | `review` | `skip`. The original is `position: sticky; bottom: 10px` on phones (it is static here); restore that to pin it to the bottom of a scroll area.
+* own chunks: html, css, js
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/mini-verdict`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Bus `decision`: `action`, `size`, `conf`, `dest`.
-
-## Swap in real data
-Emit your own decision records, or call `show(record, true)`.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

@@ -2,8 +2,18 @@
   "title": "Ticket stage rail",
   "description": "A six-stage rail (scan, research, price, size, fill, close) with ignition dots, a gradient fill, a glowing marker and the agent now working, advancing on every decision.",
   "width": "420px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"],
-  "js": ["component.js"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
 }

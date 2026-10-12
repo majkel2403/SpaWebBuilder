@@ -1,0 +1,14 @@
+/* oracle tile */
+.dkw-or { position: relative; overflow: hidden; border-radius: 12px; padding: 9px 12px 0; border: 1px solid rgba(100, 150, 255, .5);
+  background: linear-gradient(160deg, rgba(48, 82, 180, .36), rgba(10, 14, 42, .74) 70%); box-shadow: 0 0 26px rgba(77, 141, 255, .2), inset 0 0 22px rgba(77, 141, 255, .1); }
+.dkw-orh { display: flex; justify-content: space-between; align-items: center; font-size: 8.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--dkw-k); }
+.dkw-orh b { color: #fff; font-weight: 700; }
+.dkw-orh em { font-style: normal; color: var(--cyan); letter-spacing: .14em; }
+.dkw-orp { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 2px; margin-top: 3px; position: relative; z-index: 1; }
+.dkw-orp sup { font: 700 14px/1 var(--serif); color: #cfe0ff; margin-right: 2px; align-self: flex-start; margin-top: 5px; }
+.dkw-orp b { font: 900 clamp(26px, 2.5vw, 33px)/1 var(--serif); letter-spacing: -.02em; color: #fff; font-feature-settings: 'tnum' 1, 'lnum' 1; text-shadow: 0 0 22px rgba(120, 170, 255, .55); }
+.dkw-orp u { text-decoration: none; font: 700 14px/1 var(--serif); color: #9fb8f2; }
+.dkw-orc { margin-left: auto; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; padding: 2px 7px; border-radius: 99px; border: 1px solid currentColor; font-variant-numeric: tabular-nums; align-self: center; }
+.dkw-orc.up { color: var(--up); background: rgba(46, 230, 166, .1); } .dkw-orc.dn { color: var(--dn); background: rgba(255, 77, 94, .1); }
+.dkw-ocv { display: block; width: calc(100% + 24px); height: 40px; margin: 0 -12px; }
+

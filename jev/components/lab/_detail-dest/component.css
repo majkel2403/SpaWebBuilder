@@ -1,0 +1,3 @@
+.lab-dest.shim { overflow: hidden; }
+.lab-dest.shim::after { content: ''; position: absolute; inset: -20% 0; pointer-events: none; background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .55) 50%, transparent 62%); transform: translateX(-130%); animation: lab-shim 1.1s .5s cubic-bezier(.4, 0, .2, 1) forwards; }
+@keyframes lab-shim { to { transform: translateX(130%); } }

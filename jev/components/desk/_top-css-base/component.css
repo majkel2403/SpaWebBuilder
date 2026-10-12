@@ -1,0 +1,4 @@
+/* ===== desk-top — status ticker · swarm P&L · the tape (prefix dkt-) ===== */
+.dkt-bar, .dkt-pnl, .dkt-tape { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
+.dkt-pnl, .dkt-tape { display: flex; flex-direction: column; }
+

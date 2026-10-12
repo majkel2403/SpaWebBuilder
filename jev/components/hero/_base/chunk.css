@@ -1,0 +1,15 @@
+/* ===== hero — "JEV DECIDES" luminous decision network (prefix hero-) ===== */
+#hero { position: relative; background: var(--bg); isolation: isolate; }
+.hero-stage { position: relative; height: clamp(560px, 88vh, 920px); overflow: hidden; background: radial-gradient(90% 70% at 50% 46%, #14061a 0%, #08040d 56%, #05030a 100%); }
+.hero-net { position: absolute; inset: 0; overflow: hidden; }
+.hero-net canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#hero-live { touch-action: pan-y; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.hero-net canvas { clip-path: inset(0 0 0 0); transition: clip-path 1.9s cubic-bezier(.3, .7, .2, 1), opacity .9s ease; }
+#hero-static { transition: filter .7s var(--ease), clip-path 1.9s cubic-bezier(.3, .7, .2, 1), opacity .9s ease; }
+/* intro state (added by hero.js, removed after the boot overlay): everything starts hidden and flows in */
+.hero-card, .hero-chip, .hero-fig, .hero-legend { transition: opacity .9s var(--ease), transform .9s var(--ease); }
+.hero-card { transition-delay: .35s; } .hero-chip { transition-delay: .7s; } .hero-fig, .hero-legend { transition-delay: .9s; }
+.hero-pre .hero-net canvas { clip-path: inset(0 100% 0 0); opacity: 0; }
+.hero-pre .hero-card { opacity: 0; transform: translateY(18px); } .hero-pre .hero-chip { opacity: 0; transform: translateY(-10px); } .hero-pre .hero-fig, .hero-pre .hero-legend { opacity: 0; }
+body.killed #hero-static { filter: hue-rotate(15deg) saturate(1.25) brightness(1.05); }
+

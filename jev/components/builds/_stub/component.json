@@ -1,0 +1,8 @@
+{
+  "hidden": true,
+  "harness": true,
+  "note": "Harness for standalone pages (NOT part of the section): the shared head needs #bld-stage and #bld-cv to exist.",
+  "html": [
+    "component.html"
+  ]
+}

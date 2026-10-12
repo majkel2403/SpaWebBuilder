@@ -3,9 +3,11 @@
   "description": "140 random-walk equity curves with a small positive drift fanning out, a live end-value histogram and hover probes.",
   "width": "560px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
+  "section": "desk/full-desk",
+  "derived": true,
   "html": [
     "component.html"
   ],
@@ -14,5 +16,16 @@
   ],
   "js": [
     "component.js"
+  ],
+  "compose": [
+    "desk/_bottom-head",
+    "desk/_bottom-css-wells",
+    "desk/_bottom-stub-bayes",
+    "desk/_bottom-stub-log",
+    "self",
+    "desk/_bottom-beat",
+    "desk/_bottom-init-drift",
+    "desk/_bottom-close",
+    "desk/_bottom-css-resp"
   ]
 }

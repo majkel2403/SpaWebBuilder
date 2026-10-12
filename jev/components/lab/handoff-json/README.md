@@ -1,15 +1,15 @@
 # lab / handoff-json
 
-The handoff file Jev leaves for plain code, as a tiny editor window (traffic-light dots, `handoff.json` caption). Each decision re-renders the JSON with syntax colours (keys blue, strings green, numbers amber, booleans pink) and types it out line by line with a clip-path reveal. A "copy json" button puts the full handoff (including `floor` and `simulated: true`) on the clipboard and shows a check.
+Stage 04 CODE ACTS, left part: the typed handoff.json (typed in on every decision) plus the stage shell. Holds rActs(), which also paints the destination badge.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
+
+* own chunks: html, css, js
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/handoff-json`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Bus `decision`: `action`, `size`, `venue`, `conf`, `riskOk`, `reason`, `dest`, `floor`.
-
-## Markup
-`<pre class="lab-js type"><span class="lab-jl" style="--i:1">  <u class="k">"action"</u><span class="p">:</span> <span class="s">"buy"</span>…</span></pre>` — `--i` is the line index (delay = i x 62 ms).
-
-## Swap in real data
-Emit your own records, or call `render(record, true)`; change the fields in `rowsJ` (and in `json()` for the clipboard text) to your handoff schema.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

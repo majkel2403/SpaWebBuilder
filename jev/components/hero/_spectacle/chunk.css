@@ -1,0 +1,14 @@
+/* ======================= spectacle layer (tier-gated: html[data-tier] 2 / 3; tier 1 = the page as it was) ======================= */
+.hero-plane { position: absolute; inset: 0; }
+.hero-bg > .hero-grid { will-change: auto; }
+/* parallax layers are moved with the individual `translate` / `scale` properties (JS, only when the value changes), so the intro `transform` transitions keep working */
+html[data-tier="2"] .hero-plane, html[data-tier="3"] .hero-plane, html[data-tier="2"] .hero-grid, html[data-tier="3"] .hero-grid { will-change: translate, scale; }
+
+/* CRT overlay for the kill state */
+.hero-crt { position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 2; display: none; mix-blend-mode: normal;
+  background: repeating-linear-gradient(180deg, rgba(255, 40, 60, .0) 0 2px, rgba(255, 40, 60, .11) 2px 3px), radial-gradient(120% 100% at 50% 50%, transparent 40%, rgba(255, 30, 50, .22) 100%); transition: opacity .5s ease; }
+html[data-tier="2"] .hero-crt, html[data-tier="3"] .hero-crt { display: block; }
+body.killed .hero-crt { opacity: .8; }
+html[data-tier="3"] body.killed .hero-crt { animation: heroCrt 2.4s steps(1) infinite; }
+@keyframes heroCrt { 0% { opacity: .8; } 7% { opacity: .45; } 9% { opacity: .85; } 52% { opacity: .8; } 54% { opacity: .55; } 57% { opacity: .9; } 100% { opacity: .8; } }
+

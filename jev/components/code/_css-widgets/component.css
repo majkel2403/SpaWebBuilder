@@ -1,0 +1,30 @@
+/* ---- identifier link highlight ---- */
+.code-lk { outline: 1.5px solid var(--code-lkc); outline-offset: 1px; border-radius: 3px; background-color: var(--code-lkbg); }
+.code-hot .code-lk { background-color: rgba(255, 255, 255, .28); }
+.code-hot .code-lv.code-lk, .code-hot [class*="code-d-"].code-lk { background-color: #0c0207; }
+
+/* ---- copy button (copy glyph morphs into a check) ---- */
+.code-cp { position: relative; flex: none; width: 22px; height: 22px; display: grid; place-items: center; margin-left: 2px; border-radius: 6px; color: var(--code-meta); transition: background-color .2s, color .25s, transform .2s; }
+.code-cp::before { content: ''; position: absolute; inset: -9px -5px; }
+.code-cp:hover { background: var(--code-cph); }
+.code-cp:active { transform: scale(.9); }
+.code-cp svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.code-cp .ci { transform-box: fill-box; transform-origin: 50% 50%; transition: opacity .18s, transform .34s cubic-bezier(.2, .8, .2, 1); }
+.code-cp .ck { stroke-dasharray: 16; stroke-dashoffset: 16; opacity: 0; transition: stroke-dashoffset .4s .06s cubic-bezier(.3, .7, .2, 1), opacity .1s; }
+.code-cp.done { color: #0a8a5c; background: var(--code-cph); }
+.code-cp.done .ci { opacity: 0; transform: scale(.55) rotate(-12deg); }
+.code-cp.done .ck { stroke-dashoffset: 0; opacity: 1; stroke-width: 2.1; }
+.code-hot .code-cp.done { color: #0c0207; } .code-dark .code-cp.done { color: var(--green); }
+
+/* ---- sticky LIVE pill (terminal) ---- */
+.code-lv { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px 3px 7px; border-radius: 99px; font: 700 9px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; color: var(--green); border: 1px solid rgba(46, 230, 166, .45); background: rgba(46, 230, 166, .1); transition: color .25s, background-color .25s, border-color .25s, box-shadow .25s; }
+.code-lv::before { content: ''; position: absolute; inset: -12px -6px; }
+.code-lv i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 7px currentColor; animation: lampPulse 1.4s ease-in-out infinite; }
+.code-lv em { font-style: normal; letter-spacing: .06em; text-transform: none; font-weight: 600; padding-left: 6px; border-left: 1px solid currentColor; font-variant-numeric: tabular-nums; }
+.code-lv em[hidden] { display: none; }
+.code-lv[data-s="hover"], .code-lv[data-s="scroll"] { color: var(--amber); border-color: rgba(255, 193, 61, .5); background: rgba(255, 193, 61, .1); }
+.code-lv[data-s="pin"] { color: var(--pink2); border-color: rgba(255, 79, 141, .6); background: rgba(255, 46, 110, .16); box-shadow: 0 0 14px -2px rgba(255, 46, 110, .6); }
+.code-lv:not([data-s="live"]) i { animation: none; border-radius: 1px; }
+.code-lv:hover { box-shadow: 0 0 12px -2px currentColor; }
+.code-lv:active { transform: scale(.96); }
+

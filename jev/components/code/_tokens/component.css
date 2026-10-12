@@ -1,0 +1,5 @@
+/* ---- token colours (set per skin) ---- */
+.code-k { color: var(--t-k); font-weight: 600; } .code-s { color: var(--t-s); } .code-n { color: var(--t-n); } .code-c { color: var(--t-c); font-style: italic; }
+.code-f, .code-fa { color: var(--t-f); } .code-fd { color: var(--t-f); font-weight: 700; } .code-b { color: var(--t-b); } .code-ct { color: var(--t-ct); font-weight: 600; }
+.code-a { color: var(--t-a); } .code-o { color: var(--t-o); } .code-v, .code-w { color: var(--t-v); } .code-p { color: var(--t-p); } .code-jk { color: var(--t-jk); font-weight: 700; }
+

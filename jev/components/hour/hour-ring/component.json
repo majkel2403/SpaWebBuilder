@@ -14,5 +14,7 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "derived": false,
+  "derivedNote": "the ring is driven by renderB() / tickSpark() inside the hour-switches chunk; no separable chunk"
 }

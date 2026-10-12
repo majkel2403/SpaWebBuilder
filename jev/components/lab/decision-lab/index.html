@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Decision lab · JEV component</title><meta name="theme-color" content="#05030a">
+<title>decision-lab · JEV component</title><meta name="theme-color" content="#05030a">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;600;700&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" media="print" onload="this.media='all'">
 <style>/* ===== JEV base — tokens + shared primitives. Modules add their own css/<module>.css and never edit this file. ===== */
 :root {
@@ -245,9 +245,20 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
+/* ===== lab — the interactive finale: state sliders · scenarios · decide · hard rules · live pipeline (prefix lab-) ===== */
 @property --lab-v { syntax: '<number>'; inherits: true; initial-value: 0; }
+
 .lab { position: relative; overflow-x: clip; --lab-k: #aaa1b8; --lab-t: #ece6f1; --lab-line: rgba(255, 255, 255, .09); --lab-line2: rgba(255, 255, 255, .16);
   --lab-glass: linear-gradient(180deg, rgba(24, 14, 31, .93), rgba(9, 5, 14, .96)); --lab-gap: 44px; }
+.lab-bgl { position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(50% 26% at 16% 12%, rgba(255, 46, 110, .11), transparent 70%), radial-gradient(44% 24% at 88% 38%, rgba(77, 141, 255, .075), transparent 70%),
+    radial-gradient(40% 22% at 58% 94%, rgba(46, 230, 166, .06), transparent 70%); }
+.lab .wrap { z-index: 1; }
+.lab .h2 { max-width: 24ch; font-size: clamp(26px, 4.2vw, 56px); }
+.lab-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.lab-pill { padding: 5px 12px; font-size: 10px; letter-spacing: .12em; color: var(--lab-k); }
+.lab-pill .lamp { width: 6px; height: 6px; }
+
 /* ---------- grid ---------- */
 .lab-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .lab-left { display: contents; }
@@ -678,7 +689,12 @@ html:not([data-tier="1"]) .lab-s2.on .lab-szc.on .lab-col u::after { animation: 
   .lab-fill { animation: none !important; }
   .lab-st.on { animation: none !important; }
 }
-
+/* standalone page of a lab atom only (not part of the section) */
+.cmp-stage > .lab.sec { padding: 0; min-height: 0; }
+.cmp-stage > .lab > .wrap { padding-left: 0; padding-right: 0; }
+.lab-mini { display: flex; position: static; margin-top: 0; }
+.lab-ctl, .lab-tape, .lab-pipe { order: 0; }
+.lab .rv { opacity: 1; transform: none; filter: none; }
 
 
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
@@ -687,14 +703,17 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 </style></head><body class="cmp">
 
 
-<div class="cmp-stage" style="--cmp-w:1380px">
-<div class="lab" id="lab">
+<div class="cmp-stage">
+<section class="sec lab" id="lab" aria-labelledby="lab-h2">
+  <i class="lab-bgl" aria-hidden="true"></i>
+  <div class="wrap">
+
     <div class="lab-grid">
 
       <div class="lab-left">
 
         <!-- ================= STATE : controls ================= -->
-        <aside class="card lab-ctl" id="lab-ctl" data-c="pink" aria-labelledby="lab-ctl-t">
+        <aside class="card lab-ctl rv" id="lab-ctl" data-c="pink" aria-labelledby="lab-ctl-t">
           <i class="lab-edge" aria-hidden="true"></i>
           <div class="lab-ph"><span class="lab-tag" id="lab-ctl-t">state</span><span class="lab-ps">nine inputs &middot; one simulated market</span><span class="lab-bdg"><i class="lamp pink"></i>sandbox</span></div>
 
@@ -746,7 +765,7 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         </aside>
 
         <!-- ================= tape ================= -->
-        <section class="card lab-tape" id="lab-tape" data-c="gray" aria-labelledby="lab-tape-t">
+        <section class="card lab-tape rv" id="lab-tape" data-c="gray" aria-labelledby="lab-tape-t">
           <div class="lab-ph"><span class="lab-tag" id="lab-tape-t">tape</span><span class="lab-ps">last 5 lab decisions &middot; click a row to restore</span><span class="lab-tools"><button class="lab-cp" id="lab-cp-link" type="button" aria-label="copy link to this simulated scenario"><span class="lab-cp-i"><svg class="a" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6.5 9.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.8.8M9.5 6.5a3 3 0 0 0-4.2 0L3 8.8a3 3 0 0 0 4.2 4.2l.8-.8"/></svg><svg class="b" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></span><span>copy link</span></button><button class="lab-cp" id="lab-cp-json" type="button" aria-label="copy handoff json"><span class="lab-cp-i"><svg class="a" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5.5 2.5c-1.5 0-2 .6-2 2v1.8c0 .9-.5 1.7-1.5 1.7 1 0 1.5.8 1.5 1.700v1.800c0 1.400.5 2 2 2M10.5 2.5c1.500 0 2 .6 2 2v1.800c0 .9.5 1.700 1.500 1.700-1 0-1.500.8-1.500 1.700v1.800c0 1.400-.5 2-2 2"/></svg><svg class="b" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></span><span>copy json</span></button></span></div>
           <div class="lab-tpw"><ol class="lab-tp" id="lab-tp"></ol></div>
         </section>
@@ -758,7 +777,7 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         <canvas class="lab-fx" id="lab-fx0" aria-hidden="true"></canvas>
         <canvas class="lab-fx" id="lab-fx1" aria-hidden="true"></canvas>
 
-        <div class="lab-pph">
+        <div class="lab-pph rv">
           <span class="lab-tag">pipeline</span>
           <span class="lab-ps hide-s">state &rarr; encode &rarr; typed questions &rarr; gate &rarr; code</span>
           <span class="lab-stat" id="lab-stat"><i class="lamp"></i><b id="lab-stat-t">ready</b></span>
@@ -766,13 +785,13 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         </div>
 
         <!-- 01 encode -->
-        <section class="card lab-st lab-s1" id="lab-s1" data-c="blue" aria-labelledby="lab-s1-t">
+        <section class="card lab-st lab-s1 rv" id="lab-s1" data-c="blue" aria-labelledby="lab-s1-t">
           <header class="lab-sh"><span class="lab-n">01</span><h3 id="lab-s1-t">encode</h3><span class="lab-sd hide-s">numbers &rarr; features</span><span class="lab-sb" id="lab-s1-b">9 &rarr; 10</span></header>
           <div class="lab-fts" id="lab-fts"></div>
         </section>
 
         <!-- 02 typed questions -->
-        <section class="card lab-st lab-s2" id="lab-s2" data-c="pink" aria-labelledby="lab-s2-t">
+        <section class="card lab-st lab-s2 rv" id="lab-s2" data-c="pink" aria-labelledby="lab-s2-t">
           <header class="lab-sh"><span class="lab-n">02</span><h3 id="lab-s2-t">typed questions</h3><span class="lab-sd hide-s">choice &middot; score &middot; flag</span><span class="lab-sb" id="lab-ms">2.9 ms</span></header>
           <div class="lab-qs">
 
@@ -810,7 +829,7 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         </section>
 
         <!-- 03 the gate -->
-        <section class="card lab-st lab-s3" id="lab-s3" data-c="orange" aria-labelledby="lab-s3-t">
+        <section class="card lab-st lab-s3 rv" id="lab-s3" data-c="orange" aria-labelledby="lab-s3-t">
           <header class="lab-sh"><span class="lab-n">03</span><h3 id="lab-s3-t">the gate</h3><span class="lab-sd hide-s">below the floor goes to a human</span><span class="lab-sb" id="lab-verdict">PASS</span></header>
           <div class="lab-gate">
             <div class="lab-gt" id="lab-gt">
@@ -826,7 +845,7 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         </section>
 
         <!-- 04 code acts -->
-        <section class="card lab-st lab-s4" id="lab-s4" data-c="green" aria-labelledby="lab-s4-t">
+        <section class="card lab-st lab-s4 rv" id="lab-s4" data-c="green" aria-labelledby="lab-s4-t">
           <header class="lab-sh"><span class="lab-n">04</span><h3 id="lab-s4-t">code acts</h3><span class="lab-sd hide-s">plain code &middot; no model in the loop</span><span class="lab-sb" id="lab-s4-b">handoff</span></header>
           <div class="lab-acts">
             <figure class="lab-jsw">
@@ -846,7 +865,8 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
       </div>
     </div>
     <div class="sr-only" id="lab-sr" aria-live="polite"></div>
-</div>
+  </div>
+</section>
 
 </div>
 <div class="cmp-note">jev / lab / decision-lab</div>
@@ -1488,13 +1508,10 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 </script>
 <script>
-/* Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod J.$ J.$$ J.C J.S J.RULES J.bus ('decision' emitted, 'floor' 'kill' two-way) J.decide J.setFloor J.setKilled J.market J.recent
- *   J.fit J.watch J.task J.rgba J.fmt J.sgn J.scramble J.clamp J.lerp J.tier J.reduce J.hidden J.pointer J.scroll J.ACTIONS J.SIZES J.shortcut; optional J.hud J.toast.
- * Data: JEVEngine.sampleState (random scenario) + J.decide(state) on a hand-built state {edge_bps, imbalance, spread_bps, vol_1h, position_pct, daily_pnl,
- *   drawdown_pct, latency_ms, signal_age_s}. Every commit publishes a 'decision' record on the bus. Everything is simulated.
- */
-JEV.mod('lab-decision-lab', () => {
+/* lab — the interactive finale. State sliders + scenarios + hard rules drive the real engine (JEV.decide); the pipeline replays every decision
+ * stage by stage: encode -> typed questions -> gate -> code acts. Two canvases (static ribbons + additive particle layer), WAAPI/CSS for the rest.
+ * Floor + kill switch are two-way synced with the rest of the page over the bus. Everything is simulated. */
+JEV.mod('lab', () => {
   'use strict';
   const J = JEV;
   const root = J.$('#lab');
@@ -2282,7 +2299,7 @@ JEV.mod('lab-decision-lab', () => {
       S.count++; S.cost += 0.00003; S.ms.push(d.ms); if (S.ms.length > 41) S.ms.shift(); S.counts.choice++;
       if (S.dest[d.dest] != null) S.dest[d.dest]++;
       J.recent.unshift(rec); if (J.recent.length > 40) J.recent.pop();
-      J.bus.emit('decision', rec); if (J.hud) J.hud();
+      J.bus.emit('decision', rec); J.hud();
     } catch (e) { /* the lab never breaks the page */ }
   }
   /** full cinematic decision: ~1.3 s, stage by stage. why: 'decide' | 'preset' | 'input' | 'floor' | 'kill' | 'view' | 'replay' */
@@ -2541,6 +2558,15 @@ JEV.mod('lab-decision-lab', () => {
   }
   wireCopy($('#lab-cp-link'), () => { const base0 = location.href.split('#')[0]; return base0 + hashStr(); }, 'scenario link copied · simulated inputs');
   wireCopy($('#lab-cp-json'), handoffJson, 'handoff json copied · simulated');
+
+  /* ------------------------------------------------------------------ standalone demo (not part of the section) ------------------------------------------------------------------ */
+  /* a lone atom has nobody to drive it: cycle the scenarios while the lab is on screen, stop at the first pointer / key interaction */
+  {
+    const names = ['trend', 'stress', 'mean-revert', 'wide book', 'reversal', 'stale feed'];
+    let k = 0, on = true;
+    ['pointerdown', 'keydown'].forEach((ev) => root.addEventListener(ev, () => { on = false; }, { capture: true, passive: true }));
+    setInterval(() => { if (!on || !lv || running || tween) return; runPreset(names[k++ % names.length], null); touched = false; }, 4600);
+  }
 
   /* ------------------------------------------------------------------ init ------------------------------------------------------------------ */
   stg.forEach((s) => { const sc = document.createElement('i'); sc.className = 'lab-scan'; sc.setAttribute('aria-hidden', 'true'); s.appendChild(sc); });

@@ -2,8 +2,18 @@
   "title": "Activity log row",
   "description": "One activity-log row (dot, agent tag, verb, value, message) shown as a live row that animates in on every step plus four static variants: gain, loss, JEV choice and kill switch.",
   "width": "560px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"],
-  "js": ["component.js"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
 }

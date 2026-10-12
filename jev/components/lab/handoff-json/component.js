@@ -1,55 +1,28 @@
-/* Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Consumes: bus 'decision' -> d.action, d.size, d.venue, d.conf, d.riskOk, d.reason, d.dest. Rendering: one <span class="lab-jl" style="--i:N"> per line, class "type" on the <pre> plays the line-by-line typing.
- * Token classes: .k key .s string .n number .b boolean .p punctuation.
- */
-JEV.mod('lab-handoff-json', () => {
-  'use strict';
-  const J = JEV, C = J.C, clamp = J.clamp, lerp = J.lerp;
-  const HAS_WA = typeof Element.prototype.animate === 'function';
-  const anim = (el, kf, o) => { if (!el || !HAS_WA || J.reduce) return null; try { return el.animate(kf, o); } catch (e) { return null; } };
-  const fxa = (el, kf, o) => (J.hidden() ? null : anim(el, kf, o));
-  const setTxt = (el, t) => { if (el && el.textContent !== t) el.textContent = t; };
-  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const tierN = () => J.tier || 2;
-  const lastD = () => { let d = J.recent && J.recent[0]; if (!d) { try { d = J.makeDecision(); } catch (e) { d = null; } } return d; };
-  const root = J.$('#lab-hj'); if (!root) return;
-  const jsEl = root.querySelector('#lab-js');
-  let cur = null;
   const jS = (v) => '<span class="s">"' + esc(v) + '"</span>', jN = (v) => '<span class="n">' + v + '</span>', jB = (v) => '<span class="b">' + v + '</span>';
-  function render(d, pop) {
-    cur = d;
-    const rowsJ = [['action', jS(d.action)], ['size', d.action === 'hold' ? jB('null') : jN(d.size)], ['venue', jS(d.venue || 'venue')], ['conf', jN(d.conf.toFixed(2))], ['risk_ok', jB(d.riskOk)], ['reason', jS(d.reason)], ['dest', jS(d.dest)]];
+  function rActs(d, pop) {
+    const rowsJ = [['action', jS(d.action)], ['size', jN(d.size)], ['venue', jS(d.venue)], ['conf', jN(d.conf.toFixed(2))], ['risk_ok', jB(d.riskOk)], ['reason', jS(d.reason)], ['dest', jS(d.dest)]];
     let h = '<span class="lab-jl p" style="--i:0">{</span>';
     rowsJ.forEach((r, i) => { h += '<span class="lab-jl" style="--i:' + (i + 1) + '">  <u class="k">"' + r[0] + '"</u><span class="p">:</span> ' + r[1] + (i < rowsJ.length - 1 ? '<span class="p">,</span>' : '') + '</span>'; });
     h += '<span class="lab-jl p" style="--i:8">}</span>';
-    jsEl.className = 'lab-js' + (pop && !J.reduce ? ' type' : '');
+    jsEl.className = 'lab-js' + (pop ? ' type' : '');
     jsEl.innerHTML = h;
+    destEl.setAttribute('data-c', DC[d.dest]);
+    const T = d.dest.toUpperCase();
+    destT.setAttribute('data-text', T);
+    if (pop) J.scramble(destT, T, 460); else setTxt(destT, T);
+    setTxt(destS, d.dest === 'execute' ? 'order → ' + d.venue + ' · ' + fmtSize(d.size) : d.dest === 'review' ? '→ human review queue' : 'no order · nothing sent');
+    if (pop) {
+      anim(destEl, [{ transform: 'perspective(520px) rotateX(64deg) scale(1.45)', opacity: 0 }, { transform: 'perspective(520px) rotateX(0) scale(1)', opacity: 1 }], { duration: 460, easing: 'cubic-bezier(.2,1.3,.3,1)' });
+      anim(destR, [{ opacity: 0.9, transform: 'scale(.9)' }, { opacity: 0, transform: 'scale(1.3)' }], { duration: 760, easing: 'ease-out' });
+      if (d.killed && d.dest === 'review') anim(destEl, [{ transform: 'translateX(0)' }, { transform: 'translateX(-9px) rotate(-.6deg)' }, { transform: 'translateX(8px) rotate(.5deg)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(-2px)' }, { transform: 'none' }], { duration: 460, delay: 440, easing: 'ease-out' });
+      if (d.dest === 'skip') {
+        fxa(destEl, [{ filter: 'brightness(1)' }, { filter: 'brightness(.5) saturate(.3)', offset: 0.4 }, { filter: 'brightness(.8) saturate(.7)' }], { duration: 900, delay: 440, easing: 'ease-out' });
+        fxa(destT, [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.8, .55)', opacity: 0.25, offset: 0.4 }, { transform: 'scale(1)', opacity: 1 }], { duration: 820, delay: 440, easing: 'cubic-bezier(.3,0,.3,1)' });
+      }
+      if (d.dest === 'execute' && !J.reduce) {
+        destEl.classList.remove('shim'); void destEl.offsetWidth; destEl.classList.add('shim');
+        clearTimeout(destEl._sh); destEl._sh = setTimeout(() => destEl.classList.remove('shim'), 1500);
+      }
+    }
   }
-  const json = () => {
-    const d = cur || lastD(); if (!d) return '{}';
-    return JSON.stringify({ action: d.action, size: d.action === 'hold' ? null : d.size, venue: d.venue, conf: +d.conf.toFixed(2), risk_ok: d.riskOk, floor: +d.floor.toFixed(2), reason: d.reason, dest: d.dest, simulated: true }, null, 2);
-  };
 
-  function copyText(txt) {
-    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(txt);
-    return new Promise((res, rej) => {
-      const ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
-      document.body.appendChild(ta); ta.select();
-      let ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
-      ta.remove(); ok ? res() : rej(new Error('copy blocked'));
-    });
-  }
-  function wireCopy(btn, make, msg) {
-    const lab = btn.querySelector('span:last-child'), orig = lab.textContent;
-    btn.addEventListener('click', () => {
-      copyText(make()).then(() => {
-        btn.classList.add('ok'); lab.textContent = 'copied';
-        if (J.toast) J.toast(msg, 'ok');
-        clearTimeout(btn._t); btn._t = setTimeout(() => { btn.classList.remove('ok'); lab.textContent = orig; }, 1500);
-      }).catch(() => { if (J.toast) J.toast('copy blocked by the browser', 'info'); });
-    });
-  }
-  wireCopy(root.querySelector('#lab-cp-json'), json, 'handoff json copied \u00b7 simulated');
-  J.bus.on('decision', (d) => render(d, true));
-  const d0 = lastD(); if (d0) render(d0, false);
-});

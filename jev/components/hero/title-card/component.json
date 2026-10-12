@@ -1,1 +1,23 @@
-{"title":"JEV DECIDES title card","description":"The glass JEV DECIDES title card with a hot-pink spine, spinning conic border, pointer-following holographic sheen and a letter-by-letter neon ignition you can replay.","width":"760px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}
+{
+  "title": "JEV DECIDES title card",
+  "description": "The real glass JEV DECIDES title card of the hero (hot-pink spine, spinning conic border, holographic sheen, letter-by-letter ignition). Markup and css are the section's own chunks; standalone it runs the demo ignition script.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "section": "hero/full-section",
+  "derived": true,
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "compose": [
+    "hero/_htc-pre",
+    "self",
+    "hero/_card-fx",
+    "hero/_htc-post"
+  ]
+}

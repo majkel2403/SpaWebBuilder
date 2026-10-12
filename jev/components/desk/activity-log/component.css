@@ -1,10 +1,3 @@
-.dkb-card { --dkb-k: #aaa1b8; --dkb-ink: #ece5f2; display: flex; flex-direction: column; container: dkb / inline-size; }
-.dkb-log { background: radial-gradient(72% 42% at 100% 0%, rgba(255, 46, 110, .13), transparent 66%), radial-gradient(60% 40% at 0% 100%, rgba(166, 107, 255, .07), transparent 70%), var(--panel); border-color: rgba(255, 46, 110, .2); }
-.dkb-card .ph { align-items: flex-start; padding: 13px 14px 0; }
-.dkb-t { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 7px; min-width: 0; flex: 1 1 auto; }
-.dkb-ph-s { font-style: normal; letter-spacing: .09em; color: var(--dkb-k); }
-.dkb-hn { flex: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; letter-spacing: .1em; text-transform: lowercase; color: var(--dkb-k); }
-.dkb-hn b { color: var(--dkb-ink); font-weight: 700; letter-spacing: .08em; }
 /* ---------- activity log ---------- */
 .dkb-hl { gap: 10px; }
 .dkb-live { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; padding: 2px 10px; border-radius: 99px; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--green); border: 1px solid rgba(46, 230, 166, .42); background: rgba(46, 230, 166, .07); transition: color .3s, border-color .3s, background .3s; }
@@ -71,7 +64,13 @@ html[data-tier="1"] .dkb-rain { display: none; }
 .dkb-more:focus-visible { outline: 2px solid var(--pink2); outline-offset: 2px; }
 @keyframes dkbPop { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
 /* odometer digits */
+.dkb-dg { position: relative; display: inline-block; }
+.dkb-dg i { display: inline-block; font-style: normal; }
+.dkb-dg .dkb-gh { position: absolute; left: 0; top: 0; pointer-events: none; }
+.dkb-kv b.neg { color: var(--dn); }
+.dkb-cvw canvas:focus-visible { outline: 2px solid var(--pink2); outline-offset: -2px; border-radius: 6px; }
 .dkb-hn .num, .dkb-pool .num, .dkb-rg b, .dkb-kv b, .dkb-cap label span { font-variant-numeric: tabular-nums; }
+.dkb-cvw canvas:last-child { -webkit-tap-highlight-color: transparent; }
 @keyframes dkbIn {
   0% { opacity: 0; filter: blur(7px); translate: -22px 0; background-color: rgba(var(--ar), .3); }
   45% { opacity: 1; filter: blur(0); translate: 0 0; background-color: rgba(var(--ar), .2); }
@@ -98,9 +97,4 @@ html[data-tier="1"] .dkb-j.new { animation: dkbIn .75s var(--ease) both; }
   .dkb-lgi span { font-size: 9.5px; }
 }
 @container dkb (max-width: 330px) { .dkb-ph-s { letter-spacing: .08em; } .dkb-lgi b { letter-spacing: .1em; } }
-@media (pointer: coarse) {
-  .dkb-more { min-height: 40px; padding: 0 16px; top: 6px; }
-  .dkb-live { min-height: 40px; padding: 0 14px; }
-  .dkb-ch { min-height: 40px; }
-}
-@media (prefers-reduced-motion: reduce) { .dkb-r.new { animation: none; } .dkb-r.new::before { animation: none; opacity: 0; } .dkb-r.new::after, .dkb-r.new .dkb-ag, .dkb-r.new .dkb-ms, .dkb-j.new { animation: none; } .dkb-rain { display: none; } .dkb-more { animation: none; } .dkb-tip { transition: none; } }
+

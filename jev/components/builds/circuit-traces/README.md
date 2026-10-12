@@ -1,11 +1,11 @@
 # builds / circuit-traces
-A canvas of circuit traces: one trunk drops from a cap into a twin-hairline bus with a stub into the top of every card, with bits travelling the wires, a bright pulse per decision and a red switch under the kill switch.
+**Derived atom, a real chunk of `builds/full-section`.** The canvas of circuit traces from the cap into the first row of tiles (trunk, twin-hairline bus, stubs, travelling bits).
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js` and `base.css` (from `src/`), paste component.html/css/js into a page (inside a width-limited container) and call `JEV.boot()`. Everything is simulated.
+This folder holds the canvas element, its css and its script; it borrows the particle sprite from builds/_ribbons, so its page contains the real tiles and that engine. The files here are not hand-made copies: they are consecutive pieces of the section's original source (see `components/UNITS.md`). The main page (`node jev/build.mjs`) is built from these same chunks, so editing them changes the page; do not edit a copy.
 
-## Markup
-A host `.bld-ct` (`position: relative`, top padding = cap + canvas height) with a cap `.bld-ct-cap`, a `canvas.bld-tr` positioned over the gap, and a row of target cards `.bld-ct-nodes > .bld-ctn`. The canvas draws: a trunk from the cap (x = centre), a bus line with a twin hairline, and a stub that ends in a small pad at the top of every target card (x = card centre, measured from `offsetLeft` / `offsetWidth` on resize via `JEV.watch`).
+## Standalone page
+`compose`: `builds/_head` + `builds/_stub` + `builds/_tiles-base` + `builds/odometer` + `builds/_ribbons` + `builds/value-bubble` + `builds/_tiles-open` + `self` + `builds/tile-decision-stream` + `builds/tile-latency` + `builds/tile-cost` + `builds/tile-primitive-mix` + `builds/tile-where-it-runs` + `builds/tile-code-owns` + `builds/_tiles-close` + `builds/_drive` + `builds/_end` + `builds/_responsive` (`self` = the chunk files of this folder; `builds/_stub`, `builds/_one-col`, `builds/_drive`, `builds/_shim-latency` and `builds/_demo-odometer` are small harness units that exist only for standalone pages and are not part of the section).
+Rebuild with `node jev/build-components.mjs --only builds/circuit-traces`.
 
-## Data
-Pure decoration plus one live signal: two bits always travel each wire (tier 2+, still drawing when reduced motion), and each bus `decision` sends a bright pulse down the stub of the build that answered, which flashes its card on arrival. Kill switch recolours everything red. To use real data: push `{k: stubIndex, t0: now}` into `pulses` for any event.
+## Reuse elsewhere
+Copy this folder and every unit folder listed in `compose`, plus the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css` (and `fx.js` / `fx.css` when `needs.fx` is true: the `.rv` reveal is driven by it); join the chunks in `compose` order (html, css, js each joined with ''), put the js in one <script> and call `JEV.boot()`. Everything is simulated; feed real data with `JEV.bus.emit('decision', d)`.

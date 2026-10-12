@@ -1,0 +1,6 @@
+/* standalone page of a lab atom only (not part of the section) */
+.cmp-stage > .lab.sec { padding: 0; min-height: 0; }
+.cmp-stage > .lab > .wrap { padding-left: 0; padding-right: 0; }
+.lab-mini { display: flex; position: static; margin-top: 0; }
+.lab-ctl, .lab-tape, .lab-pipe { order: 0; }
+.lab .rv { opacity: 1; transform: none; filter: none; }

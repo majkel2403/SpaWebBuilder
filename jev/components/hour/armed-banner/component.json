@@ -14,5 +14,7 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "derived": false,
+  "derivedNote": "the ARMED banner is fused with the switch loop, burst particles and cinema in the hour-switches chunk; no separable chunk"
 }

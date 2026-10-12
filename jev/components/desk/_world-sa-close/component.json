@@ -1,0 +1,9 @@
+{
+  "title": "_world-sa-close",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "standalone": true,
+  "html": [
+    "component.html"
+  ]
+}

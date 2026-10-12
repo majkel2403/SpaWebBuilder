@@ -1,20 +1,15 @@
 # lab / switch-card
 
-The lab's switch cards: a glass row with the glowing `.tg` toggle on the left and a two-line label (uppercase title, small caption that changes with the state). Four demo states plus the kill switch, which is bound to the runtime: toggling it calls `JEV.setKilled()` so the HUD, the page tint and every other component follow, and key `K` flips it too.
+The AUTO switch ("re-decide on every input") next to the decide button.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
 
-## Markup
-```html
-<button class="lab-sw" type="button" role="switch" aria-checked="false" data-c="green" data-on="orders logged, not routed" data-off="orders go to the venue">
-  <i class="tg"></i><span class="lab-sw-t"><b>dry run</b><small>orders go to the venue</small></span>
-</button>
-```
-`data-c` sets the accent (pink green blue yellow violet orange cyan red gray); `aria-checked` drives the `.on` look; `disabled` greys it out. `.lab-kill` is the full-width red variant, `data-bind="kill"` binds it to the runtime.
+* own chunks: html, css, js
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/switch-card`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Emits `JEV.bus 'lab-switch' {id, on}`. The kill switch reads `JEV.S.killed` and bus `kill`.
-
-## Swap in real data
-Listen to `lab-switch` and call your own API; for the kill switch replace `J.setKilled(on)` with a request to your risk service and call `paint()` when it confirms.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

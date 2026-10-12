@@ -1,0 +1,19 @@
+.lab-st { container: labs / inline-size; padding: 12px clamp(12px, 1.5vw, 18px) 16px; transition: border-color .45s, box-shadow .45s; }
+.lab-s2 { container-name: labq; }
+.lab-s4 { container-name: labs4; }
+.lab-st > :not(.lab-scan):not(.lab-edge) { transition: opacity .4s; }
+.lab-run .lab-st:not(.on):not(.done) > :not(.lab-sh):not(.lab-scan) { opacity: .42; }
+.lab-st.on { border-color: rgba(var(--cc-rgb), .85); box-shadow: 0 0 0 1px rgba(var(--cc-rgb), .3), 0 0 48px -8px rgba(var(--cc-rgb), .65), inset 0 0 54px -24px rgba(var(--cc-rgb), .75), 0 24px 60px -30px rgba(0, 0, 0, .85); }
+.lab-st.done { border-color: rgba(var(--cc-rgb), .42); }
+.lab-scan { position: absolute; left: 0; right: 0; top: 0; height: 46%; z-index: 4; pointer-events: none; opacity: 0; background: linear-gradient(180deg, transparent, rgba(var(--cc-rgb), .24), transparent); transform: translateY(-100%); }
+.lab-st.on .lab-scan { animation: lab-scan .6s ease-out; }
+@keyframes lab-scan { 0% { opacity: 1; transform: translateY(-100%); } 100% { opacity: 0; transform: translateY(240%); } }
+body.killed .lab-st { border-color: rgba(255, 77, 94, .42); }
+
+.lab-sh { display: flex; align-items: center; gap: 10px; min-height: 26px; }
+.lab-n { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 7px; flex: none; font: 800 10px/1 var(--mono); color: var(--cc); border: 1px solid rgba(var(--cc-rgb), .75); background: rgba(var(--cc-rgb), .13); box-shadow: 0 0 14px rgba(var(--cc-rgb), .4); }
+.lab-sh h3 { font: 700 13px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #fff; white-space: nowrap; }
+.lab-sd { flex: 1 1 auto; min-width: 0; font-size: 10.5px; color: var(--lab-k); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lab-sb { margin-left: auto; padding: 3px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: .1em; white-space: nowrap; color: var(--cc); border: 1px solid rgba(var(--cc-rgb), .65); background: rgba(var(--cc-rgb), .1); font-variant-numeric: tabular-nums; transition: color .3s, border-color .3s, background .3s; }
+.lab-sb[data-v="pass"] { --cc: #2ee6a6; --cc-rgb: 46, 230, 166; } .lab-sb[data-v="below"] { --cc: #ffc13d; --cc-rgb: 255, 193, 61; } .lab-sb[data-v="halt"] { --cc: #ff4d5e; --cc-rgb: 255, 77, 94; }
+

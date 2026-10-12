@@ -1,1 +1,23 @@
-{"title":"Latest decision chip","description":"A glass readout chip that shows the newest simulated decision (symbol, action, confidence, size, risk, destination badge, latency) with odometer digit rolls.","width":"900px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}
+{
+  "title": "Latest decision chip",
+  "description": "The real latest-decision readout chip of the hero (symbol, action, confidence, size, risk, destination badge, latency). Markup and css are the section's own chunks; standalone it is driven by a small demo script.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "section": "hero/full-section",
+  "derived": true,
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "compose": [
+    "hero/_hdc-pre",
+    "self",
+    "hero/_detail",
+    "hero/_hdc-post"
+  ]
+}

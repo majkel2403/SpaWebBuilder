@@ -1,18 +1,16 @@
 # lab / decision-tape
 
-A compact, always-live tape of the last five decisions: short hex id, action in its colour, size, confidence, a destination with a glowing dot (execute green, review amber, skip grey) and the gate reason. A new decision pushes the list down with a slide and a pink flash on the top row; rows are real buttons (tab + Enter / Space) and clicking one emits it so a host UI can put that decision's inputs back. "copy json" exports the tape.
+The TAPE card: last five lab decisions (click a row to restore its inputs) with copy-link and copy-json buttons.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
+
+* own chunks: html, css, js
+* satellite chunks (hidden units that hold other pieces of this atom's code, kept apart only because the original file interleaves them): `lab/_tape-restore`, `lab/_copy`, `lab/_detail-tape`
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/decision-tape`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Consumes bus `decision` (`action, size, conf, dest, reason`, optionally `state`); seeded from `JEV.recent`. Emits `JEV.bus 'lab-restore' {n, action, size, conf, dest, reason, state}`.
-
-## Markup
-```html
-<li><span>#a1</span><b class="lab-tp-a" data-a="buy">buy</b><span>1%</span><span class="lab-tp-c">0.93</span><i class="lab-tp-d" data-d="execute">execute</i><em>ok</em></li>
-```
-On containers under 380px the reason column hides.
-
-## Swap in real data
-Emit your own decision records, or call `push(record, true)`. Change the tape length in `push()` (and the `.lab-tpw` height).
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

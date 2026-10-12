@@ -2,8 +2,18 @@
   "title": "Oracle price card",
   "description": "The blue oracle tile: serif price with a decimal, change pill and a live glowing sparkline of the simulated mid price.",
   "width": "440px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"],
-  "js": ["component.js"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
 }

@@ -1,12 +1,16 @@
 # lab / typed-questions
 
-Jev's three typed questions as one panel: **which action?** (choice: five probability bars, winner highlighted, confidence ring), **how much?** (score: four size columns, 0.5 / 1 / 2 / 4 % of capital) and **risk ok?** (flag: gauge with YES / NO and seven risk-check chips that light red when tripped), plus the latency badge.
+Stage 02 TYPED QUESTIONS shell (header + latency badge) and the number tweening / render code for the three questions. Its standalone page shows all three.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
 
-## Data it consumes
-Bus `decision`: `action, p{buy,sell,hold,close,flatten}, conf, size, sizes[4], sizeIdx, pRisk, riskOk, ms, killed` and `state{spread_bps, latency_ms, signal_age_s, daily_pnl, drawdown_pct, vol_1h}` for the chips. Bus `kill` updates the kill chip.
+* own chunks: html, css, js
+* satellite chunks (hidden units that hold other pieces of this atom's code, kept apart only because the original file interleaves them): `lab/_s2-close`, `lab/_q-fx`
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/typed-questions`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
 
-## Swap in real data
-Emit your own decision records on `JEV.bus` with those fields, or call `show(decision, true)` in `component.js`. Thresholds for the chips are in `riskChecks()`.
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
+
+## Data
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

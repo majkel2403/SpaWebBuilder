@@ -1,18 +1,16 @@
 # lab / dest-badge
 
-The verdict badge: where the gate sent the decision. A big glowing EXECUTE (green), REVIEW (amber) or SKIP (grey) that scrambles in letter by letter, flips up in 3D, emits a ring pulse, fires a particle burst (18 sparks on execute, 8 on review), shimmers on execute, dims and squashes on skip and shakes when the kill switch forced the review. The caption names the venue and size (or "human review queue" / "nothing sent") and a tally row counts all routes from `JEV.S.dest`.
+Stage 04, right: the big EXECUTE / REVIEW / SKIP badge with 3D flip, ring pulse and shimmer, plus the "code, not the model, sends the order" line. Its script is part of handoff-json (rActs).
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
 
-## Markup
-```html
-<div class="lab-dest" data-c="green"><i class="lab-dest-r"></i><b class="lab-dest-t glitch" data-text="EXECUTE">EXECUTE</b><small>order → binance · 1%</small></div>
-```
-`data-c` = `green` | `yellow` | `gray` sets the whole colour (border, glow, text).
+* own chunks: html, css
+* satellite chunks (hidden units that hold other pieces of this atom's code, kept apart only because the original file interleaves them): `lab/_detail-dest`, `lab/_s4-open`, `lab/_s4-close`
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/dest-badge`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Bus `decision`: `d.dest`, `d.venue`, `d.size`, `d.killed`; tally from `JEV.S.dest`.
-
-## Swap in real data
-Emit records with a `dest` of `execute`, `review` or `skip` (your own router's verdict), or call `show(record, true)`.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

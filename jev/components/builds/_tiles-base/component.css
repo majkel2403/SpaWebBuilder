@@ -1,0 +1,12 @@
+/* ---------- live tiles ---------- */
+.bld-tiles { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: clamp(26px, 3.6vw, 46px); }
+.card.bld-tile { display: flex; flex-direction: column; min-height: 244px; border-radius: 13px; background: linear-gradient(180deg, rgba(22, 12, 30, .9), rgba(9, 5, 14, .92)); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05); }
+.bld-th { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 16px 0; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--bld-k); }
+.bld-th b { color: var(--ink); font-weight: 700; } .bld-th i { color: var(--pink); font-style: normal; font-weight: 700; margin-right: 8px; text-shadow: 0 0 10px rgba(255, 46, 110, .6); }
+.bld-th em { --oh: 1.3em; font-style: normal; color: var(--pink2); font-variant-numeric: tabular-nums; }
+.bld-tb { padding: 13px 16px 15px; flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.bld-tn { margin-top: auto; padding-top: 10px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 9.5px; letter-spacing: .06em; color: var(--bld-k); }
+.bld-tn span { display: inline-flex; align-items: center; gap: 6px; } .bld-tn .bld-tn-r { margin-left: auto; }
+.bld-tn i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+.bld-k1, .bld-b1 { background: var(--pink); box-shadow: 0 0 8px var(--pink); } .bld-k2 { background: var(--amber); box-shadow: 0 0 8px var(--amber); } .bld-k3 { background: var(--green); box-shadow: 0 0 8px var(--green); }
+

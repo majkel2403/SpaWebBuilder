@@ -1,12 +1,7 @@
 # hero / backdrop-fx
-A CSS-only hero backdrop: a spinning conic-gradient aura, a masked dot grid, a travelling scan bar, a vignette and the hot-pink glowing rule with a moving highlight. Everything is compositor-only (transform / rotate / opacity) and pauses off-screen via core.
+Unit of the section hero/full-section: the CSS-only backdrop (aura, grid, scan bar) with vignette and rule. It is a chunk of the real source (derived), not a copy; edits here change the main page.
 
 ## Reuse
-Copy this folder plus `engine.js`, `core.js` and `base.css` (from `src/`), put component.html in a container (width about 1100px), include component.css and (no script needed), and call `JEV.boot()`. Markup `.hero-bg > i.hero-aura + i.hero-grid + i.hero-scan`, `.hero-vig`, `.hero-rule`. Set `--hero-jx` / `--hero-jy` on the parent to move the aura centre. `body.killed` shifts the colours to red.
+Copy this folder plus engine/core/base and the units in compose (hero/_bf-pre, hero/_vig, hero/_bf-mid, hero/_rule, hero/_bf-post). Pure css, no js.
 
-## Data
-None (no JS). Press `k` (core shortcut) to see the kill tint.
-
-## Swap in real data
-Not applicable: purely decorative.
 Everything shown is simulated; no orders are placed.

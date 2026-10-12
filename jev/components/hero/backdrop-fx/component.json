@@ -1,1 +1,25 @@
-{"title":"Hero backdrop effects","description":"A CSS-only hero backdrop: spinning conic aura, dot grid, scanning bar, vignette and a glowing hot-pink rule.","width":"1100px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"]}
+{
+  "title": "Hero backdrop effects",
+  "description": "The real CSS-only hero backdrop: spinning conic aura, dot grid, scanning bar, vignette and the glowing hot-pink rule. Markup and css are the section's own chunks.",
+  "width": "1100px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "section": "hero/full-section",
+  "derived": true,
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "compose": [
+    "hero/_bf-pre",
+    "self",
+    "hero/_vig",
+    "hero/_bf-mid",
+    "hero/_rule",
+    "hero/_bf-post"
+  ]
+}

@@ -14,5 +14,7 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "derived": false,
+  "derivedNote": "the arcs and comets are drawn by drawA() together with the mascots, orbits and loop in build-trio; no separable chunk"
 }

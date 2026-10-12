@@ -1,49 +1,3 @@
-/* hour / backtest-bars — 1,840 seeded trades as thin up (win) / down (loss) bars, the running total riding above them and the pulsing -22% drawdown block.
- * Hover / touch scrubs a crosshair with a tooltip (trade #, outcome, total, drawdown from peak); click or Enter pins one; arrows / Home / End / Esc work from the keyboard.
- *
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod  J.$ J.$$ J.TAU J.clamp J.fmt J.rng  J.fit J.watch J.task J.onView J.countTo  J.DPR J.reduce J.tier  J.bus 'tier'.
- * Data: buildBT() generates the seeded trades (calibrated so the printed 58% green / 31% a year / -22% worst are the data's own numbers).
- * Everything is simulated.
- */
-JEV.mod('hour-backtest-bars', () => {
-  const J = JEV, $ = J.$, $$ = J.$$, TAU = J.TAU, clamp = J.clamp, fmt = J.fmt;
-  const root = $('#hr-c');
-  if (!root) return;
-  const reduce = J.reduce;
-  const MONO = (getComputedStyle(document.documentElement).getPropertyValue('--mono') || 'monospace').trim();
-  const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
-  /* ---------- shared helpers ---------- */
-  /** J.fit, corrected for ancestors that are mid-transform (.rv reveal scales the box, which would make getBoundingClientRect lie) */
-  function fitC(c) {
-    const f = J.fit(c), cw = c.clientWidth, ch = c.clientHeight;
-    if (cw > 0 && ch > 0 && (cw !== f.W || ch !== f.H)) {
-      const w = Math.round(cw * J.DPR), h = Math.round(ch * J.DPR);
-      if (c.width !== w) c.width = w;
-      if (c.height !== h) c.height = h;
-      f.g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); f.W = cw; f.H = ch;
-    }
-    return f;
-  }
-  const SPR = {};
-  /** pre-rendered additive glow sprite (white core -> colour -> transparent) */
-  function glow(hex) {
-    if (SPR[hex]) return SPR[hex];
-    const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
-    const c = document.createElement('canvas'); c.width = c.height = 64;
-    const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.16, 'rgba(' + r + ',' + g + ',' + b + ',.95)');
-    gr.addColorStop(0.5, 'rgba(' + r + ',' + g + ',' + b + ',.26)'); gr.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
-    x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
-    return (SPR[hex] = c);
-  }
-  const blit = (g, hex, x, y, r, a) => { g.globalAlpha = a; g.drawImage(glow(hex), x - r, y - r, r * 2, r * 2); };
-  /** count-up that settles with a one-off glow (bounded timers, started from onView only) */
-  const countUp = (b, dur, delay, f) => setTimeout(() => {
-    J.countTo(b, +b.dataset.to, { dur, fmt: f });
-    if (!reduce) setTimeout(() => b.classList.add('hr-done'), dur + 60);
-  }, delay);
-
   /* =====================================================================
    * C · the backtest — 1,840 seeded trades, calibrated so the printed stats are the data's own
    * ===================================================================== */
@@ -141,7 +95,7 @@ JEV.mod('hour-backtest-bars', () => {
   J.watch(btBox, layoutC);
   setTimeout(() => {
     bt = buildBT(); const sb = $$('b', $('#hr-c-stats'));
-    sb[1].dataset.to = String(Math.round(bt.annual)); sb[2].dataset.to = String(-Math.round(bt.worst * 100)); setT($('.hr-badge', root), Math.round(bt.annual) + '% / yr');
+    sb[1].dataset.to = String(Math.round(bt.annual)); sb[2].dataset.to = String(-Math.round(bt.worst * 100)); setT($('.hr-c .hr-badge'), Math.round(bt.annual) + '% / yr');
     layoutC();
   }, reduce ? 0 : 500);
 
@@ -271,5 +225,3 @@ JEV.mod('hour-backtest-bars', () => {
   };
   J.task(btBox, renderC);
 
-  J.bus.on('tier', () => { if (bt) layoutC(); });
-});

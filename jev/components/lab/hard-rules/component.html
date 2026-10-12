@@ -1,13 +1,10 @@
-<div class="lab" id="lab-hr">
-  <section class="card lab-st" data-c="orange" aria-labelledby="lab-hr-t">
-    <i class="lab-edge" aria-hidden="true"></i>
-    <div class="lab-ph"><span class="lab-tag" id="lab-hr-t">hard rules</span><span class="lab-ps">held by code, not the model</span></div>
-    <div class="lab-sub"><span>confidence floor</span><i></i></div>
-    <div class="lab-floorrow"><div class="lab-row lab-row-floor" data-c="orange" data-label="floor" data-min="0.5" data-max="0.99" data-step="0.01" data-value="0.85" data-dec="2" data-mark="0.85"></div></div>
-    <div class="lab-sub"><span>stop</span><i></i></div>
-    <button class="lab-sw lab-kill" type="button" role="switch" aria-checked="false" data-c="red"><i class="tg"></i><span class="lab-sw-t"><b>kill switch</b><small id="lab-hr-ks">armed &middot; orders flow</small></span></button>
-    <div class="lab-sub"><span>caps</span><i></i></div>
-    <div class="lab-caps" id="lab-hr-caps"><span>daily loss cap <b>$2,000</b></span><span>max position <b>4%</b></span></div>
-    <p class="lab-why" id="lab-hr-why" aria-live="polite">&hellip;</p>
-  </section>
-</div>
+            <div class="lab-lw">
+              <div class="lab-sub"><span>hard rules</span><i></i><em>held by code, not the model</em></div>
+              <div class="lab-rules">
+                <div class="lab-floorrow" id="lab-floorrow"></div>
+                <button class="lab-sw lab-kill" id="lab-kill" type="button" role="switch" aria-checked="false" data-c="red">
+                  <i class="tg"></i><span class="lab-sw-t"><b>kill switch</b><small id="lab-kill-s">armed &middot; orders flow</small></span>
+                </button>
+                <div class="lab-caps"><span>daily loss cap <b>$2,000</b></span><span>max position <b>4%</b></span></div>
+              </div>
+            </div>

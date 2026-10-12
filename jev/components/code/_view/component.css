@@ -1,0 +1,9 @@
+.code-view { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) 26px; position: relative; z-index: 1; }
+.code-body { position: relative; height: calc(var(--code-rows) * var(--code-lh) + 16px); overflow-x: auto; overflow-y: hidden; font: 400 var(--code-fs)/var(--code-lh) var(--mono); outline: none; scrollbar-width: thin; scrollbar-color: var(--code-sb) transparent; overscroll-behavior-x: contain; }
+.code-body:focus-visible { box-shadow: inset 0 0 0 2px var(--code-caret); }
+/* soft top/bottom edge of the scrolling code (plain gradients: cheap to composite, unlike masks) */
+.code-view::before, .code-view::after { content: ''; position: absolute; left: 0; right: 26px; z-index: 3; pointer-events: none; }
+.code-view::before { top: 0; height: 10px; background: linear-gradient(180deg, var(--code-fade, transparent), transparent); }
+.code-view::after { bottom: 0; height: 6px; background: linear-gradient(0deg, var(--code-fade, transparent), transparent); }
+.code-doc { position: relative; min-width: 100%; width: max-content; padding: 8px 0; will-change: transform; }
+.code-src { margin: 0; padding: 0 16px 0 14px; font: inherit; white-space: pre; }

@@ -1,0 +1,113 @@
+    <div class="bld-stage bld-pre" id="bld-stage" role="group" aria-label="Diagram: ten builds feed one decision layer, which asks three typed questions, gives five decisions, and passes them through hard rules held by code. Simulated.">
+      <canvas class="bld-cv" id="bld-cv" aria-hidden="true"></canvas>
+      <div class="bld-flow">
+
+        <div class="bld-hub" id="bld-hub">
+          <div class="bld-col" id="bld-colL"></div>
+
+          <div class="bld-core" id="bld-core" style="--d:.05s">
+            <i class="bld-halo" aria-hidden="true"></i>
+            <i class="bld-sweep" aria-hidden="true"></i>
+            <i class="bld-ring bld-ring-a" aria-hidden="true"></i>
+            <i class="bld-ring bld-ring-b" aria-hidden="true"></i>
+            <i class="bld-flash" id="bld-flash" aria-hidden="true"></i>
+            <div class="bld-core-box" id="bld-core-box">
+              <i class="bld-spin" aria-hidden="true"></i>
+              <div class="bld-core-in">
+                <div class="bld-core-hd"><span>jev &middot; system one</span><b id="bld-core-st">armed</b></div>
+                <div class="bld-core-body">
+                  <span class="bld-wmw" id="bld-wmw"><span class="glitch bld-wm" id="bld-wm" data-text="JEV">JEV</span><span class="bld-wm-h" aria-hidden="true">JEV</span></span>
+                  <span class="bld-core-sub">typed questions &middot; probabilities out</span>
+                  <span class="bld-pd"><span class="bld-dots" aria-hidden="true"><i data-p="0"></i><i data-p="1"></i><i data-p="2"></i></span><b class="bld-chip" id="bld-chip" data-a="buy" title="last action (simulated)">buy</b></span>
+                  <span class="bld-last" id="bld-last" data-d="execute">BTC-PERP &middot; buy &middot; 0.93 &rarr; execute</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bld-col" id="bld-colR"></div>
+        </div>
+
+        <div class="bld-gap"><span>jev asks three typed questions</span><span class="bld-gap-r">choice &middot; score &middot; flag</span></div>
+
+        <div class="bld-prims" id="bld-prims">
+          <article class="bld-card bld-p" data-c="pink" data-p="0" style="--d:.5s">
+            <div class="bld-ci"><div class="bld-hd"><b>which one?</b><i>choice</i></div>
+              <div class="bld-rw"><span>answer</span><b class="bld-v">buy</b></div>
+              <div class="bld-rw"><span>conf</span><b class="bld-c">0.93</b></div></div><i class="bld-m"><i></i></i>
+          </article>
+          <article class="bld-card bld-p" data-c="pink" data-p="1" style="--d:.58s">
+            <div class="bld-ci"><div class="bld-hd"><b>how much?</b><i>score</i></div>
+              <div class="bld-rw"><span>bucket</span><b class="bld-v">1%</b></div>
+              <div class="bld-rw"><span>p(top)</span><b class="bld-c">0.61</b></div></div><i class="bld-m"><i></i></i>
+          </article>
+          <article class="bld-card bld-p" data-c="pink" data-p="2" style="--d:.66s">
+            <div class="bld-ci"><div class="bld-hd"><b>yes or no?</b><i>flag</i></div>
+              <div class="bld-rw"><span>risk_ok</span><b class="bld-v">yes</b></div>
+              <div class="bld-rw"><span>p(yes)</span><b class="bld-c">0.95</b></div></div><i class="bld-m"><i></i></i>
+          </article>
+        </div>
+
+        <div class="bld-gap"><span>five answers code acts on</span><span class="bld-gap-r">enter &middot; size &middot; route &middot; exit &middot; flatten</span></div>
+
+        <div class="bld-decs" id="bld-decs">
+          <article class="bld-card bld-d" data-c="green" data-m="0" style="--d:.78s">
+            <div class="bld-ci"><div class="bld-hd"><b>enter</b><i>choice</i></div>
+              <div class="bld-rw"><span>side</span><b class="bld-v">buy</b></div>
+              <div class="bld-rw"><span>conf</span><b class="bld-c">0.93</b></div></div><i class="bld-m"><i></i></i>
+          </article>
+          <article class="bld-card bld-d" data-c="blue" data-m="1" style="--d:.84s">
+            <div class="bld-ci"><div class="bld-hd"><b>size</b><i>score</i></div>
+              <div class="bld-rw"><span>bucket</span><b class="bld-v">1%</b></div>
+              <div class="bld-rw"><span>p(top)</span><b class="bld-c">0.61</b></div></div><i class="bld-m"><i></i></i>
+          </article>
+          <article class="bld-card bld-d" data-c="yellow" data-m="2" style="--d:.9s">
+            <div class="bld-ci"><div class="bld-hd"><b>route</b><i>choice</i></div>
+              <div class="bld-rw"><span>venue</span><b class="bld-v">okx</b></div>
+              <div class="bld-rw"><span>dest</span><b class="bld-c" data-d="execute">execute</b></div></div><i class="bld-m"><i></i></i>
+          </article>
+          <article class="bld-card bld-d" data-c="green" data-m="3" style="--d:.96s">
+            <div class="bld-ci"><div class="bld-hd"><b>exit</b><i>choice</i></div>
+              <div class="bld-rw"><span>action</span><b class="bld-v">hold</b></div>
+              <div class="bld-rw"><span>p(close)</span><b class="bld-c">0.04</b></div></div><i class="bld-m"><i></i></i>
+          </article>
+          <article class="bld-card bld-d" data-c="blue" data-m="4" style="--d:1.02s">
+            <div class="bld-ci"><div class="bld-hd"><b>flatten</b><i>flag</i></div>
+              <div class="bld-rw"><span>flatten?</span><b class="bld-v">no</b></div>
+              <div class="bld-rw"><span>p(yes)</span><b class="bld-c">0.02</b></div></div><i class="bld-m"><i></i></i>
+          </article>
+        </div>
+
+        <div class="bld-gap"><span>code gates every answer</span><span class="bld-gap-r">below the floor &rarr; human review</span></div>
+
+        <div class="bld-rules-w">
+          <article class="bld-card bld-rules" id="bld-rules" data-c="yellow" style="--d:1.15s">
+            <div class="bld-ci">
+              <div class="bld-hd"><b>thresholds + hard rules</b><i>code</i></div>
+              <div class="bld-rl">
+                <div class="bld-rc" data-r="floor"><span>floor</span><b id="bld-r-floor">0.85</b></div>
+                <div class="bld-rc" data-r="cap"><span>loss cap</span><b id="bld-r-cap">$2,000</b></div>
+                <div class="bld-rc" data-r="pos"><span>max position</span><b id="bld-r-pos">4%</b></div>
+                <div class="bld-rc" data-r="kill"><span>kill switch</span><b id="bld-r-kill" class="up">armed</b></div>
+              </div>
+              <div class="bld-rw"><span>plumbing</span><b>your call</b></div>
+            </div>
+          </article>
+        </div>
+
+      </div>
+      <div class="bld-tip" id="bld-tip" role="tooltip" aria-hidden="true">
+        <div class="bld-tip-h"><b id="bld-tip-n">entry</b><i id="bld-tip-p">choice</i></div>
+        <dl>
+          <div><dt>last answer</dt><dd id="bld-tip-a">buy BTC</dd></div>
+          <div><dt>confidence</dt><dd id="bld-tip-c">0.93</dd></div>
+          <div><dt>typed answer</dt><dd id="bld-tip-m">3.2 ms</dd></div>
+          <div><dt>gate</dt><dd id="bld-tip-g">execute</dd></div>
+        </dl>
+        <p id="bld-tip-f">simulated &middot; click or enter pins its stream</p>
+      </div>
+      <p class="bld-fig" aria-hidden="true"><i></i>fig 02 &middot; ten builds in, one decision out &middot; simulated</p>
+    </div>
+
+    <p class="bld-cap">ten builds. <em>one decision layer.</em></p>
+

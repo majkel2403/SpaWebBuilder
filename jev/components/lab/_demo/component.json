@@ -1,0 +1,8 @@
+{
+  "hidden": true,
+  "standalone": true,
+  "note": "only used in the standalone pages of the lab atoms, not part of the section",
+  "js": [
+    "component.js"
+  ]
+}

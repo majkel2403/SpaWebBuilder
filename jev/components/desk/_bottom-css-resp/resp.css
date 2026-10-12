@@ -1,0 +1,12 @@
+@media (max-width: 700px) {
+  .dkb-cvw { min-height: 236px; }
+  .dkb-bv { font-size: 52px; }
+  .dkb-pool { margin-left: 0; }
+}
+@media (pointer: coarse) {
+  .dkb-more { min-height: 40px; padding: 0 16px; top: 6px; }
+  .dkb-live { min-height: 40px; padding: 0 14px; }
+  .dkb-ch { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .dkb-halt { animation: none; } .dkb-r.new { animation: none; } .dkb-r.new::before { animation: none; opacity: 0; } .dkb-r.new::after, .dkb-r.new .dkb-ag, .dkb-r.new .dkb-ms, .dkb-j.new { animation: none; } .dkb-rain { display: none; } .dkb-more { animation: none; } .dkb-tip { transition: none; } }
+

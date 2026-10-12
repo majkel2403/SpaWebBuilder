@@ -1,0 +1,9 @@
+/* minimap (a tiny canvas of coloured line stubs + the viewport window) */
+.code-mm { position: relative; border-left: 1px solid var(--code-hair); background: var(--code-mmbg); overflow: hidden; }
+.code-mm canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.code-mm { cursor: pointer; touch-action: none; -webkit-user-select: none; user-select: none; }
+.code-mm i { position: absolute; left: 1px; right: 1px; top: 0; height: 56px; border-radius: 2px; border: 1px solid var(--code-mmv); background: var(--code-mmvf); will-change: transform; transition: background-color .2s, border-color .2s; }
+.code-mm:hover i, .code-mm.drag i { background: var(--code-mmvh, var(--code-mmvf)); border-color: var(--code-mmvc, var(--code-mmv)); }
+.code-mm b { position: absolute; left: 0; right: 0; top: -1px; height: 3px; background: var(--code-bandc); opacity: .9; box-shadow: 0 0 6px var(--code-gut-t, transparent); pointer-events: none; transition: transform .34s cubic-bezier(.22, 1.18, .36, 1); will-change: transform; }
+.code-term + .code-mm b { display: none; }
+

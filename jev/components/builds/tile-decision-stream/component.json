@@ -1,11 +1,13 @@
 {
+  "section": "builds/full-section",
   "title": "Decision stream tile",
   "description": "A live list of the newest decisions from every build with primitive tag, action, confidence and the gate result (execute, review or skip).",
   "width": "398px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
+  "derived": true,
   "html": [
     "component.html"
   ],
@@ -14,5 +16,18 @@
   ],
   "js": [
     "component.js"
+  ],
+  "compose": [
+    "builds/_head",
+    "builds/_stub",
+    "builds/_tiles-base",
+    "builds/value-bubble",
+    "builds/_tiles-open",
+    "self",
+    "builds/_tiles-close",
+    "builds/_drive",
+    "builds/_end",
+    "builds/_responsive",
+    "builds/_one-col"
   ]
 }

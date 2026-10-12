@@ -1,4 +1,3 @@
-/* hero / backdrop-fx — CSS-only hero backdrop: spinning conic aura, dot grid, scan bar, vignette, glowing rule with a travelling highlight. Prefix hero-. */
 /* ---- background FX (compositor-only: transforms + opacity) ---- */
 .hero-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .hero-bg > i { position: absolute; display: block; }
@@ -13,19 +12,3 @@
 @keyframes heroScan { from { transform: translateX(-220px); } to { transform: translateX(110vw); } }
 .hero-vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(130% 100% at 50% 46%, transparent 52%, rgba(5, 3, 10, .72) 100%), linear-gradient(180deg, rgba(5, 3, 10, .55), transparent 12%, transparent 88%, rgba(5, 3, 10, .6)); }
 
-/* ---- the hot-pink rule under the stage ---- */
-.hero-rule { position: relative; height: 1px; background: linear-gradient(90deg, rgba(255, 46, 110, 0), var(--pink) 16%, #ff9cc4 50%, var(--pink) 84%, rgba(255, 46, 110, 0));
-  box-shadow: 0 0 12px 1px rgba(255, 46, 110, .75), 0 0 46px 5px rgba(255, 46, 110, .32), 0 -10px 40px rgba(255, 46, 110, .12); }
-.hero-rule::after { content: ''; position: absolute; left: 0; top: -1px; height: 3px; width: 22%; background: linear-gradient(90deg, transparent, #fff, transparent); opacity: .85; filter: blur(.6px); animation: heroRule 6.5s linear infinite; will-change: transform; }
-@keyframes heroRule { from { transform: translateX(-100%); } to { transform: translateX(460%); } }
-body.killed .hero-rule { background: linear-gradient(90deg, rgba(255, 77, 94, 0), var(--red) 16%, #ff9aa4 50%, var(--red) 84%, rgba(255, 77, 94, 0)); box-shadow: 0 0 12px 1px rgba(255, 77, 94, .8), 0 0 46px 5px rgba(255, 60, 80, .35); }
-body.killed .hero-aura { filter: hue-rotate(14deg) saturate(1.2); }
-
-@media (max-width: 699px) { .hero-grid { background-size: 20px 20px; } }
-@media (prefers-reduced-motion: reduce) { .hero-aura, .hero-scan, .hero-rule::after { animation: none; } .hero-bg > .hero-scan { display: none; } }
-.hbf-stage { position: relative; height: clamp(300px, 52vh, 480px); overflow: hidden; border-radius: 14px 14px 0 0; background: radial-gradient(90% 70% at 50% 46%, #14061a 0%, #08040d 56%, #05030a 100%); --hero-jx: 40%; --hero-jy: 50%; display: flex; align-items: center; justify-content: center; }
-.hbf-stage .hero-bg { z-index: 0; }
-.hbf-stage .hero-rule { position: absolute; left: 0; right: 0; bottom: 0; }
-.hbf-note { position: relative; z-index: 2; max-width: 46ch; padding: 0 16px; text-align: center; font-size: 11px; line-height: 1.7; letter-spacing: .06em; color: #b3a8be; }
-.hbf-note b { color: var(--pink2); letter-spacing: .2em; text-transform: uppercase; }
-.hbf-note kbd { font: inherit; border: 1px solid rgba(255, 255, 255, .25); border-radius: 3px; padding: 0 5px; }

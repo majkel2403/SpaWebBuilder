@@ -1,9 +1,11 @@
 # builds / tile-cost
-Serif odometer of the running simulated cost with decisions count, cost each and a zero-token line.
+**Derived atom, a real chunk of `builds/full-section`.** The "cost this run" tile: serif odometer of the simulated running cost.
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js` and `base.css` (from `src/`), include component.html/css/js in a page (inside a width-limited container) and call `JEV.boot()`. Everything is simulated.
+This folder holds html, css and script of tile (3). The files here are not hand-made copies: they are consecutive pieces of the section's original source (see `components/UNITS.md`). The main page (`node jev/build.mjs`) is built from these same chunks, so editing them changes the page; do not edit a copy.
 
-## Data
-Consumes JEV.S.cost and JEV.S.count (updated by core on every decision); bus decision triggers the refresh. Replace with your own totals in updCost().
-To use real data: call `JEV.bus.emit('decision', d)` with records in the documented shape (see the main README) instead of the simulated stream.
+## Standalone page
+`compose`: `builds/_head` + `builds/_stub` + `builds/_tiles-base` + `builds/odometer` + `builds/value-bubble` + `builds/_tiles-open` + `self` + `builds/_tiles-close` + `builds/_drive` + `builds/_end` + `builds/_responsive` + `builds/_one-col` (`self` = the chunk files of this folder; `builds/_stub`, `builds/_one-col`, `builds/_drive`, `builds/_shim-latency` and `builds/_demo-odometer` are small harness units that exist only for standalone pages and are not part of the section).
+Rebuild with `node jev/build-components.mjs --only builds/tile-cost`.
+
+## Reuse elsewhere
+Copy this folder and every unit folder listed in `compose`, plus the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css` (and `fx.js` / `fx.css` when `needs.fx` is true: the `.rv` reveal is driven by it); join the chunks in `compose` order (html, css, js each joined with ''), put the js in one <script> and call `JEV.boot()`. Everything is simulated; feed real data with `JEV.bus.emit('decision', d)`.

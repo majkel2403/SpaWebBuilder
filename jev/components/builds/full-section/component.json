@@ -6,14 +6,93 @@
     "fx": true,
     "hud": false
   },
-  "html": [
-    "component.html"
+  "sourceOfTruth": true,
+  "units": [
+    "builds/_end",
+    "builds/_frame",
+    "builds/_head",
+    "builds/_hub-css",
+    "builds/_hub-html",
+    "builds/_hub-post",
+    "builds/_hub-pre",
+    "builds/_hub-spectacle",
+    "builds/_reduce",
+    "builds/_responsive",
+    "builds/_ribbons",
+    "builds/_rules-readout",
+    "builds/_tail",
+    "builds/_tail-init",
+    "builds/_tiles-base",
+    "builds/_tiles-close",
+    "builds/_tiles-enter",
+    "builds/_tiles-open",
+    "builds/circuit-traces",
+    "builds/odometer",
+    "builds/section-head-stats",
+    "builds/tile-code-owns",
+    "builds/tile-cost",
+    "builds/tile-decision-stream",
+    "builds/tile-latency",
+    "builds/tile-primitive-mix",
+    "builds/tile-where-it-runs",
+    "builds/value-bubble"
   ],
-  "css": [
-    "component.css"
-  ],
-  "js": [
-    "component.js"
-  ],
-  "sourceOfTruth": true
+  "order": {
+    "html": [
+      "builds/_head",
+      "builds/section-head-stats",
+      "builds/_hub-html",
+      "builds/_tiles-open",
+      "builds/circuit-traces",
+      "builds/tile-decision-stream",
+      "builds/tile-latency",
+      "builds/tile-cost",
+      "builds/tile-primitive-mix",
+      "builds/tile-where-it-runs",
+      "builds/tile-code-owns",
+      "builds/_tiles-close",
+      "builds/_end"
+    ],
+    "css": [
+      "builds/_head",
+      "builds/section-head-stats",
+      "builds/_hub-css",
+      "builds/_tiles-base",
+      "builds/odometer",
+      "builds/value-bubble",
+      "builds/tile-decision-stream",
+      "builds/tile-latency",
+      "builds/tile-cost",
+      "builds/tile-primitive-mix",
+      "builds/tile-where-it-runs",
+      "builds/tile-code-owns",
+      "builds/_end",
+      "builds/_responsive",
+      "builds/_hub-spectacle",
+      "builds/circuit-traces",
+      "builds/_reduce"
+    ],
+    "js": [
+      "builds/_head",
+      "builds/odometer",
+      "builds/_hub-pre",
+      "builds/_ribbons",
+      "builds/_hub-post",
+      "builds/value-bubble",
+      "builds/tile-decision-stream",
+      "builds/tile-latency",
+      "builds/tile-cost",
+      "builds/tile-primitive-mix",
+      "builds/tile-where-it-runs",
+      "builds/tile-code-owns",
+      "builds/_tiles-enter",
+      "builds/section-head-stats",
+      "builds/_rules-readout",
+      "builds/_tail",
+      "builds/_tail-init",
+      "builds/circuit-traces",
+      "builds/_frame",
+      "builds/_end"
+    ]
+  }
 }

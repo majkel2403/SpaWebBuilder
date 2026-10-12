@@ -1,0 +1,15 @@
+{
+  "title": "_bottom-head",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "html": [
+    "head.html"
+  ],
+  "css": [
+    "head.css"
+  ],
+  "js": [
+    "head.js"
+  ],
+  "newScript": true
+}

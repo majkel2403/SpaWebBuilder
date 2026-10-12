@@ -1,0 +1,7 @@
+/* ===== hour — "three agents, sixty minutes, one bot": build · hour · backtest · arithmetic · honest part (prefix hr-) ===== */
+.hr { position: relative; overflow-x: clip; --hr-k: #aaa1b8; --hr-t: #e9e3ef; --hr-line: rgba(255, 255, 255, .085);
+  --hr-glass: linear-gradient(180deg, rgba(23, 14, 30, .9), rgba(9, 5, 14, .94)); }
+.hr-bgl { position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(60% 24% at 50% 8%, rgba(255, 138, 61, .08), transparent 72%), radial-gradient(45% 20% at 12% 58%, rgba(77, 141, 255, .06), transparent 70%),
+    radial-gradient(45% 20% at 88% 82%, rgba(166, 107, 255, .07), transparent 70%); }
+.hr .wrap { z-index: 1; }

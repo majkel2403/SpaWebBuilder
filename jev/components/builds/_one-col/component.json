@@ -1,0 +1,6 @@
+{
+  "hidden": true,
+  "harness": true,
+  "note": "Harness for single-tile standalone pages (NOT part of the section).",
+  "css": ["component.css"]
+}

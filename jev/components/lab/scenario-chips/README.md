@@ -1,21 +1,15 @@
 # lab / scenario-chips
 
-A wrapping row of preset chips with stroke icons, a pink pressed state with a dot, a dashed random chip with an R key hint, hover lift and a pop on pick. Picking a chip builds a nine-field simulated market state, runs `JEV.decide()` on it and prints the verdict (action, size, confidence, destination) plus the key inputs.
+The SCENARIO row of the STATE card: seven preset buttons (trend, mean-revert, wide book, stale feed, reversal, stress, random + R shortcut) that glide all nine sliders to a preset and run a decision.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
 
-## Markup
-```html
-<div class="lab-presets" role="group" aria-label="scenario presets">
-  <button class="lab-sc" type="button" aria-pressed="false" data-p="trend"><svg class="lab-sc-i" viewBox="0 0 16 16">…</svg><span>trend</span></button>
-  <button class="lab-sc lab-sc-r" type="button" aria-pressed="false" data-p="random">…<kbd class="lab-kbd">R</kbd></button>
-</div>
-```
-`aria-pressed="true"` is the selected look. Rename chips by editing `data-p` + the `PRESETS` table in `component.js` (nine numbers in the order edge, imbalance, spread, vol, position, pnl, drawdown, latency, age).
+* own chunks: html, css, js
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/scenario-chips`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Emits `JEV.bus 'lab-preset' {name, state}`. Uses `JEV.decide(state)` and, for random, `JEVEngine.sampleState`.
-
-## Swap in real data
-Replace `PRESETS` with your own scenarios (or recorded states) and handle `lab-preset` yourself; drop the `JEV.decide` preview if you do not need it.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

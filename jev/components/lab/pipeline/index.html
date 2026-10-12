@@ -245,9 +245,31 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
+/* ===== lab — the interactive finale: state sliders · scenarios · decide · hard rules · live pipeline (prefix lab-) ===== */
 @property --lab-v { syntax: '<number>'; inherits: true; initial-value: 0; }
+
 .lab { position: relative; overflow-x: clip; --lab-k: #aaa1b8; --lab-t: #ece6f1; --lab-line: rgba(255, 255, 255, .09); --lab-line2: rgba(255, 255, 255, .16);
   --lab-glass: linear-gradient(180deg, rgba(24, 14, 31, .93), rgba(9, 5, 14, .96)); --lab-gap: 44px; }
+.lab-bgl { position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(50% 26% at 16% 12%, rgba(255, 46, 110, .11), transparent 70%), radial-gradient(44% 24% at 88% 38%, rgba(77, 141, 255, .075), transparent 70%),
+    radial-gradient(40% 22% at 58% 94%, rgba(46, 230, 166, .06), transparent 70%); }
+.lab .wrap { z-index: 1; }
+.lab .h2 { max-width: 24ch; font-size: clamp(26px, 4.2vw, 56px); }
+.lab-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.lab-pill { padding: 5px 12px; font-size: 10px; letter-spacing: .12em; color: var(--lab-k); }
+.lab-pill .lamp { width: 6px; height: 6px; }
+
+/* ---------- grid ---------- */
+.lab-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.lab-left { display: contents; }
+.lab-ctl { order: 1; } .lab-pipe { order: 2; } .lab-tape { order: 3; }
+@media (min-width: 1180px) {
+  .lab-grid { grid-template-columns: minmax(390px, 436px) minmax(0, 1fr); gap: 18px; }
+  .lab-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .lab-ctl, .lab-pipe, .lab-tape { order: 0; }
+  .lab-left { align-self: start; position: sticky; top: 76px; }
+}
+
 /* ---------- shared glass ---------- */
 .lab-ctl, .lab-st, .lab-tape { background: var(--lab-glass); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: rgba(var(--cc-rgb, 255, 255, 255), .22);
   box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .04); isolation: isolate; }
@@ -257,6 +279,7 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .lab-ps { flex: 1 1 120px; min-width: 0; letter-spacing: .14em; }
 .lab-bdg { display: inline-flex; align-items: center; gap: 7px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--lab-line2); background: rgba(255, 255, 255, .03); letter-spacing: .14em; white-space: nowrap; }
 .lab-bdg .lamp { width: 6px; height: 6px; }
+
 /* ================= PIPELINE ================= */
 .lab-pipe { position: relative; display: flex; flex-direction: column; gap: var(--lab-gap); padding-left: 36px; min-width: 0; }
 .lab-fx { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
@@ -430,6 +453,8 @@ body.killed .lab-gt-hz { display: block; }
 .lab-dest-r { position: absolute; inset: 0; border-radius: inherit; border: 2px solid var(--cc); opacity: 0; pointer-events: none; }
 .lab-codeline { position: relative; margin-top: 16px; padding-top: 13px; text-align: center; font-size: 11.5px; letter-spacing: .06em; color: var(--lab-t); }
 .lab-codeline::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .16) 0 4px, transparent 4px 9px); }
+
+/* ---------- detail pass : diff · shimmer · tape restore · copy tools ---------- */
 .lab-ft.chg { border-color: rgba(var(--cc-rgb), .75); box-shadow: 0 0 14px -4px rgba(var(--cc-rgb), .8); }
 .lab-ft.chg::after { content: ''; position: absolute; right: 6px; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 8px var(--pink); }
 .lab-diff { margin-top: 7px; padding: 0 11px; font-size: 10.5px; line-height: 1.5; color: var(--lab-k); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -441,15 +466,24 @@ body.killed .lab-gt-hz { display: block; }
 /* live scrubbing: no choreography, quick follow */
 .lab-live .lab-bar u, .lab-live .lab-col u, .lab-live .lab-cb u, .lab-live .lab-gva, .lab-live .lab-gnd, .lab-live .lab-cf, .lab-live .lab-gt-tail { transition-duration: .2s !important; transition-delay: 0s !important; }
 .lab-live .lab-ring { transition-duration: .25s; }
+
+/* ---------- narrow screens ---------- */
 @media (max-width: 700px) {
   .lab { --lab-gap: 30px; }
   .lab-pipe { padding-left: 24px; }
+  .lab-sc { min-height: 42px; padding: 9px 14px; }
   .lab-fts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lab-st { padding: 11px 12px 14px; }
   .lab-ring { width: 80px; height: 80px; }
   .lab-pph .lab-ps { display: none; }
+  .lab-pill { font-size: 9px; }
 }
-@media (max-width: 420px) { .lab-fl-t { padding: 5px 8px; letter-spacing: .06em; } .lab-sh h3 { letter-spacing: .1em; } }
+@media (max-width: 420px) {
+  .lab-fl-t { padding: 5px 8px; letter-spacing: .06em; }
+  .lab-sh h3 { letter-spacing: .1em; }
+}
+@media (hover: none) { .lab-sc:hover { transform: none; } .lab-go { transform: none; } }
+
 /* stage ignition : the card flashes when the pulse reaches it */
 @keyframes lab-ignite { 0% { box-shadow: 0 0 0 2px rgba(var(--cc-rgb), 1), 0 0 110px -4px rgba(var(--cc-rgb), 1), inset 0 0 90px -10px rgba(var(--cc-rgb), 1); } 100% { } }
 html:not([data-tier="1"]) .lab-st.on { animation: lab-ignite .75s ease-out; }
@@ -469,7 +503,18 @@ html[data-tier="3"] .lab-ring::after { opacity: .55; animation: lab-rspin2 5.5s 
 @keyframes lab-sty { 0% { opacity: 1; transform: translateY(110%); } 100% { opacity: 1; transform: translateY(-110%); } }
 html:not([data-tier="1"]) .lab-s2.on .lab-pb li.win .lab-bar u::after { animation: lab-stx .85s cubic-bezier(.4, 0, .2, 1) .15s both; }
 html:not([data-tier="1"]) .lab-s2.on .lab-szc.on .lab-col u::after { animation: lab-sty .85s cubic-bezier(.4, 0, .2, 1) .3s both; }
-@media (prefers-reduced-motion: reduce) { .lab-dest.shim::after { animation: none; opacity: 0; } .lab-ring::after, .lab-bar u::after, .lab-col u::after { display: none; } .lab-st.on { animation: none !important; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-trl, .lab-spk, .lab-ring::after, .lab-bar u::after, .lab-col u::after { display: none; }
+  .lab-fill { animation: none !important; }
+  .lab-st.on { animation: none !important; }
+}
+/* standalone page of a lab atom only (not part of the section) */
+.cmp-stage > .lab.sec { padding: 0; min-height: 0; }
+.cmp-stage > .lab > .wrap { padding-left: 0; padding-right: 0; }
+.lab-mini { display: flex; position: static; margin-top: 0; }
+.lab-ctl, .lab-tape, .lab-pipe { order: 0; }
+.lab .rv { opacity: 1; transform: none; filter: none; }
 
 
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
@@ -479,12 +524,87 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 
 <div class="cmp-stage" style="--cmp-w:1100px">
-<div class="lab" id="lab">
+<section class="sec lab" id="lab" aria-labelledby="lab-h2">
+  <i class="lab-bgl" aria-hidden="true"></i>
+  <div class="wrap">
+
+<div hidden>
+    <header class="sec-head lab-head rv">
+      <div class="eb">05 <i>&middot;</i> the lab</div>
+      <h2 class="h2" id="lab-h2">Put a market in front of <em>Jev</em></h2>
+      <p class="lede">move the sliders, throw the kill switch, drag the floor &mdash; the whole page listens</p>
+      <div class="lab-pills" role="list">
+        <span class="pill lab-pill" role="listitem"><i class="lamp pink"></i>live engine</span>
+        <span class="pill lab-pill" role="listitem">simulated inputs</span>
+        <span class="pill lab-pill" role="listitem">no orders sent</span>
+      </div>
+    </header>
+
+        <!-- ================= STATE : controls ================= -->
+        <aside class="card lab-ctl rv" id="lab-ctl" data-c="pink" aria-labelledby="lab-ctl-t">
+          <i class="lab-edge" aria-hidden="true"></i>
+          <div class="lab-ph"><span class="lab-tag" id="lab-ctl-t">state</span><span class="lab-ps">nine inputs &middot; one simulated market</span><span class="lab-bdg"><i class="lamp pink"></i>sandbox</span></div>
+
+          <div class="lab-sub"><span>scenario</span><i></i></div>
+          <div class="lab-presets" id="lab-presets" role="group" aria-label="scenario presets">
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="trend"><svg class="lab-sc-i" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 11l3.5-4 2.5 2.5L14 4M10.5 4H14v3.5"/></svg><span>trend</span></button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="mean-revert"><svg class="lab-sc-i" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1.5 8c1.6-5 3-5 4.5 0s3 5 4.5 0 2-3.5 4-1.5"/></svg><span>mean-revert</span></button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="wide book"><svg class="lab-sc-i" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3v10M5 5.5L2 8l3 2.5M11 5.5L14 8l-3 2.5"/></svg><span>wide book</span></button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="stale feed"><svg class="lab-sc-i" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="5.5"/><path d="M8 4.8V8l2.2 1.4"/></svg><span>stale feed</span></button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="reversal"><svg class="lab-sc-i" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M4 13V6.5a3 3 0 0 1 6 0V13M7.5 10.5L10 13l2.5-2.5" transform="translate(0 -1)"/></svg><span>reversal</span></button>
+            <button class="lab-sc" type="button" aria-pressed="false" data-p="stress"><svg class="lab-sc-i" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M9 1.8L3.5 9H8l-1 5.2L12.5 7H8z"/></svg><span>stress</span></button>
+            <button class="lab-sc lab-sc-r" type="button" aria-pressed="false" data-p="random"><svg class="lab-sc-i" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><circle cx="5.7" cy="5.7" r=".9" fill="currentColor" stroke="none"/><circle cx="10.3" cy="10.3" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r=".9" fill="currentColor" stroke="none"/></svg><span>random</span><kbd class="lab-kbd" aria-hidden="true">R</kbd></button>
+          </div>
+
+          <div class="lab-sub"><span>inputs</span><i></i><em><u class="lab-dzk"></u>red band trips risk_ok</em></div>
+          <div class="lab-sliders" id="lab-sliders"></div>
+
+          <div class="lab-lower">
+            <div class="lab-lw">
+              <div class="lab-sub"><span>decide</span><i></i></div>
+              <div class="lab-act">
+                <div class="lab-magw" id="lab-magw">
+                  <button class="lab-go" id="lab-go" type="button" aria-describedby="lab-go-h">
+                    <span class="lab-go-t">decide</span><kbd class="lab-kbd" aria-hidden="true">&crarr;</kbd>
+                    <svg class="lab-go-i" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 2.5v11l10-5.5z" fill="currentColor"/></svg>
+                  </button>
+                </div>
+                <button class="lab-sw lab-auto on" id="lab-auto" type="button" role="switch" aria-checked="true" data-c="pink">
+                  <i class="tg"></i><span class="lab-sw-t"><b>auto</b><small id="lab-go-h">re-decide on every input</small></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="lab-lw">
+              <div class="lab-sub"><span>hard rules</span><i></i><em>held by code, not the model</em></div>
+              <div class="lab-rules">
+                <div class="lab-floorrow" id="lab-floorrow"></div>
+                <button class="lab-sw lab-kill" id="lab-kill" type="button" role="switch" aria-checked="false" data-c="red">
+                  <i class="tg"></i><span class="lab-sw-t"><b>kill switch</b><small id="lab-kill-s">armed &middot; orders flow</small></span>
+                </button>
+                <div class="lab-caps"><span>daily loss cap <b>$2,000</b></span><span>max position <b>4%</b></span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lab-mini" id="lab-mini" data-d="execute" aria-hidden="true">
+            <b class="lab-mi-a" id="lab-mi-a">buy</b><span class="lab-mi-s" id="lab-mi-s">1%</span><span class="lab-mi-c" id="lab-mi-c">0.93</span><i class="lab-mi-d" id="lab-mi-d">execute</i>
+          </div>
+        </aside>
+
+        <!-- ================= tape ================= -->
+        <section class="card lab-tape rv" id="lab-tape" data-c="gray" aria-labelledby="lab-tape-t">
+          <div class="lab-ph"><span class="lab-tag" id="lab-tape-t">tape</span><span class="lab-ps">last 5 lab decisions &middot; click a row to restore</span><span class="lab-tools"><button class="lab-cp" id="lab-cp-link" type="button" aria-label="copy link to this simulated scenario"><span class="lab-cp-i"><svg class="a" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6.5 9.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.8.8M9.5 6.5a3 3 0 0 0-4.2 0L3 8.8a3 3 0 0 0 4.2 4.2l.8-.8"/></svg><svg class="b" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></span><span>copy link</span></button><button class="lab-cp" id="lab-cp-json" type="button" aria-label="copy handoff json"><span class="lab-cp-i"><svg class="a" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5.5 2.5c-1.5 0-2 .6-2 2v1.8c0 .9-.5 1.7-1.5 1.7 1 0 1.5.8 1.5 1.700v1.800c0 1.400.5 2 2 2M10.5 2.5c1.500 0 2 .6 2 2v1.800c0 .9.5 1.700 1.500 1.700-1 0-1.500.8-1.500 1.700v1.800c0 1.400-.5 2-2 2"/></svg><svg class="b" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></span><span>copy json</span></button></span></div>
+          <div class="lab-tpw"><ol class="lab-tp" id="lab-tp"></ol></div>
+        </section>
+
+</div>
+      <!-- ================= PIPELINE ================= -->
       <div class="lab-pipe" id="lab-pipe">
         <canvas class="lab-fx" id="lab-fx0" aria-hidden="true"></canvas>
         <canvas class="lab-fx" id="lab-fx1" aria-hidden="true"></canvas>
 
-        <div class="lab-pph">
+        <div class="lab-pph rv">
           <span class="lab-tag">pipeline</span>
           <span class="lab-ps hide-s">state &rarr; encode &rarr; typed questions &rarr; gate &rarr; code</span>
           <span class="lab-stat" id="lab-stat"><i class="lamp"></i><b id="lab-stat-t">ready</b></span>
@@ -492,13 +612,13 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         </div>
 
         <!-- 01 encode -->
-        <section class="card lab-st lab-s1" id="lab-s1" data-c="blue" aria-labelledby="lab-s1-t">
+        <section class="card lab-st lab-s1 rv" id="lab-s1" data-c="blue" aria-labelledby="lab-s1-t">
           <header class="lab-sh"><span class="lab-n">01</span><h3 id="lab-s1-t">encode</h3><span class="lab-sd hide-s">numbers &rarr; features</span><span class="lab-sb" id="lab-s1-b">9 &rarr; 10</span></header>
           <div class="lab-fts" id="lab-fts"></div>
         </section>
 
         <!-- 02 typed questions -->
-        <section class="card lab-st lab-s2" id="lab-s2" data-c="pink" aria-labelledby="lab-s2-t">
+        <section class="card lab-st lab-s2 rv" id="lab-s2" data-c="pink" aria-labelledby="lab-s2-t">
           <header class="lab-sh"><span class="lab-n">02</span><h3 id="lab-s2-t">typed questions</h3><span class="lab-sd hide-s">choice &middot; score &middot; flag</span><span class="lab-sb" id="lab-ms">2.9 ms</span></header>
           <div class="lab-qs">
 
@@ -536,7 +656,7 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         </section>
 
         <!-- 03 the gate -->
-        <section class="card lab-st lab-s3" id="lab-s3" data-c="orange" aria-labelledby="lab-s3-t">
+        <section class="card lab-st lab-s3 rv" id="lab-s3" data-c="orange" aria-labelledby="lab-s3-t">
           <header class="lab-sh"><span class="lab-n">03</span><h3 id="lab-s3-t">the gate</h3><span class="lab-sd hide-s">below the floor goes to a human</span><span class="lab-sb" id="lab-verdict">PASS</span></header>
           <div class="lab-gate">
             <div class="lab-gt" id="lab-gt">
@@ -552,7 +672,7 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         </section>
 
         <!-- 04 code acts -->
-        <section class="card lab-st lab-s4" id="lab-s4" data-c="green" aria-labelledby="lab-s4-t">
+        <section class="card lab-st lab-s4 rv" id="lab-s4" data-c="green" aria-labelledby="lab-s4-t">
           <header class="lab-sh"><span class="lab-n">04</span><h3 id="lab-s4-t">code acts</h3><span class="lab-sd hide-s">plain code &middot; no model in the loop</span><span class="lab-sb" id="lab-s4-b">handoff</span></header>
           <div class="lab-acts">
             <figure class="lab-jsw">
@@ -570,8 +690,9 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         </section>
 
       </div>
-<div class="sr-only" id="lab-sr" aria-live="polite"></div>
-</div>
+    <div class="sr-only" id="lab-sr" aria-live="polite"></div>
+  </div>
+</section>
 
 </div>
 <div class="cmp-note">jev / lab / pipeline</div>
@@ -1213,15 +1334,10 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 </script>
 <script>
-/* Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod J.$ J.$$ J.C J.S J.RULES J.bus J.decide J.setFloor J.fit J.watch J.task J.rgba J.fmt J.sgn J.scramble J.clamp J.lerp J.gauss
- *   J.tier J.reduce J.hidden J.pointer J.scroll J.ACTIONS J.SIZES (optional J.toast).
- * Feed: a built-in demo cycles through six scenarios (trend, wide book, mean-revert, stale feed, reversal, stress) every ~4 s while visible.
- *   Real data: JEV.bus.emit('lab-state', { state: {edge_bps, imbalance, spread_bps, vol_1h, position_pct, daily_pnl, drawdown_pct, latency_ms, signal_age_s},
- *   why: 'decide' | 'scrub' }) - the first such event switches the demo off ('scrub' = live follow, anything else = full cinematic run).
- * Two-way: 'floor' and 'kill' on the bus (the gate marker is draggable and calls J.setFloor).
- */
-JEV.mod('lab-pipeline', () => {
+/* lab — the interactive finale. State sliders + scenarios + hard rules drive the real engine (JEV.decide); the pipeline replays every decision
+ * stage by stage: encode -> typed questions -> gate -> code acts. Two canvases (static ribbons + additive particle layer), WAAPI/CSS for the rest.
+ * Floor + kill switch are two-way synced with the rest of the page over the bus. Everything is simulated. */
+JEV.mod('lab', () => {
   'use strict';
   const J = JEV;
   const root = J.$('#lab');
@@ -1242,6 +1358,7 @@ JEV.mod('lab-pipeline', () => {
   const setTxt = (el, t) => { if (el.textContent !== t) el.textContent = t; };
   const hex2 = (n) => (n & 255).toString(16).padStart(2, '0');
   const rhex = (n) => { let s = ''; while (s.length < n) s += Math.floor(Math.random() * 16).toString(16); return s; };
+
   /* ------------------------------------------------------------------ config ------------------------------------------------------------------ */
   const FIELDS = [
     { k: 'edge_bps', chip: 'edge', min: -40, max: 40, step: 0.5, v: 9, cc: 'pink', dec: 1, sign: 1, bi: 1, mark: 0 },
@@ -1279,20 +1396,95 @@ JEV.mod('lab-pipeline', () => {
   const fmtP = (p) => (p >= 0.995 ? '>99%' : p < 0.005 ? '<1%' : Math.round(p * 100) + '%');
   const fmtSize = (s) => s + '%';
   const snap = (f, v) => +(Math.round((v - f.min) / f.step) * f.step + f.min).toFixed(4);
-  const pipe = $('#lab-pipe');
+
+  /* ------------------------------------------------------------------ refs ------------------------------------------------------------------ */
+  const ctl = $('#lab-ctl'), pipe = $('#lab-pipe');
   const stg = [1, 2, 3, 4].map((i) => $('#lab-s' + i));
+  const go = $('#lab-go'), magw = $('#lab-magw'), autoB = $('#lab-auto'), killB = $('#lab-kill'), killS = $('#lab-kill-s');
+  const miniEl = $('#lab-mini'), miA = $('#lab-mi-a'), miS = $('#lab-mi-s'), miC = $('#lab-mi-c'), miD = $('#lab-mi-d');
   const statT = $('#lab-stat-t'), prog = $('#lab-prog'), srEl = $('#lab-sr');
   const gt = $('#lab-gt'), fl = $('#lab-fl'), flv = $('#lab-fl-v'), cf = $('#lab-cf'), cfv = $('#lab-cf-v'), tail = $('#lab-gt-tail');
   const verdict = $('#lab-verdict'), why = $('#lab-why');
   const ring = $('#lab-ring'), confEl = $('#lab-conf'), pickEl = $('#lab-pick'), pickS = $('#lab-pick-s'), qb = $('#lab-qb');
   const gva = $('#lab-gva'), gnd = $('#lab-gnd'), yn = $('#lab-yn'), yp = $('#lab-yp'), msEl = $('#lab-ms');
   const jsEl = $('#lab-js'), destEl = $('#lab-dest'), destT = $('#lab-dest-t'), destS = $('#lab-dest-s'), destR = $('.lab-dest-r', destEl);
+  const tpEl = $('#lab-tp');
+
+  /* ------------------------------------------------------------------ state ------------------------------------------------------------------ */
   const V = {};
   FIELDS.forEach((f) => (V[f.k] = f.v));
-  let cur = null, seq = 0, tween = null, ct = 0, timers = [], running = false, livePend = 0, liveT = 0;
-  let lv = true, pv = false, pending = false, committed = false;
-  let lastC = null, base = null, demoOn = true, demoT = 0, demoI = 0;
+  let cur = null, auto = true, dirty = false, seq = 0, tween = null, ct = 0, timers = [], running = false;
+  let lv = false, pv = false, pending = false, committed = false, runT0 = 0;
+  const tape = [];
+  let lastC = null, base = null, copyT = 0, hashT = 0, restored = false;
   const files = { execute: [], review: [], skip: [] }, fcount = { execute: 0, review: 0, skip: 0 };
+
+  /* ------------------------------------------------------------------ slider rows ------------------------------------------------------------------ */
+  function buildRow(f, host) {
+    const id = 'lab-in-' + f.k, span = f.max - f.min;
+    const row = document.createElement('div');
+    row.className = 'lab-row'; row.setAttribute('data-c', f.cc); row.setAttribute('data-k', f.k);
+    let dz = '';
+    if (f.dz) dz = '<i class="lab-dz' + (f.dz[0] <= f.min ? ' lo' : '') + '"></i>';
+    const mark = f.mark != null ? '<i class="lab-zero"></i>' : '';
+    row.innerHTML = '<label for="' + id + '">' + f.label + '</label><output id="' + id + '-o" for="' + id + '"></output>' +
+      '<div class="lab-rng"><i class="lab-tr"></i>' + dz + mark + '<i class="lab-trl"></i><i class="lab-fill"></i><b class="lab-bub" aria-hidden="true"></b>' +
+      '<input id="' + id + '" type="range" min="' + f.min + '" max="' + f.max + '" step="' + f.step + '" value="' + f.v + '"></div>';
+    host.appendChild(row);
+    const rng = $('.lab-rng', row);
+    if (f.dz) { rng.style.setProperty('--za', clamp((f.dz[0] - f.min) / span, 0, 1).toFixed(4)); rng.style.setProperty('--zb', clamp((f.dz[1] - f.min) / span, 0, 1).toFixed(4)); }
+    if (f.mark != null) rng.style.setProperty('--zp', clamp((f.mark - f.min) / span, 0, 1).toFixed(4));
+    const r = { f, row, rng, input: $('input', row), out: $('output', row), bub: $('.lab-bub', row), trl: $('.lab-trl', row), hold: 0, lp: null, tail: null, tra: null, sp: null, sk: 0, si: 0, lq: null };
+    paintRow(r, f.v);
+    return r;
+  }
+  /* glowing trail behind the thumb: a pooled element + ONE reusable WAAPI fade per row (no per-input allocation) */
+  function trail(r, p) {
+    const lp = r.lp; r.lp = p;
+    if (lp == null || J.reduce || !HAS_WA || tierN() < 2 || J.hidden() || Math.abs(p - lp) < 0.0012) return;
+    if (r.tail == null) r.tail = lp;
+    r.tail = lerp(r.tail, p, 0.1);
+    const lo = Math.min(r.tail, p), hi = Math.max(r.tail, p), dir = p >= r.tail ? '90deg' : '270deg';
+    const st = r.trl.style;
+    st.setProperty('--t0', lo.toFixed(4)); st.setProperty('--t1', hi.toFixed(4));
+    if (r.td !== dir) { r.td = dir; st.setProperty('--td', dir); }
+    if (!r.tra) {
+      try { r.tra = r.trl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 720, easing: 'ease-out', fill: 'both' }); r.tra.onfinish = () => { r.tail = null; }; } catch (e) { r.tra = null; return; }
+    } else { r.tra.currentTime = 0; r.tra.play(); }
+  }
+  /* tick sparks when the value snaps to a new step (3 pooled dots per row, replayed WAAPI) */
+  const SPK = [[-11, -15], [1, -20], [12, -14]];
+  function spark(r) {
+    if (J.reduce || !HAS_WA || tierN() < 2 || J.hidden()) return;
+    const t = now(); if (t - r.sk < 55) return; r.sk = t;
+    if (!r.sp) {
+      r.sp = SPK.map((d) => {
+        const el = document.createElement('i'); el.className = 'lab-spk'; el.setAttribute('aria-hidden', 'true'); r.rng.appendChild(el);
+        let a = null; try { a = el.animate([{ transform: 'translate(-50%,-50%) scale(1.3)', opacity: 1 }, { transform: 'translate(calc(-50% + ' + d[0] + 'px),calc(-50% + ' + d[1] + 'px)) scale(.1)', opacity: 0 }], { duration: 460, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both' }); a.cancel(); } catch (e) { a = null; }
+        return a;
+      });
+    }
+    const n = tierN() >= 3 ? 3 : 2;
+    for (let i = 0; i < n; i++) { const a = r.sp[(r.si + i) % 3]; if (a) { a.currentTime = 0; a.play(); } }
+    r.si = (r.si + 1) % 3;
+  }
+  function paintRow(r, v) {
+    const f = r.f, span = f.max - f.min;
+    const p = clamp((v - f.min) / span, 0, 1), z = f.mark != null ? clamp((f.mark - f.min) / span, 0, 1) : 0;
+    const a = f.bi ? Math.min(p, z) : 0, b = f.bi ? Math.max(p, z) : p;
+    r.rng.style.setProperty('--a', a.toFixed(4)); r.rng.style.setProperty('--b', b.toFixed(4)); r.rng.style.setProperty('--p', p.toFixed(4));
+    trail(r, p);
+    const txt = fmtV(f, v);
+    if (r.out.textContent !== txt) { r.out.textContent = txt; r.bub.textContent = txt; r.input.setAttribute('aria-valuetext', txt); }
+  }
+  const rows = {};
+  const slHost = $('#lab-sliders');
+  FIELDS.forEach((f) => (rows[f.k] = buildRow(f, slHost)));
+  const floorR = buildRow(FLOOR, $('#lab-floorrow'));
+  floorR.row.classList.add('lab-row-floor');
+
+  function setVal(f, v) { V[f.k] = v; const r = rows[f.k]; r.input.value = v; paintRow(r, v); }
+
   /* ------------------------------------------------------------------ decision ------------------------------------------------------------------ */
   function route(s) {
     const h = Math.abs(Math.round(s.edge_bps * 2) * 31 + Math.round(s.imbalance * 20) * 17 + Math.round(s.latency_ms / 10) * 7 + Math.round(s.spread_bps * 3) * 13);
@@ -1318,6 +1510,7 @@ JEV.mod('lab-pipeline', () => {
       { id: 'kill', bad: !!killed, val: killed ? 'on' : 'off' },
     ];
   }
+
   /* ------------------------------------------------------------------ stage 1 : encode chips ------------------------------------------------------------------ */
   const CH = FIELDS.map((f) => ({ k: f.k, n: f.chip, cc: f.cc, f, bi: !!f.bi })).concat([{ k: 'net', n: 'net_edge', cc: 'pink', bi: true, derived: true, f: { dec: 1, sign: 1, min: -40, max: 40 } }]);
   const ftsEl = $('#lab-fts');
@@ -1346,6 +1539,7 @@ JEV.mod('lab-pipeline', () => {
       if (pop) anim(c.el, [{ opacity: 0, transform: 'translateY(9px) scale(.78)' }, { opacity: 1, transform: 'none' }], { duration: 300, delay: i * 26, easing: 'cubic-bezier(.2,1.5,.3,1)', fill: 'backwards' });
     });
   }
+
   /* ------------------------------------------------------------------ stage 2 : typed questions ------------------------------------------------------------------ */
   const pbHost = $('#lab-pb'), pbRows = {};
   ACTIONS.forEach((a, i) => {
@@ -1411,8 +1605,12 @@ JEV.mod('lab-pipeline', () => {
     riskChecks(d.st, d.killed).forEach((c) => { const r = ckRows[c.id]; r.li.classList.toggle('bad', c.bad); setTxt(r.u, c.val); });
     setTxt(msEl, d.ms.toFixed(1) + ' ms');
   }
+
+  /* ------------------------------------------------------------------ stage 3 : the gate ------------------------------------------------------------------ */
   function paintFloor(v) {
     v = +v; const t = v.toFixed(2);
+    if (+floorR.input.value !== v) floorR.input.value = v;
+    paintRow(floorR, v);
     gt.style.setProperty('--f', v);
     setTxt(flv, t);
     fl.setAttribute('aria-valuenow', t); fl.setAttribute('aria-valuetext', 'floor ' + t);
@@ -1436,6 +1634,7 @@ JEV.mod('lab-pipeline', () => {
     setTxt(verdict, v === 'halt' ? 'KILL SWITCH' : pass ? 'PASS' : 'BELOW FLOOR'); verdict.setAttribute('data-v', v);
     why.innerHTML = 'reason <b>' + esc(d.reason) + '</b> &rarr; <u style="color:' + DHEX[d.dest] + '">' + d.dest + '</u>';
   }
+
   /* ------------------------------------------------------------------ stage 4 : code acts ------------------------------------------------------------------ */
   const treeEl = $('#lab-tree'), folders = {};
   treeEl.innerHTML = '<div class="lab-tr-h">queue/</div>';
@@ -1488,6 +1687,42 @@ JEV.mod('lab-pipeline', () => {
       }
     }
   }
+
+  /* ------------------------------------------------------------------ tape / mini / status ------------------------------------------------------------------ */
+  function renderTape(fresh) {
+    let h = '';
+    tape.forEach((r, i) => {
+      h += '<li' + (fresh && i === 0 ? ' class="fresh"' : '') + ' data-i="' + i + '" tabindex="0" role="button" aria-label="restore inputs of #' + hex2(r.n) + ': ' + r.action + ', ' + r.dest + '"><span>#' + hex2(r.n) + '</span><b class="lab-tp-a" data-a="' + r.action + '">' + r.action + '</b><span>' + (r.action === 'hold' ? '-' : fmtSize(r.size)) +
+        '</span><span class="lab-tp-c">' + r.conf.toFixed(2) + '</span><i class="lab-tp-d" data-d="' + r.dest + '">' + r.dest + '</i><em>' + esc(r.reason) + '</em></li>';
+    });
+    tpEl.innerHTML = h;
+    if (fresh) anim(tpEl, [{ transform: 'translateY(-28px)' }, { transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  }
+  function pushTape(d) {
+    tape.unshift({ n: d.n, action: d.action, size: d.size, conf: d.conf, dest: d.dest, reason: d.reason, st: Object.assign({}, d.st), floor: d.floor });
+    if (tape.length > 5) tape.pop();
+  }
+  function rMini(d) {
+    miniEl.setAttribute('data-d', d.dest);
+    setTxt(miA, d.action); setTxt(miS, d.action === 'hold' ? '-' : fmtSize(d.size)); setTxt(miC, d.conf.toFixed(2)); setTxt(miD, d.dest);
+  }
+  const setStat = (t) => setTxt(statT, t);
+  function setDirty(on) {
+    if (dirty === on) return;
+    dirty = on; go.classList.toggle('dirty', on);
+    if (on) setStat('inputs changed · press decide');
+  }
+  function paintBad(d) {
+    riskChecks(d.st, d.killed).forEach((c) => {
+      const f = FIELDS.find((x) => x.risk === c.id);
+      if (!f) return;
+      const row = rows[f.k].row, was = row.classList.contains('bad');
+      if (was !== c.bad) {
+        row.classList.toggle('bad', c.bad);
+        if (c.bad && lv) fxa($('output', row), [{ transform: 'scale(1.4)', filter: 'brightness(1.8)' }, { transform: 'scale(1)', filter: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,1.6,.4,1)' });
+      }
+    });
+  }
   /* ---- what changed since the previous decision (baseline = last committed one) ---- */
   const diffEl = $('#lab-diff');
   function rDiff(d) {
@@ -1507,8 +1742,8 @@ JEV.mod('lab-pipeline', () => {
     setTxt(diffEl, 'vs #' + hex2(o.n || 0) + ' \u00b7 ' + (bits.length ? bits.join(' \u00b7 ') : 'no change'));
     diffEl.classList.toggle('nc', !bits.length);
   }
-  const rAll = (d, pop) => { rEncode(d, pop); rQuestions(d, pop); rGate(d); rActs(d, pop); rDiff(d); };
-  const setStat = (t) => setTxt(statT, t);
+  const rAll = (d, pop) => { rEncode(d, pop); rQuestions(d, pop); rGate(d); rActs(d, pop); rMini(d); paintBad(d); rDiff(d); };
+
   /* ------------------------------------------------------------------ fx : ribbons · comet · bursts (2 canvases) ------------------------------------------------------------------ */
   const fx = (() => {
     const c0 = $('#lab-fx0'), c1 = $('#lab-fx1');
@@ -1847,6 +2082,7 @@ JEV.mod('lab-pipeline', () => {
     fxa(f.em, [{ transform: 'scale(1)' }, { transform: 'scale(1.7)', offset: 0.25 }, { transform: 'scale(.92)', offset: 0.6 }, { transform: 'scale(1)' }], { duration: 560, easing: 'ease-out' });
     fxa(f.el, [{ boxShadow: '-6px 0 0 -2px rgba(255,255,255,0)' }, { boxShadow: '-10px 0 22px -8px var(--cc)', offset: 0.3 }, { boxShadow: '-6px 0 0 -2px rgba(255,255,255,0)' }], { duration: 700, easing: 'ease-out' });
   });
+
   /* ------------------------------------------------------------------ run : live scrub vs cinematic commit ------------------------------------------------------------------ */
   const TL = [0, 290, 720, 990, 1300];
   const STAGE_TXT = ['encode', 'typed questions', 'the gate', 'code acts'];
@@ -1859,6 +2095,7 @@ JEV.mod('lab-pipeline', () => {
     setStat('stage ' + i + '/4 · ' + STAGE_TXT[i - 1]);
     fx.stage(i);
   }
+  let liveT = 0, livePend = 0;
   function live() {
     const t = now();
     if (t - liveT < 55) { if (!livePend) livePend = setTimeout(() => { livePend = 0; live(); }, 60); return; }
@@ -1868,7 +2105,7 @@ JEV.mod('lab-pipeline', () => {
     cur = decideState(stateNow());
     base = lastC;
     rAll(cur, false);
-    setStat('scrubbing …');
+    if (!dirty) setStat('scrubbing …');
   }
   function finishRun(d, why, anim_) {
     running = false;
@@ -1877,22 +2114,36 @@ JEV.mod('lab-pipeline', () => {
     fx.end();
     setStat('done · #' + hex2(d.n) + ' · ' + d.ms.toFixed(1) + ' ms');
     srEl.textContent = 'jev: ' + d.action + (d.action === 'hold' ? '' : ' ' + fmtSize(d.size)) + ' at confidence ' + d.conf.toFixed(2) + ', ' + d.dest + ', ' + d.reason;
-    schedDemo(3400);
   }
-  /** full cinematic decision: ~1.3 s, stage by stage. why: 'demo' | 'input' | 'floor' | 'kill' | 'view' | 'replay' */
+  function publish(d) {
+    if (!lv) return;
+    try {
+      const S = J.S, s = d.st;
+      const rec = Object.assign({}, d, { id: d.file.slice(0, 8), symbol: 'BTC-PERP', arch: 'lab', lab: true, build: BUILD[d.action] || 'entry' });
+      rec.state = Object.assign({ symbol: 'BTC-PERP', price: J.market.price, vwap_dist_bps: s.edge_bps * 0.35, funding_bps: 0.8, venue: d.venue, regime: 'lab' }, s);
+      rec.line = rec.symbol + ' edge ' + J.sgn(s.edge_bps) + 'bps imb ' + J.sgn(s.imbalance, 2) + ' spr ' + s.spread_bps.toFixed(1);
+      S.count++; S.cost += 0.00003; S.ms.push(d.ms); if (S.ms.length > 41) S.ms.shift(); S.counts.choice++;
+      if (S.dest[d.dest] != null) S.dest[d.dest]++;
+      J.recent.unshift(rec); if (J.recent.length > 40) J.recent.pop();
+      J.bus.emit('decision', rec); J.hud();
+    } catch (e) { /* the lab never breaks the page */ }
+  }
+  /** full cinematic decision: ~1.3 s, stage by stage. why: 'decide' | 'preset' | 'input' | 'floor' | 'kill' | 'view' | 'replay' */
   function commit(why) {
     clearTimeout(ct); clearTimeout(livePend); livePend = 0;
     cancelRun();
     const replay = why === 'replay' && !!cur && !!cur.n;
     const d = replay && cur ? cur : decideState(stateNow());
     cur = d;
-    if (!replay) { d.n = ++seq; d.file = hex2(d.n) + rhex(6) + '.json'; base = lastC; lastC = d; }
-    committed = true;
+    if (!replay) { d.n = ++seq; d.file = hex2(d.n) + rhex(6) + '.json'; }
+    setDirty(false); go.classList.remove('dirty');
+    committed = true; schedHash();
+    if (!replay) { base = lastC; lastC = d; }
     const animate = pv && !J.reduce;
     if (!animate) {
       pipe.classList.add('lab-live'); pipe.classList.remove('lab-run');
       rAll(d, false);
-      if (!replay) { landFile(d, false); pending = !pv; }
+      if (!replay) { landFile(d, false); pushTape(d); renderTape(false); if (why !== 'view') publish(d); pending = !pv; }
       finishRun(d, why, false);
       return;
     }
@@ -1901,7 +2152,7 @@ JEV.mod('lab-pipeline', () => {
     stg.forEach((s) => s.classList.remove('on', 'done'));
     fx.begin();
     anim($('u', prog), [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: TL[4], easing: 'cubic-bezier(.4,0,.2,1)' });
-    rDiff(d);
+    rMini(d); paintBad(d); rDiff(d);
     const T = (ms, fn) => timers.push(setTimeout(fn, ms));
     stageOn(1); rEncode(d, true);
     T(TL[1], () => { stageOn(2); rQuestions(d, true); });
@@ -1911,27 +2162,113 @@ JEV.mod('lab-pipeline', () => {
     if (!replay) T(TL[3] + 230, () => { landFile(d, true); fx.land(d.dest); });
     else T(TL[3] + 230, () => { folders[d.dest].el.classList.add('hit'); setTimeout(() => folders[d.dest].el.classList.remove('hit'), 1500); fx.land(d.dest); });
     T(TL[3] + 400, () => fx.stamp(d.dest, d));
-    T(TL[4], () => finishRun(d, why, true));
+    T(TL[4], () => {
+      finishRun(d, why, true);
+      if (!replay) { pushTape(d); renderTape(true); if (why !== 'view') publish(d); }
+    });
   }
   function scheduleCommit(ms, why) { clearTimeout(ct); ct = setTimeout(() => commit(why), ms); }
-  /* ------------------------------------------------------------------ demo feed ------------------------------------------------------------------ */
-  const DEMO = ['trend', 'wide book', 'mean-revert', 'stale feed', 'reversal', 'stress'];
-  function schedDemo(ms) { clearTimeout(demoT); if (demoOn) demoT = setTimeout(nextDemo, ms); }
-  function nextDemo() {
-    if (!demoOn) return;
-    if (!pv || J.hidden() || running) { schedDemo(1200); return; }
-    const p = PRESETS[DEMO[demoI++ % DEMO.length]];
-    FIELDS.forEach((f, i) => { V[f.k] = snap(f, clamp(p[i] + (f.max - f.min) * 0.02 * J.gauss(), f.min, f.max)); });
-    commit('demo');
+
+  /* ------------------------------------------------------------------ interaction ------------------------------------------------------------------ */
+  const presetBtns = $$('.lab-sc');
+  const setActive = (btn) => presetBtns.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+  function randomState() {
+    let s = null;
+    try { s = EN.sampleState(() => J.market.price).state; } catch (e) { s = null; }
+    const o = {};
+    FIELDS.forEach((f) => { let v = s ? s[f.k] : null; if (v == null || isNaN(v)) v = lerp(f.min, f.max, Math.random()); o[f.k] = snap(f, clamp(v, f.min, f.max)); });
+    return o;
   }
-  J.bus.on('lab-state', (e) => {
-    if (!e || !e.state || e.why === 'init') return;
-    demoOn = false; clearTimeout(demoT);
-    FIELDS.forEach((f) => { if (e.state[f.k] != null && isFinite(+e.state[f.k])) V[f.k] = +e.state[f.k]; });
-    if (e.why === 'scrub') { live(); scheduleCommit(560, 'input'); } else commit('input');
+  function glide(to, dur, stag) {
+    touch();
+    clearTimeout(ct);
+    if (J.reduce) { FIELDS.forEach((f) => setVal(f, to[f.k])); commit('preset'); return; }
+    tween = { t0: now(), from: Object.assign({}, V), to, dur: dur || 560, stag: stag == null ? 38 : stag };
+  }
+  function runPreset(name, btn) {
+    setActive(btn);
+    const to = {};
+    if (name === 'random') Object.assign(to, randomState()); else FIELDS.forEach((f, i) => (to[f.k] = PRESETS[name][i]));
+    glide(to);
+  }
+  // tape row -> put that decision's inputs (and floor) back
+  function restoreRow(i) {
+    const r = tape[i]; if (!r) return;
+    setActive(null);
+    glide(Object.assign({}, r.st));
+    if (r.floor != null && Math.abs(r.floor - J.S.floor) > 0.0001) J.setFloor(r.floor);
+    setStat('restoring #' + hex2(r.n) + ' inputs');
+    fxa($('.lab-ctl'), [{ boxShadow: '0 0 0 0 rgba(255,46,110,0)' }, { boxShadow: '0 0 0 2px rgba(255,46,110,.55), 0 0 40px rgba(255,46,110,.35)' }, { boxShadow: '0 0 0 0 rgba(255,46,110,0)' }], { duration: 700, easing: 'ease-out' });
+  }
+  tpEl.addEventListener('click', (e) => { const li = e.target.closest('li[data-i]'); if (li) restoreRow(+li.getAttribute('data-i')); });
+  tpEl.addEventListener('keydown', (e) => { if (e.key !== 'Enter' && e.key !== ' ') return; const li = e.target.closest('li[data-i]'); if (li) { e.preventDefault(); restoreRow(+li.getAttribute('data-i')); } });
+  function tweenStep() {
+    if (!tween) return;
+    const n = now() - tween.t0; let done = true;
+    FIELDS.forEach((f, i) => {
+      const p = clamp((n - i * tween.stag) / tween.dur, 0, 1);
+      if (p < 1) done = false;
+      setVal(f, p >= 1 ? tween.to[f.k] : snap(f, lerp(tween.from[f.k], tween.to[f.k], eio(p))));
+    });
+    if (done) { tween = null; commit('preset'); } else live();
+  }
+  function onChange() {
+    touch(); setActive(null);
+    if (auto) { live(); scheduleCommit(560, 'input'); } else { cancelRun(); setDirty(true); }
+  }
+  FIELDS.forEach((f) => {
+    const r = rows[f.k];
+    r.input.addEventListener('input', () => { tween = null; V[f.k] = +r.input.value; if (r.lq !== V[f.k]) { r.lq = V[f.k]; spark(r); } paintRow(r, V[f.k]); onChange(); });
+    r.input.addEventListener('change', () => { if (auto) scheduleCommit(90, 'input'); });
   });
-  J.bus.on('floor', (v) => { paintFloor(v); live(); scheduleCommit(420, 'floor'); });
-  J.bus.on('kill', () => { fx.restyle(); live(); scheduleCommit(90, 'kill'); });
+  floorR.input.addEventListener('input', () => { touch(); spark(floorR); J.setFloor(+floorR.input.value); });
+  presetBtns.forEach((b) => b.addEventListener('click', () => runPreset(b.getAttribute('data-p'), b)));
+  function decideNow(x, y) {
+    if (tween) { FIELDS.forEach((f) => setVal(f, tween.to[f.k])); tween = null; }
+    if (HAS_WA && !J.reduce && !J.hidden()) {
+      const r = go.getBoundingClientRect(), rip = document.createElement('i');
+      rip.className = 'lab-rip'; rip.style.left = (x == null ? r.width / 2 : x - r.left) + 'px'; rip.style.top = (y == null ? r.height / 2 : y - r.top) + 'px'; go.appendChild(rip);
+      const a = rip.animate([{ transform: 'scale(.4)', opacity: 0.7 }, { transform: 'scale(14)', opacity: 0 }], { duration: 650, easing: 'ease-out' });
+      a.onfinish = () => rip.remove();
+    }
+    touch();
+    commit('decide');
+  }
+  go.addEventListener('click', (e) => decideNow(e.detail !== 0 ? e.clientX : null, e.detail !== 0 ? e.clientY : null));
+  // keyboard: Enter = DECIDE (anywhere while the lab is on screen, unless a button / link has the focus), R = random scenario
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.defaultPrevented || e.repeat || e.ctrlKey || e.metaKey || e.altKey || !lv || document.getElementById('fx-boot')) return;
+    const t = e.target, tag = t && t.tagName;
+    if (/^(A|TEXTAREA|SELECT|SUMMARY)$/.test(tag) || (tag === 'BUTTON' && t.getAttribute('role') !== 'slider') || (t && t.closest && t.closest('dialog,[role=dialog],li[data-i]'))) return;
+    e.preventDefault(); decideNow();
+    go.classList.add('kp'); setTimeout(() => go.classList.remove('kp'), 160);
+  });
+  J.shortcut('r', () => { if (lv) { const b = $('.lab-sc-r'); runPreset('random', b); } }, 'lab: random scenario');
+  autoB.addEventListener('click', () => {
+    auto = !auto;
+    autoB.classList.toggle('on', auto); autoB.setAttribute('aria-checked', String(auto));
+    if (auto && dirty) commit('input');
+  });
+  killB.addEventListener('click', () => J.setKilled(!J.S.killed));
+  function paintKill(on) {
+    killB.classList.toggle('on', on); killB.setAttribute('aria-checked', String(on));
+    setTxt(killS, on ? 'halted · every order → review' : 'armed · orders flow');
+  }
+  J.bus.on('floor', (v) => { paintFloor(v); schedHash(); if (!tween) { live(); scheduleCommit(420, 'floor'); } });
+  J.bus.on('kill', (on) => { paintKill(on); fx.restyle(); if (!tween) { live(); scheduleCommit(90, 'kill'); } });
+
+  // magnetic decide button (mouse only; the rect is cached on enter)
+  let mr = null;
+  magw.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') mr = go.getBoundingClientRect(); });
+  magw.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    if (!mr) mr = go.getBoundingClientRect();
+    const dx = e.clientX - (mr.left + mr.width / 2), dy = e.clientY - (mr.top + mr.height / 2);
+    go.style.setProperty('--tx', clamp(dx * 0.2, -9, 9).toFixed(1) + 'px'); go.style.setProperty('--ty', clamp(dy * 0.3, -6, 6).toFixed(1) + 'px');
+    go.style.setProperty('--mx', (e.clientX - mr.left).toFixed(0) + 'px'); go.style.setProperty('--my', (e.clientY - mr.top).toFixed(0) + 'px');
+  });
+  magw.addEventListener('pointerleave', () => { mr = null; go.style.setProperty('--tx', '0px'); go.style.setProperty('--ty', '0px'); });
+
   // draggable floor marker on the gate track (+ keyboard)
   let drag = null;
   const floorFromX = (x) => {
@@ -1955,27 +2292,144 @@ JEV.mod('lab-pipeline', () => {
     else if (e.key === 'PageDown') v -= 0.05; else if (e.key === 'PageUp') v += 0.05; else if (e.key === 'Home') v = FLOOR.min; else if (e.key === 'End') v = FLOOR.max; else return;
     e.preventDefault(); J.setFloor(clamp(Math.round(v * 100) / 100, FLOOR.min, FLOOR.max));
   });
+
+  /* ------------------------------------------------------------------ slider craft : bubble · shift-nudge · reset ------------------------------------------------------------------ */
+  function poke(r, ms) {
+    r.row.classList.add('drag'); clearTimeout(r.hold);
+    r.hold = setTimeout(() => r.row.classList.remove('drag'), ms);
+  }
+  function wireRow(r, reset) {
+    const inp = r.input, f = r.f;
+    inp.addEventListener('pointerdown', () => { clearTimeout(r.hold); r.row.classList.add('drag'); });
+    const rel = () => poke(r, 520);
+    inp.addEventListener('pointerup', rel); inp.addEventListener('pointercancel', rel);
+    inp.addEventListener('keydown', (e) => {
+      const dir = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -1 : 0;
+      if (!dir) return;
+      if (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) { // shift = x10
+        e.preventDefault();
+        const v = clamp(snap(f, +inp.value + dir * f.step * 10), f.min, f.max);
+        inp.value = v; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      poke(r, 900);
+    });
+    r.rng.addEventListener('dblclick', (e) => { e.preventDefault(); reset(); poke(r, 700); });
+  }
+  FIELDS.forEach((f) => wireRow(rows[f.k], () => {
+    if (Math.abs(V[f.k] - f.v) < f.step / 2) return;
+    setActive(null);
+    glide(Object.assign({}, V, { [f.k]: f.v }), 380, 0);
+    setStat('reset ' + f.chip + ' · ' + fmtV(f, f.v));
+  }));
+  wireRow(floorR, () => { touch(); J.setFloor(J.RULES.floor); setStat('reset floor · ' + J.RULES.floor.toFixed(2)); });
+
+  /* ------------------------------------------------------------------ shareable state : location.hash ------------------------------------------------------------------ */
+  let touched = false;
+  function touch() { touched = true; }
+  const HK = FIELDS.map((f) => f.chip);
+  function hashStr() {
+    const q = [];
+    const src = tween ? tween.to : V;
+    FIELDS.forEach((f) => { if (Math.abs(src[f.k] - f.v) > f.step / 2) q.push(f.chip + '=' + +src[f.k].toFixed(3)); });
+    const fv = J.S.floor != null ? J.S.floor : J.RULES.floor;
+    if (Math.abs(fv - J.RULES.floor) > 0.004) q.push('floor=' + fv.toFixed(2));
+    return '#lab' + (q.length ? '?' + q.join('&') : '');
+  }
+  function schedHash() {
+    if (!touched) return;
+    clearTimeout(hashT);
+    hashT = setTimeout(() => { try { const h = hashStr(); if (location.hash !== h) history.replaceState(null, '', h); } catch (e) { /* sandboxed */ } }, 450);
+  }
+  function readHash() {
+    let h = ''; try { h = location.hash; } catch (e) { return false; }
+    if (h.indexOf('#lab?') !== 0) return false;
+    let any = false;
+    h.slice(5).split('&').forEach((kv) => {
+      const i = kv.indexOf('='), k = kv.slice(0, i), v = parseFloat(kv.slice(i + 1));
+      if (!isFinite(v)) return;
+      const fi = HK.indexOf(k);
+      if (fi >= 0) { const f = FIELDS[fi]; setVal(f, snap(f, clamp(v, f.min, f.max))); any = true; }
+      else if (k === 'floor') { J.setFloor(clamp(Math.round(v * 100) / 100, FLOOR.min, FLOOR.max)); any = true; }
+    });
+    return any;
+  }
+
+  /* ------------------------------------------------------------------ copy link / copy handoff json ------------------------------------------------------------------ */
+  function copyText(txt) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(txt).catch(() => legacyCopy(txt));
+    return legacyCopy(txt);
+  }
+  function legacyCopy(txt) {
+    return new Promise((res, rej) => {
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove(); ok ? res() : rej(new Error('copy'));
+    });
+  }
+  function handoffJson() {
+    const d = cur; if (!d) return '{}';
+    return JSON.stringify({ action: d.action, size: d.action === 'hold' ? null : d.size, venue: d.venue, conf: +d.conf.toFixed(2), risk_ok: d.riskOk, floor: +d.floor.toFixed(2), reason: d.reason, dest: d.dest, simulated: true }, null, 2);
+  }
+  function wireCopy(btn, make, msg) {
+    const lab = $('span:last-child', btn), orig = lab.textContent;
+    btn.addEventListener('click', () => {
+      copyText(make()).then(() => {
+        btn.classList.add('ok'); lab.textContent = 'copied';
+        if (J.toast) J.toast(msg, 'ok');
+        clearTimeout(btn._t); btn._t = setTimeout(() => { btn.classList.remove('ok'); lab.textContent = orig; }, 1500);
+      }).catch(() => { if (J.toast) J.toast('copy blocked by the browser', 'info'); });
+    });
+  }
+  wireCopy($('#lab-cp-link'), () => { const base0 = location.href.split('#')[0]; return base0 + hashStr(); }, 'scenario link copied · simulated inputs');
+  wireCopy($('#lab-cp-json'), handoffJson, 'handoff json copied · simulated');
+
+  /* ------------------------------------------------------------------ standalone demo (not part of the section) ------------------------------------------------------------------ */
+  /* a lone atom has nobody to drive it: cycle the scenarios while the lab is on screen, stop at the first pointer / key interaction */
+  {
+    const names = ['trend', 'stress', 'mean-revert', 'wide book', 'reversal', 'stale feed'];
+    let k = 0, on = true;
+    ['pointerdown', 'keydown'].forEach((ev) => root.addEventListener(ev, () => { on = false; }, { capture: true, passive: true }));
+    setInterval(() => { if (!on || !lv || running || tween) return; runPreset(names[k++ % names.length], null); touched = false; }, 4600);
+  }
+
   /* ------------------------------------------------------------------ init ------------------------------------------------------------------ */
   stg.forEach((s) => { const sc = document.createElement('i'); sc.className = 'lab-scan'; sc.setAttribute('aria-hidden', 'true'); s.appendChild(sc); });
   paintFloor(J.S.floor != null ? J.S.floor : J.RULES.floor);
+  paintKill(!!J.S.killed);
+  restored = readHash();
+  // earlier lab decisions, so the tape and the queue are alive before the first touch
   ['trend', 'wide book', 'mean-revert'].forEach((name) => {
     const st = {}; FIELDS.forEach((f, i) => (st[f.k] = PRESETS[name][i]));
     const d = decideState(st);
     d.n = ++seq; d.file = hex2(d.n) + rhex(6) + '.json';
-    files[d.dest].unshift(d.file); fcount[d.dest]++; lastC = d;
+    files[d.dest].unshift(d.file); fcount[d.dest]++; pushTape(d); lastC = d;
   });
   ['execute', 'review', 'skip'].forEach((k) => renderFolder(k, false));
+  renderTape(false);
   cur = decideState(stateNow());
   rAll(cur, false);
-  setStat('ready');
+  setStat(restored ? 'shared scenario loaded' : 'ready');
+  if (restored) setTimeout(() => {
+    const y = root.getBoundingClientRect().top + scrollY - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hud-h')) || 64) + 8;
+    scrollTo({ top: Math.max(0, y), behavior: J.reduce ? 'auto' : 'smooth' });
+    if (J.toast) J.toast('shared scenario loaded \u00b7 simulated', 'info');
+  }, 900);
+  // keep sliders' danger flags + readouts correct if the floor/kill state was changed before init
+  new IntersectionObserver((es) => { lv = es[0].isIntersecting; }, { rootMargin: '80px 0px' }).observe(root);
   new IntersectionObserver((es) => {
     pv = es[0].isIntersecting;
     if (!pv) return;
     if (!committed) commit('view');
     else if (pending) { pending = false; commit('replay'); }
   }, { threshold: 0.1 }).observe(pipe);
+  J.task(ctl, tweenStep);
   J.task(pipe, (t, dt) => { fx.frame(t, dt); tickNums(); });
   J.watch(pipe, () => fx.resize());
+  // desktop: the controls column is sticky; if it is taller than the viewport, pin it by its bottom edge so STATE + hard rules + tape stay reachable
+  const left = $('.lab-left');
+  if (left) { const stick = () => { const h = left.offsetHeight; left.style.top = (h ? Math.min(76, innerHeight - h - 16) : 76) + 'px'; }; J.watch(left, stick); addEventListener('resize', stick, { passive: true }); }
 });
 
 </script>

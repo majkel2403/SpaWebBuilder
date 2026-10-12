@@ -245,7 +245,6 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
-/* hero / backdrop-fx — CSS-only hero backdrop: spinning conic aura, dot grid, scan bar, vignette, glowing rule with a travelling highlight. Prefix hero-. */
 /* ---- background FX (compositor-only: transforms + opacity) ---- */
 .hero-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .hero-bg > i { position: absolute; display: block; }
@@ -286,8 +285,8 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 <div class="cmp-stage" style="--cmp-w:1100px">
 <section class="hbf-stage" aria-label="Hero backdrop effects">
-  <div class="hero-bg" aria-hidden="true"><i class="hero-aura"></i><i class="hero-grid"></i><i class="hero-scan"></i></div>
-  <div class="hero-vig" aria-hidden="true"></div>
+      <div class="hero-bg" aria-hidden="true"><i class="hero-aura"></i><i class="hero-grid"></i><i class="hero-scan"></i></div>
+      <div class="hero-vig" aria-hidden="true"></div>
   <p class="hbf-note"><b>backdrop fx</b> &middot; css only &middot; conic aura, dot grid, scanning bar, vignette and the hot-pink rule below. Press <kbd>k</kbd> for the kill-switch tint.</p>
   <div class="hero-rule" aria-hidden="true"></div>
 </section>

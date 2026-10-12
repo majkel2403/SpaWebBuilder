@@ -11,5 +11,7 @@
   ],
   "css": [
     "component.css"
-  ]
+  ],
+  "derived": false,
+  "derivedNote": "demo of the panel shell; the real shell css lives in hour/_grid, which has no html of its own"
 }

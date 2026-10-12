@@ -1,0 +1,8 @@
+/* ---- the hot-pink rule under the stage ---- */
+.hero-rule { position: relative; height: 1px; background: linear-gradient(90deg, rgba(255, 46, 110, 0), var(--pink) 16%, #ff9cc4 50%, var(--pink) 84%, rgba(255, 46, 110, 0));
+  box-shadow: 0 0 12px 1px rgba(255, 46, 110, .75), 0 0 46px 5px rgba(255, 46, 110, .32), 0 -10px 40px rgba(255, 46, 110, .12); }
+.hero-rule::after { content: ''; position: absolute; left: 0; top: -1px; height: 3px; width: 22%; background: linear-gradient(90deg, transparent, #fff, transparent); opacity: .85; filter: blur(.6px); animation: heroRule 6.5s linear infinite; will-change: transform; }
+@keyframes heroRule { from { transform: translateX(-100%); } to { transform: translateX(460%); } }
+body.killed .hero-rule { background: linear-gradient(90deg, rgba(255, 77, 94, 0), var(--red) 16%, #ff9aa4 50%, var(--red) 84%, rgba(255, 77, 94, 0)); box-shadow: 0 0 12px 1px rgba(255, 77, 94, .8), 0 0 46px 5px rgba(255, 60, 80, .35); }
+body.killed .hero-aura { filter: hue-rotate(14deg) saturate(1.2); }
+

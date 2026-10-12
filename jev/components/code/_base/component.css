@@ -1,0 +1,2 @@
+/* ===== code — "jev-starter" editor window: light / hot-pink / light / dark-terminal panes (prefix code-) ===== */
+#code { position: relative; overflow-x: clip; padding-top: clamp(40px, 6vw, 84px); }

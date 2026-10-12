@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Drift check: how much of each component's css/js/text still exists in the sources of truth (the six section components + src runtime).
+"""Drift check for COPY components (not derived units): how much of each copy's css/js/text still exists in the sources of truth (all section units + src runtime).
 usage: python3 jev/tools/fidelity.py [--json out.json]   (run from the repo root; stdlib only)"""
 import re, glob, json, sys, statistics as st
 ROOT = 'jev/'
-SOT = ['hero/full-section', 'code/full-section', 'builds/full-section', 'hour/full-section', 'desk/full-desk', 'lab/full-section']
 norm = lambda s: re.sub(r'\s+', ' ', s).strip()
 def rules(css):
     css = re.sub(r'/\*.*?\*/', '', css, flags=re.S); out = []
@@ -22,15 +21,24 @@ def rules(css):
             j = k
     parse(css, ''); return out
 def read(globs): return [open(f).read() for g in globs for f in glob.glob(g)]
-src_dirs = lambda ext: [ROOT + 'src/**/*.' + ext] + [ROOT + 'components/' + c + '/*.' + ext for c in SOT]
+import os
+def comp_sot():
+    """every component that holds a chunk of a section (units) or is a section: they are the sources of truth"""
+    out = []
+    for f in glob.glob(ROOT + 'components/*/*/component.json'):
+        m = json.load(open(f))
+        if m.get('section') or m.get('units') or m.get('sourceOfTruth'): out.append(os.path.dirname(f) + '/')
+    return out
+SOT_DIRS = comp_sot()
+src_dirs = lambda ext: [ROOT + 'src/**/*.' + ext] + [d + '*.' + ext for d in SOT_DIRS]
 main = {}
 for t in read(src_dirs('css')):
-    for s, b in rules(t): main.setdefault(s, set()).add(b)
+    for s_, b_ in rules(t): main.setdefault(s_, set()).add(b_)
 mainjs = ''.join(read(src_dirs('js'))); mainhtml = ''.join(read(src_dirs('html')))
 res = []
 for d in sorted(glob.glob(ROOT + 'components/*/*/')):
     name = '/'.join(d.rstrip('/').split('/')[-2:])
-    if name in SOT: continue
+    if d in SOT_DIRS: continue   # derived units and sections are the sources, not copies
     cr = [r for t in read([d + 'component.css']) for r in rules(t)]
     js = ''.join(read([d + 'component.js'])); ht = ''.join(read([d + 'component.html']))
     jt = set(re.findall(r'[A-Za-z_][A-Za-z0-9_]{6,}', js)); tt = set(re.findall(r'[A-Za-z][A-Za-z0-9_%.\-]{3,}', re.sub(r'<script.*?</script>|<style.*?</style>|<[^>]+>', ' ', ht, flags=re.S)))

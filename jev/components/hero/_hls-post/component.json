@@ -1,0 +1,12 @@
+{
+  "hidden": true,
+  "html": [
+    "chunk.html"
+  ],
+  "css": [
+    "chunk.css"
+  ],
+  "js": [
+    "chunk.js"
+  ]
+}

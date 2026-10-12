@@ -1,11 +1,10 @@
-# desk / pnl-panel
-The SWARM P&L card: a big serif balance whose digits roll like an odometer, a +/- pill vs the session open, a cached balance-history canvas (green above the open line, red below, comet trail, new-high embers, new-low crack, hover/touch scrub), a win/loss strip and bars for result / route / size, plus lifetime stats and a win-rate ring. Simulated.
+# desk / pnl-panel (Swarm P&L panel)
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js`, `base.css`, include the three component files and call `JEV.boot()`.
+A **chunk of the section desk/full-desk** (module desk-top): the whole SWARM P&L card: odometer balance, balance-history canvas with scrub, win/loss strip, proportion bars and stats. One JS chunk (flashes, setBalText, flushPnl, canvases, drawStrip, task) plus the card HTML/CSS. The sub-atoms pnl-odometer, balance-line, winloss-strip, proportion-bars, stats-row are NOT separate chunks (they share flushPnl and the sim state) and keep their own hand-made versions.
 
-## Data it consumes
-Bus events from `engine.js`/`core.js`: `tick` ({price, dp}, 4 Hz), `decision` (action, symbol, size, conf, dest, venue, build, state), `kill` (via `JEV.S.killed`). Everything is simulated.
+The page is assembled from these chunks (byte-identical to the original desk-top.html/css/js; see components/UNITS.md). Edit the chunk here and both the main page and the standalone index.html follow.
 
-## Swap in real data
-The balance (`sim.bal`), history ring (`hist`) and outcome strip (`sim.outc`, in bps per executed ticket) are local; feed them from your account by calling `setBal(value)`/`hpush(value)` on each fill and mark-to-market instead of simulating them in the `tick`/`decision` handlers. Route bars read `JEV.S.dest`.
+## Reuse standalone
+Copy this folder + the units listed in component.json "compose" (desk/_top-head, _top-model, _top-events and the hidden desk/_top-* html/css fragments; the desk/_top-sx-* units are standalone-only glue: stub elements, small shims, the closing lines) + engine.js, core.js, base.css (and fx.js for the .rv reveal), then call JEV.boot(). Build with: node jev/build-components.mjs --only desk/pnl-panel
+
+Data: simulated; consumes bus events tick and decision.

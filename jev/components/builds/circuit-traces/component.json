@@ -1,11 +1,13 @@
 {
+  "section": "builds/full-section",
   "title": "Circuit traces",
   "description": "A canvas of circuit traces: one trunk drops from a cap into a twin-hairline bus with a stub into the top of every card, with bits travelling the wires, a bright pulse per decision and a red switch under the kill switch.",
-  "width": "820px",
+  "width": "1100px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
+  "derived": true,
   "html": [
     "component.html"
   ],
@@ -14,5 +16,25 @@
   ],
   "js": [
     "component.js"
+  ],
+  "compose": [
+    "builds/_head",
+    "builds/_stub",
+    "builds/_tiles-base",
+    "builds/odometer",
+    "builds/_ribbons",
+    "builds/value-bubble",
+    "builds/_tiles-open",
+    "self",
+    "builds/tile-decision-stream",
+    "builds/tile-latency",
+    "builds/tile-cost",
+    "builds/tile-primitive-mix",
+    "builds/tile-where-it-runs",
+    "builds/tile-code-owns",
+    "builds/_tiles-close",
+    "builds/_drive",
+    "builds/_end",
+    "builds/_responsive"
   ]
 }

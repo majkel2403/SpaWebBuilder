@@ -1,4 +1,3 @@
-/* hero / title-card — the JEV DECIDES glass card: hot-pink spine, conic border, pointer-follow holo sheen, letter-by-letter neon ignition. Prefix hero-. */
 /* ---- title card (bottom-left, glass, 3px hot-pink spine) ---- */
 .hero-card { position: absolute; left: clamp(12px, 2vw, 28px); bottom: 24px; z-index: 4; padding: 13px 22px 15px 18px; border-radius: 6px 12px 12px 6px; max-width: calc(100% - 24px);
   background: linear-gradient(180deg, rgba(20, 7, 24, .78), rgba(8, 4, 13, .84)); border: 1px solid rgba(255, 70, 140, .28); border-left: 3px solid var(--pink);
@@ -14,46 +13,3 @@
 .hero-sub b { font-weight: 700; }
 body.killed .hero-card { border-left-color: var(--red); box-shadow: -6px 0 32px -6px rgba(255, 77, 94, .6), 0 0 48px rgba(255, 60, 80, .18), inset 0 1px 0 rgba(255, 255, 255, .07); }
 
-/* title card: animated conic-gradient border + holographic sheen that follows the pointer */
-@property --hero-ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-.hero-card { --hero-a: var(--pink); --hero-b: #ffd0e2; --hero-c: var(--violet); }
-body.killed .hero-card { --hero-a: var(--red); --hero-b: #ffc0c6; --hero-c: #ff8a4a; }
-.hero-card::before, .hero-card::after { content: ''; position: absolute; pointer-events: none; opacity: 0; border-radius: inherit; }
-.hero-card::before { inset: -1px; padding: 1.5px; background: conic-gradient(from var(--hero-ang), transparent 0 50%, var(--hero-a) 68%, var(--hero-b) 78%, var(--hero-c) 88%, transparent 100%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); transition: opacity .8s ease; }
-.hero-card::after { inset: 0; mix-blend-mode: screen; transition: opacity .35s ease;
-  background: radial-gradient(150px 110px at var(--hx, 50%) var(--hy, 50%), rgba(255, 255, 255, .17), transparent 70%),
-    linear-gradient(112deg, transparent 22%, rgba(0, 240, 255, .13) 40%, rgba(255, 46, 110, .17) 50%, rgba(166, 107, 255, .15) 60%, transparent 78%) calc(var(--hxn, .5) * 100%) 0 / 240% 100% no-repeat; }
-html[data-tier="2"] .hero-card::before, html[data-tier="3"] .hero-card::before { opacity: .85; }
-html[data-tier="3"] .hero-card::before { animation: heroAng 7s linear infinite; }
-@keyframes heroAng { to { --hero-ang: 360deg; } }
-.hero-card.is-holo::after { opacity: 1; }
-.hero-card.is-holo::before { opacity: 1; }
-.hero-pre .hero-card::before { opacity: 0; }
-
-/* title: letter-by-letter neon ignition (spans built by hero.js at tier >= 2) */
-.hero-l { display: inline-block; }
-.hero-pre .hero-l { opacity: 0; }
-.hero-ign .hero-l { animation: heroIgn 1.15s steps(1, end) both; animation-delay: calc(var(--i) * 95ms + 120ms); }
-@keyframes heroIgn {
-  0% { opacity: .05; text-shadow: none; color: #5a2a48; }
-  10% { opacity: 1; color: #fff; text-shadow: 0 0 6px #fff, 0 0 26px #ff2e6e, 0 0 70px #ff2e6e; }
-  18% { opacity: .1; color: #5a2a48; text-shadow: none; }
-  30% { opacity: 1; color: #fff; text-shadow: 0 0 6px #fff, 0 0 34px #ff2e6e, 0 0 80px #ff2e6e; }
-  38% { opacity: .22; color: #7a3a60; text-shadow: none; }
-  52% { opacity: 1; color: #fff; text-shadow: 0 0 4px #fff, 0 0 30px #ff2e6e, 0 0 90px #ff2e6e; }
-  100% { opacity: 1; color: #fff; text-shadow: 0 0 32px rgba(255, 46, 110, .55), 0 0 2px rgba(255, 255, 255, .6); }
-}
-/* a few letters keep a faulty-tube flicker (opacity only, long cycle, paused off-screen by core) */
-.hero-ign .hero-l:nth-child(3), .hero-ign .hero-l:nth-child(8) { animation: heroIgn 1.15s steps(1, end) both, heroFl 9s steps(1, end) 3.4s infinite; animation-delay: calc(var(--i) * 95ms + 120ms), 3.4s; }
-.hero-ign .hero-l:nth-child(8) { animation-duration: 1.15s, 13s; }
-@keyframes heroFl { 0%, 100% { opacity: 1; } 91% { opacity: .35; } 92% { opacity: 1; } 93% { opacity: .5; } 94% { opacity: 1; } }
-body.killed .hero-l { color: #ffd6da; text-shadow: 0 0 30px rgba(255, 77, 94, .7), 0 0 2px rgba(255, 255, 255, .6); transition: color .4s ease; }
-html[data-tier="1"] .hero-l { animation: none !important; opacity: 1 !important; }
-@media (prefers-reduced-motion: reduce) { .hero-l { animation: none !important; opacity: 1 !important; } .hero-card::before { animation: none !important; } .hero-crt { animation: none !important; } }
-.htc-stage { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; padding: 56px clamp(14px, 4vw, 48px) 32px; min-height: 280px; border-radius: 14px; background: radial-gradient(90% 90% at 30% 60%, #14061a 0%, #08040d 60%, #05030a 100%); overflow: hidden; }
-.htc-stage .hero-card { position: relative; left: auto; bottom: auto; }
-.htc-btn { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .8); border: 1px solid rgba(255, 111, 166, .5); border-radius: 99px; padding: 11px 16px; min-height: 40px; cursor: pointer; }
-.htc-btn:hover { background: rgba(255, 46, 110, .18); }
-@media (max-width: 1100px) { .hero-eyebrow { display: none; } .hero-card { padding: 11px 18px 13px 16px; } }
-@media (max-width: 699px) { .hero-eyebrow { display: flex; font-size: 9px; } .hero-title { font-size: clamp(28px, 9.5vw, 44px); white-space: normal; } .hero-sub { font-size: 11.5px; white-space: normal; } .hero-sub i { margin: 0 .45em; } }

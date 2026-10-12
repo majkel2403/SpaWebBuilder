@@ -1,0 +1,7 @@
+{
+  "hidden": true,
+  "section": "hero/full-section",
+  "js": [
+    "chunk.js"
+  ]
+}

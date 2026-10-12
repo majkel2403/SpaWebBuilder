@@ -3,14 +3,32 @@
   "description": "The desk status ticker card: wordmark, 60 s handoff pulse, nav / session p&l / floor, UTC clock and a marquee of live chips (agents, edge, tickets, spend, kill switch).",
   "width": "1380px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
-  "html": [
-    "component.html"
-  ],
-  "css": [
-    "component.css"
+  "section": "desk/full-desk",
+  "derived": true,
+  "compose": [
+    "desk/_top-head",
+    "desk/_top-model",
+    "desk/_top-events",
+    "desk/_top-css-base",
+    "desk/_top-bar-open",
+    "desk/_top-css-bar-a",
+    "desk/handoff-pulse",
+    "desk/_top-bar-kv",
+    "desk/_top-bar-top-end",
+    "desk/_top-css-bar-b",
+    "desk/marquee-chips",
+    "self",
+    "desk/_top-bar-task",
+    "desk/_top-bar-end",
+    "desk/_top-css-resp",
+    "desk/_top-css-spec",
+    "desk/_top-sx-no-pnl",
+    "desk/_top-sx-no-tape",
+    "desk/_top-sx-tg",
+    "desk/_top-sx-end-bar"
   ],
   "js": [
     "component.js"

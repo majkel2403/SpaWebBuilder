@@ -4,7 +4,7 @@ Every section, chart, widget and effect of the JEV Desk as a standalone page: **
 
 **Use one elsewhere:** copy its folder (`component.html`, `component.css`, `component.js`, `component.json`) plus the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, put the markup in a container and call `JEV.boot()` after loading the scripts. Each folder's own `README.md` lists the data it consumes (bus events `decision`, `tick`, `kill`, `floor`, `JEV.market`) and how to feed it real data.
 **Rebuild pages:** `node jev/build-components.mjs` (all) or `--only group/name`. Each `index.html` is generated and fully self-contained.
-**Source of truth:** the six section components (`hero/full-section`, `code/full-section`, `builds/full-section`, `hour/full-section`, `desk/full-desk`, `lab/full-section`) are what the main page is built from (`jev/page.json`). All other components are extracted copies of parts of those sections; run `python3 jev/tools/fidelity.py` to see how far a copy has drifted. All data is simulated.
+**Source of truth:** the page is assembled from section components made of units (`jev/page.json`, `UNITS.md`). 54 atoms are real chunks of those sections (edit them and the page changes), 237 hidden units hold the glue, and 123 components are focused copies of parts that cannot be cut out of their section (see `SOURCE.md`; `python3 jev/tools/fidelity.py` reports their drift). All data is simulated.
 
 | component | title | description |
 |---|---|---|
@@ -198,7 +198,7 @@ Every section, chart, widget and effect of the JEV Desk as a standalone page: **
 All 184 pages were built, loaded in headless Chromium at 1100x650 (desktop) and 390x700 (touch phone), screenshotted and reviewed on contact sheets: each renders its own content with live simulated data, no empty scene, no console errors, no horizontal overflow (see `node build-components.mjs` + the audit used during development).
 
 ## Known limits (by design)
-- Atoms and pieces are extracted copies; only the six section components feed the main page.
+- 123 components are focused copies; the sections and 54 atoms feed the main page.
 - `hero/*` pieces are compact re-implementations of the diagram parts; the full-page extras (node hover tooltip, depth fog, bloom, parallax, CRT kill overlay, signal trace) are also available as their own components (`hero/node-tooltip`, `depth-fog`, `bloom-pass`, `parallax-layers`, `kill-crt-overlay`, `signal-trace`).
 - Pieces that only make sense inside the full page chrome (HUD metrics, section tint) are demoed with small stand-in layouts.
 

@@ -1,18 +1,15 @@
 # lab / pipeline-status
 
-The pipeline's progress header as one piece: a "pipeline" tag, a status pill whose lamp beats fast while a run is in flight and whose text walks through `encode`, `typed questions`, `the gate`, `code acts` and `done`, a four-colour hairline (blue - pink - orange - green) that fills as the run advances, and four step chips that light up in turn. Every decision on the bus replays the 1.3 s timeline.
+The status pill ("ready", "stage 2/4", "done #04") and the progress hairline in the pipeline header.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
+
+* own chunks: html, css, js
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/pipeline-status`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Consumes bus `decision` (any record). Emits `JEV.bus 'lab-stage' {i, name}` when the pulse reaches each stage, so you can ignite your own stage cards in sync. Timeline: `TL = [0, 290, 720, 990, 1300]` ms in `component.js`.
-
-## Markup
-```html
-<div class="lab-pph"><span class="lab-tag">pipeline</span><span class="lab-stat"><i class="lamp"></i><b>ready</b></span><i class="lab-prog"><u></u></i></div>
-```
-Add `lab-run` to the wrapper for the fast lamp; scale `.lab-prog u` from 0 to 1 for progress.
-
-## Swap in real data
-Call `start()` when your real request starts and `finish()` when it returns (drive `prog` from your own progress instead of `TL`).
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

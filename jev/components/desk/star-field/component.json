@@ -2,8 +2,18 @@
   "title": "Star field",
   "description": "A twinkling canvas star field with depth parallax that follows the pointer, cross flares on the brightest stars and a shooting star on every decision.",
   "width": "720px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"],
-  "js": ["component.js"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
 }

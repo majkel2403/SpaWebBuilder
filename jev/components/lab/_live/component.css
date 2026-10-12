@@ -1,0 +1,4 @@
+/* live scrubbing: no choreography, quick follow */
+.lab-live .lab-bar u, .lab-live .lab-col u, .lab-live .lab-cb u, .lab-live .lab-gva, .lab-live .lab-gnd, .lab-live .lab-cf, .lab-live .lab-gt-tail { transition-duration: .2s !important; transition-delay: 0s !important; }
+.lab-live .lab-ring { transition-duration: .25s; }
+

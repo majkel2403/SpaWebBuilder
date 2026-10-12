@@ -1,0 +1,8 @@
+{
+  "title": "_bottom-css-wells",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "css": [
+    "wells.css"
+  ]
+}

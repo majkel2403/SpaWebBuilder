@@ -245,7 +245,6 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
-/* hero / title-card — the JEV DECIDES glass card: hot-pink spine, conic border, pointer-follow holo sheen, letter-by-letter neon ignition. Prefix hero-. */
 /* ---- title card (bottom-left, glass, 3px hot-pink spine) ---- */
 .hero-card { position: absolute; left: clamp(12px, 2vw, 28px); bottom: 24px; z-index: 4; padding: 13px 22px 15px 18px; border-radius: 6px 12px 12px 6px; max-width: calc(100% - 24px);
   background: linear-gradient(180deg, rgba(20, 7, 24, .78), rgba(8, 4, 13, .84)); border: 1px solid rgba(255, 70, 140, .28); border-left: 3px solid var(--pink);
@@ -302,7 +301,6 @@ html[data-tier="1"] .hero-l { animation: none !important; opacity: 1 !important;
 .htc-stage .hero-card { position: relative; left: auto; bottom: auto; }
 .htc-btn { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .8); border: 1px solid rgba(255, 111, 166, .5); border-radius: 99px; padding: 11px 16px; min-height: 40px; cursor: pointer; }
 .htc-btn:hover { background: rgba(255, 46, 110, .18); }
-@media (max-width: 1100px) { .hero-eyebrow { display: none; } .hero-card { padding: 11px 18px 13px 16px; } }
 @media (max-width: 699px) { .hero-eyebrow { display: flex; font-size: 9px; } .hero-title { font-size: clamp(28px, 9.5vw, 44px); white-space: normal; } .hero-sub { font-size: 11.5px; white-space: normal; } .hero-sub i { margin: 0 .45em; } }
 
 
@@ -314,11 +312,11 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 <div class="cmp-stage" style="--cmp-w:760px">
 <section class="htc-stage" aria-label="Title card (simulation)">
-  <div class="hero-card" id="htcCard">
-    <div class="hero-eyebrow"><i class="lamp pink"></i>jev &middot; system one &middot; typed answers</div>
-    <h1 class="hero-title"><span class="glitch" id="heroTitle" data-text="JEV DECIDES">JEV DECIDES</span></h1>
-    <p class="hero-sub"><b class="hero-w1">hermes writes</b><i>&middot;</i><b class="hero-w2">jev decides</b><i>&middot;</i><b class="hero-w3">code acts</b></p>
-  </div>
+    <div class="hero-card">
+      <div class="hero-eyebrow"><i class="lamp pink"></i>jev &middot; system one &middot; typed answers</div>
+      <h1 class="hero-title"><span class="glitch" id="heroTitle" data-text="JEV DECIDES">JEV DECIDES</span></h1>
+      <p class="hero-sub"><b class="hero-w1">hermes writes</b><i>&middot;</i><b class="hero-w2">jev decides</b><i>&middot;</i><b class="hero-w3">code acts</b></p>
+    </div>
   <button class="htc-btn" id="htcReplay" type="button">replay ignition</button>
 </section>
 
@@ -967,7 +965,7 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
  * Data: none required; reacts to JEV.bus 'kill' only through CSS (body.killed turns the spine and neon red). */
 JEV.mod('hero-title-card', () => {
   'use strict';
-  const J = JEV, stage = J.$('.htc-stage'), card = J.$('#htcCard'), title = J.$('#heroTitle'), btn = J.$('#htcReplay');
+  const J = JEV, stage = J.$('.htc-stage'), card = J.$('.hero-card'), title = J.$('#heroTitle'), btn = J.$('#htcReplay');
   if (!stage || !card || !title) return;
   const TXT = 'JEV DECIDES', tier = () => J.tier || 2;
   const letters = () => {

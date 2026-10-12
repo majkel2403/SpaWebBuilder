@@ -245,14 +245,18 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
-.bld-scope { --spring: cubic-bezier(.34, 1.5, .5, 1); --spring-s: cubic-bezier(.3, 1.3, .5, 1); --bld-k: #aaa1b8; --bld-line: rgba(255, 255, 255, .06); }
-.bld-solo { padding: 28px 0; }
+/* ===== builds — "ten builds, one decision layer": particle hub + live tiles (prefix bld-) ===== */
+@property --hi { syntax: '<number>'; inherits: true; initial-value: 1.2; }
+@property --hs { syntax: '<number>'; inherits: true; initial-value: 1; }
+.bld { position: relative; overflow-x: clip; --spring: cubic-bezier(.34, 1.5, .5, 1); --spring-s: cubic-bezier(.3, 1.3, .5, 1); --bld-side: clamp(186px, 20.5vw, 272px); --bld-vg: clamp(62px, 8.4vw, 100px); --bld-k: #aaa1b8; --bld-line: rgba(255, 255, 255, .06);
+  background: radial-gradient(64% 34% at 50% 30%, rgba(255, 46, 110, .075), transparent 72%), radial-gradient(40% 20% at 50% 78%, rgba(255, 197, 61, .035), transparent 70%); }
+
+/* odometer */
 .bld-odo { display: inline-flex; align-items: flex-start; height: var(--oh, 1.2em); vertical-align: top; font-variant-numeric: tabular-nums; }
 .bld-od { display: block; height: var(--oh, 1.2em); overflow: hidden; }
 .bld-od-r { display: block; transition: transform .8s var(--spring-s); }
 .bld-od-r bld-n { display: block; height: var(--oh, 1.2em); line-height: var(--oh, 1.2em); letter-spacing: 0; text-align: center; }
 .bld-op { display: block; height: var(--oh, 1.2em); line-height: var(--oh, 1.2em); white-space: pre; }
-.bld-od-r bld-n { display: block; height: var(--oh, 1.2em); line-height: var(--oh, 1.2em); letter-spacing: 0; text-align: center; }
 .bld-oc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .bld-oc { border-radius: 13px; padding: 14px 16px 16px; background: linear-gradient(180deg, rgba(22, 12, 30, .9), rgba(9, 5, 14, .92)); border: 1px solid var(--line); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05); min-width: 0; }
 .bld-oc label { display: block; font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--bld-k); margin-bottom: 10px; }
@@ -265,6 +269,43 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .bld-oc-b button:hover { border-color: var(--pink); }
 @media (max-width: 520px) { .bld-oc-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .bld-od-r { transition: none; } }
+.bld-solo { padding: 28px 0; }
+.bld-foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--bld-line); font-size: 9.5px; letter-spacing: .1em; color: var(--bld-k); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 979px) { .bld-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bld-stats { width: 100%; } .bld-stats > div { flex: 1 1 0; } }
+@media (max-width: 1100px) { .bld-gap-r { display: none; } .bld-prims { grid-template-columns: repeat(3, minmax(0, 220px)); } }
+@media (max-width: 759px) {
+  .bld { --bld-vg: 54px; }
+  .bld-head { gap: 20px; }
+  .bld-stats { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .bld-stats > div { min-width: 0; padding: 9px 12px 8px; border-left: 1px solid var(--line); border-top: 1px solid var(--line); }
+  .bld-stats > div:nth-child(-n+3) { border-top: 0; } .bld-stats > div:nth-child(3n+1) { border-left: 0; }
+  .bld-stats b { font-size: 15px; }
+  .bld-hub { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 24px; row-gap: 14px; }
+  .bld-col { display: contents; }
+  .bld-hub .bld-b { order: var(--o, 0); }
+  .bld-core { order: -1; grid-column: 1 / -1; width: min(100%, 318px); margin: 4px 0 52px; }
+  .bld-halo { width: 440px; height: 400px; margin: -200px 0 0 -220px; }
+  .bld-flash { width: 360px; height: 280px; margin: -140px 0 0 -180px; }
+  .bld-sweep { width: 520px; margin: -260px 0 0 -260px; } .bld-ring-a { width: 330px; margin: -165px 0 0 -165px; } .bld-ring-b { display: none; }
+  .bld-rw { padding: 4px 8px; font-size: 10px; gap: 6px; } .bld-hd { padding: 4px 8px; font-size: 10px; gap: 6px; } .bld-hd i { font-size: 8px; letter-spacing: .08em; }
+  .bld-prims { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; }
+  .bld-prims .bld-hd i { display: none; } .bld-prims .bld-hd b { font-size: 9.5px; }
+  .bld-decs { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; row-gap: 40px; width: 100%; }
+  .bld-decs > :nth-child(-n+3) { grid-column: span 2; } .bld-decs > :nth-child(n+4) { grid-column: span 3; }
+  .bld-decs > :nth-child(-n+3) .bld-hd i { display: none; }
+  .bld-rl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bld-rc:nth-child(3) { border-left: 0; } .bld-rc:nth-child(n+3) { border-top: 1px solid var(--bld-line); }
+  .bld-gap { font-size: 8.5px; letter-spacing: .14em; }
+  .bld-fig { display: none; }
+  .bld-stage { padding-bottom: 6px; }
+  .bld-tiles { grid-template-columns: minmax(0, 1fr); }
+  .bld-dr { grid-template-columns: 52px minmax(0, 1fr) 36px 70px; gap: 6px; }
+}
+@media (max-width: 380px) { .bld-hd i { display: none; } .bld-prims .bld-rw { flex-direction: column; align-items: flex-start; gap: 0; } .bld-prims .bld-rw b { text-align: left; } }
+@media (prefers-reduced-motion: reduce) { .bld-od-r, .bld-tip, .bld-vt { transition: none; } .bld-b.bld-tilt { transform: none; } .bld-pre .bld-card, .bld-pre .bld-core, .bld-pre .bld-cv, .bld-pre .bld-gap { opacity: 1; } .bld-pre .bld-ci { transform: none; } .bld-sweep, .bld-ring { animation: none; } }
+
 
 
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
@@ -274,7 +315,10 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 
 <div class="cmp-stage" style="--cmp-w:760px">
-<div class="bld-scope bld-solo">
+<section class="sec bld" id="builds" aria-labelledby="bld-h2">
+  <div class="wrap">
+
+<div class="bld-solo">
   <div class="bld-oc-grid">
     <div class="bld-oc"><label>decisions &middot; live</label><div class="bld-ov bld-ov-hot" data-odo="count">0</div></div>
     <div class="bld-oc"><label>cost this run &middot; live</label><div class="bld-ov bld-ov-cost" data-odo="cost">$0.0000</div></div>
@@ -283,6 +327,9 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
       <div class="bld-oc-b"><button type="button" data-step="-100" aria-label="minus 100">&minus;100</button><button type="button" data-step="137" aria-label="plus 137">+137</button><button type="button" data-step="1000" aria-label="plus 1000">+1,000</button></div></div>
   </div>
 </div>
+    <div class="bld-foot"><span>simulation &middot; illustrative values</span><span>10 builds &middot; 1 decision layer</span></div>
+  </div>
+</section>
 
 </div>
 <div class="cmp-note">jev / builds / odometer</div>
@@ -924,13 +971,28 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 </script>
 <script>
-/* Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod J.$ J.$$ J.fmt J.S J.animate J.reduce J.onView; bus 'decision'.
- * Data: J.S.count, J.S.cost, J.S.ms[]. Also exposes J.odo(el, text, from?) -> {set(text, {quiet, stagger})} if absent.
- */
-JEV.mod('builds-odometer', () => {
-const J = JEV, $ = J.$, $$ = J.$$, S = J.S, fmt = J.fmt, reduce = J.reduce;
+/* builds — "ten builds, one decision layer": one particle canvas behind a DOM hub + six live tiles (prefix bld-) */
+JEV.mod('builds', () => {
+  const J = JEV, $ = J.$, $$ = J.$$, C = J.C, S = J.S, B = J.BUILDS, TAU = J.TAU, clamp = J.clamp, fmt = J.fmt;
+  const root = $('#builds'), stage = $('#bld-stage'), cv = $('#bld-cv');
+  if (!root || !stage || !cv) return;
+  const reduce = J.reduce, mq = window.matchMedia('(max-width: 759px)');
+  const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
+  const short = (s) => s.split('-')[0];
+  const hex = (h) => { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
+
+  /* ---------- palette (index = tint id used by ribbons) ---------- */
+  const TINT = ['#ff6fa6', '#c9c2d6', '#35e0a8', '#5a8cff', '#ffc53d'];
+  const TIDX = { pink: 0, gray: 1, green: 2, blue: 3, yellow: 4 };
+  const TRGB = TINT.map(hex), RED = [255, 77, 94], WHITE = [255, 255, 255];
+  const PRIMS = ['choice', 'score', 'flag'];
+  const PCOL = { choice: C.pink, score: C.amber, flag: C.green };
+  const bIdx = {}; B.forEach((b, i) => (bIdx[b.key] = i));
+  const mix = (a, b, k) => 'rgba(' + ((a[0] + (b[0] - a[0]) * k) | 0) + ',' + ((a[1] + (b[1] - a[1]) * k) | 0) + ',' + ((a[2] + (b[2] - a[2]) * k) | 0);
+
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
   const TICK = [{ offset: 0, color: '#fff' }];
+
   /* ---------- odometer: reels per digit, spare 0 so 9 -> 0 keeps rolling forward; readable copy in .sr-only ---------- */
   const REEL = '0123456789'.concat('0').replace(/./g, '<bld-n>$&</bld-n>');
   const otf = (p) => 'translateY(calc(var(--oh,1.2em) * ' + -p + '))';
@@ -970,7 +1032,6 @@ const J = JEV, $ = J.$, $$ = J.$$, S = J.S, fmt = J.fmt, reduce = J.reduce;
     build(from || text);
     return { set };
   }
-
 
   if (!J.odo) J.odo = odo;
   const el = {}; $$('[data-odo]').forEach((e) => (el[e.dataset.odo] = e));

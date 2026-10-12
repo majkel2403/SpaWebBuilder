@@ -6,13 +6,22 @@
     "fx": false,
     "hud": false
   },
-  "html": [
-    "component.html"
-  ],
-  "css": [
-    "component.css"
-  ],
-  "js": [
-    "component.js"
+  "section": "builds/full-section",
+  "derived": true,
+  "compose": [
+    "builds/_shim-latency",
+    "builds/_head",
+    "builds/_hub-html",
+    "builds/_hub-css",
+    "builds/_hub-pre",
+    "builds/_ribbons",
+    "builds/_hub-post",
+    "builds/_rules-readout",
+    "builds/_tail",
+    "builds/_frame",
+    "builds/_end",
+    "builds/_responsive",
+    "builds/_hub-spectacle",
+    "builds/_reduce"
   ]
 }

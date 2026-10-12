@@ -2,8 +2,18 @@
   "title": "Agent rows",
   "description": "Six agent rows with orb, role and a live value chip; each row lights up and fills a progress bar when its step runs on a decision, click to pin one.",
   "width": "440px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"],
-  "js": ["component.js"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
 }

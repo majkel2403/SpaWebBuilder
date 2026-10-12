@@ -1,0 +1,8 @@
+{
+  "title": "_world-agents-say",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "js": [
+    "component.js"
+  ]
+}

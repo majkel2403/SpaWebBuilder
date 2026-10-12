@@ -1,18 +1,65 @@
 {
   "title": "jev-starter window",
   "description": "The whole jev-starter editor window: desk.py, a live hot-pink state.json, questions.py and a streaming zsh terminal with queue counters, handoff packets, ripples and pointer tilt.",
-  "width": "1100px",
+  "width": "1200px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
+  "derived": true,
+  "section": "code/full-section",
   "html": [
     "component.html"
   ],
   "css": [
     "component.css"
   ],
-  "js": [
-    "component.js"
+  "compose": [
+    "code/_head",
+    "code/_u-highlighter",
+    "code/_panes",
+    "code/_open",
+    "code/_base",
+    "code/code-window",
+    "code/_u-window-bar",
+    "code/_grid",
+    "code/_pane-shell",
+    "code/_css-widgets",
+    "code/_term-chips",
+    "code/_state-diff",
+    "code/_view",
+    "code/_u-line-gutter",
+    "code/_caret",
+    "code/_u-minimap",
+    "code/_u-typing-engine",
+    "code/_tokens",
+    "code/_u-pane-desk-py",
+    "code/_u-pane-state-json",
+    "code/_panes-start",
+    "code/_u-pane-questions-py",
+    "code/_u-terminal",
+    "code/_u-live-pill",
+    "code/_tabs",
+    "code/_fnodes",
+    "code/_hops",
+    "code/_skin-dark",
+    "code/_kill",
+    "code/_u-status-bar",
+    "code/_eq",
+    "code/_overlays",
+    "code/_u-handoff-packets",
+    "code/_tilt",
+    "code/_responsive",
+    "code/_spectacle",
+    "code/_close",
+    "code/_u-hot-haze",
+    "code/_u-matrix-rain",
+    "code/_details",
+    "code/_u-token-link",
+    "code/_u-copy-button",
+    "code/_seek",
+    "code/_tail",
+    "code/_u-phosphor-log",
+    "code/_spectacle-b"
   ]
 }

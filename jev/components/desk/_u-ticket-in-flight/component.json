@@ -1,0 +1,54 @@
+{
+  "title": "Ticket in flight",
+  "description": "The ticket being worked: side, symbol, notional, edge, size, price, confidence, a six-step rail, countdown and six agent rows that take turns.",
+  "width": "1320px",
+  "needs": {
+    "fx": true,
+    "hud": false
+  },
+  "section": "desk/full-desk",
+  "derived": true,
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "compose": [
+    "desk/_world-sa-open",
+    "desk/_world-head",
+    "desk/_world-geo",
+    "desk/_world-layout",
+    "desk/world-card",
+    "desk/_u-venue-feeds",
+    "desk/_u-oracle-card",
+    "desk/_u-venue-row",
+    "desk/_world-frame",
+    "desk/_u-star-field",
+    "desk/_u-planet-shade",
+    "desk/_u-dotted-globe",
+    "desk/_u-globe",
+    "desk/_u-globe-arcs",
+    "desk/_world-markers",
+    "desk/_world-draw-end",
+    "desk/_u-orbit-orbs",
+    "desk/_world-stage-end",
+    "desk/_world-agents-state",
+    "desk/_world-agents-paint",
+    "self",
+    "desk/_world-agents-say",
+    "desk/_u-ticket-rail",
+    "desk/_world-ticket-end",
+    "desk/_u-agent-row",
+    "desk/_world-card-end",
+    "desk/_u-agent-tabs",
+    "desk/_world-interact",
+    "desk/_world-tail",
+    "desk/_world-responsive",
+    "desk/_world-sa-close"
+  ],
+  "hidden": true
+}

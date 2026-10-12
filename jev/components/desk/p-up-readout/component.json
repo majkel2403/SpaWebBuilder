@@ -2,8 +2,18 @@
   "title": "P(up) big readout",
   "description": "The big serif P(up 5m) odometer that turns red below 50 percent, with live deltas versus a coin flip and versus the prior and an updates counter.",
   "width": "380px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"],
-  "js": ["component.js"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
 }

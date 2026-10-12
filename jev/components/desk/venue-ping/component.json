@@ -2,7 +2,15 @@
   "title": "Venue marker pings",
   "description": "CSS-only venue markers: a glowing dot with two staggered expanding ping rings, a city code and a latency tag, in eight venue colours on a faint dot grid.",
   "width": "560px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "derived": false
 }

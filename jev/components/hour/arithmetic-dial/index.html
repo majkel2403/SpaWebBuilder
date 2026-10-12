@@ -245,10 +245,24 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
-/* hour / arithmetic-dial — rules copied from the hour module (prefix hr-) */
-.hr { position: relative; overflow-x: clip; --hr-k: #aaa1b8; --hr-t: #e9e3ef; --hr-line: rgba(255, 255, 255, .085); --hr-glass: linear-gradient(180deg, rgba(23, 14, 30, .9), rgba(9, 5, 14, .94)); }
-.hr-p { display: flex; flex-direction: column; padding: 14px clamp(14px, 1.7vw, 24px) 16px; background: var(--hr-glass); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: rgba(var(--cc-rgb), .24); container-type: inline-size; container-name: hrp; isolation: isolate; box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .04); }
+/* ===== hour — "three agents, sixty minutes, one bot": build · hour · backtest · arithmetic · honest part (prefix hr-) ===== */
+.hr { position: relative; overflow-x: clip; --hr-k: #aaa1b8; --hr-t: #e9e3ef; --hr-line: rgba(255, 255, 255, .085);
+  --hr-glass: linear-gradient(180deg, rgba(23, 14, 30, .9), rgba(9, 5, 14, .94)); }
+.hr-bgl { position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(60% 24% at 50% 8%, rgba(255, 138, 61, .08), transparent 72%), radial-gradient(45% 20% at 12% 58%, rgba(77, 141, 255, .06), transparent 70%),
+    radial-gradient(45% 20% at 88% 82%, rgba(166, 107, 255, .07), transparent 70%); }
+.hr .wrap { z-index: 1; }
+/* ---------- grid ---------- */
+.hr-grid { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 14px; container-type: inline-size; container-name: hrg; }
+.hr-grid > * { grid-column: 1 / -1; min-width: 0; }
+@media (min-width: 900px) { .hr-grid > .hr-b { grid-column: span 11; } .hr-grid > .hr-c { grid-column: span 9; } .hr-grid > .hr-d, .hr-grid > .hr-e { grid-column: span 10; } }
+
+/* ---------- panel shell ---------- */
+.hr-p { display: flex; flex-direction: column; padding: 14px clamp(14px, 1.7vw, 24px) 16px; background: var(--hr-glass); backdrop-filter: none; -webkit-backdrop-filter: none;
+  border-color: rgba(var(--cc-rgb), .24); container-type: inline-size; container-name: hrp; isolation: isolate;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .04); }
 .hr-p > * { position: relative; z-index: 1; }
+.hr-p > canvas.hr-burst { position: absolute; z-index: 5; }
 .hr-edge { position: absolute !important; left: 0; right: 0; top: 0; height: 1px; z-index: 2; background: linear-gradient(90deg, transparent, var(--cc), transparent); box-shadow: 0 0 18px 1px rgba(var(--cc-rgb), .7); opacity: .85; }
 .hr-p::selection { background: var(--cc); }
 .hr-ph { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--hr-k); }
@@ -256,40 +270,46 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .hr-ps { flex: 1 1 120px; min-width: 0; }
 .hr-badge { padding: 3px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: .1em; color: var(--cc); border: 1px solid rgba(var(--cc-rgb), .7); background: rgba(var(--cc-rgb), .09); white-space: nowrap; font-variant-numeric: tabular-nums; margin-left: auto; }
 .hr-t { margin-top: 14px; font: 600 clamp(15px, 1.5vw, 19.5px)/1.3 var(--sans); letter-spacing: -.005em; color: #fff; max-width: 60ch; text-wrap: balance; }
-.hr-t b { font-weight: 700; }
+.hr-t b { font-weight: 700; } .hr-cb { color: var(--blue); } .hr-cp { color: var(--pink); }
 .hr-note { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 10px; }
 .hr-note span { padding: 3px 9px; border-radius: 4px; font-size: 10px; line-height: 1.5; color: var(--cc, var(--hr-k)); border: 1px solid rgba(var(--cc-rgb, 255, 255, 255), .5); background: rgba(var(--cc-rgb, 255, 255, 255), .06); }
 .hr-foot { margin-top: auto; padding-top: 12px; text-align: center; font-size: 10.5px; line-height: 1.6; color: var(--hr-k); }
 .hr-foot::before { content: ''; display: block; height: 1px; margin-bottom: 12px; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .14) 0 4px, transparent 4px 9px); }
 .hr-fig { position: absolute !important; right: 14px; bottom: 6px; z-index: 0 !important; font: 900 clamp(34px, 5vw, 70px)/1 var(--serif); letter-spacing: -.02em; color: rgba(255, 255, 255, .045); pointer-events: none; user-select: none; }
+.hr-st4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 16px 0 6px; text-align: center; }
+.hr-st4 > div { padding: 0 2px; min-width: 0; }
+.hr-st4 b { font-feature-settings: 'tnum' 1, 'lnum' 1; font-kerning: none; display: block; font: 900 clamp(22px, 2.5vw, 34px)/1.05 var(--serif); color: var(--amber); font-variant-numeric: tabular-nums; text-shadow: 0 0 22px currentColor; white-space: nowrap; }
+.hr-st4 > div:nth-child(2) b { color: var(--blue); } .hr-st4 > div:nth-child(3) b { color: var(--green); } .hr-st4 > div:nth-child(4) b { color: var(--pink); }
+.hr-st4 b.up { color: var(--green); } .hr-st4 b.dn { color: var(--red); } .hr-st4 b.hr-amb { color: var(--amber); }
+.hr-c .hr-st4 > div:nth-child(2) b { color: var(--amber); } .hr-c .hr-st4 > div:nth-child(3) b { color: var(--red); } .hr-c .hr-st4 > div:nth-child(4) b { color: var(--ink); }
+@keyframes hrDone { 0% { text-shadow: 0 0 22px currentColor; } 35% { text-shadow: 0 0 44px currentColor, 0 0 8px #fff; filter: brightness(1.35); } 100% { text-shadow: 0 0 22px currentColor; filter: none; } }
+.hr-st4 b.hr-done { animation: hrDone .9s var(--ease); }
+.hr-st4 span { display: block; margin-top: 4px; font-size: 10px; line-height: 1.4; color: var(--hr-k); }
+.hr-st4 em { font-style: normal; color: var(--hr-k); opacity: .85; }
+
+/* ================= D · the arithmetic ================= */
 .hr-gx { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 6px clamp(10px, 1.6vw, 22px); align-items: center; margin-top: 8px; }
 .hr-gauge { position: relative; width: 100%; max-width: 400px; margin-inline: auto; aspect-ratio: 320 / 250; }
 .hr-gauge svg { width: 100%; height: 100%; display: block; overflow: visible; user-select: none; -webkit-user-select: none; }
-.hr-gtick { stroke: rgba(255, 255, 255, .34); stroke-width: 1.2; transition: stroke .2s, stroke-width .2s; }
-.hr-gtick.mj { stroke: rgba(255, 255, 255, .8); stroke-width: 1.8; }
-.hr-gtick.lit { stroke: #ffb3d1; }
-.hr-gtick.mj.lit { stroke: #fff; }
-.hr-gtick.hot { stroke: #fff; stroke-width: 3; }
-.hr-glab.lit { fill: #fff; }
+.hr-gtick { stroke: rgba(255, 255, 255, .34); stroke-width: 1.2; transition: stroke .2s, stroke-width .2s; } .hr-gtick.mj { stroke: rgba(255, 255, 255, .8); stroke-width: 1.8; }
+.hr-gtick.lit { stroke: #ffb3d1; } .hr-gtick.mj.lit { stroke: #fff; } .hr-gtick.hot { stroke: #fff; stroke-width: 3; } .hr-glab.lit { fill: #fff; }
 .hr-gpulse { fill: none; stroke: #fff; stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; pointer-events: none; }
-.hr-gpulse.pa { animation: hrGpA .6s ease-out; }
-.hr-gpulse.pb { animation: hrGpB .6s ease-out; }
+.hr-gpulse.pa { animation: hrGpA .6s ease-out; } .hr-gpulse.pb { animation: hrGpB .6s ease-out; }
+@keyframes hrGpA { 0% { opacity: 1; transform: scale(.6); } 100% { opacity: 0; transform: scale(3.2); } } @keyframes hrGpB { 0% { opacity: 1; transform: scale(.6); } 100% { opacity: 0; transform: scale(3.2); } }
 .hr-glab { font: 600 10.5px var(--mono); fill: #cfc7da; paint-order: stroke; stroke: #0a0610; stroke-width: 3px; stroke-linejoin: round; }
 .hr-gtag { font: 800 13px var(--mono); fill: #fff; paint-order: stroke; stroke: #07040c; stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
 .hr-knob { position: absolute; left: 0; top: 0; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; cursor: grab; touch-action: none; will-change: transform; }
 .hr-knob::before { content: ''; position: absolute; inset: 9px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, .5); animation: hrHint 2.2s ease-in-out infinite; }
 .hr-knob:focus-visible { outline: 2px solid var(--violet); outline-offset: 1px; box-shadow: 0 0 0 5px rgba(166, 107, 255, .25), 0 0 22px rgba(166, 107, 255, .6); }
-.hr-knob.drag { cursor: grabbing; }
-.hr-knob.drag::before, .hr-knob.used::before { animation: none; opacity: 0; }
+.hr-knob.drag { cursor: grabbing; } .hr-knob.drag::before, .hr-knob.used::before { animation: none; opacity: 0; }
+@keyframes hrHint { 0%, 100% { transform: scale(.8); opacity: .9; } 60% { transform: scale(1.25); opacity: 0; } }
 .hr-read { display: flex; flex-direction: column; align-items: flex-end; text-align: right; min-width: 0; }
 .hr-rl { font-size: 11px; line-height: 1.4; color: var(--hr-k); }
 .hr-ret { font-feature-settings: 'tnum' 1, 'lnum' 1; display: block; font: 900 clamp(36px, 4.2vw, 56px)/1.04 var(--serif); color: var(--amber); text-shadow: 0 0 28px rgba(255, 193, 61, .45); margin-bottom: 12px; min-width: 2.6em; font-variant-numeric: tabular-nums; }
 .hr-capv { font-feature-settings: 'tnum' 1, 'lnum' 1; display: block; font: 900 clamp(40px, 5vw, 72px)/1.04 var(--serif); color: var(--pink); text-shadow: 0 0 36px rgba(255, 46, 110, .6); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hr-verdict { margin-top: 10px; padding: 4px 11px; border-radius: 99px; font-size: 10.5px; line-height: 1.45; color: var(--cc); border: 1px solid rgba(var(--cc-rgb), .55); background: rgba(var(--cc-rgb), .09); transition: color .3s, border-color .3s, background .3s; --cc: #35e0a8; --cc-rgb: 53, 224, 168; }
-.hr-verdict[data-z="a"] { --cc: #ffc53d; --cc-rgb: 255, 197, 61; }
-.hr-verdict[data-z="r"] { --cc: #ff6b79; --cc-rgb: 255, 107, 121; }
-.hr-small { margin-top: 8px; font-size: 11px; color: var(--hr-k); }
-.hr-small b { color: var(--hr-t); font-variant-numeric: tabular-nums; }
+.hr-verdict[data-z="a"] { --cc: #ffc53d; --cc-rgb: 255, 197, 61; } .hr-verdict[data-z="r"] { --cc: #ff6b79; --cc-rgb: 255, 107, 121; }
+.hr-small { margin-top: 8px; font-size: 11px; color: var(--hr-k); } .hr-small b { color: var(--hr-t); font-variant-numeric: tabular-nums; }
 .hr-ctl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 18px; align-items: center; margin-top: 6px; }
 .hr-rng { display: block; }
 .hr-rng input { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 40px; background: transparent; cursor: pointer; touch-action: pan-y; margin: 0; }
@@ -305,33 +325,53 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .hr-pb:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 .hr-eq { margin-top: 14px; font-size: 11.5px; line-height: 1.55; text-align: center; color: var(--hr-t); }
 .hr-key { margin-top: 8px; padding: 10px 14px; border-radius: 10px; text-align: center; font-size: 11.5px; line-height: 1.5; color: #fff; border: 1px solid rgba(166, 107, 255, .55); background: rgba(166, 107, 255, .1); }
+
+/* ================= responsive ================= */
+@container hrp (max-width: 700px) { .hr-lower { grid-template-columns: 1fr; } .hr-rules { grid-template-columns: 1fr 1fr; } .hr-cap2 { grid-column: 1 / -1; text-align: center; } .hr-kill { grid-column: auto; } }
+@container hrp (max-width: 560px) { .hr-gx { grid-template-columns: 1fr; } .hr-read { align-items: center; text-align: center; } .hr-ctl { grid-template-columns: 1fr; justify-items: stretch; } .hr-pre { justify-content: center; } }
 @container hrp (max-width: 560px) {
-  .hr-gx { grid-template-columns: 1fr; }
-  .hr-read { align-items: center; text-align: center; }
-  .hr-ctl { grid-template-columns: 1fr; justify-items: stretch; }
-  .hr-pre { justify-content: center; }
+  .hr-ec { grid-template-rows: auto minmax(0, 1fr) auto; }
+  .hr-mtxt { grid-area: 1 / 1 / 2 / 4; display: flex; flex-wrap: wrap; justify-content: center; gap: 0 12px; margin-bottom: 4px; }
+  .hr-edge-s { flex-basis: 100%; }
+  .hr-col-a .hr-barbox { grid-area: 2 / 1; } .hr-col-a .hr-bl { grid-area: 3 / 1; } .hr-col-b .hr-barbox { grid-area: 2 / 3; } .hr-col-b .hr-bl { grid-area: 3 / 3; } .hr-bin { grid-area: 2 / 2; }
 }
 @media (max-width: 700px) {
   .hr-p { padding: 12px 12px 14px; }
+  .hr-stage { padding-top: 44px; padding-bottom: 44px; }
+  .hr-ag { --hr-av: 58px; } .hr-av { margin-bottom: 8px; }
+  .hr-al { font-size: 10px; line-height: 1.4; } .hr-as { display: none; }
+  .hr-an { font-size: 12.5px; letter-spacing: .1em; margin-bottom: 5px; }
+  .hr-ag { padding: 0 3px; }
+  .hr-last { margin-top: 6px; padding: 2px 8px; font-size: 8.5px; letter-spacing: 0; }
+  .hr-lbl { font-size: 9px; } .hr-lbl-r { font-size: 8.5px; padding: 3px 9px; }
+  .hr-rules { grid-template-columns: 1fr; }
+  .hr-st4 { gap: 2px; } .hr-st4 b { font-size: clamp(19px, 5.6vw, 24px); } .hr-st4 span { font-size: 9px; }
+  .hr-tape { height: 112px; }
   .hr-note span { font-size: 9.5px; }
-  .hr-ps { display: none; }
-  .hr-badge { margin-left: auto; }
+  .hr-ringbox { width: 196px; }
+  .hr-ps { display: none; } .hr-badge { margin-left: auto; }
+  .hr-bt-cv { min-height: 220px; }
   .hr-gauge { max-width: 330px; }
+  .hr-ec { gap: 8px 6px; } .hr-edge-t { font-size: 10px; } .hr-edge-s { font-size: 9.5px; } .hr-bin span { font-size: 9.5px; }
+  .hr-barbox { min-height: 188px; } .hr-bl { font-size: 10px; }
   .hr-fig { font-size: 36px; }
+  .hr-trio { padding: 0 10px; }
+  .hr-last { max-width: 100%; justify-content: center; }
+  .hr-leg { display: none; }
+  #hr-a-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 6px; }
+  #hr-a-stats b { font-size: 30px; } #hr-a-stats span { font-size: 10px; }
 }
-@media (max-width: 380px) {
-  .hr-pb { min-width: 46px; padding: 0 11px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hr-gpulse { display: none; }
-}
-html[data-tier="1"] .hr-cone { display: none; }
+@media (max-width: 380px) { .hr-pb { min-width: 46px; padding: 0 11px; } .hr-pills .pill { font-size: 9px; letter-spacing: .08em; } }
+@media (prefers-reduced-motion: reduce) { .hr-bar { transition: none; } .hr-rflash, .hr-gpulse { display: none; } .hr-av::before { animation: none; } }
+
+/* standalone page only: a lone panel takes the whole row; the scroll-reveal (fx.js) is not loaded here, so panels are shown at once */
+.hr-grid > * { grid-column: 1 / -1 !important; }
+.hr-grid .rv { opacity: 1; transform: none; filter: none; }
+/* D · gauge: particles shed from the needle + tick flares */
 .hr-gcv { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
 .hr-cone { mix-blend-mode: screen; }
 html[data-tier="1"] .hr-gcv { display: none; }
-@keyframes hrGpA { 0% { opacity: 1; transform: scale(.6); } 100% { opacity: 0; transform: scale(3.2); }  }
-@keyframes hrGpB { 0% { opacity: 1; transform: scale(.6); } 100% { opacity: 0; transform: scale(3.2); }  }
-@keyframes hrHint { 0%, 100% { transform: scale(.8); opacity: .9; } 60% { transform: scale(1.25); opacity: 0; }  }
+@media (prefers-reduced-motion: reduce) { .hr-sweep, .hr-scan, .hr-lightb, .hr-shock { display: none; } .hr-av .orb, .hr-robot, .hr-av-px .hr-robot { animation: none; } }
 
 
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
@@ -341,64 +381,74 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 
 <div class="cmp-stage" style="--cmp-w:680px">
-<div class="hr">
-<article class="card hr-p hr-d" id="hr-d" data-c="violet" aria-labelledby="hr-d-t">
-  <i class="hr-edge" aria-hidden="true"></i>
-  <div class="hr-ph"><span class="hr-tag">the arithmetic</span><span class="hr-ps">$1,200,000 a year</span><span class="hr-badge" id="hr-d-badge" data-c="violet">$3.87M</span></div>
-  <h3 class="hr-t" id="hr-d-t">Turn the needle down from 480% to 5% and watch what the capital has to be</h3>
-  <p class="hr-note"><span data-c="violet" id="hr-d-note">the red end of the dial is the returns nobody delivers</span></p>
+<section class="sec hr" id="hour" aria-labelledby="hr-h2">
+  <i class="hr-lightb" id="hr-lightb" aria-hidden="true"></i><i class="hr-shock" id="hr-shock" aria-hidden="true"></i>
+  <i class="hr-bgl" aria-hidden="true"></i>
+  <div class="wrap">
 
-  <div class="hr-gx">
-    <div class="hr-gauge" id="hr-gauge">
-      <svg id="hr-gsvg" viewBox="0 0 320 250" role="img" aria-label="Gauge: return per year on a log scale from 5 percent to 480 percent" focusable="false">
-        <defs>
-          <linearGradient id="hr-gcone" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff2e6e" stop-opacity="0"/><stop offset=".55" stop-color="#ff4d8f" stop-opacity=".16"/><stop offset="1" stop-color="#ff9cc4" stop-opacity=".5"/></linearGradient>
-          <radialGradient id="hr-gtip"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#ff7ab3" stop-opacity=".95"/><stop offset="1" stop-color="#ff2e6e" stop-opacity="0"/></radialGradient>
-          <radialGradient id="hr-gbg" cx=".5" cy=".56" r=".6"><stop offset="0" stop-color="#a66bff" stop-opacity=".22"/><stop offset="1" stop-color="#a66bff" stop-opacity="0"/></radialGradient>
-        </defs>
-        <circle cx="160" cy="140" r="150" fill="url(#hr-gbg)"/>
-        <g id="hr-gtrack"></g>
-        <g id="hr-glit"></g>
-        <g id="hr-gticks"></g>
-        <g id="hr-gneedle">
-          <path class="hr-cone" d="M160 140 L136 40 Q160 24 184 40 Z" fill="url(#hr-gcone)"/>
-          <line x1="160" y1="140" x2="160" y2="58" stroke="rgba(255,46,110,.35)" stroke-width="7" stroke-linecap="round"/>
-          <line x1="160" y1="140" x2="160" y2="58" stroke="#ff7ab3" stroke-width="2.6" stroke-linecap="round"/>
-          <circle cx="160" cy="46" r="17" fill="url(#hr-gtip)"/>
-          <circle cx="160" cy="46" r="4.4" fill="#fff"/>
-        </g>
-        <circle cx="160" cy="140" r="13" fill="#0a0610" stroke="#ff2e6e" stroke-width="3"/>
-        <circle cx="160" cy="140" r="4.5" fill="#ff7ab3"/>
-        <text id="hr-gtag" x="160" y="178" class="hr-gtag" text-anchor="middle">31%</text>
-      </svg>
-      <canvas class="hr-gcv" id="hr-gcv" data-dpr="1.5" aria-hidden="true"></canvas>
-      <div class="hr-knob" id="hr-knob" role="slider" tabindex="0" aria-label="Return per year, log scale (arrow keys, Home, End; magnets at 17, 31 and 100 percent)" aria-valuemin="5" aria-valuemax="480" aria-valuenow="31" aria-valuetext="31% a year, $3.87M of capital needed"></div>
-    </div>
+    <div class="hr-grid">
 
-    <div class="hr-read">
-      <span class="hr-rl">what the bot delivers, a year</span>
-      <b class="hr-ret serif" id="hr-ret">31%</b>
-      <span class="hr-rl">so the capital you must already have</span>
-      <b class="hr-capv serif num" id="hr-capv">$3.87M</b>
-      <p class="hr-verdict" id="hr-verdict">what the backtest promised, before the bill</p>
-      <p class="hr-small"><span>with $25,000 that is</span> <b id="hr-small">$646</b> <span>a month</span></p>
+      <!-- ============ D · THE ARITHMETIC ============ -->
+      <article class="card hr-p hr-d rv" id="hr-d" data-c="violet" aria-labelledby="hr-d-t">
+        <i class="hr-edge" aria-hidden="true"></i>
+        <div class="hr-ph"><span class="hr-tag">the arithmetic</span><span class="hr-ps">$1,200,000 a year</span><span class="hr-badge" id="hr-d-badge" data-c="violet">$3.87M</span></div>
+        <h3 class="hr-t" id="hr-d-t">Turn the needle down from 480% to 5% and watch what the capital has to be</h3>
+        <p class="hr-note"><span data-c="violet" id="hr-d-note">the red end of the dial is the returns nobody delivers</span></p>
+
+        <div class="hr-gx">
+          <div class="hr-gauge" id="hr-gauge">
+            <svg id="hr-gsvg" viewBox="0 0 320 250" role="img" aria-label="Gauge: return per year on a log scale from 5 percent to 480 percent" focusable="false">
+              <defs>
+                <linearGradient id="hr-gcone" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff2e6e" stop-opacity="0"/><stop offset=".55" stop-color="#ff4d8f" stop-opacity=".16"/><stop offset="1" stop-color="#ff9cc4" stop-opacity=".5"/></linearGradient>
+                <radialGradient id="hr-gtip"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#ff7ab3" stop-opacity=".95"/><stop offset="1" stop-color="#ff2e6e" stop-opacity="0"/></radialGradient>
+                <radialGradient id="hr-gbg" cx=".5" cy=".56" r=".6"><stop offset="0" stop-color="#a66bff" stop-opacity=".22"/><stop offset="1" stop-color="#a66bff" stop-opacity="0"/></radialGradient>
+              </defs>
+              <circle cx="160" cy="140" r="150" fill="url(#hr-gbg)"/>
+              <g id="hr-gtrack"></g>
+              <g id="hr-glit"></g>
+              <g id="hr-gticks"></g>
+              <g id="hr-gneedle">
+                <path class="hr-cone" d="M160 140 L136 40 Q160 24 184 40 Z" fill="url(#hr-gcone)"/>
+                <line x1="160" y1="140" x2="160" y2="58" stroke="rgba(255,46,110,.35)" stroke-width="7" stroke-linecap="round"/>
+                <line x1="160" y1="140" x2="160" y2="58" stroke="#ff7ab3" stroke-width="2.6" stroke-linecap="round"/>
+                <circle cx="160" cy="46" r="17" fill="url(#hr-gtip)"/>
+                <circle cx="160" cy="46" r="4.4" fill="#fff"/>
+              </g>
+              <circle cx="160" cy="140" r="13" fill="#0a0610" stroke="#ff2e6e" stroke-width="3"/>
+              <circle cx="160" cy="140" r="4.5" fill="#ff7ab3"/>
+              <text id="hr-gtag" x="160" y="178" class="hr-gtag" text-anchor="middle">31%</text>
+            </svg>
+            <canvas class="hr-gcv" id="hr-gcv" data-dpr="1.5" aria-hidden="true"></canvas>
+            <div class="hr-knob" id="hr-knob" role="slider" tabindex="0" aria-label="Return per year, log scale (arrow keys, Home, End; magnets at 17, 31 and 100 percent)" aria-valuemin="5" aria-valuemax="480" aria-valuenow="31" aria-valuetext="31% a year, $3.87M of capital needed"></div>
+          </div>
+
+          <div class="hr-read">
+            <span class="hr-rl">what the bot delivers, a year</span>
+            <b class="hr-ret serif" id="hr-ret">31%</b>
+            <span class="hr-rl">so the capital you must already have</span>
+            <b class="hr-capv serif num" id="hr-capv">$3.87M</b>
+            <p class="hr-verdict" id="hr-verdict">what the backtest promised, before the bill</p>
+            <p class="hr-small"><span>with $25,000 that is</span> <b id="hr-small">$646</b> <span>a month</span></p>
+          </div>
+        </div>
+
+        <div class="hr-ctl">
+          <label class="hr-rng"><span class="sr-only">return per year, log scale</span><input type="range" id="hr-range" min="0" max="1000" step="1" value="400" aria-valuetext="31% a year"></label>
+          <div class="hr-pre" role="group" aria-label="Presets">
+            <button type="button" data-r="17" class="hr-pb">17%</button>
+            <button type="button" data-r="31" class="hr-pb">31%</button>
+            <button type="button" data-r="100" class="hr-pb">100%</button>
+          </div>
+        </div>
+        <p class="hr-eq">$100,000 a month is $1,200,000 a year &middot; divide it by the return</p>
+        <p class="hr-key">the $100k a month is a property of the capital, not of the bot</p>
+        <p class="hr-foot">no bot turns $25,000 into $100,000 a month &mdash; whoever says otherwise is selling you the bot</p>
+        <span class="hr-fig" aria-hidden="true">FIG.4</span>
+      </article>
+
     </div>
   </div>
-
-  <div class="hr-ctl">
-    <label class="hr-rng"><span class="sr-only">return per year, log scale</span><input type="range" id="hr-range" min="0" max="1000" step="1" value="400" aria-valuetext="31% a year"></label>
-    <div class="hr-pre" role="group" aria-label="Presets">
-      <button type="button" data-r="17" class="hr-pb">17%</button>
-      <button type="button" data-r="31" class="hr-pb">31%</button>
-      <button type="button" data-r="100" class="hr-pb">100%</button>
-    </div>
-  </div>
-  <p class="hr-eq">$100,000 a month is $1,200,000 a year &middot; divide it by the return</p>
-  <p class="hr-key">the $100k a month is a property of the capital, not of the bot</p>
-  <p class="hr-foot">no bot turns $25,000 into $100,000 a month &mdash; whoever says otherwise is selling you the bot</p>
-  <span class="hr-fig" aria-hidden="true">FIG.4</span>
-</article>
-</div>
+</section>
 
 </div>
 <div class="cmp-note">jev / hour / arithmetic-dial</div>
@@ -1040,22 +1090,24 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 </script>
 <script>
-/* hour / arithmetic-dial — a 270deg log gauge (5% .. 480% a year): drag the needle, use the slider, the presets or the keyboard and read the capital the bot needs
- * to earn $1,200,000 a year (capital = 1,200,000 / return). Magnets at 17 / 31 / 100%, spring needle, sparks shed from the tip, tick flares.
- *
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod  J.$ J.$$ J.C J.clamp J.fmt J.usd  J.fit J.watch J.task J.onView  J.DPR J.reduce J.tier.
- * Data: none from the bus. Inputs are the ANNUAL target (1,200,000), the log range RMIN..RMAX and the MAGS / SEG tables at the top of the D section.
- * Everything is simulated; not financial advice.
- */
-JEV.mod('hour-arithmetic-dial', () => {
-  const J = JEV, $ = J.$, $$ = J.$$, C = J.C, clamp = J.clamp, fmt = J.fmt;
-  const root = $('#hr-d');
+/* hour — "three agents, sixty minutes, one bot" (prefix hr-)
+ * A  the build       three heads joined by travelling-dot arcs · live decision packets · candle replay with entries + stops · live kill chip
+ * B  the hour        amber 60:00 ring · six spring switches · accelerated loop -> ARMED + particle burst
+ * C  the backtest    1,840 seeded trades as thin up/down bars · running total · -22% drawdown block · scrub it
+ * D  the arithmetic  270deg log gauge (drag the needle) · capital = 1,200,000 / return
+ * E  the honest part x2.9 vs x1.9 · the red leak falls into the venue
+ * Everything here is an illustrative simulation: no order is sent and no figure is a result. */
+JEV.mod('hour', () => {
+  const J = JEV, $ = J.$, $$ = J.$$, C = J.C, S = J.S, TAU = J.TAU, clamp = J.clamp, fmt = J.fmt, rgba = J.rgba;
+  const root = $('#hour');
   if (!root) return;
   const reduce = J.reduce;
+  const MONO = (getComputedStyle(document.documentElement).getPropertyValue('--mono') || 'monospace').trim();
   const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
+  const pad2 = (n) => (n < 10 ? '0' : '') + n;
   const NS = 'http://www.w3.org/2000/svg';
   const svg = (tag, at, par) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (par) par.appendChild(e); return e; };
+
   /* ---------- shared helpers ---------- */
   /** J.fit, corrected for ancestors that are mid-transform (.rv reveal scales the box, which would make getBoundingClientRect lie) */
   function fitC(c) {
@@ -1067,6 +1119,13 @@ JEV.mod('hour-arithmetic-dial', () => {
       f.g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); f.W = cw; f.H = ch;
     }
     return f;
+  }
+  /** layout-space box of el inside the positioned ancestor `top` (transform-proof, unlike getBoundingClientRect) */
+  function offs(el, top) {
+    let x = 0, y = 0, e = el;
+    const w = el.offsetWidth, h = el.offsetHeight;
+    while (e && e !== top) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; }
+    return { x, y, w, h };
   }
   const SPR = {};
   /** pre-rendered additive glow sprite (white core -> colour -> transparent) */
@@ -1081,6 +1140,40 @@ JEV.mod('hour-arithmetic-dial', () => {
     return (SPR[hex] = c);
   }
   const blit = (g, hex, x, y, r, a) => { g.globalAlpha = a; g.drawImage(glow(hex), x - r, y - r, r * 2, r * 2); };
+  /* polylines with cumulative length so dots can travel at constant speed */
+  function makePath(pts) {
+    const n = pts.length, x = new Float32Array(n), y = new Float32Array(n), s = new Float32Array(n);
+    let L = 0;
+    for (let i = 0; i < n; i++) { x[i] = pts[i][0]; y[i] = pts[i][1]; if (i) L += Math.hypot(x[i] - x[i - 1], y[i] - y[i - 1]); s[i] = L; }
+    return { x, y, s, n, len: L };
+  }
+  const PT = { x: 0, y: 0 };
+  function at(p, d) {
+    d = d < 0 ? 0 : d > p.len ? p.len : d;
+    let lo = 0, hi = p.n - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (p.s[m] > d) hi = m; else lo = m; }
+    const k = (d - p.s[lo]) / (p.s[hi] - p.s[lo] || 1);
+    PT.x = p.x[lo] + (p.x[hi] - p.x[lo]) * k; PT.y = p.y[lo] + (p.y[hi] - p.y[lo]) * k;
+    return PT;
+  }
+  function bez(p0, p1, p2, p3, n) {
+    const a = [];
+    for (let i = 0; i <= n; i++) { const t = i / n, u = 1 - t; a.push([u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0], u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1]]); }
+    return a;
+  }
+  function roundPoly(V, R, n) {
+    const out = [V[0].slice()];
+    for (let i = 1; i < V.length - 1; i++) {
+      const a = V[i - 1], b = V[i], c = V[i + 1], l1 = Math.hypot(b[0] - a[0], b[1] - a[1]), l2 = Math.hypot(c[0] - b[0], c[1] - b[1]), r = Math.min(R, l1 / 2, l2 / 2);
+      const p1 = [b[0] + (a[0] - b[0]) / l1 * r, b[1] + (a[1] - b[1]) / l1 * r], p2 = [b[0] + (c[0] - b[0]) / l2 * r, b[1] + (c[1] - b[1]) / l2 * r];
+      out.push(p1);
+      for (let k = 1; k < n; k++) { const t = k / n, u = 1 - t; out.push([u * u * p1[0] + 2 * u * t * b[0] + t * t * p2[0], u * u * p1[1] + 2 * u * t * b[1] + t * t * p2[1]]); }
+      out.push(p2);
+    }
+    out.push(V[V.length - 1].slice());
+    return out;
+  }
+  let killed = !!S.killed;
 
   /* =====================================================================
    * D · the arithmetic — log gauge, capital = 1,200,000 / return
@@ -1258,6 +1351,7 @@ JEV.mod('hour-arithmetic-dial', () => {
   });
   J.onView(gaugeEl, () => { if (!reduce) { setU(1, true); renderG(0); G.cap = ANNUAL / (u2r(1) / 100); setTimeout(() => { if (!knob.classList.contains('used')) setU(r2u(31)); }, 450); } }, { threshold: 0.5 });
   renderG(0);
+
 });
 
 </script>

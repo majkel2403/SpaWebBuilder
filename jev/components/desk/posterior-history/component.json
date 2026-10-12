@@ -2,8 +2,18 @@
   "title": "Posterior sparkline history",
   "description": "A 30 second sparkline of the posterior P(up) with a dotted 50 percent line, a glowing live head and min, max and now readouts; red under the kill switch.",
   "width": "460px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"],
-  "js": ["component.js"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
 }

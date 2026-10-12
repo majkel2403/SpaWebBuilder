@@ -1,5 +1,3 @@
-.dkc { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
-.dkmq-card { overflow: hidden; } .dkmq-card .dkt-mq { border-top: 0; }
 .dkt-mq { position: relative; overflow: hidden; border-top: 1px solid var(--line); background: rgba(0, 0, 0, .2);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent); mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent); }
 .dkt-mt { display: flex; width: max-content; animation: dktMq var(--mqd, 70s) linear infinite; will-change: transform; }
@@ -14,7 +12,8 @@
 .dkt-c b { font-weight: 700; color: var(--cc, #b8b2c2); font-variant-numeric: tabular-nums; letter-spacing: .08em; text-shadow: 0 0 12px rgba(var(--cc-rgb, 184, 178, 194), .45); }
 .dkt-dt { width: 6px; height: 6px; border-radius: 50%; background: var(--cc); box-shadow: 0 0 8px var(--cc), 0 0 14px var(--cc); animation: lampPulse 1.6s ease-in-out infinite; flex: none; }
 .dkt-c[data-ck="last"] b { display: inline-block; min-width: 18ch; text-align: left; }
-html:not([data-tier="1"]) .dkt-mq::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; will-change: transform;
-  background: linear-gradient(90deg, transparent 40%, rgba(255, 150, 190, .10) 47%, rgba(255, 255, 255, .17) 50%, rgba(255, 150, 190, .10) 53%, transparent 60%); animation: dktTl 5.8s linear infinite; }
-@keyframes dktTl { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-@media (prefers-reduced-motion: reduce) { .dkt-mq { overflow-x: auto; -webkit-mask-image: none; mask-image: none; scrollbar-width: none; } .dkt-mt { animation: none; } .dkt-ms + .dkt-ms { display: none; } .dkt-mq::before { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .dkt-mq { overflow-x: auto; -webkit-mask-image: none; mask-image: none; scrollbar-width: none; }
+  .dkt-mt { animation: none; } .dkt-ms + .dkt-ms { display: none; } .dkt-scan { animation: none; }
+}
+

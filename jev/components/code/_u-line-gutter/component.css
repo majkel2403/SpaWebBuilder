@@ -1,0 +1,6 @@
+.code-ln { position: relative; height: var(--code-lh); padding-right: 18px; white-space: pre; }
+.code-no { display: inline-block; width: 2.4ch; margin: 0 1.6ch 0 1ch; text-align: right; color: var(--code-no); user-select: none; opacity: 0; transition: opacity .2s; }
+.code-ln.on .code-no { opacity: 1; }
+.code-ln.act .code-no { color: var(--code-bandc); font-weight: 700; text-shadow: 0 0 9px var(--code-gut-t, transparent); }
+.code-no { transition: opacity .2s, color .3s, text-shadow .3s; }
+.code-band { position: absolute; left: 0; right: 0; top: 8px; height: var(--code-lh); background-color: var(--code-band); background-image: linear-gradient(90deg, var(--code-gut, transparent), transparent 72px); box-shadow: inset 2px 0 0 var(--code-bandc); pointer-events: none; transition: transform .34s cubic-bezier(.22, 1.18, .36, 1), background-color .3s; will-change: transform; }

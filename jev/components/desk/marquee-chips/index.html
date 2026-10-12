@@ -244,9 +244,260 @@ html[data-tier="1"] .card { backdrop-filter: none; -webkit-backdrop-filter: none
 html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
+/* ===== fx — page atmosphere, kill theatre, toasts, boot (prefix fx-) ===== */
 
-.dkc { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
-.dkmq-card { overflow: hidden; } .dkmq-card .dkt-mq { border-top: 0; }
+/* ---------- 1. background: css gradient layer (fallback + pre-first-frame look) under the webgl plasma canvas ---------- */
+#fx-bgf, #fx-bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#fx-bgf { z-index: -3;
+  background:
+    radial-gradient(120% 95% at 50% 45%, transparent 48%, rgba(3, 1, 8, .5) 80%, rgba(2, 1, 5, .88) 100%),
+    radial-gradient(58% 46% at 14% 8%, rgba(96, 26, 140, .27), transparent 72%),
+    radial-gradient(46% 40% at 88% 26%, rgba(150, 22, 80, .18), transparent 72%),
+    radial-gradient(70% 55% at 50% 112%, rgba(44, 38, 150, .24), transparent 74%),
+    #05030a; }
+body.killed #fx-bgf { background:
+    radial-gradient(120% 95% at 50% 45%, transparent 44%, rgba(64, 0, 8, .5) 78%, rgba(30, 0, 4, .9) 100%),
+    radial-gradient(58% 46% at 14% 8%, rgba(140, 22, 30, .28), transparent 72%),
+    radial-gradient(46% 40% at 88% 26%, rgba(170, 80, 14, .18), transparent 72%),
+    radial-gradient(70% 55% at 50% 112%, rgba(110, 20, 24, .24), transparent 74%),
+    #05030a; }
+#fx-bg { z-index: -2; opacity: 0; transition: opacity 1s ease; }
+html.fx-gl #fx-bg { opacity: 1; }
+
+/* ---------- 1b. no-widening safety net ----------
+ * a transformed box that pokes out of the viewport (a sweeping glow, a ::after hopping on a transform, a fixed overlay) leaves a
+ * stale wider scrollable overflow in chromium (scrollWidth up to ~1.7x the viewport for seconds; on touch the layout viewport widens and
+ * the page pans / zooms out). `clip` (not `hidden`) on both html and body keeps the body from becoming a scroll container,
+ * which would break `position: sticky` on the hud. browsers without overflow: clip keep base.css' body{overflow-x:hidden}. */
+@supports (overflow: clip) { html, body { overflow-x: clip; } }
+
+/* ---------- 2. overlays (all pointer-events:none, all below the hud z-index 60) ---------- */
+.fx-ov { position: fixed; inset: 0; pointer-events: none; }
+
+.fx-scan { z-index: 55; overflow: hidden; opacity: .5; background: repeating-linear-gradient(180deg, rgba(0, 0, 0, .24) 0 1px, transparent 1px 3px); }
+.fx-scan i { position: absolute; left: 0; right: 0; top: 0; height: 26vh; transform: translateY(-30vh); will-change: transform; animation: fxRoll 11s linear infinite;
+  background: linear-gradient(180deg, transparent, rgba(255, 60, 120, .035) 45%, rgba(255, 110, 170, .06) 78%, transparent); }
+body.killed .fx-scan i { background: linear-gradient(180deg, transparent, rgba(255, 60, 50, .045) 45%, rgba(255, 110, 70, .075) 78%, transparent); }
+@keyframes fxRoll { to { transform: translateY(130vh); } }
+@media (hover: none), (pointer: coarse) { .fx-scan { opacity: .26; } }
+
+/* film grain: sparse light specks from an inline svg turbulence tile, hopped around in steps (transform only).
+ * the oversized, animated tile lives inside a viewport-sized clipping host: a fixed box that pokes out of the viewport
+ * (it was inset:-120px + translate up to 64px) widens the document's scrollWidth, up to ~1.2x the viewport */
+.fx-grainhost { z-index: 56; overflow: hidden; contain: paint; }
+.fx-grain { position: absolute; inset: -120px; opacity: .05; will-change: transform; animation: fxGrain .8s steps(1) infinite; background-size: 256px 256px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .96  0 0 0 0 .86  0 0 0 0 1  0 0 0 5 -3.15'/></filter><rect width='256' height='256' filter='url(%23n)'/></svg>"); }
+@keyframes fxGrain {
+  0% { transform: translate(0, 0); } 12% { transform: translate(-37px, 23px); } 25% { transform: translate(29px, -51px); } 37% { transform: translate(-61px, -17px); }
+  50% { transform: translate(47px, 38px); } 62% { transform: translate(-19px, 64px); } 75% { transform: translate(58px, -33px); } 87% { transform: translate(-44px, -58px); } 100% { transform: translate(0, 0); } }
+
+/* ---------- 3. cursor spotlight (fine pointers only) ---------- */
+.fx-spotwrap { display: none; z-index: 54; overflow: hidden; }
+@media (hover: hover) and (pointer: fine) { .fx-spotwrap { display: block; } }
+#fx-spot { position: absolute; left: 0; top: 0; width: 640px; height: 640px; margin: -320px 0 0 -320px; border-radius: 50%; opacity: 0; transition: opacity .5s; will-change: transform;
+  background: radial-gradient(circle closest-side, rgba(255, 70, 140, .09), rgba(255, 46, 110, .035) 46%, transparent 100%); }
+.fx-spotwrap.on #fx-spot { opacity: 1; }
+body.killed #fx-spot { background: radial-gradient(circle closest-side, rgba(255, 80, 70, .1), rgba(255, 60, 50, .04) 46%, transparent 100%); }
+
+/* ---------- 4. reveal cleanup: once a .rv has landed, drop its stagger delay so later hover transitions are instant ---------- */
+.rv.fx-done { transition-delay: 0s; }
+#fx-tick { position: fixed; left: 0; top: 0; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
+
+/* ---------- 7. hud nav: section in view ---------- */
+.nav { position: relative; }
+.nav a.on { color: #fff; background: rgba(255, 46, 110, .11); text-shadow: 0 0 14px rgba(255, 46, 110, .7); }
+.fx-navbar { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0; border-radius: 2px; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, var(--pink), var(--pink2)); box-shadow: 0 0 10px var(--pink), 0 0 24px rgba(255, 46, 110, .75);
+  transition: left .5s var(--ease), width .5s var(--ease), opacity .3s; }
+.fx-navbar.on { opacity: 1; }
+
+/* ---------- 8. kill theatre: shockwave, glitch, toasts ---------- */
+#fx-shock { position: fixed; inset: 0; z-index: 85; pointer-events: none; overflow: hidden; }
+.fx-ring { --rc: 255, 77, 94; position: absolute; width: 520px; height: 520px; translate: -50% -50%; border-radius: 50%; will-change: scale, opacity;
+  background: radial-gradient(circle closest-side, transparent 0, rgba(var(--rc), .05) 58%, rgba(var(--rc), 0) 80%, rgba(var(--rc), .32) 92.5%, rgba(var(--rc), .95) 97%, rgba(var(--rc), 0) 100%);
+  animation: fxRing .95s cubic-bezier(.16, .7, .22, 1) both; }
+.fx-ring.g { --rc: 46, 230, 166; }
+.fx-ring.b { animation-duration: 1.3s; animation-delay: .1s; filter: saturate(.8); }
+@keyframes fxRing { 0% { scale: .02; opacity: 1; } 65% { opacity: .8; } 100% { scale: var(--s, 6); opacity: 0; } }
+
+#fx-glitch { position: fixed; inset: 0; z-index: 86; pointer-events: none; display: none; overflow: hidden; }
+html.fx-glitch #fx-glitch { display: block; }
+#fx-glitch::before { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 50%, rgba(255, 40, 70, 0), rgba(255, 40, 70, .3) 100%); animation: fxFlash .35s ease-out both; }
+#fx-glitch i { position: absolute; left: -6%; right: -6%; opacity: 0; mix-blend-mode: screen; animation: fxSlice .35s steps(1) both;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 70, .42) 16%, rgba(0, 235, 255, .36) 64%, transparent);
+  -webkit-backdrop-filter: hue-rotate(150deg) saturate(2.4) brightness(1.35); backdrop-filter: hue-rotate(150deg) saturate(2.4) brightness(1.35); }
+#fx-glitch i:nth-child(1) { top: 8%; height: 4.5%; --gx: 26; animation-delay: 0s; }
+#fx-glitch i:nth-child(2) { top: 23%; height: 2.2%; --gx: -38; animation-delay: .03s; }
+#fx-glitch i:nth-child(3) { top: 41%; height: 7%; --gx: 18; animation-delay: .06s; }
+#fx-glitch i:nth-child(4) { top: 57%; height: 3%; --gx: -30; animation-delay: .02s; }
+#fx-glitch i:nth-child(5) { top: 72%; height: 5.5%; --gx: 42; animation-delay: .05s; }
+#fx-glitch i:nth-child(6) { top: 88%; height: 2.4%; --gx: -22; animation-delay: .08s; }
+@keyframes fxFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fxSlice {
+  0% { opacity: 1; transform: translateX(calc(var(--gx) * 1px)); } 16% { opacity: 0; } 30% { opacity: 1; transform: translateX(calc(var(--gx) * -1.4px)); }
+  48% { opacity: 0; } 62% { opacity: 1; transform: translateX(calc(var(--gx) * .6px)); } 80% { opacity: 0; } 100% { opacity: 0; } }
+/* rgb split on every piece of text + a few px of jitter on the sections, ~350 ms, css only */
+html.fx-glitch { animation: fxSplit .35s steps(1) both; }
+@keyframes fxSplit {
+  0% { text-shadow: 4px 0 rgba(255, 20, 70, .9), -4px 0 rgba(0, 235, 255, .9); } 20% { text-shadow: -6px 0 rgba(255, 20, 70, .9), 5px 0 rgba(0, 235, 255, .9); }
+  40% { text-shadow: 2px 0 rgba(255, 20, 70, .8), -2px 0 rgba(0, 235, 255, .8); } 60% { text-shadow: -3px 1px rgba(255, 20, 70, .8), 3px -1px rgba(0, 235, 255, .8); }
+  80% { text-shadow: 1px 0 rgba(255, 20, 70, .6), -1px 0 rgba(0, 235, 255, .6); } 100% { text-shadow: none; } }
+html.fx-glitch .sec, html.fx-glitch .foot { animation: fxJit .35s steps(1) both; }
+@keyframes fxJit { 0% { translate: -5px 0; } 14% { translate: 6px 1px; } 28% { translate: -3px -1px; } 42% { translate: 4px 0; } 57% { translate: -2px 1px; } 71% { translate: 2px 0; } 85% { translate: -1px 0; } 100% { translate: 0 0; } }
+
+#fx-toasts { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); translate: -50% 0; z-index: 92; width: min(92vw, 640px);
+  display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.fx-toast { --tc: 255, 122, 179; position: relative; display: flex; align-items: center; gap: 11px; max-width: 100%; padding: 11px 18px; border-radius: 16px; overflow: hidden;
+  font: 700 11px/1.4 var(--mono); letter-spacing: .07em; color: var(--ink); background: rgba(14, 8, 22, .84);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5); backdrop-filter: blur(14px) saturate(1.5); border: 1px solid rgba(var(--tc), .5);
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, .85), 0 0 30px -6px rgba(var(--tc), .55), inset 0 1px 0 rgba(255, 255, 255, .09);
+  animation: fxToastIn .5s var(--ease) both; }
+.fx-t-kill { --tc: 255, 77, 94; animation: fxToastIn .5s var(--ease) both, fxToastShake .4s steps(1) .05s; }
+.fx-t-ok { --tc: 46, 230, 166; }
+.fx-toast { pointer-events: auto; touch-action: pan-y; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+.fx-t-ic { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: rgb(var(--tc)); background: rgba(var(--tc), .13); box-shadow: 0 0 14px rgba(var(--tc), .55); }
+.fx-t-ic svg { display: block; filter: drop-shadow(0 0 4px rgba(var(--tc), .9)); }
+.fx-t-kill .fx-t-ic { animation: lampPulse .7s ease-in-out infinite; }
+.fx-t-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: linear-gradient(90deg, rgba(var(--tc), .4), rgb(var(--tc))); box-shadow: 0 0 8px rgb(var(--tc)); transform-origin: left; animation: fxToastBar 3s linear both; }
+.fx-toast.hold .fx-t-bar { animation-play-state: paused; }
+.fx-toast.hold { box-shadow: 0 12px 40px -8px rgba(0, 0, 0, .85), 0 0 36px -4px rgba(var(--tc), .7), inset 0 1px 0 rgba(255, 255, 255, .12); }
+.fx-t-out { animation: fxToastOut .36s ease-in both; } .fx-t-out.fast { animation-duration: .15s; }
+@keyframes fxToastIn { from { opacity: 0; translate: 0 18px; scale: .94; filter: blur(6px); } to { opacity: 1; translate: 0 0; scale: 1; filter: none; } }
+@keyframes fxToastOut { to { opacity: 0; translate: 0 -10px; scale: .96; filter: blur(5px); } }
+@keyframes fxToastBar { to { transform: scaleX(0); } }
+@keyframes fxToastShake { 0% { translate: -6px 0; } 25% { translate: 5px 0; } 50% { translate: -3px 0; } 75% { translate: 2px 0; } 100% { translate: 0 0; } }
+@media (max-width: 700px) { .fx-toast { min-height: 44px; padding: 10px 14px; font-size: 10.5px; letter-spacing: .05em; } }
+
+/* ---------- 8b. intro: camera push (zoom-blur streaks) + chromatic split settling, once, when the boot overlay lifts (tier >= 2) ---------- */
+#fx-push { position: fixed; inset: 0; z-index: 84; pointer-events: none; opacity: 0; overflow: hidden; }
+#fx-push::before { content: ''; position: absolute; inset: 0; will-change: transform, opacity;
+  background: repeating-conic-gradient(from 3deg at 50% 50%, rgba(255, 170, 215, 0) 0 4deg, rgba(255, 170, 215, .16) 4.6deg 5deg, rgba(255, 170, 215, 0) 5.6deg 9deg, rgba(120, 200, 255, .12) 9.6deg 9.9deg, rgba(120, 200, 255, 0) 10.4deg 17deg);
+  -webkit-mask-image: radial-gradient(closest-side, transparent 28%, #000 92%); mask-image: radial-gradient(closest-side, transparent 28%, #000 92%); }
+html.fx-intro #fx-push { opacity: 1; }
+html.fx-intro #fx-push::before { animation: fxPush 1.1s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes fxPush { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(1.7); opacity: 0; } }
+html.fx-intro { animation: fxSplitIn 1s steps(1) both; }
+@keyframes fxSplitIn {
+  0% { text-shadow: 5px 0 rgba(255, 20, 70, .55), -5px 0 rgba(0, 235, 255, .55); } 20% { text-shadow: 3.5px 0 rgba(255, 20, 70, .45), -3.5px 0 rgba(0, 235, 255, .45); }
+  40% { text-shadow: 2.4px 0 rgba(255, 20, 70, .35), -2.4px 0 rgba(0, 235, 255, .35); } 60% { text-shadow: 1.4px 0 rgba(255, 20, 70, .25), -1.4px 0 rgba(0, 235, 255, .25); }
+  80% { text-shadow: .7px 0 rgba(255, 20, 70, .15), -.7px 0 rgba(0, 235, 255, .15); } 100% { text-shadow: none; } }
+
+/* ---------- 5. boot overlay ---------- */
+#fx-boot { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; color: var(--ink); font: 500 12px/1.7 var(--mono);
+  animation: fxBootFail .01s linear 2.2s forwards; }
+@keyframes fxBootFail { to { visibility: hidden; pointer-events: none; } }
+/* two full-height layers, each clipped to one half, slide apart on the way out; identical backgrounds keep the seam invisible */
+.fx-bh { position: absolute; inset: 0; will-change: transform; background-color: #05030a;
+  background-image: radial-gradient(52% 56% at 50% 50%, rgba(255, 46, 110, .17), transparent 72%), radial-gradient(40% 40% at 12% 100%, rgba(110, 50, 220, .16), transparent 70%),
+    linear-gradient(rgba(255, 255, 255, .034) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .034) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 44px 44px, 44px 44px; background-position: 0 0, 0 0, 50% 50%, 50% 50%; }
+.fx-bh.t { clip-path: inset(0 0 50% 0); } .fx-bh.b { clip-path: inset(50% 0 0 0); }
+.fx-bx { position: relative; z-index: 2; width: min(540px, calc(100vw - 32px)); padding: 16px 18px 14px; border-radius: 14px; border: 1px solid rgba(255, 46, 110, .38);
+  background: linear-gradient(180deg, rgba(20, 10, 26, .82), rgba(9, 5, 14, .86)); box-shadow: 0 0 60px -10px rgba(255, 46, 110, .5), 0 30px 80px -20px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .08); }
+.fx-bhead { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 11px; border-bottom: 1px solid var(--line); }
+.fx-bhead b { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; font: 800 16px/1 var(--sans); color: #fff; background: linear-gradient(145deg, #ff4f8d, #e0155a); box-shadow: 0 0 20px rgba(255, 46, 110, .65), inset 0 1px 0 rgba(255, 255, 255, .4); }
+.fx-bhead span { font: 700 13px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; }
+.fx-bhead em { margin-left: auto; font-style: normal; font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--mut); }
+.fx-blog { min-height: 7.9em; }
+.fx-bl { min-height: 1.7em; color: #cfc6d6; white-space: pre-wrap; overflow-wrap: anywhere; visibility: hidden; }
+.fx-bl.show { visibility: visible; }
+.fx-bl::before { content: '> '; color: var(--pink); }
+.fx-bl em { font-style: normal; font-weight: 700; color: var(--green); text-shadow: 0 0 10px rgba(46, 230, 166, .6); }
+.fx-bl em:not(:empty)::before { content: ' '; }
+.fx-bl.cur::after { content: ''; display: inline-block; width: .55em; height: 1em; margin-left: 3px; vertical-align: -.14em; background: var(--pink); box-shadow: 0 0 10px var(--pink); animation: fxCaret .5s steps(1) infinite; }
+@keyframes fxCaret { 50% { opacity: 0; } }
+.fx-bbar { height: 3px; margin-top: 12px; border-radius: 3px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.fx-bbar i { display: block; height: 100%; width: 100%; transform: scaleX(0); transform-origin: left; border-radius: inherit; background: linear-gradient(90deg, var(--pink), var(--pink2), #fff); box-shadow: 0 0 14px var(--pink); }
+.fx-bmeta { display: flex; justify-content: space-between; gap: 12px; margin-top: 9px; font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--mut); font-variant-numeric: tabular-nums; }
+.fx-bmeta span:first-child { color: var(--pink2); }
+.fx-bline { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; z-index: 3; opacity: 0; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--pink2) 18%, #fff 50%, var(--pink2) 82%, transparent); box-shadow: 0 0 22px 3px rgba(255, 46, 110, .95), 0 0 90px 16px rgba(255, 46, 110, .5); }
+#fx-boot::after { content: ''; position: absolute; inset: 0; z-index: 4; opacity: 0; pointer-events: none; background: radial-gradient(70% 55% at 50% 50%, rgba(255, 205, 225, .55), rgba(255, 46, 110, 0) 70%); }
+/* out: terminal drops, line flashes, halves slide away */
+.fx-out { pointer-events: none; }
+.fx-out .fx-bx { animation: fxBoxOut .14s ease-in both; }
+.fx-out .fx-bh.t { animation: fxHalfT .4s cubic-bezier(.76, 0, .24, 1) .1s both; } .fx-out .fx-bh.b { animation: fxHalfB .4s cubic-bezier(.76, 0, .24, 1) .1s both; }
+.fx-out .fx-bline { animation: fxBLine .5s ease-out both; }
+.fx-out::after { animation: fxBFlash .34s ease-out both; }
+.fx-fast .fx-bx { animation-duration: .08s; } .fx-fast .fx-bh.t, .fx-fast .fx-bh.b { animation-duration: .22s; animation-delay: .02s; } .fx-fast .fx-bline { animation-duration: .3s; }
+@keyframes fxBoxOut { to { opacity: 0; scale: 1.04; filter: blur(4px); } }
+@keyframes fxHalfT { to { transform: translateY(-50%); } } @keyframes fxHalfB { to { transform: translateY(50%); } }
+@keyframes fxBLine { 0% { opacity: 0; scale: .12 1; } 22% { opacity: 1; scale: 1 1; } 70% { opacity: 1; scale: 1 2.4; } 100% { opacity: 0; scale: 1 .2; } }
+@keyframes fxBFlash { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+@media (max-width: 700px) { .fx-bx { padding: 14px 14px 12px; font-size: 11px; } .fx-bhead em { display: none; } .fx-bmeta span:last-child { text-align: right; } }
+
+/* boot: line resolves with a flash, bar ticks on every completed step */
+.fx-bl.hit em { animation: fxOk .5s ease-out both; }
+@keyframes fxOk { 0% { opacity: 0; scale: 1.5; filter: brightness(2.2); } 100% { opacity: 1; scale: 1; filter: none; } }
+.fx-bl em { display: inline-block; transform-origin: left center; }
+.fx-bbar i.tk { animation: fxTick .26s ease-out; }
+@keyframes fxTick { 0% { filter: brightness(2.4) saturate(.6); } 100% { filter: none; } }
+
+/* ---------- 9. custom cursor (fine pointers) ---------- */
+#fx-cur { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 95; pointer-events: none; display: none; opacity: 0; transition: opacity .25s; }
+@media (hover: hover) and (pointer: fine) { #fx-cur { display: block; } }
+#fx-cur.on { opacity: 1; } #fx-cur.nat { opacity: 0; transition-duration: .1s; }
+.fx-cr, .fx-cd { position: absolute; left: 0; top: 0; mix-blend-mode: difference; will-change: transform; transform: translate3d(-200px, -200px, 0); }
+.fx-cr { width: 34px; height: 34px; margin: -17px 0 0 -17px; }
+.fx-cr::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid #ffc4dc; background: rgba(255, 196, 220, 0);
+  transition: transform .35s var(--ease), background .25s, border-width .25s; }
+#fx-cur.hov .fx-cr::before { transform: scale(1.65); background: rgba(255, 196, 220, .14); border-width: 1px; }
+#fx-cur.down .fx-cr::before { transform: scale(.68); background: rgba(255, 196, 220, .3); }
+#fx-cur.hov.down .fx-cr::before { transform: scale(1.3); }
+.fx-cd { width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #fff; }
+/* system cursor off only where the page has no cursor of its own (inputs, charts, handles keep theirs) */
+html.fx-cur body, html.fx-cur a, html.fx-cur button, html.fx-cur label, html.fx-cur summary, html.fx-cur [role="button"], html.fx-cur [role="tab"], html.fx-cur [tabindex] { cursor: none; }
+html.fx-cur.fx-nat body { cursor: auto; }
+
+/* ---------- 10. scroll progress hairline + section ticks ---------- */
+#fx-prog { position: fixed; left: 0; right: 0; top: 52px; height: 2px; z-index: 59; pointer-events: none; opacity: 0; transition: opacity .35s; }
+#fx-prog.show { opacity: 1; }
+.fx-pf { position: absolute; inset: 0; transform: scaleX(0); transform-origin: left; background: linear-gradient(90deg, rgba(255, 46, 110, .55), var(--pink) 70%, var(--pink2)); box-shadow: 0 0 10px rgba(255, 46, 110, .8); will-change: transform; }
+.fx-pf::after { content: ''; position: absolute; right: 0; top: -2px; width: 14px; height: 6px; border-radius: 50%; background: #fff; filter: blur(3px); opacity: .75; }
+.fx-tk { position: absolute; top: 0; width: 1px; height: 6px; margin-left: -.5px; background: rgba(255, 255, 255, .28); transition: background .3s, height .3s var(--ease), box-shadow .3s; }
+.fx-tk.on { height: 8px; background: var(--pink2); box-shadow: 0 0 6px var(--pink); }
+body.killed .fx-pf { background: linear-gradient(90deg, rgba(255, 77, 94, .55), var(--red)); box-shadow: 0 0 10px rgba(255, 77, 94, .8); }
+body.killed .fx-tk.on { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+/* ---------- 11. heading light sweep (one shot) ---------- */
+.fx-hs { position: relative; }
+.fx-hsw { position: absolute; inset: -4px -8px; overflow: hidden; pointer-events: none; }
+.fx-hsw i { position: absolute; top: 0; bottom: 0; left: 0; width: 38%; mix-blend-mode: screen; opacity: 0; transform: translateX(-120%) skewX(-18deg); will-change: transform, opacity;
+  background: linear-gradient(90deg, transparent, rgba(255, 150, 195, .22) 40%, rgba(255, 255, 255, .5) 52%, rgba(255, 150, 195, .18) 64%, transparent);
+  animation: fxHSweep 1.1s cubic-bezier(.4, 0, .2, 1) .35s both; }
+@keyframes fxHSweep { 0% { opacity: 0; transform: translateX(-120%) skewX(-18deg); } 15% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateX(300%) skewX(-18deg); } }
+
+/* ---------- reduced motion / print ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #fx-boot, #fx-push, .fx-spotwrap, .fx-scan i, #fx-glitch, #fx-shock, #fx-cur, .fx-hsw { display: none !important; }
+  .fx-pf, .fx-tk { transition: none; }
+  .fx-grain { animation: none; }
+}
+@media print { #fx-bg, .fx-ov, #fx-boot, #fx-toasts, #fx-shock, #fx-glitch, #fx-push, #fx-prog, #fx-cur { display: none !important; } }
+
+/* ===== desk-top — status ticker · swarm P&L · the tape (prefix dkt-) ===== */
+.dkt-bar, .dkt-pnl, .dkt-tape { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
+.dkt-pnl, .dkt-tape { display: flex; flex-direction: column; }
+
+/* ---------- status ticker ---------- */
+.dkt-bar { background: radial-gradient(60% 160% at 0% 0%, rgba(255, 46, 110, .16), transparent 62%), radial-gradient(40% 140% at 100% 0%, rgba(77, 141, 255, .09), transparent 70%), var(--panel); border-color: rgba(255, 46, 110, .24); }
+.dkt-scan { position: absolute; left: 0; right: 0; top: 0; height: 1px; pointer-events: none; z-index: 2; background: linear-gradient(90deg, transparent, var(--pink), #fff, var(--pink), transparent) no-repeat; background-size: 26% 100%; animation: dktScan 6.5s linear infinite; opacity: .9; }
+@keyframes dktScan { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+.dkt-top { display: flex; align-items: center; gap: clamp(14px, 2.2vw, 30px); padding: 13px clamp(14px, 2vw, 22px) 12px; }
+.dkt-wm { display: flex; align-items: center; gap: 12px; flex: none; }
+.dkt-wm .lamp { width: 9px; height: 9px; }
+.dkt-wt { display: flex; flex-direction: column; gap: 4px; }
+.dkt-wt b { font: 800 clamp(20px, 2.3vw, 26px)/1 var(--sans); letter-spacing: .07em; color: #fff; text-shadow: 0 0 24px rgba(255, 46, 110, .6); }
+.dkt-wt i { font-style: normal; font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dkt-k); white-space: nowrap; }
+.dkt-kvs { display: flex; gap: clamp(14px, 2vw, 28px); flex: none; }
+.dkt-kvs b { display: block; font: 700 15px/1.2 var(--mono); white-space: nowrap; color: var(--dkt-ink); }
+.dkt-clk { display: flex; align-items: baseline; gap: 8px; margin-left: auto; flex: none; }
+.dkt-clk b { font: 700 clamp(22px, 2.6vw, 30px)/1 var(--mono); letter-spacing: .02em; color: #fff; text-shadow: 0 0 20px rgba(255, 255, 255, .28); }
+.dkt-clk i { font-style: normal; font-size: 9px; letter-spacing: .24em; text-transform: uppercase; color: var(--dkt-k); }
+.dkt-sim { margin-left: 6px; align-self: center; border-color: rgba(255, 193, 61, .4); color: var(--amber); }
+body.killed .dkt-bar { border-color: rgba(255, 77, 94, .5); }
+body.killed .dkt-bar .lamp { background: var(--red); box-shadow: 0 0 8px var(--red), 0 0 18px var(--red); animation-duration: .5s; }
+
 .dkt-mq { position: relative; overflow: hidden; border-top: 1px solid var(--line); background: rgba(0, 0, 0, .2);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent); mask-image: linear-gradient(90deg, transparent, #000 34px, #000 calc(100% - 34px), transparent); }
 .dkt-mt { display: flex; width: max-content; animation: dktMq var(--mqd, 70s) linear infinite; will-change: transform; }
@@ -261,25 +512,113 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .dkt-c b { font-weight: 700; color: var(--cc, #b8b2c2); font-variant-numeric: tabular-nums; letter-spacing: .08em; text-shadow: 0 0 12px rgba(var(--cc-rgb, 184, 178, 194), .45); }
 .dkt-dt { width: 6px; height: 6px; border-radius: 50%; background: var(--cc); box-shadow: 0 0 8px var(--cc), 0 0 14px var(--cc); animation: lampPulse 1.6s ease-in-out infinite; flex: none; }
 .dkt-c[data-ck="last"] b { display: inline-block; min-width: 18ch; text-align: left; }
+@media (prefers-reduced-motion: reduce) {
+  .dkt-mq { overflow-x: auto; -webkit-mask-image: none; mask-image: none; scrollbar-width: none; }
+  .dkt-mt { animation: none; } .dkt-ms + .dkt-ms { display: none; } .dkt-scan { animation: none; }
+}
+
+/* ---------- responsive ---------- */
+@media (min-width: 960px) and (max-width: 1259px) {
+  .dkt-ph-s, .dkt-sig { display: none; }
+  .dkt-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; }
+  .dkt-stats b { font-size: 18px; }
+  .dkt-pu { max-width: 190px; }
+}
+@media (max-width: 959px) { .dkt-tc { min-height: 340px; } .dkt-kvs { display: none; } }
+@media (max-width: 860px) { .dkt-sim { display: none; } }
+@media (max-width: 700px) {
+  .dkt-top { padding: 12px 14px 11px; gap: 12px; }
+  .dkt-wt i { font-size: 8px; letter-spacing: .1em; }
+  .dkt-wm { gap: 10px; }
+  .dkt-clk { gap: 6px; }
+  .dkt-clk i { font-size: 8px; letter-spacing: .16em; }
+  .dkt-clk b { font-size: 22px; }
+  .dkt-pin { padding: 8px 14px 14px; }
+  .dkt-pb { grid-template-columns: 38px minmax(0, 1fr) auto; gap: 8px; }
+  .dkt-pb b { font-size: 9px; }
+  .dkt-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; }
+  .dkt-stats b { font-size: 18px; }
+  .dkt-th { padding: 8px 14px 6px; gap: 8px 14px; }
+  .dkt-tc { min-height: 330px; }
+  .dkt-lg { padding: 8px 14px 11px; }
+  .dkt-lgx { margin-left: 0; flex-basis: 100%; }
+}
+@media (max-width: 389px) {
+  .dkt-top { gap: 8px; }
+  .dkt-clk i { display: none; }
+  .dkt-clk b { font-size: 19px; letter-spacing: 0; }
+}
+@media (pointer: coarse), (max-width: 700px) {
+  button.dkt-chip { min-height: 40px; }
+  .dkt-chip.dkt-st { min-height: 40px; }
+}
+@media (max-width: 700px) {
+  .dkt-chips { gap: 5px; flex-wrap: nowrap; }
+  .dkt-chip { padding: 0 9px; font-size: 9px; letter-spacing: .06em; gap: 5px; }
+  .dkt-chip.dkt-st { min-height: 40px; padding: 0 9px; }
+}
+
+/* ---------- wide screens: the desk console grows past the 1380px text column (never narrower than it) ---------- */
+#desk .wrap { max-width: max(1380px, min(1780px, 94vw)); }
+
+/* ---------- spectacle (tier >= 2; tier 1 and reduced motion keep the plain look) ---------- */
+html:not([data-tier="1"]) .dkt-num { -webkit-text-stroke: .9px rgba(255, 255, 255, .5); paint-order: stroke fill; }   /* hot neon rim: stroke sits under the fill, only its outer half shows */
+html:not([data-tier="1"]) .dkt-big::before { animation: dktHalo 3.6s ease-in-out infinite; will-change: opacity; }
+html[data-tier="3"] .dkt-num { text-shadow: 0 0 34px rgba(var(--pc-rgb), .5), 0 0 3px rgba(var(--pc-rgb), .6), 0 0 74px rgba(var(--pc-rgb), .3), 0 0 8px rgba(var(--pc-rgb), .35); }
+@keyframes dktHalo { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+/* ticker: one travelling light passes over every chip (compositor-only) */
 html:not([data-tier="1"]) .dkt-mq::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; will-change: transform;
   background: linear-gradient(90deg, transparent 40%, rgba(255, 150, 190, .10) 47%, rgba(255, 255, 255, .17) 50%, rgba(255, 150, 190, .10) 53%, transparent 60%); animation: dktTl 5.8s linear infinite; }
 @keyframes dktTl { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-@media (prefers-reduced-motion: reduce) { .dkt-mq { overflow-x: auto; -webkit-mask-image: none; mask-image: none; scrollbar-width: none; } .dkt-mt { animation: none; } .dkt-ms + .dkt-ms { display: none; } .dkt-mq::before { display: none; } }
+@media (prefers-reduced-motion: reduce) { .dkt-mq::before { display: none; } .dkt-big::before { animation: none !important; } }
+
 
 
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
 .cmp-stage{width:100%;max-width:var(--cmp-w,1200px);position:relative}
 .cmp-note{position:fixed;left:10px;bottom:8px;z-index:5;font:10px/1.4 var(--mono);color:var(--dim);letter-spacing:.08em;pointer-events:none}
 </style></head><body class="cmp">
+<!-- fx: page atmosphere (webgl plasma, grain, scanlines, vignette, cursor light) · kill theatre · toasts · boot overlay -->
+<noscript><style>#fx-boot{display:none!important}.rv{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}</style></noscript>
+<div id="fx-bgf" aria-hidden="true"></div>
+<canvas id="fx-bg" aria-hidden="true"></canvas>
+<div class="fx-ov fx-spotwrap" id="fx-spotwrap" aria-hidden="true"><i id="fx-spot"></i></div>
+<div class="fx-ov fx-scan" aria-hidden="true"><i></i></div>
+<div class="fx-ov fx-grainhost" aria-hidden="true"><i class="fx-grain"></i></div>
+<i id="fx-tick" aria-hidden="true"></i>
+<div id="fx-push" aria-hidden="true"></div>
+<div id="fx-shock" aria-hidden="true"></div>
+<div id="fx-glitch" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div id="fx-prog" aria-hidden="true"><i class="fx-pf"></i><span class="fx-pt"></span></div>
+<div id="fx-cur" aria-hidden="true"><i class="fx-cr"></i><i class="fx-cd"></i></div>
+<div id="fx-toasts" role="status" aria-live="polite"></div>
+<div id="fx-boot" aria-hidden="true">
+  <i class="fx-bh t"></i><i class="fx-bh b"></i>
+  <div class="fx-bx">
+    <div class="fx-bhead"><b>J</b><span>jev desk</span><em>boot // simulation</em></div>
+    <div class="fx-blog" id="fx-blog"></div>
+    <div class="fx-bbar"><i id="fx-bfill"></i></div>
+    <div class="fx-bmeta"><span id="fx-bpct">00% - 0/5</span><span>click or press any key to skip</span></div>
+  </div>
+  <i class="fx-bline"></i>
+</div>
 
 
-<div class="cmp-stage" style="--cmp-w:1000px">
-<div class="card dkc dkmq-card" id="dkmq">
+<div class="cmp-stage" style="--cmp-w:1380px">
+<!-- ===== desk-top: status ticker · swarm p&l · the tape (prefix dkt-) — direct children of .dk-grid ===== -->
+<div class="card dkt-bar rv" id="dkt-bar" role="region" aria-label="desk status">
+  <i class="dkt-scan" aria-hidden="true"></i>
+  <div class="dkt-top">
+    <div class="dkt-wm">
+      <span class="lamp" aria-hidden="true"></span>
+      <div class="dkt-wt"><b class="glitch" data-text="JEV DESK">JEV DESK</b><i>six agents · one book · btc-perp</i></div>
+    </div>
+  </div>
   <div class="dkt-mq" role="marquee" aria-label="live desk status, simulated">
-    <div class="dkt-mt" id="dkmq-mt">
-      <div class="dkt-ms" id="dkmq-ms">
+    <div class="dkt-mt" id="dkt-mt">
+      <div class="dkt-ms" id="dkt-ms">
         <span class="dkt-c" data-c="green"><i class="dkt-dt"></i>six agents <b>live</b></span>
-        <span class="dkt-c" id="dkmq-hold" style="--cc:#a66bff;--cc-rgb:166,107,255"><i class="dkt-dt"></i>holder <b data-k="holder">kelly</b></span>
+        <span class="dkt-c" id="dkt-ch-hold" style="--cc:#a66bff;--cc-rgb:166,107,255"><i class="dkt-dt"></i>holder <b data-k="holder">kelly</b></span>
         <span class="dkt-c" data-c="cyan">handoffs/min <b data-k="hand">102</b></span>
         <span class="dkt-c" data-c="blue">model fair <b data-k="fair">84,731</b> vs market <b data-k="mkt">84,722</b></span>
         <span class="dkt-c" data-c="green" data-ck="edge">edge <b data-k="edge">+2.8bps</b></span>
@@ -287,12 +626,16 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
         <span class="dkt-c" data-c="violet">human input: approvals only <b data-k="wait">2 waiting</b></span>
         <span class="dkt-c" data-c="pink">spent while you watch <b data-k="spent">$0.046</b></span>
         <span class="dkt-c" data-c="gray" data-ck="last">last ticket <b data-k="last">buy btc 1% .91 · execute</b></span>
+        <span class="dkt-c" data-c="green" data-ck="pnl">swarm p&amp;l <b data-k="pnl">+$0</b></span>
         <span class="dkt-c" data-c="orange">floor <b data-k="floor">0.85</b></span>
         <span class="dkt-c" data-c="green" data-ck="kill">kill switch <b data-k="kill">armed</b></span>
       </div>
     </div>
   </div>
 </div>
+
+<div id="dkt-pnl" hidden></div>
+<div id="dkt-tape" hidden></div>
 
 </div>
 <div class="cmp-note">jev / desk / marquee-chips</div>
@@ -934,56 +1277,1129 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 </script>
 <script>
-/* desk-marquee-chips — Marquee chips  (everything here is SIMULATED)
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * JEV.* used: JEV.mod  JEV.task  JEV.fit  JEV.watch  JEV.animate  JEV.bus ('tick', 'decision', 'kill', 'floor')  JEV.market  JEV.S  JEV.C
- * Safe without the rest of the page: every DOM lookup is guarded. */
-JEV.mod('desk-marquee-chips', () => {
+/* fx — page-wide atmosphere + micro-interaction layer.
+ * webgl plasma background · cursor/card light · reveal · boot · orb eyes · nav · kill-switch theatre · JEV.toast / JEV.pulse */
+JEV.mod('fx', () => {
+  const J = JEV, doc = document, root = doc.documentElement;
+  const $ = J.$, $$ = J.$$, clamp = J.clamp, reduce = J.reduce;
+  const fine = !!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
+  const hudEl = $('#hud'), decEl = $('#mDec'), killBtn = $('#killBtn');
+  let winW = window.innerWidth, winH = window.innerHeight, scrollY = window.scrollY || 0, scrollMax = 1, away = false, vel = 0;
+
+  /* =====================================================================
+   * 0. pulse + toast API (defined first so other modules can call them)
+   * ===================================================================== */
+  let bgPost = null; // set once the plasma (worker or main thread) is alive: bgPost(message)
+
+  function hudGlow(s) {
+    if (!hudEl || reduce || !hudEl.animate) return;
+    const c = J.S.killed ? '255,77,94' : '255,46,110';
+    hudEl.animate([{ boxShadow: '0 8px 0 -8px rgba(' + c + ',0)' }, { boxShadow: '0 10px 38px -8px rgba(' + c + ',' + (0.2 + 0.55 * s).toFixed(2) + ')', offset: 0.22 }, { boxShadow: '0 10px 38px -8px rgba(' + c + ',0)' }], { duration: 780, easing: 'ease-out' });
+  }
+  /** kick the shader ripple (ring from the viewport centre) + a brief hud glow */
+  J.pulse = (s) => {
+    s = clamp(s == null ? 0.5 : +s || 0, 0, 1);
+    if (s <= 0) return;
+    hudGlow(s);
+    if (bgPost) bgPost({ t: 'p', s });
+  };
+
+  const toastHost = $('#fx-toasts'), toasts = [];
+  const ICON = {
+    info: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M8 7.2v3.6M8 5.1v.1"/></svg>',
+    ok: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M5.2 8.2l2 2 3.6-4.1"/></svg>',
+    kill: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.2 1.8h5.6l3.4 3.4v5.6l-3.4 3.4H5.2L1.8 10.8V5.2z"/><path d="M8 4.8v3.8M8 11v.1"/></svg>',
+  };
+  const TOAST_MS = 3000;
+  function dismiss(t, fast) {
+    if (t.gone) return;
+    t.gone = true; clearTimeout(t.timer);
+    const i = toasts.indexOf(t); if (i >= 0) toasts.splice(i, 1);
+    t.el.classList.add('fx-t-out'); if (fast) t.el.classList.add('fast');
+    t.el.style.pointerEvents = 'none';
+    setTimeout(() => t.el.remove(), fast ? 170 : 400);
+  }
+  function arm(t) { clearTimeout(t.timer); t.since = performance.now(); t.timer = setTimeout(() => dismiss(t), Math.max(120, t.left)); }
+  function wireToast(t) { // hover pauses (mouse), tap / swipe / Esc dismiss
+    const el = t.el; let id = -1, x0 = 0, dx = 0, moved = false;
+    el.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'mouse' || t.gone) return; clearTimeout(t.timer); t.left -= performance.now() - t.since; el.classList.add('hold'); });
+    el.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'mouse' || t.gone || !el.classList.contains('hold')) return; el.classList.remove('hold'); arm(t); });
+    el.addEventListener('pointerdown', (e) => { if (t.gone) return; id = e.pointerId; x0 = e.clientX; dx = 0; moved = false; el.style.transition = 'none'; try { el.setPointerCapture(id); } catch (err) { /* ignore */ } });
+    el.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== id) return;
+      dx = e.clientX - x0; if (Math.abs(dx) > 6) moved = true;
+      if (moved) { el.style.transform = 'translateX(' + dx.toFixed(0) + 'px)'; el.style.opacity = String(clamp(1 - Math.abs(dx) / 240, 0.15, 1)); }
+    });
+    const end = (e) => {
+      if (e.pointerId !== id) return; id = -1;
+      if (Math.abs(dx) > 56) { // fling out
+        el.style.transition = 'transform .22s var(--ease), opacity .22s'; el.style.transform = 'translateX(' + (dx > 0 ? 130 : -130) + 'px)'; el.style.opacity = '0'; dismiss(t, true);
+      } else if (!moved && e.type === 'pointerup') dismiss(t, true);
+      else { el.style.transition = 'transform .3s var(--ease), opacity .3s'; el.style.transform = ''; el.style.opacity = ''; }
+    };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  }
+  /** bottom-centre glass pill with icon + countdown bar, auto-dismiss 3 s (hover holds), tap / swipe / Esc dismiss, max 2 stacked. kind: 'info' | 'ok' | 'kill' */
+  J.toast = (msg, kind) => {
+    if (!toastHost) return;
+    kind = ICON[kind] ? kind : 'info';
+    for (const o of toasts.slice()) if (o.msg === msg) dismiss(o, true);
+    const el = doc.createElement('div'), ic = doc.createElement('i'), tx = doc.createElement('span'), bar = doc.createElement('b');
+    el.className = 'fx-toast fx-t-' + kind; ic.className = 'fx-t-ic'; ic.innerHTML = ICON[kind]; bar.className = 'fx-t-bar'; tx.textContent = msg;
+    el.title = 'tap, swipe or press esc to dismiss';
+    el.append(ic, tx, bar); toastHost.appendChild(el);
+    const t = { el, msg, gone: false, timer: 0, left: TOAST_MS, since: 0 };
+    toasts.push(t); wireToast(t);
+    while (toasts.length > 2) dismiss(toasts[0], true);
+    arm(t);
+  };
+  doc.addEventListener('keydown', (e) => { if (e.key === 'Escape' && toasts.length && !(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))) dismiss(toasts[toasts.length - 1]); });
+
+  /* =====================================================================
+   * 1. #fx-bg — webgl plasma (domain-warped fbm), data bands, grain, pointer glow, pulse ripple, kill shift.
+   *    renders in a worker on an OffscreenCanvas (context creation + compile never block the main thread),
+   *    with the very same code as a main-thread fallback; css gradient fallback when there is no webgl at all.
+   * ===================================================================== */
+  const bg = $('#fx-bg');
+  const VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+  const FS = [
+    '#ifdef GL_FRAGMENT_PRECISION_HIGH', 'precision highp float;', '#else', 'precision mediump float;', '#endif',
+    'uniform vec2 uRes,uPtr,uLt;uniform float uSc,uT,uKill,uScroll,uProg,uPA,uVel,uHeat,uDir,uFlash,uDim,uIn,uTA;uniform vec3 uPu[3],uTint;',
+    'const float CAP=.0049;', // linear-luminance ceiling of the plasma: keeps 12px grey text >= 4.5:1 anywhere
+    'const mat2 ROT=mat2(.8,-.6,.6,.8);const vec3 LW=vec3(.2126,.7152,.0722);',
+    'vec3 hue(vec3 c){return c/dot(c,LW);}',
+    'float h11(float p){p=fract(p*.1031);p*=p+33.33;p*=p+p;return fract(p);}',
+    'float h12(vec2 p){vec3 q=fract(vec3(p.xyx)*.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}',
+    'float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h12(i),h12(i+vec2(1.,0.)),f.x),mix(h12(i+vec2(0.,1.)),h12(i+vec2(1.,1.)),f.x),f.y);}',
+    'float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<OCT;i++){v+=a*vn(p);p=ROT*p*2.02+17.3;a*=.5;}return v;}',
+    'float ring(float d,vec3 u){float r=u.x*.62,w=.03+u.x*.045,x=(d-r)/w;return u.y*exp(-x*x)*exp(-u.x*1.4);}',
+    'void main(){',
+    ' vec2 fc=gl_FragCoord.xy,uv=fc/uRes;float asp=uRes.x/uRes.y;vec2 p=(uv-.5)*vec2(asp,1.)*(1.+.2*uIn*uIn);', // intro: camera push (features start small, settle)
+    ' float d0=length(p);float q0=ring(d0,uPu[0]),q1=ring(d0,uPu[1]),q2=ring(d0,uPu[2]);float rg=q0+q1+q2;float rgA=(q0*uPu[0].z+q1*uPu[1].z+q2*uPu[2].z)/max(rg,.001);',
+    ' vec2 pw=p+(p/(d0+.001))*rg*.06;', // ripple refracts the plasma
+    ' float t=uT;vec2 q=pw*1.7+vec2(0.,uScroll*.00024);',
+    ' vec2 w=vec2(fbm(q+vec2(0.,t*.05)),fbm(q+vec2(5.2,1.3)+vec2(-t*.04,t*.012)));',
+    ' float f=fbm(q*1.15+2.9*(w-.5)+vec2(t*.03,-t*.021));',
+    ' float k=uKill;',
+    // palette at unit luminance, so every layer below has an explicit luminance budget (linear light)
+    ' vec3 hInd=hue(mix(vec3(.03,.05,.60),vec3(.55,.03,.02),k));',
+    ' vec3 hVio=hue(mix(vec3(.30,.02,.80),vec3(.95,.30,.012),k));',
+    ' vec3 hMag=hue(mix(mix(vec3(1.,.025,.28),max(uTint,vec3(.02)),uTA*.75),vec3(1.,.08,.04),k));',
+    ' float hf=clamp(smoothstep(.26,.74,.55*f+.45*w.y+.14*sin(uProg*6.2832))+uDir*uHeat*.12,0.,1.);', // hue field: indigo -> violet -> magenta, drifts with plasma + page progress
+    ' vec3 hc=mix(mix(hInd,hVio,clamp(hf*2.,0.,1.)),hMag,clamp(hf*2.-1.,0.,1.));',
+    ' float a1=smoothstep(.30,.78,f);float a2=smoothstep(.42,.82,.5*(w.x+w.y)+.4*(f-.45));',
+    ' float r1=pow(1.-abs(2.*f-1.),6.)*smoothstep(.28,.66,f);float r2=pow(1.-abs(2.*w.x-1.),8.)*smoothstep(.3,.7,w.y);', // aurora filaments (iso-contours of the noise)
+    ' float ray=pow(.5+.5*sin(pw.x*9.+w.y*6.5+t*.12),6.)*smoothstep(.15,.95,uv.y)*smoothstep(.3,.72,f);', // slow vertical curtains, strongest toward the top
+    ' vec3 col=vec3(.0011,.0006,.0022);',
+    ' col+=hc*(a1*.00065+a2*.0004);',
+    ' col+=mix(hVio,hMag,.6)*(r1*.0012+r2*.0005);',
+    ' col+=hInd*ray*.0008;',
+    // moving light source above the frame: volumetric shafts (angular value noise, occluded by the plasma) + core glow
+    ' vec2 lp=vec2(uLt.x*asp*.5,uLt.y);vec2 ld=p-lp;float lr=length(ld);float ang=atan(ld.x+.0001,-ld.y);',
+    ' float sh=vn(vec2(ang*9.+t*.04,t*.07));',
+    '#if TIER>=2',
+    ' sh=sh*.6+.4*vn(vec2(ang*23.-t*.06,3.1+t*.05));',
+    '#endif',
+    ' sh=pow(smoothstep(.4,.88,sh),2.6)*(.45+1.0*f);',
+    ' float fall=exp(-lr*1.1)*smoothstep(0.,.22,lr);',
+    ' col+=mix(hVio,hMag,.35+.3*sh)*(sh*fall*.0120+exp(-lr*lr*9.)*.0034)*(1.+uHeat*.9);',
+    // faint perspective grid under a horizon: lines recede toward the vanishing point, a bright band rolls toward the horizon
+    ' float gd=.3-uv.y;float gz=.05/max(gd,.004);float gxl=(uv.x-.5)*gz*7.;float gzl=gz+t*(.32+.5*uHeat);',
+    ' float gw=.012+.012*gz;float gl=max(1.-smoothstep(0.,gw,abs(fract(gxl)-.5)),1.-smoothstep(0.,gw,abs(fract(gzl)-.5)));',
+    ' float gv=step(0.,gd)*smoothstep(0.,.05,gd)*exp(-gd*4.2);',
+    ' float gband=exp(-pow((fract(gz*.22-t*.16)-.5)*7.,2.));',
+    ' vec3 gcol=mix(hVio,hMag,.5)*(gl*gv*(.0012+gband*.0034)*(1.+uHeat)+exp(-pow((uv.y-.3)/.006,2.))*.0030*(.6+.4*sin(t*.9)));col+=mix(hVio,hMag,.5)*exp(-pow((uv.y-.3)/.1,2.))*.0010;',
+    '#if TIER>=2',
+    // parallax aurora ribbons (own scroll rates), soft bloom bands, slow full-width scanline
+    ' for(int Ri=0;Ri<RIB;Ri++){float fi=float(Ri);float xw=p.x*(1.1+.45*fi)+t*(.03+.012*fi);',
+    '  float yc=.5+.17*fi+.09*sin(xw*2.1+fi*1.7+w.x*2.)+.05*sin(xw*4.7-t*.2)+uScroll*.00004*(1.+fi);',
+    '  float cu=.45+.55*vn(vec2(p.x*(12.+fi*4.)+fi*5.,t*.1));',
+    '  col+=mix(mix(hInd,hVio,fi*.5),hMag,.2+.25*fi)*exp(-pow((uv.y-yc)/(.028+.018*fi),2.))*cu*(.0046-.0010*fi)*(1.+uHeat*.7);}',
+    ' col+=hc*exp(-pow((uv.y-(.55+.3*sin(t*.045)))*2.6,2.))*.0010*(.6+uHeat);',
+    ' col+=hMag*exp(-pow((fract(uv.y*.5-t*.025)-.5)*30.,2.))*.0007;',
+    '#endif',
+    ' col*=(1.+uHeat*.25)*(1.-.3*uDim);',
+    ' float side=smoothstep(.15,.95,abs(p.x)/(asp*.5));float wide=smoothstep(1.25,1.9,asp);', // calmer behind the centre column on wide screens
+    ' col*=mix(1.,mix(.55,1.15,side),wide);',
+    // faint horizontal data bands: dashed hairline + soft fill, sliding segments (css-px space)
+    ' vec2 cp=fc/uSc;float row=floor(cp.y/34.);float rs=h11(row*1.37+3.1);float on=step(.78,rs);',
+    ' float spd=(h11(row+7.7)-.5)*.05;float bx=fract(rs*13.7+t*spd);float seg=.10+.5*h11(row+1.9);float u=fract(uv.x-bx);',
+    ' float inSeg=smoothstep(0.,.015,u)*(1.-smoothstep(seg,seg+.02,u));',
+    ' float my=mod(cp.y,34.);float line=(1.-smoothstep(0.,1.3,abs(my-1.5)*uSc))*(.5+.5*step(.5,fract((cp.x+row*19.)/14.)));',
+    ' col+=mix(hVio,hMag,hf)*on*inSeg*(line*.0016+.0005*(1.-smoothstep(0.,30.,my)));',
+    // killed: slow red sweep
+    ' float sw=exp(-pow((fract(uv.y*.9-t*.16)-.5)*8.,2.));col+=vec3(.9,.04,.02)*sw*k*.003;',
+    ' float sb=pow(max(0.,cos(ang-t*1.05)),20.)*exp(-lr*.6)+pow(max(0.,cos(ang-t*1.05+3.1416)),20.)*exp(-lr*.9)*.5;col+=vec3(.95,.03,.02)*sb*k*(.006+.002*sin(t*3.));',
+    // soft luminance limiter
+    ' float L=dot(col,LW);col*=1./pow(1.+pow(L/CAP,3.),1./3.);',
+    // vignette baked in (plasma only, never over text): dark corners, red-hot edges while killed
+    ' float vg=smoothstep(.5+.035*sin(t*.45+uHeat*2.),1.12,length(p*vec2(.86,1.)));col*=1.-.7*vg;col+=gcol*(1.-.6*vg);col+=vec3(.9,.02,.03)*k*vg*.0011;',
+    // edge dispersion: cyan fringe left, magenta fringe right, swelling with scroll velocity (added after the vignette: a few % of the text-contrast budget)
+    ' float ex=p.x/(asp*.5);col+=mix(vec3(.04,.5,.9),vec3(.9,.05,.22),step(0.,ex))*smoothstep(.55,1.05,abs(ex))*(.0004+.0012*uVel+.004*uIn)*(1.-.5*k);',
+    ' col+=vec3(1.,.5,.8)*pow(h11(floor(atan(p.x,p.y)*40.)),6.)*smoothstep(.1,.7,d0)*uIn*.004;', // intro: zoom-blur streaks
+    ' col+=mix(vec3(1.,.5,.18),vec3(1.,.1,.05),k)*uFlash*exp(-lr*.9)*.0035;', // execute: warm flash from the light
+    // drifting data motes: two parallax layers of tiny twinkling points (full-quality path only; points are far too small to touch text contrast)
+    '#ifdef MOTES',
+    ' float mo=0.;',
+    ' for(int Ly=0;Ly<2;Ly++){float sc=Ly==0?64.:104.;vec2 g=vec2(cp.x,cp.y-t*(Ly==0?3.2:5.4))/sc;vec2 id=floor(g),f=fract(g)-.5;float hh=h12(id+float(Ly)*17.);',
+    '  vec2 of=(vec2(h12(id+3.1),h12(id+7.7))-.5)*.62;float dd=length(f-of)*sc;float tw=.5+.5*sin(t*(.8+hh*2.2)+hh*40.);',
+    '  mo+=step(.74,hh)*(1.-smoothstep(.6,3.1,dd))*(.35+.65*tw)*(Ly==0?1.:.6);}',
+    ' col+=mix(hVio,hMag,hf)*mo*.0062*(.4+.6*smoothstep(0.,.5,a1+a2));',
+    '#endif',
+    // pointer glow + ripple light (added after the limiter, small bounded budget)
+    ' vec2 pp=(uPtr-.5)*vec2(asp,1.);float dg=length(p-pp);float g=exp(-dg*dg*60.)*.8+exp(-dg*dg*7.)*.2;',
+    ' col+=mix(vec3(.9,.03,.22),vec3(1.,.12,.03),k)*g*uPA*.0065;',
+    ' col+=mix(mix(vec3(.9,.1,.5),vec3(1.,.4,.05),k),vec3(1.,.55,.04),rgA)*min(rg,1.3)*.0125;',
+    '#if TIER>=2',
+    ' float Lx=dot(col,LW);col+=vec3(1.,.22,.1)*smoothstep(.5,1.,Lx/CAP)*.0006;', // halation: red bleed around the brightest plasma
+    '#endif',
+    ' col=pow(col,vec3(.4545));col+=(h12(fc+fract(t*7.3)*91.7)-.5)*(.0075+.004*dot(col,LW));', // gamma + dither/grain
+    ' gl_FragColor=vec4(col,1.);}',
+  ].join('\n');
+
+  /* renderer + simulation. SELF-CONTAINED (no closure access): its source is shipped into the worker via toString().
+   * messages: Float32Array[nx, ny, idle, away, scroll, prog, vel] · {t:'k',v} kill · {t:'p',s} pulse · {t:'r',w,h} css size */
+  function createBg(canvas, VS, FS, o) {
+    const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+    const S = { T: 11.7, kill: o.killed ? 1 : 0, killT: o.killed ? 1 : 0, tier: o.tier || 0, fixed: !!o.tier, heat: 0, heatT: 0, dir: 0, dirT: 0, flash: 0, dim: 0, intro: 0, tint: [0, 0, 0], ta: 0, lx: 0, ly: 0.62, sx: 0.5, sy: 0.55, pa: 0.5, vel: 0, nx: 0.5, ny: 0.5, idle: 1, away: 0, scroll: 0, prog: 0, cw: o.w, ch: o.h, qual: 1, reduce: !!o.reduce };
+    const P = [{ a: 9, s: 0, k: 0 }, { a: 9, s: 0, k: 0 }, { a: 9, s: 0, k: 0 }], pu = new Float32Array(9), tt = new Float32Array(3);
+    let pi = 0, gl = null, U = null, soft = false, pr = null, built = 0, info = '', warm = 0, gAcc = 0, gN = 0;
+    const cb = o.cb || function () {};
+
+    function init() {
+      const t0 = performance.now();
+      let g = null;
+      try {
+        const ob = { alpha: true, antialias: false, depth: false, stencil: false, powerPreference: 'low-power', preserveDrawingBuffer: false };
+        g = canvas.getContext('webgl', ob) || canvas.getContext('experimental-webgl', ob);
+      } catch (e) { g = null; }
+      if (!g) return false;
+      const t1 = performance.now();
+      try { // software rasteriser (swiftshader / llvmpipe): start small, cheaper noise, lower frame rate
+        const dbg = g.getExtension('WEBGL_debug_renderer_info');
+        soft = /swiftshader|llvmpipe|software|basic render/i.test(String(dbg ? g.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : ''));
+      } catch (e) { soft = false; }
+      pr = null; gl = g;
+      if (!S.tier) S.tier = soft ? 1 : 2; // core's tier wins when it exists; otherwise software rasterisers start cheap
+      if (soft) S.qual = 0.6;
+      if (!build()) { gl = null; return false; }
+      return true;
+    }
+    function build() { // (re)compile the program for the current tier; keeps the old one when it fails
+      const g = gl, t2 = performance.now(), T = S.tier;
+      const mk = (type, src) => { const sh = g.createShader(type); g.shaderSource(sh, src); g.compileShader(sh); return g.getShaderParameter(sh, g.COMPILE_STATUS) ? sh : null; };
+      const vs = mk(g.VERTEX_SHADER, VS), fs = mk(g.FRAGMENT_SHADER, '#define OCT ' + (T >= 3 ? 4 : T === 2 ? 4 : 3) + '\n#define TIER ' + T + '\n#define RIB ' + (T >= 3 ? 3 : 2) + '\n' + (T >= 3 ? '#define MOTES\n' : '') + FS);
+      if (!vs || !fs) return false;
+      const p2 = g.createProgram(); g.attachShader(p2, vs); g.attachShader(p2, fs); g.linkProgram(p2);
+      if (!g.getProgramParameter(p2, g.LINK_STATUS)) return false;
+      g.useProgram(p2);
+      g.bindBuffer(g.ARRAY_BUFFER, g.createBuffer());
+      g.bufferData(g.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), g.STATIC_DRAW);
+      const al = g.getAttribLocation(p2, 'a'); g.enableVertexAttribArray(al); g.vertexAttribPointer(al, 2, g.FLOAT, false, 0, 0);
+      const u = {};
+      ['uRes', 'uPtr', 'uSc', 'uT', 'uKill', 'uScroll', 'uProg', 'uPA', 'uVel', 'uLt', 'uHeat', 'uDir', 'uFlash', 'uDim', 'uIn', 'uTA', 'uTint'].forEach((n) => (u[n] = g.getUniformLocation(p2, n)));
+      u.uPu = g.getUniformLocation(p2, 'uPu[0]');
+      if (pr) g.deleteProgram(pr);
+      pr = p2; U = u; built = T;
+      info = (soft ? 'software' : 'hw') + ' tier ' + T + ' compile+link ' + (performance.now() - t2).toFixed(0) + 'ms';
+      return true;
+    }
+    function size() {
+      if (!gl) return;
+      const rs = S.tier >= 3 ? 0.6 : S.tier === 2 ? 0.5 : 0.35, base = Math.min(rs, Math.sqrt((S.tier >= 3 ? 720000 : 520000) / Math.max(1, S.cw * S.ch))); // tier 1/2/3 = 0.35x / 0.5x / 0.6x, and <= ~0.5-0.7 MP on huge screens
+      const w = Math.max(16, Math.round(S.cw * base * S.qual)), h = Math.max(16, Math.round(S.ch * base * S.qual));
+      if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
+      draw();
+    }
+    function draw() {
+      if (!gl) return;
+      for (let i = 0; i < 3; i++) { pu[i * 3] = P[i].a; pu[i * 3 + 1] = P[i].s; pu[i * 3 + 2] = P[i].k; }
+      tt[0] = S.tint[0]; tt[1] = S.tint[1]; tt[2] = S.tint[2];
+      gl.uniform2f(U.uRes, canvas.width, canvas.height);
+      gl.uniform2f(U.uPtr, S.sx, S.sy);
+      gl.uniform1f(U.uSc, canvas.width / S.cw);
+      gl.uniform1f(U.uT, S.T);
+      gl.uniform1f(U.uKill, S.kill);
+      gl.uniform1f(U.uScroll, S.scroll);
+      gl.uniform1f(U.uProg, S.prog);
+      gl.uniform1f(U.uPA, S.pa);
+      gl.uniform1f(U.uVel, S.vel);
+      gl.uniform3fv(U.uPu, pu);
+      gl.uniform2f(U.uLt, S.lx, S.ly);
+      gl.uniform1f(U.uHeat, S.heat); gl.uniform1f(U.uDir, S.dir); gl.uniform1f(U.uFlash, S.flash); gl.uniform1f(U.uDim, S.dim);
+      gl.uniform1f(U.uIn, S.intro); gl.uniform1f(U.uTA, S.ta); gl.uniform3fv(U.uTint, tt);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    function step(dt) {
+      if (!S.reduce) S.T += dt;
+      S.kill += (S.killT - S.kill) * (1 - Math.exp(-dt * 3.2));
+      if (Math.abs(S.killT - S.kill) < 0.002) S.kill = S.killT;
+      let tx, ty, ta;
+      if (S.idle) { tx = 0.5 + 0.3 * Math.sin(S.T * 0.21); ty = 0.55 - 0.25 * Math.sin(S.T * 0.17 + 1.3); ta = 0.5; } // no pointer yet: an ambient light wanders
+      else { tx = S.nx; ty = S.ny; ta = S.away ? 0.35 : 1; }
+      const k = 1 - Math.exp(-dt * 5); S.sx += (tx - S.sx) * k; S.sy += (ty - S.sy) * k; S.pa += (ta - S.pa) * k;
+      for (let i = 0; i < 3; i++) { const p = P[i]; if (p.s > 0) { p.a += dt; if (p.a > 3) p.s = 0; } }
+      if (S.reduce) { S.heat = S.flash = S.dim = S.intro = 0; S.lx = 0.1; return; } // reduced motion: calm, static atmosphere
+      const kh = 1 - Math.exp(-dt * 2.5);
+      S.heat += (S.heatT - S.heat) * kh; S.heatT *= Math.exp(-dt * 0.6); S.dir += (S.dirT - S.dir) * kh;
+      S.flash *= Math.exp(-dt * 3.2); S.dim *= Math.exp(-dt * 1.6);
+      if (S.intro > 0) S.intro = Math.max(0, S.intro - dt / 1.35);
+      S.ta += ((S.tint[0] + S.tint[1] + S.tint[2] > 0 ? 1 : 0) - S.ta) * (1 - Math.exp(-dt * 2));
+      // the light drifts above the frame; while killed it parks at top-centre and a siren beam sweeps from it
+      const kk = S.kill;
+      S.lx = (Math.sin(S.T * 0.07) * 0.7 + 0.25 * Math.sin(S.T * 0.173)) * (1 - kk); S.ly = 0.62 + 0.05 * Math.sin(S.T * 0.11) - 0.04 * kk;
+    }
+    function once() { step(0.016); draw(); }
+    const api = {
+      ok: false,
+      get soft() { return soft; },
+      get info() { return info; },
+      get minDt() { return S.qual < 0.7 ? 0.045 : 0.028; }, // plasma is slow and soft: ~30 fps (20 on weak gpus) is plenty
+      tick(dt) {
+        step(dt); draw();
+        // resolution governor: if the plasma itself cannot keep ~24 fps, drop its resolution (floor 0.4 x)
+        if (!S.reduce && ++warm > 60) { gAcc += dt; if (++gN >= 60) { if (gAcc / gN > 0.05) { if (S.qual > 0.4) { S.qual = Math.max(0.4, S.qual * 0.85); size(); } else if (!S.fixed && S.tier > 1) { S.tier--; build(); size(); } } gAcc = gN = 0; } }
+      },
+      msg(m) {
+        if (m instanceof Float32Array) { S.nx = m[0]; S.ny = m[1]; S.idle = m[2]; S.away = m[3]; S.scroll = m[4]; S.prog = m[5]; S.vel = m[6] || 0; return; }
+        if (m.t === 'k') { S.killT = m.v ? 1 : 0; if (S.reduce) { S.kill = S.killT; once(); } }
+        else if (m.t === 'p') { const p = P[pi]; p.a = 0; p.s = m.s; p.k = m.k || 0; pi = (pi + 1) % 3; if (S.reduce) once(); }
+        else if (m.t === 'x') { if (m.k === 1) S.flash = 1; else if (m.k === 2) S.dim = 1; } // 1 execute flash · 2 skip dim
+        else if (m.t === 'h') { S.heatT = Math.max(S.heatT, m.v); S.dirT = m.d; }
+        else if (m.t === 'c') { S.tint[0] = m.c[0]; S.tint[1] = m.c[1]; S.tint[2] = m.c[2]; }
+        else if (m.t === 'i') { if (!S.reduce) S.intro = 1; }
+        else if (m.t === 'q') { if (m.v !== S.tier && m.v >= 1 && m.v <= 3) { S.tier = m.v; S.fixed = true; if (gl && build()) size(); } }
+        else if (m.t === 'r') { S.cw = m.w; S.ch = m.h; size(); }
+      },
+    };
+    api.ok = init();
+    if (api.ok) {
+      size();
+      canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); gl = null; cb('lost'); });
+      canvas.addEventListener('webglcontextrestored', () => { if (init()) { size(); cb('ready'); } });
+    }
+    return api;
+  }
+
+  /* worker side: autonomous render loop (generation token so pause/resume can never double the loop) */
+  function bgWorkerMain() {
+    let inst = null, running = false, gen = 0, acc = 0, n = 0, reduce = false, last = 0;
+    const raf = self.requestAnimationFrame ? (f) => self.requestAnimationFrame(f) : (f) => setTimeout(() => f(performance.now()), 33);
+    function start() {
+      if (running || !inst) return;
+      running = true; last = performance.now(); const g = ++gen;
+      const f = (now) => {
+        if (!running || g !== gen) return;
+        raf(f);
+        const dt = Math.min(0.05, (now - last) / 1000 || 0.016); last = now; acc += dt;
+        if (acc < inst.minDt) return;
+        const d = acc; acc = 0; inst.tick(d);
+        if (reduce && ++n >= 3) running = false; // reduced motion: a few frames, then still
+      };
+      raf(f);
+    }
+    self.onmessage = (e) => {
+      const m = e.data;
+      if (m.t === 'init') {
+        reduce = !!m.reduce;
+        inst = createBg(m.c, m.vs, m.fs, Object.assign(m, { cb: (t) => self.postMessage({ t }) }));
+        self.postMessage({ t: inst.ok ? 'ready' : 'fail', info: inst.info });
+        if (inst.ok) start();
+      } else if (m.t === 'v') { if (m.h) running = false; else start(); }
+      else if (inst) inst.msg(m);
+    };
+    self.postMessage({ t: 'hi' });
+  }
+
+  const note = (m) => { (J.bootLog || (J.bootLog = [])).push(m); };
+  let bgMode = '';
+
+  /* main-thread wiring shared by both paths: css size -> bg, pointer/scroll state -> bg (only when it changed) */
+  function wireBg(post, drive) {
+    bgPost = post; root.classList.add('fx-gl');
+    J.watch(bg, (r) => { winW = Math.max(1, Math.round(r.width)); winH = Math.max(1, Math.round(r.height)); post({ t: 'r', w: winW, h: winH }); });
+    const st = new Float32Array(7), last = new Float32Array(7).fill(-9);
+    let acc = 0;
+    J.task(bg, (t, dt) => {
+      if (doc.hidden) return;
+      const p = J.pointer, idle = p.x < -1000 ? 1 : 0;
+      st[0] = idle ? 0.5 : p.x / winW; st[1] = idle ? 0.5 : 1 - p.y / winH; st[2] = idle; st[3] = away ? 1 : 0; st[4] = scrollY; st[5] = clamp(scrollY / scrollMax, 0, 1);
+      vel = vel > 0.004 ? vel * Math.exp(-dt * 3.2) : 0; st[6] = Math.round(vel * 50) / 50;
+      if (Math.abs(st[0] - last[0]) + Math.abs(st[1] - last[1]) > 0.0004 || st[2] !== last[2] || st[3] !== last[3] || Math.abs(st[4] - last[4]) > 0.5 || Math.abs(st[5] - last[5]) > 0.0005 || st[6] !== last[6]) { last.set(st); post(st); }
+      if (drive) { acc += dt; if (acc >= drive.minDt || J.reduce) { drive.tick(J.reduce ? 0.016 : acc); acc = 0; } }
+    });
+  }
+  function startMain() { // fallback: same renderer on the main thread
+    if (bgMode) return; bgMode = 'main';
+    const inst = createBg(bg, VS, FS, { w: winW, h: winH, reduce, killed: J.S.killed, tier: J.tier | 0, cb: (t) => { if (t === 'lost') root.classList.add('fx-nogl'); else root.classList.remove('fx-nogl'); } });
+    if (!inst.ok) { root.classList.add('fx-nogl'); return; }
+    note('fx-gl main-thread ' + inst.info);
+    wireBg((m) => inst.msg(m), inst);
+  }
+  function startWorker() {
+    let wk = null, url = '', transferred = false, done = false, to = 0;
+    const toMain = () => { if (done) return; done = true; clearTimeout(to); try { wk && wk.terminate(); } catch (e) { /* ignore */ } if (transferred) root.classList.add('fx-nogl'); else fallbackMain(); };
+    try {
+      const src = 'const createBg=' + createBg.toString() + ';(' + bgWorkerMain.toString() + ')();';
+      url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+      wk = new Worker(url);
+    } catch (e) { fallbackMain(); return; }
+    to = setTimeout(toMain, 4000); // the worker never said hello
+    wk.onerror = toMain;
+    wk.onmessage = (e) => {
+      const m = e.data;
+      if (m.t === 'hi') {
+        clearTimeout(to); try { URL.revokeObjectURL(url); } catch (err) { /* ignore */ }
+        try {
+          const off = bg.transferControlToOffscreen(); transferred = true;
+          wk.postMessage({ t: 'init', c: off, vs: VS, fs: FS, w: winW, h: winH, reduce, killed: J.S.killed, tier: J.tier | 0 }, [off]);
+          bgPost = (msg) => wk.postMessage(msg); // messages queue behind init, so a kill thrown while the context is still warming up is never lost
+        } catch (err) { toMain(); }
+      } else if (m.t === 'ready') {
+        if (bgMode === 'worker') { root.classList.remove('fx-nogl'); return; } // context restored
+        bgMode = 'worker'; note('fx-gl worker ' + m.info);
+        wireBg((msg) => wk.postMessage(msg), null);
+        doc.addEventListener('visibilitychange', () => wk.postMessage({ t: 'v', h: doc.hidden }));
+      } else if (m.t === 'fail') { root.classList.add('fx-nogl'); done = true; wk.terminate(); }
+      else if (m.t === 'lost') root.classList.add('fx-nogl');
+    };
+  }
+  // main-thread fallback waits for the boot overlay's wipe (a context + compile there can stall the main thread for 50 ms - 3 s on weak gpus)
+  let bootDone = false, wantMain = false, mainStarted = false;
+  const runMain = () => { if (mainStarted) return; mainStarted = true; requestAnimationFrame(() => setTimeout(startMain, 0)); };
+  const fallbackMain = () => { wantMain = true; if (bootDone) runMain(); };
+  const startBgOnce = () => { bootDone = true; if (wantMain) runMain(); };
+  setTimeout(startBgOnce, 2300); // failsafe (hidden tab / boot never finishes)
+  if (bg) {
+    const canWorker = typeof Worker === 'function' && typeof OffscreenCanvas === 'function' && typeof Blob === 'function' && !!bg.transferControlToOffscreen && !!window.URL && !!URL.createObjectURL;
+    if (canWorker) requestAnimationFrame(() => setTimeout(startWorker, 0)); else fallbackMain();
+  }
+  root.addEventListener('mouseleave', () => (away = true));
+  root.addEventListener('mouseenter', () => (away = false));
+
+  /* =====================================================================
+   * scroll / resize bookkeeping (cached, never read per frame)
+   * ===================================================================== */
+  let scrollTimer = 0, resizeTimer = 0;
+  const onScrollEnd = [], onResizeEnd = [];
+  function measureDoc() { scrollMax = Math.max(1, root.scrollHeight - winH); placeTicks(); paintProg(); }
+  let lastSY = scrollY, lastST = performance.now(), progRaf = 0;
+  window.addEventListener('scroll', () => {
+    scrollY = window.scrollY || 0;
+    const nw = performance.now();
+    if (!reduce) vel = Math.max(vel * 0.7, clamp(Math.abs(scrollY - lastSY) / Math.max(8, nw - lastST) / 2.4, 0, 1));
+    lastSY = scrollY; lastST = nw;
+    if (!progRaf) progRaf = requestAnimationFrame(paintProg);
+    clearTimeout(scrollTimer); scrollTimer = setTimeout(() => onScrollEnd.forEach((f) => f()), 160);
+  }, { passive: true });
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { winW = window.innerWidth; winH = window.innerHeight; measureDoc(); onResizeEnd.forEach((f) => f()); }, 160);
+  }, { passive: true });
+  setTimeout(measureDoc, 600); setTimeout(measureDoc, 2600); onScrollEnd.push(measureDoc);
+
+  /* =====================================================================
+   * 3. cursor spotlight + card border light (one delegated listener)
+   * ===================================================================== */
+  const spotWrap = $('#fx-spotwrap'), spot = $('#fx-spot');
+  if (fine && !reduce && spotWrap && spot) {
+    let cx = 0, cy = 0, seen = false, lx = -1, ly = -1;
+    J.task(spotWrap, (t, dt) => {
+      const p = J.pointer;
+      if (p.x < -1000) return;
+      if (!seen) { seen = true; cx = p.x; cy = p.y; spotWrap.classList.add('on'); }
+      const k = 1 - Math.exp(-dt * 16);
+      cx += (p.x - cx) * k; cy += (p.y - cy) * k;
+      if (Math.abs(cx - lx) < 0.05 && Math.abs(cy - ly) < 0.05) return;
+      lx = cx; ly = cy;
+      spot.style.transform = 'translate3d(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px,0)';
+    });
+    root.addEventListener('mouseleave', () => spotWrap.classList.remove('on'));
+    root.addEventListener('mouseenter', () => { if (seen) spotWrap.classList.add('on'); });
+  }
+  {
+    let ev = null, raf = 0, lastCard = null, lxx = -1, lyy = -1;
+    const run = () => {
+      raf = 0; if (!ev) return;
+      const c = ev.target && ev.target.closest ? ev.target.closest('.card') : null;
+      if (!c) { lastCard = null; return; }
+      if (c === lastCard && Math.abs(ev.x - lxx) < 0.5 && Math.abs(ev.y - lyy) < 0.5) return;
+      lastCard = c; lxx = ev.x; lyy = ev.y;
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (ev.x - r.left).toFixed(1) + 'px'); c.style.setProperty('--my', (ev.y - r.top).toFixed(1) + 'px');
+    };
+    doc.addEventListener('pointermove', (e) => { ev = { target: e.target, x: e.clientX, y: e.clientY }; if (!raf) raf = requestAnimationFrame(run); }, { passive: true });
+  }
+
+  /* =====================================================================
+   * 3b. custom cursor (ring + dot, fine pointers only) + shared magnetic helper
+   *     - the system cursor is hidden only on plain surfaces (body / links / buttons); anything that brings its own cursor
+   *       (text inputs, crosshair charts, grab handles, resize) keeps it, and the ring steps aside there.
+   *     - the ring eases toward the pointer, is pulled toward the centre of the interactive element under it, grows over it, shrinks on press.
+   *     - magnets: .kill + primary buttons drift a few px toward the pointer and spring back (one task, idle when nothing is hovered).
+   * ===================================================================== */
+  const curEl = $('#fx-cur'), ring = curEl && $('.fx-cr', curEl), dot = curEl && $('.fx-cd', curEl);
+  const INTERACTIVE = 'a[href],button,[role="button"],[role="tab"],summary,label,select,input,[tabindex]:not([tabindex="-1"])';
+  const MAGNETS = '.kill,.code-run,.lab-go,.lab-kill,.hr-kill';
+  if (fine && !reduce && curEl && ring && dot) {
+    const c = { x: -200, y: -200, rx: -200, ry: -200, dx: -200, dy: -200, seen: false, tgt: null, rect: null, cls: '', sy: scrollY, rt: 0 };
+    const mags = new Map(); // el -> {x,y,tx,ty}
+    const setCls = (v) => { if (v !== c.cls) { c.cls = v; curEl.className = v; } };
+    const state = () => {
+      if (!c.seen) return;
+      const t = c.tgt;
+      if (!t || t.nodeType !== 1) return setCls('on');
+      let cs = ''; try { cs = getComputedStyle(t).cursor; } catch (e) { /* ignore */ }
+      if (cs && cs !== 'none') { root.classList.add('fx-nat'); return setCls('on nat'); } // the page brought its own cursor here: show it
+      root.classList.remove('fx-nat');
+      const it = t.closest ? t.closest(INTERACTIVE) : null;
+      c.rect = it && !/^(INPUT|TEXTAREA)$/.test(it.tagName) ? it.getBoundingClientRect() : null;
+      setCls('on' + (it ? ' hov' : '') + (J.pointer.down ? ' down' : ''));
+    };
+    doc.addEventListener('pointerover', (e) => { if (e.pointerType === 'touch') return; c.tgt = e.target; state(); }, { passive: true });
+    doc.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') { if (c.seen) { c.seen = false; root.classList.remove('fx-cur', 'fx-nat'); setCls(''); } return; }
+      if (!c.seen) { c.seen = true; c.x = c.rx = c.dx = e.clientX; c.y = c.ry = c.dy = e.clientY; root.classList.add('fx-cur'); c.tgt = e.target; state(); }
+      const m = e.target && e.target.closest ? e.target.closest(MAGNETS) : null; // magnet follows the pointer while inside it
+      for (const [el, o] of mags) if (el !== m) { o.tx = 0; o.ty = 0; }
+      if (m && !m.disabled) {
+        let o = mags.get(m); if (!o) { o = { x: 0, y: 0, tx: 0, ty: 0 }; mags.set(m, o); }
+        const r = m.getBoundingClientRect(), str = Math.min(1, 60 / Math.max(r.width, r.height));
+        o.tx = clamp((e.clientX - (r.left + r.width / 2)) * 0.28 * str, -7, 7); o.ty = clamp((e.clientY - (r.top + r.height / 2)) * 0.34 * str, -5, 5);
+      }
+    }, { passive: true });
+    doc.addEventListener('pointerdown', () => { if (c.seen && c.cls.indexOf('nat') < 0) setCls(c.cls.replace(' down', '') + ' down'); }, { passive: true });
+    doc.addEventListener('pointerup', () => { if (c.seen) setCls(c.cls.replace(' down', '')); }, { passive: true });
+    root.addEventListener('mouseleave', () => { if (c.seen) setCls(''); });
+    root.addEventListener('mouseenter', () => { if (c.seen) state(); });
+    doc.addEventListener('keydown', (e) => { if (c.seen && e.key === 'Tab') { c.seen = false; root.classList.remove('fx-cur', 'fx-nat'); setCls(''); } }, true); // keyboard user: hand the cursor back
+    J.task(curEl, (t, dt) => {
+      if (!c.seen) return;
+      const p = J.pointer; c.x = p.x; c.y = p.y;
+      if (c.rect && Math.abs(scrollY - c.sy) > 0.5) { c.sy = scrollY; if (c.tgt && c.tgt.closest) { const it = c.tgt.closest(INTERACTIVE); if (it) c.rect = it.getBoundingClientRect(); } }
+      let tx = c.x, ty = c.y;
+      if (c.rect && c.rect.width && c.cls.indexOf('hov') >= 0) { tx += (c.rect.left + c.rect.width / 2 - c.x) * 0.3; ty += (c.rect.top + c.rect.height / 2 - c.y) * 0.3; }
+      const k = 1 - Math.exp(-dt * 15), kd = 1 - Math.exp(-dt * 48);
+      c.rx += (tx - c.rx) * k; c.ry += (ty - c.ry) * k; c.dx += (c.x - c.dx) * kd; c.dy += (c.y - c.dy) * kd;
+      ring.style.transform = 'translate3d(' + c.rx.toFixed(1) + 'px,' + c.ry.toFixed(1) + 'px,0)';
+      dot.style.transform = 'translate3d(' + c.dx.toFixed(1) + 'px,' + c.dy.toFixed(1) + 'px,0)';
+      if (mags.size) {
+        const km = 1 - Math.exp(-dt * 12);
+        for (const [el, o] of mags) {
+          o.x += (o.tx - o.x) * km; o.y += (o.ty - o.y) * km;
+          if (o.tx === 0 && o.ty === 0 && Math.abs(o.x) < 0.05 && Math.abs(o.y) < 0.05) { el.style.translate = ''; mags.delete(el); continue; }
+          el.style.translate = o.x.toFixed(2) + 'px ' + o.y.toFixed(2) + 'px';
+        }
+      }
+    });
+  }
+
+  /* =====================================================================
+   * 3c. scroll-progress hairline under the hud, with a tick per section
+   * ===================================================================== */
+  const progEl = $('#fx-prog'), progFill = progEl && $('.fx-pf', progEl), progTicks = [];
+  let progShown = false, progLast = -1;
+  function placeTicks() {
+    if (!progEl) return;
+    if (hudEl) progEl.style.top = hudEl.offsetHeight + 'px';
+    if (!progTicks.length) {
+      for (const a of $$('.nav a[href^="#"]')) {
+        const sec = doc.getElementById(a.getAttribute('href').slice(1)); if (!sec) continue;
+        const el = doc.createElement('i'); el.className = 'fx-tk'; el.title = (a.textContent || '').replace(/\d+/, '').trim();
+        progEl.appendChild(el); progTicks.push({ el, sec, f: 0, on: false });
+      }
+    }
+    for (const k of progTicks) { k.f = clamp((k.sec.getBoundingClientRect().top + scrollY) / scrollMax, 0, 1); k.el.style.left = (k.f * 100).toFixed(2) + '%'; k.on = false; k.el.classList.remove('on'); }
+  }
+  function paintProg() {
+    progRaf = 0;
+    if (!progEl || !progFill) return;
+    const f = clamp(scrollY / scrollMax, 0, 1), show = scrollY > 6;
+    if (show !== progShown) { progShown = show; progEl.classList.toggle('show', show); }
+    if (Math.abs(f - progLast) > 0.0004) { progLast = f; progFill.style.transform = 'scaleX(' + f.toFixed(4) + ')'; }
+    for (const k of progTicks) { const on = f + 0.002 >= k.f && k.f > 0.001; if (on !== k.on) { k.on = on; k.el.classList.toggle('on', on); } }
+  }
+  if (progEl && hudEl && 'ResizeObserver' in window) new ResizeObserver(() => { progEl.style.top = hudEl.offsetHeight + 'px'; }).observe(hudEl);
+  setTimeout(() => { placeTicks(); paintProg(); }, 300);
+
+  /* =====================================================================
+   * 4. reveal: IntersectionObserver adds .in to .rv (stagger via --i); failsafes so nothing stays hidden
+   * ===================================================================== */
+  const boot = $('#fx-boot');
+  const seen = new WeakSet(), pend = new Set();
+  let held = [], rio = null;
+  function headSweep(els) { // one-shot light pass over a section heading when its reveal lands
+  if (reduce) return;
+  for (const e of els) {
+    const h = e.classList && e.classList.contains('h2') ? e : e.querySelector && e.querySelector('.h2');
+    if (!h || h.querySelector('.fx-hsw')) continue;
+    const host = doc.createElement('i'), band = doc.createElement('i');
+    host.className = 'fx-hsw'; host.setAttribute('aria-hidden', 'true'); host.appendChild(band); h.classList.add('fx-hs'); h.appendChild(host);
+    band.addEventListener('animationend', () => host.remove(), { once: true });
+    setTimeout(() => host.remove(), 2600);
+  }
+}
+  function landed(els) { headSweep(els); setTimeout(() => els.forEach((e) => e.classList.add('fx-done')), 1900); }
+  function revealBatch(els) {
+    els = els.filter((e) => !e.classList.contains('in'));
+    if (!els.length) return;
+    const rank = els.map((e) => (getComputedStyle(e).getPropertyValue('--i').trim() ? -1 : 1)); // honour --i set by the module itself
+    let n = 0;
+    els.forEach((e, i) => { if (rank[i] > 0) e.style.setProperty('--i', String(Math.min(n, 10))); n++; });
+    els.forEach((e) => { e.classList.add('in'); pend.delete(e); if (rio) rio.unobserve(e); });
+    landed(els);
+  }
+  const byPos = (a, b) => { const ra = a.boundingClientRect, rb = b.boundingClientRect; return Math.round(ra.top / 40) - Math.round(rb.top / 40) || ra.left - rb.left; };
+  function scanRv() {
+    for (const e of $$('.rv')) {
+      if (seen.has(e)) continue; seen.add(e);
+      if (e.classList.contains('in')) continue;
+      if (reduce || !rio) { e.classList.add('in'); continue; }
+      pend.add(e); rio.observe(e);
+    }
+  }
+  function sweep(inView) { // failsafe: reveal what is above (and, when asked, within) the viewport
+    const hit = [];
+    for (const e of pend) { const r = e.getBoundingClientRect(); if (r.bottom < 0 || (inView && r.top < winH)) hit.push(e); }
+    hit.forEach((e) => { e.classList.add('in'); pend.delete(e); if (rio) rio.unobserve(e); });
+    if (hit.length) landed(hit);
+  }
+  if ('IntersectionObserver' in window && !reduce) {
+    rio = new IntersectionObserver((es) => {
+      const vis = es.filter((e) => e.isIntersecting).sort(byPos).map((e) => e.target);
+      if (!vis.length) return;
+      if (held) { held.push.apply(held, vis); return; } // boot still on screen: park reveals until the wipe starts
+      revealBatch(vis);
+    }, { rootMargin: '0px 0px -5% 0px', threshold: 0 });
+  }
+  function releaseReveal() {
+    if (!held) return;
+    const h = held; held = null;
+    h.sort((a, b) => { const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(); return Math.round(ra.top / 40) - Math.round(rb.top / 40) || ra.left - rb.left; });
+    revealBatch(h);
+  }
+  if (reduce || !rio || !boot) held = null;
+  scanRv();
+  onScrollEnd.push(() => sweep(false));
+  setTimeout(() => { releaseReveal(); sweep(true); }, 3500);
+  if ('MutationObserver' in window) {
+    let mt = 0;
+    new MutationObserver(() => { if (!mt) mt = setTimeout(() => { mt = 0; scanRv(); }, 220); }).observe(doc.body, { childList: true, subtree: true });
+  }
+
+  /* =====================================================================
+   * 5. boot overlay (<= 1.6 s, click / any key skips, removes itself)
+   * ===================================================================== */
+  /* cinematic intro when the overlay lifts: shader camera push + zoom-blur streaks + chromatic split settling (tier >= 2, never under reduced motion) */
+  const push = $('#fx-push');
+  function intro() {
+    if (reduce) return;
+    if (bgPost) bgPost({ t: 'i' });
+    if (!push || (J.tier || 2) < 2) return;
+    root.classList.add('fx-intro');
+    setTimeout(() => root.classList.remove('fx-intro'), 1250);
+  }
+  if (!boot) startBgOnce();
+  if (boot) {
+    if (reduce) { boot.remove(); releaseReveal(); startBgOnce(); }
+    else {
+      const LINES = [
+        ['jev-1.13.0 > typed questions ...', 'ok'], ['hermes > strategy.yaml ...', 'ok'], ['dots > 4y candles ...', 'ok'],
+        ['floor 0.85 | loss cap $2,000 | max pos 4% | kill switch', 'ARMED'], ['simulation only | no real orders | desk', 'online'],
+      ];
+      const starts = [0.04, 0.24, 0.44, 0.64, 0.84], durs = [0.19, 0.19, 0.19, 0.19, 0.17], OUT = 1.04;
+      const logEl = $('#fx-blog'), fill = $('#fx-bfill'), pct = $('#fx-bpct');
+      const rows = LINES.map((l) => {
+        const row = doc.createElement('div'), a = doc.createElement('span'), b = doc.createElement('em');
+        row.className = 'fx-bl'; row.append(a, b); logEl.appendChild(row);
+        return { row, a, b, t: l[0], ok: l[1], n: -1, done: false };
+      });
+      let T0 = -1, over = false, lastPct = -1, tk = null, steps = 0;
+      const GLYPHS = '#%/\\<>01=+*';
+      const finish = (fast) => {
+        if (over) return; over = true;
+        if (tk) tk.stop();
+        boot.classList.add('fx-out'); if (fast) boot.classList.add('fx-fast');
+        releaseReveal(); startBgOnce(); intro();
+        doc.removeEventListener('keydown', skip, true);
+        setTimeout(() => boot.remove(), fast ? 330 : 560);
+      };
+      const skip = () => finish(true);
+      boot.addEventListener('pointerdown', skip, { once: true });
+      doc.addEventListener('keydown', skip, true);
+      tk = J.task(boot, (t) => {
+        if (over) return;
+        if (T0 < 0) T0 = t;
+        const e = t - T0; // wall clock: the overlay is gone <= 1.6 s after its first frame no matter how slow the frames are
+        for (let i = 0; i < rows.length; i++) {
+          const r = rows[i], p = clamp((e - starts[i]) / durs[i], 0, 1), n = Math.floor(p * r.t.length);
+          if (p > 0 && p < 1) { // typing: the head of the line is still resolving (a few glyphs scramble ahead of the caret)
+            const ahead = Math.min(3, r.t.length - n); let g = '';
+            for (let j = 0; j < ahead; j++) g += GLYPHS[(Math.random() * GLYPHS.length) | 0];
+            r.n = n; r.a.textContent = r.t.slice(0, n) + g; r.row.classList.add('show');
+          } else if (p >= 1 && r.n !== r.t.length) { r.n = r.t.length; r.a.textContent = r.t; r.row.classList.add('show'); }
+          r.row.classList.toggle('cur', p > 0 && p < 1);
+          if (p >= 1 && !r.done) { r.done = true; r.b.textContent = r.ok; r.row.classList.add('hit'); fill.classList.remove('tk'); void fill.offsetWidth; fill.classList.add('tk'); steps++; }
+        }
+        const f0 = clamp(e / (OUT - 0.02), 0, 1), f = f0 < 0.5 ? 2 * f0 * f0 : 1 - Math.pow(-2 * f0 + 2, 2) / 2, q = Math.round(f * 100); // ease-in-out
+        fill.style.transform = 'scaleX(' + f.toFixed(3) + ')';
+        if (q !== lastPct) { lastPct = q; pct.textContent = (q < 10 ? '0' : '') + q + '% - ' + steps + '/' + rows.length; }
+        if (e >= OUT) finish(false);
+      });
+    }
+  }
+
+  /* =====================================================================
+   * 6. orbs: pupils follow the pointer, idle wander otherwise.
+   *    - geometry comes from IntersectionObserver entries: the browser computes their rects after layout, so this module never
+   *      forces a layout of its own (the old 1.4 s getBoundingClientRect poll did, mid-frame, after other tasks had dirtied the tree).
+   *      Re-observing an orb re-delivers its rect: done on scroll/resize end and every 1.5 s for the visible ones (orbiting agents move).
+   *    - eye offsets are quantised to 0.25 px and written straight to the two eyes only when a step is crossed (was: two custom
+   *      properties per orb per frame). Inline `translate` also keeps this module the single driver of the pupils.
+   * ===================================================================== */
+  const tick = $('#fx-tick');
+  if (tick && !reduce) {
+    const orbs = [], byEl = new Map();
+    let lpx = -1, lpy = -1, still = 0, lastRe = 0;
+    const geo = (o, r, on) => { // r: viewport rect of the orb, on: inside the viewport +-400px
+      o.cx = r.left + r.width / 2; o.cy = r.top + r.height / 2 + scrollY; o.max = clamp(r.width * 0.045, 1.2, 3); o.vis = on && r.width >= 6;
+    };
+    const oio = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
+      for (const e of es) { const o = byEl.get(e.target); if (o) geo(o, e.boundingClientRect, e.isIntersecting); }
+    }, { rootMargin: '400px 0px' }) : null;
+    const scanOrbs = () => {
+      for (const el of $$('.orb')) {
+        if (byEl.has(el)) continue;
+        const eyes = $$('.e', el); if (!eyes.length) continue;
+        const o = { el, eyes, x: 0, y: 0, qx: 0, qy: 0, ph: Math.random() * 6.28, cx: 0, cy: 0, max: 1.2, vis: false };
+        byEl.set(el, o); orbs.push(o);
+        if (oio) oio.observe(el); else geo(o, el.getBoundingClientRect(), true); // no IntersectionObserver: measure once, then on scroll / resize end
+      }
+    };
+    const remeasure = (all) => {
+      scanOrbs();
+      for (const o of orbs) {
+        if (oio) { if (all || o.vis) { oio.unobserve(o.el); oio.observe(o.el); } }
+        else geo(o, o.el.getBoundingClientRect(), true);
+      }
+    };
+    onScrollEnd.push(() => remeasure(true)); onResizeEnd.push(() => remeasure(true));
+    scanOrbs();
+    J.task(tick, (t, dt) => {
+      if (oio && t - lastRe > 1.5) { lastRe = t; remeasure(false); }
+      const p = J.pointer;
+      if (Math.abs(p.x - lpx) + Math.abs(p.y - lpy) > 0.5) { lpx = p.x; lpy = p.y; still = 0; } else still += dt;
+      const idle = p.x < -1000 || still > 3.5;
+      const k = 1 - Math.exp(-dt * 9);
+      for (let i = 0; i < orbs.length; i++) {
+        const o = orbs[i]; if (!o.vis) continue;
+        const oy = o.cy - scrollY;
+        if (oy < -80 || oy > winH + 80) continue;
+        let tx, ty;
+        if (idle) { tx = Math.cos(t * 0.6 + o.ph) * o.max * 0.7; ty = Math.sin(t * 0.43 + o.ph * 1.7) * o.max * 0.45; }
+        else {
+          const dx = p.x - o.cx, dy = p.y - oy, d = Math.sqrt(dx * dx + dy * dy) || 1, s = Math.min(1, d / 170);
+          tx = (dx / d) * o.max * s; ty = (dy / d) * o.max * s;
+        }
+        o.x += (tx - o.x) * k; o.y += (ty - o.y) * k;
+        const qx = Math.round(o.x * 4) / 4, qy = Math.round(o.y * 4) / 4;
+        if (qx === o.qx && qy === o.qy) continue;
+        o.qx = qx; o.qy = qy;
+        const v = qx + 'px ' + qy + 'px';
+        for (let j = 0; j < o.eyes.length; j++) o.eyes[j].style.translate = v;
+      }
+    });
+  }
+
+  /* =====================================================================
+   * 7. nav: highlight the section in view (sliding pink underline)
+   * ===================================================================== */
+  const nav = $('.nav');
+  if (nav) {
+    const links = $$('a[href^="#"]', nav), secs = links.map((a) => doc.getElementById(a.getAttribute('href').slice(1)));
+    const bar = doc.createElement('i'); bar.className = 'fx-navbar'; bar.setAttribute('aria-hidden', 'true'); nav.appendChild(bar);
+    let cur = -1;
+    const place = () => {
+      const a = links[cur];
+      if (!a || !a.offsetWidth) { bar.classList.remove('on'); return; }
+      bar.style.left = a.offsetLeft + 10 + 'px'; bar.style.width = Math.max(4, a.offsetWidth - 20) + 'px'; bar.classList.add('on');
+    };
+    const mark = (i) => {
+      if (i === cur) return; cur = i;
+      links.forEach((a, j) => { a.classList.toggle('on', j === i); if (j === i) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); });
+      place();
+    };
+    if ('IntersectionObserver' in window) {
+      const band = new Set();
+      const nio = new IntersectionObserver((es) => {
+        es.forEach((e) => (e.isIntersecting ? band.add(e.target) : band.delete(e.target)));
+        let idx = -1; secs.forEach((s, i) => { if (s && band.has(s)) idx = i; });
+        if (idx >= 0) mark(idx);
+      }, { rootMargin: '-38% 0px -58% 0px', threshold: 0 });
+      secs.forEach((s) => s && nio.observe(s));
+    }
+    if (scrollY < 80) mark(0);
+    if ('ResizeObserver' in window) new ResizeObserver(place).observe(nav);
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(place);
+  }
+
+  /* =====================================================================
+   * 8. kill-switch theatre + decision / floor reactions
+   * ===================================================================== */
+  const shockHost = $('#fx-shock');
+  function shock(green) {
+    if (!shockHost || reduce) return;
+    let cx = winW - 90, cy = 28;
+    if (killBtn) { const r = killBtn.getBoundingClientRect(); if (r.width) { cx = r.left + r.width / 2; cy = r.top + r.height / 2; } }
+    const far = Math.max(Math.hypot(cx, cy), Math.hypot(winW - cx, cy), Math.hypot(cx, winH - cy), Math.hypot(winW - cx, winH - cy));
+    const s = ((far * 2.1) / 520).toFixed(2);
+    (green ? [''] : ['', 'b']).forEach((cls) => {
+      const el = doc.createElement('i');
+      el.className = 'fx-ring ' + (green ? 'g ' : '') + cls; el.style.left = cx + 'px'; el.style.top = cy + 'px'; el.style.setProperty('--s', green ? (s * 0.75).toFixed(2) : s);
+      el.addEventListener('animationend', () => el.remove(), { once: true });
+      shockHost.appendChild(el);
+      setTimeout(() => el.remove(), 1700);
+    });
+  }
+  let glitchT = 0;
+  function glitch() {
+    if (reduce) return;
+    clearTimeout(glitchT); root.classList.remove('fx-glitch');
+    requestAnimationFrame(() => { root.classList.add('fx-glitch'); glitchT = setTimeout(() => root.classList.remove('fx-glitch'), 380); });
+  }
+  J.bus.on('kill', (on) => {
+    if (bgPost) bgPost({ t: 'k', v: on });
+    shock(!on);
+    if (on) {
+      glitch(); J.pulse(1);
+      J.toast('KILL SWITCH THROWN - every order now routes to human review', 'kill');
+    } else {
+      J.pulse(0.6);
+      J.toast('ARMED - gate open at floor ' + J.S.floor.toFixed(2), 'ok');
+    }
+  });
+
+  let decAnim = null;
+  function flashDec() {
+    if (!decEl || reduce || !decEl.animate) return;
+    if (decAnim) decAnim.cancel();
+    decEl.style.transformOrigin = 'left center';
+    decAnim = decEl.animate([{ color: '#fff', textShadow: '0 0 14px #ff2e6e, 0 0 30px rgba(255,46,110,.9)', transform: 'scale(1.14)', offset: 0 }, { offset: 1 }], { duration: 640, easing: 'ease-out' });
+  }
+  /* the atmosphere listens to the desk: execute = warm flash from the light, review = amber ripple, skip = dim; ticks drive intensity */
+  J.bus.on('decision', (d) => {
+    if (!d || doc.hidden) return;
+    if (d.dest === 'execute') { J.pulse(0.35); flashDec(); if (bgPost) bgPost({ t: 'x', k: 1 }); }
+    else if (d.dest === 'review') { if (bgPost) bgPost({ t: 'p', s: 0.5, k: 1 }); }
+    else if (bgPost) bgPost({ t: 'x', k: 2 });
+  });
+  let lastPx = 0;
+  J.bus.on('tick', (m) => {
+    if (!m || !bgPost || doc.hidden || reduce) return;
+    const px = m.price; if (!lastPx) lastPx = px;
+    const bps = (px - lastPx) / lastPx * 1e4; lastPx = px;
+    bgPost({ t: 'h', v: clamp(Math.abs(bps) / 3, 0, 1), d: clamp(bps / 3, -1, 1) });
+  });
+  /* tint (core may provide JEV.tint as '#rrggbb' | [r,g,b] | {r,g,b}) and quality tier (JEV.tier / html[data-tier]); both guarded */
+  const tv = [-9, -9, -9];
+  let tierSeen = J.tier | 0;
+  function parseTint(v) {
+    if (!v) return null;
+    if (typeof v === 'string') { const m = /^#?([0-9a-f]{6})$/i.exec(v.trim()); return m ? [0, 2, 4].map((i) => parseInt(m[1].substr(i, 2), 16) / 255) : null; }
+    const a = Array.isArray(v) ? v : [v.r, v.g, v.b]; if (!(a[0] >= 0 && a[1] >= 0 && a[2] >= 0)) return null;
+    const sc = Math.max(a[0], a[1], a[2]) > 1 ? 255 : 1; return [a[0] / sc, a[1] / sc, a[2] / sc];
+  }
+  function syncEnv() {
+    if (!bgPost) return;
+    const tn = J.tint, a0 = tn ? tn[0] : -1, a1 = tn ? tn[1] : -1, a2 = tn ? tn[2] : -1; // core eases J.tint in place: compare values, not the reference
+    if (Math.abs(a0 - tv[0]) + Math.abs(a1 - tv[1]) + Math.abs(a2 - tv[2]) > 2) { tv[0] = a0; tv[1] = a1; tv[2] = a2; const c = parseTint(tn); bgPost({ t: 'c', c: c || [0, 0, 0] }); }
+    const q = J.tier | 0; if (q && q !== tierSeen) { tierSeen = q; bgPost({ t: 'q', v: q }); }
+  }
+  setInterval(() => { if (!doc.hidden) syncEnv(); }, 300);
+  J.bus.on('tint', () => syncEnv());
+  J.bus.on('tier', () => syncEnv());
+
+  let floorT = 0;
+  J.bus.on('floor', (v) => { clearTimeout(floorT); floorT = setTimeout(() => J.toast('floor -> ' + (+v).toFixed(2)), 600); });
+});
+
+</script>
+<script>
+/* desk-top — status ticker · swarm P&L · the tape (prefix dkt-). Everything here is SIMULATED:
+ * candles come from JEV.market ticks (+ a seeded back-history), P&L moves on executed decisions (+ mark-to-market of open tickets). */
+JEV.mod('desk-top', () => {
   const J = JEV, $ = J.$, $$ = J.$$, C = J.C, S = J.S, M = J.market, TAU = J.TAU, clamp = J.clamp, fmt = J.fmt;
+  const bar = $('#dkt-bar'), pnl = $('#dkt-pnl'), tape = $('#dkt-tape');
+  if (!bar || !pnl || !tape) return;
+  const reduce = J.reduce;
+  const MONO = "'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace";
+  const SANS = "'Space Grotesk', 'Inter', system-ui, sans-serif";
+  const nowMs = () => performance.now();
   const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
+  const rgbOf = (h) => { const n = parseInt(h.slice(1), 16); return (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255); };
+  const GRN = rgbOf(C.green), RED = rgbOf(C.red), AMB = rgbOf(C.amber), VIO = rgbOf(C.violet), PNK = rgbOf(C.pink);
+  const cG = (a) => 'rgba(' + GRN + ',' + a + ')', cR = (a) => 'rgba(' + RED + ',' + a + ')';
   const sgnUsd = (v) => (v >= 0 ? '+$' : '-$') + fmt(Math.abs(Math.round(v)));
+  const sgnPct = (v, d) => (v >= 0 ? '+' : '-') + Math.abs(v).toFixed(d == null ? 2 : d) + '%';
+  const short = (s) => s.split('-')[0].toLowerCase();
+  const rr = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+  /** soft additive glow sprite (drawn with 'lighter'; replaces shadowBlur) */
   const sprite = (rgb) => {
     const c = document.createElement('canvas'); c.width = c.height = 64;
     const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
     gr.addColorStop(0, 'rgba(' + rgb + ',.9)'); gr.addColorStop(.3, 'rgba(' + rgb + ',.3)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)');
     g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return c;
   };
-  const rgbOf = (h) => { const n = parseInt(h.slice(1), 16); return (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255); };
-  const GRN = rgbOf(C.green), RED = rgbOf(C.red), AMB = rgbOf(C.amber);
+  const SP = { g: sprite(GRN), r: sprite(RED), a: sprite(AMB), p: sprite(PNK) };
+  const glow = (g, spr, x, y, r, a) => { g.globalAlpha = a; g.drawImage(spr, x - r, y - r, r * 2, r * 2); g.globalAlpha = 1; };
+  /* ---- spectacle kit (tier-gated: tier 1 = the page as it always was; reduced motion = off) ---- */
+  const tier = () => (reduce ? 1 : (J.tier || 2));
+  const SPW = sprite('255,255,255'), SPR = [SP.g, SP.r, SP.a, SP.p, SPW];       // particle sprites: 0 green 1 red 2 amber 3 pink 4 white
+  const beamSpr = (rgb) => {                                                    // vertical light column: soft sides, bright toward the bottom (stretched, never re-rendered)
+    const c = document.createElement('canvas'); c.width = 16; c.height = 64; const g = c.getContext('2d');
+    const v = g.createLinearGradient(0, 0, 0, 64); v.addColorStop(0, 'rgba(' + rgb + ',0)'); v.addColorStop(1, 'rgba(' + rgb + ',.9)'); g.fillStyle = v; g.fillRect(0, 0, 16, 64);
+    g.globalCompositeOperation = 'destination-in'; const h = g.createLinearGradient(0, 0, 16, 0); h.addColorStop(0, 'rgba(0,0,0,0)'); h.addColorStop(.5, '#000'); h.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = h; g.fillRect(0, 0, 16, 64); return c;
+  };
+  const BM = { g: beamSpr(GRN), r: beamSpr(RED), p: beamSpr(PNK), a: beamSpr(AMB) };
+  const bandSpr = (() => { const c = document.createElement('canvas'); c.width = 64; c.height = 4; const g = c.getContext('2d'), h = g.createLinearGradient(0, 0, 64, 0);
+    h.addColorStop(0, 'rgba(255,255,255,0)'); h.addColorStop(.5, 'rgba(255,255,255,.2)'); h.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = h; g.fillRect(0, 0, 64, 4); return c; })();
+  /** bounded particle pool (typed arrays, ring-reused: no allocation per spawn / frame). slot = x y vx vy life max size kind */
+  const mkPool = (n) => ({ n, a: new Float32Array(n * 8), c: 0 });
+  function spawn(p, x, y, vx, vy, life, size, kind) {
+    const a = p.a, o = p.c * 8; p.c = (p.c + 1) % p.n;
+    a[o] = x; a[o + 1] = y; a[o + 2] = vx; a[o + 3] = vy; a[o + 4] = life; a[o + 5] = life; a[o + 6] = size; a[o + 7] = kind;
+  }
+  /** burst of radial sparks; ay = vertical accel (px/s^2, negative rises) */
+  function burst(p, x, y, n, kind, speed, life, size, ay) {
+    for (let i = 0; i < n; i++) { const an = Math.random() * TAU, sp = speed * (0.35 + Math.random() * 0.75); spawn(p, x, y, Math.cos(an) * sp, Math.sin(an) * sp + (ay || 0) * 0.02, life * (0.6 + Math.random() * 0.6), size * (0.7 + Math.random() * 0.6), Math.random() < 0.25 ? 4 : kind); }
+  }
+  function drawPool(p, g, dt, ay, drag, flick) {
+    const a = p.a, k = Math.exp(-dt * drag); g.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < p.n; i++) {
+      const o = i * 8; let life = a[o + 4]; if (life <= 0) continue;
+      life -= dt; a[o + 4] = life; if (life <= 0) continue;
+      a[o + 2] *= k; a[o + 3] = a[o + 3] * k + ay * dt; a[o] += a[o + 2] * dt; a[o + 1] += a[o + 3] * dt;
+      const f = life / a[o + 5], fl = flick ? 0.65 + 0.35 * Math.sin(life * 38 + i * 1.7) : 1;
+      glow(g, SPR[a[o + 7]], a[o], a[o + 1], a[o + 6] * (0.35 + 0.65 * f), Math.min(1, f * 1.6) * fl);
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
+  const AG = {}; J.AGENTS.forEach((a) => (AG[a.key] = a));
   const HOLD = { entry: 'edge', sizer: 'kelly', guard: 'prior', router: 'taker', exit: 'closer', funding: 'prior', news: 'spotter', mm: 'taker', liq: 'closer', rebal: 'spotter' };
-  const AG = {}; (J.AGENTS || []).forEach((a) => (AG[a.key] = a));
-  const short = (s) => s.split('-')[0].toLowerCase();
-const card = $('#dkmq'), mt = $('#dkmq-mt'), set1 = $('#dkmq-ms'); if (!card || !mt || !set1) return;
+
+  /* =====================================================================================
+   * shared simulation state
+   * ===================================================================================== */
+  const BASE = 527759, CAP = BASE, LEV = 10, HEDGE = 0.3, HN = 300, OW = 200;
+  const hist = new Float64Array(HN); let hh = 0;               // balance ring: one sample per market tick (4 Hz)
+  const hpush = (v) => { hist[hh] = v; hh = (hh + 1) % HN; };
+  const hat = (i) => hist[(hh + i) % HN];                      // i = 0 oldest
+  const sim = {
+    bal: BASE, open: BASE, peak: BASE, dd: 0, shown: BASE, tixN: 14882, outc: [], sumBps: 0, nBps: 300, sizeN: [31, 36, 22, 11],
+    tix: [], holder: 'kelly', gap: 1.0, lastDec: 0, edgeAvg: 9, imbT: 0, spr: 1.1, last: null, jump: 0, jumpT: -99, stripDirty: true,
+  };
+  const reviews = [], pulseEv = [];
+  const rgs = J.rng(7741), gzs = () => Math.sqrt(-2 * Math.log(rgs() + 1e-9)) * Math.cos(TAU * rgs());
+  (function seedSim() {
+    let nz = 0, step = 0; const raw = [];
+    for (let i = 0; i < HN; i++) {
+      const x = i / (HN - 1);
+      nz = nz * 0.965 + gzs() * 38;
+      if (rgs() < 0.075) step += (rgs() < 0.56 ? 1 : -1) * (55 + rgs() * 120);
+      raw.push(1100 * x - 2300 * Math.exp(-Math.pow((x - 0.5) / 0.12, 2)) + 420 * Math.sin(x * 11) + nz + step * 0.8 + gzs() * 12);
+    }
+    const off = BASE - raw[HN - 1];
+    sim.open = raw[0] + off; sim.peak = sim.open;
+    for (let i = 0; i < HN; i++) {
+      const v = raw[i] + off; hpush(v);
+      if (v > sim.peak) sim.peak = v; else sim.dd = Math.max(sim.dd, (sim.peak - v) / sim.peak);
+    }
+    for (let i = 0; i < OW; i++) { const m = 3 + rgs() * 9; sim.outc.push(rgs() < 0.55 ? m : -m * 0.85); }
+    sim.sumBps = 1.78 * sim.nBps;
+    const t = nowMs();
+    [[1, 52800], [-1, 26400], [1, 105600], [1, 52800]].forEach((a, i) => sim.tix.push({ dir: a[0], notional: a[1], born: t - 4000 * i, life: 16000 + i * 7000 }));
+  })();
+
+  /* =====================================================================================
+   * the tape — candle model (seeded back-history + live ticks), vwap ±1σ, order book model
+   * ===================================================================================== */
+  const CAND_MS = 6000, KEEP = 150, LAM = 0.975, NB = 10;
+  const cands = [], marks = []; let cidSeq = 0;
+  const mkC = (o, t) => ({ cid: cidSeq++, o, h: o, l: o, c: o, v: 0, ev: 0, epv: 0, epv2: 0, vw: o, sd: 0, t0: t });
+  const accum = (cd, pv) => {                                   // decayed volume-weighted sums → vwap and σ
+    const tp = (cd.h + cd.l + cd.c) / 3;
+    cd.ev = (pv ? pv.ev * LAM : 0) + cd.v; cd.epv = (pv ? pv.epv * LAM : 0) + cd.v * tp; cd.epv2 = (pv ? pv.epv2 * LAM : 0) + cd.v * tp * tp;
+    if (cd.ev > 0) { cd.vw = cd.epv / cd.ev; cd.sd = Math.sqrt(Math.max(0, cd.epv2 / cd.ev - cd.vw * cd.vw)); } else { cd.vw = tp; cd.sd = 0; }
+  };
+  (function seedTape() {
+    const rg = J.rng(8473), gz = () => Math.sqrt(-2 * Math.log(rg() + 1e-9)) * Math.cos(TAU * rg());
+    const N = 76; let p = 84722, drift = 0, vx = 0.00085;
+    for (let i = 0; i < N; i++) {
+      const x = i / N;
+      drift = drift * 0.8 + gz() * 0.00009 + 0.00005 * Math.sin(x * TAU * 1.3 + 0.4);
+      vx = clamp(vx * 0.9 + 0.000085 + Math.abs(gz()) * 0.00005, 0.0005, 0.0016);
+      const o = p, r = drift + vx * gz(), c = o * (1 + r);
+      const h = Math.max(o, c) * (1 + Math.abs(gz()) * vx * 0.55), l = Math.min(o, c) * (1 - Math.abs(gz()) * vx * 0.55);
+      const cd = mkC(o, 0); cd.c = c; cd.h = h; cd.l = l; cd.v = (34 + 30 * Math.abs(r) / vx) * Math.exp(gz() * 0.3);
+      cands.push(cd); p = c;
+    }
+    const f = M.price / p;
+    for (let i = 0; i < cands.length; i++) { const c = cands[i]; c.o *= f; c.h *= f; c.l *= f; c.c *= f; accum(c, cands[i - 1]); }
+    const live = mkC(M.price, nowMs()); live.v = 6; accum(live, cands[cands.length - 1]); cands.push(live);
+    for (let i = 0; i < 11; i++) {                               // a few fired tickets in the back-history
+      const c = cands[4 + Math.floor(rg() * (N - 10))], k = rg(), kind = k < 0.4 ? 'buy' : k < 0.8 ? 'sell' : 'close';
+      marks.push({ cid: c.cid, price: kind === 'buy' ? c.l : kind === 'sell' ? c.h : (c.o + c.c) / 2, kind, t: -1e9, txt: '', size: J.SIZES[(rg() * 4) | 0], conf: 0.86 + rg() * 0.11, dest: 'execute', venue: ['binance', 'okx', 'bybit', 'hyperliquid', 'coinbase', 'kraken'][(rg() * 6) | 0] });
+    }
+  })();
+
+  const pA = new Float32Array(NB), pB = new Float32Array(NB), sA = new Int8Array(NB), sB = new Int8Array(NB);
+  const bkA = new Float32Array(NB), bkB = new Float32Array(NB), tA = new Float32Array(NB), tB = new Float32Array(NB), fA = new Float32Array(NB), fB = new Float32Array(NB);
+  const lblA = new Array(NB).fill(''), lblB = new Array(NB).fill('');
+  const book = { mid: '', spr: '', sprBps: 0, imb: 0, up: true, mx: 3, gap: 5 };
+  const draw1 = (k, imb, bid) => (0.35 + Math.random() * 1.5) * (1 + k * 0.2) * (Math.random() < 0.05 ? 2.4 : 1) * Math.max(0.35, 1 + (bid ? 1 : -1) * 0.6 * imb);
+  const retarget = (frac) => {
+    for (let k = 0; k < NB; k++) {
+      if (Math.random() < frac) { const v = draw1(k, sim.imbT, false); if (Math.abs(v - tA[k]) > 0.6 + 0.4 * tA[k]) { fA[k] = 1; sA[k] = v > tA[k] ? 1 : -1; pA[k] = bkA[k]; if (v < tA[k] * 0.42 && tA[k] > 1) eA[k] = 1; } tA[k] = v; }
+      if (Math.random() < frac) { const v = draw1(k, sim.imbT, true); if (Math.abs(v - tB[k]) > 0.6 + 0.4 * tB[k]) { fB[k] = 1; sB[k] = v > tB[k] ? 1 : -1; pB[k] = bkB[k]; if (v < tB[k] * 0.42 && tB[k] > 1) eB[k] = 1; } tB[k] = v; }
+    }
+  };
+  const bookLabels = (price) => {
+    const half = Math.max(1, Math.round(price * sim.spr / 2e4)), bb = Math.round(price) - half, ba = Math.round(price) + half;
+    for (let k = 0; k < NB; k++) { lblB[k] = fmt(bb - k * 2); lblA[k] = fmt(ba + k * 2); }
+    book.mid = fmt(price, 1); book.spr = '$' + (half * 2) + ' · ' + sim.spr.toFixed(1) + 'bp'; book.sprBps = sim.spr; book.gap = half;
+  };
+  for (let k = 0; k < NB; k++) { tA[k] = bkA[k] = draw1(k, 0, false); tB[k] = bkB[k] = draw1(k, 0, true); }
+  bookLabels(M.price);
+
+  const eA = new Int8Array(NB), eB = new Int8Array(NB);              // 'level eaten' flags (a size collapsed): consumed by drawBook
+  const fx = { birthT: -1e9, birthN: 0, tickT: -1e9, pool: mkPool(120) };
+  let lastPx = M.price;
+  function tapeTick(price, dp) {
+    const t = nowMs(); let cur = cands[cands.length - 1];
+    fx.tickT = t;
+    if (t - cur.t0 >= CAND_MS) {
+      fx.birthT = t; fx.birthN = 1;
+      accum(cur, cands[cands.length - 2]);
+      cur = mkC(cur.c, t); cands.push(cur); if (cands.length > KEEP) cands.shift();
+      tg.slide = tg.slot || 8;
+      while (marks.length && marks[0].cid < cands[0].cid - 1) marks.shift();
+    }
+    cur.c = price; if (price > cur.h) cur.h = price; if (price < cur.l) cur.l = price;
+    cur.v += (0.8 + 2.4 * Math.abs(dp) / (price * M.vol)) * (0.55 + Math.random() * 0.9);
+    accum(cur, cands[cands.length - 2]);
+    book.up = price >= lastPx; lastPx = price;
+    retarget(0.3); bookLabels(price);
+  }
+
+  /* =====================================================================================
+   * events: tick → mark-to-market, decision → tickets / jumps / markers
+   * ===================================================================================== */
+  const bigEl = $('#dkt-big'); let popN = 0;
+  function pop(txt, dir) {
+    if (reduce || !bigEl || popN > 3) return;
+    const e = document.createElement('i'); e.className = 'dkt-pop'; e.textContent = txt; e.style.color = dir > 0 ? C.green : C.red;
+    e.style.right = (Math.random() * 20).toFixed(0) + 'px'; e.style.top = innerWidth < 420 ? '-15px' : '10px';   // narrow: float above the numeral, never over its digits
+    bigEl.appendChild(e);
+    const a = J.animate(e, [{ opacity: 0, transform: 'translateY(16px) scale(.85)' }, { opacity: 1, transform: 'translateY(0) scale(1)', offset: .16 }, { opacity: 1, offset: .62 }, { opacity: 0, transform: 'translateY(-26px) scale(1)' }], { duration: 1800, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    if (!a) { e.remove(); return; }                                // hidden tab / no WAAPI: never leave an unfinishable animation behind
+    popN++; a.onfinish = a.oncancel = () => { popN--; e.remove(); };
+  }
+  function setBal(v) {
+    sim.bal = v;
+    if (v > sim.peak) sim.peak = v; else { const d = (sim.peak - v) / sim.peak; if (d > sim.dd) sim.dd = d; }
+  }
+  function execute(d, t) {
+    const a = d.action;
+    if (a === 'buy' || a === 'sell') {
+      const dir = a === 'buy' ? 1 : -1, notional = d.size / 100 * CAP * LEV;
+      const pWin = clamp(0.54 + (d.conf - 0.88) * 1.1 - clamp((sim.bal - BASE) / 2600, -0.22, 0.22), 0.3, 0.78);
+      const mag = (3 + Math.abs(d.net) * 0.26) * (0.55 + Math.random() * 0.9);
+      const bps = Math.random() < pWin ? mag : -mag * 0.85, jump = notional * bps / 1e4;
+      setBal(sim.bal + jump); sim.jump = jump; sim.jumpT = t;
+      sim.outc.push(bps); if (sim.outc.length > OW) sim.outc.shift(); sim.sumBps += bps; sim.nBps++; sim.stripDirty = true;
+      sim.tixN++; sim.sizeN[d.sizeIdx]++;
+      sim.tix.push({ dir, notional, born: t, life: 9000 + Math.random() * 26000 }); if (sim.tix.length > 6) sim.tix.shift();
+      pop(sgnUsd(jump) + ' · ' + a + ' ' + d.size + '%', jump);
+    } else if (a === 'close') { sim.tix.shift(); sim.tixN++; } else if (a === 'flatten') { sim.tix.length = 0; sim.tixN++; }
+    if (d.symbol === 'BTC-PERP' && a !== 'hold') {
+      marks.push({ cid: cands[cands.length - 1].cid, price: M.price, kind: a === 'buy' || a === 'sell' ? a : 'close', t, act: a, size: d.size, conf: d.conf, dest: d.dest, venue: d.venue,
+        txt: (a === 'buy' || a === 'sell' ? a + ' ' + d.size + '% ' : a + ' ') + '.' + String(Math.round(d.conf * 100)).padStart(2, '0') });
+      if (marks.length > 60) marks.shift();
+    }
+  }
+  J.bus.on('tick', (e) => {
+    const t = nowMs();
+    for (let i = sim.tix.length - 1; i >= 0; i--) if (t - sim.tix[i].born > sim.tix[i].life) sim.tix.splice(i, 1);
+    let ex = 0; for (const k of sim.tix) ex += k.dir * k.notional;
+    setBal(sim.bal + ex * HEDGE * (e.dp / e.price) + (BASE - sim.bal) * 0.0002);
+    hpush(sim.bal);
+    tapeTick(e.price, e.dp);
+  });
+  J.bus.on('decision', (d) => {
+    const t = nowMs();
+    if (sim.lastDec) sim.gap += (clamp((t - sim.lastDec) / 1000, 0.3, 3) - sim.gap) * 0.12;
+    sim.lastDec = t; sim.last = d; sim.holder = HOLD[d.build] || 'kelly';
+    sim.edgeAvg += (clamp(d.state.edge_bps, -40, 40) - sim.edgeAvg) * 0.1;
+    sim.imbT += (clamp(d.state.imbalance, -0.8, 0.8) - sim.imbT) * 0.35;
+    sim.spr += (clamp(d.state.spread_bps, 0.5, 3.5) - sim.spr) * 0.2;
+    pulseEv.push({ t, dest: d.dest, conf: d.conf }); if (pulseEv.length > 90) pulseEv.shift();
+    if (d.dest === 'review') reviews.push(t);
+    if (d.dest === 'execute') execute(d, t);
+  });
+
+  /* =====================================================================================
+   * status ticker
+   * ===================================================================================== */
+  const mt = $('#dkt-mt'), set1 = $('#dkt-ms');
   const set2 = set1.cloneNode(true); set2.removeAttribute('id'); set2.setAttribute('aria-hidden', 'true');
-  $$('[id]', set2).forEach((e) => e.removeAttribute('id')); mt.appendChild(set2);        // second copy = seamless loop (-50%)
+  $$('[id]', set2).forEach((e) => e.removeAttribute('id')); mt.appendChild(set2);
   const kEls = {}; $$('[data-k]', mt).forEach((e) => (kEls[e.dataset.k] || (kEls[e.dataset.k] = [])).push(e));
   const chipEls = {}; $$('[data-ck]', mt).forEach((e) => (chipEls[e.dataset.ck] || (chipEls[e.dataset.ck] = [])).push(e));
   const holdChips = $$('.dkt-c', mt).filter((e) => e.querySelector('[data-k="holder"]'));
   const K = (k, s) => { const a = kEls[k]; if (a) for (let i = 0; i < a.length; i++) setT(a[i], s); };
   const chipC = (k, c) => { const a = chipEls[k]; if (a) for (let i = 0; i < a.length; i++) if (a[i].dataset.c !== c) a[i].dataset.c = c; };
-  $$('.dkt-c', set1).forEach((e) => { e.tabIndex = 0; });       // keyboard: tab through chips (the marquee holds while one has focus)
-  const mq = $('.dkt-mq', card);
-  if (mq) mq.addEventListener('click', () => { if (matchMedia('(hover: none)').matches) mq.classList.toggle('dkt-hold'); });   // touch: tap = hold, tap again = resume
-  let mqW = 0; J.watch(set1, (r) => { if (!r.width || (mqW && Math.abs(r.width - mqW) / mqW < 0.05)) return; mqW = r.width; mt.style.setProperty('--mqd', Math.round(r.width / (J.narrow() ? 36 : 46)) + 's'); });
-  const st = { gap: 1, lastDec: 0, edge: 9, holder: 'kelly', d: null, tix: [4, 2, 1].map((n, i) => performance.now() - 3000 * i + n * 0), rev: [] };
-  J.bus.on('decision', (d) => {
-    const t = performance.now(); if (st.lastDec) st.gap += (clamp((t - st.lastDec) / 1000, 0.3, 3) - st.gap) * 0.12;
-    st.lastDec = t; st.d = d; st.holder = HOLD[d.build] || 'kelly'; st.edge += (clamp(d.state.edge_bps, -40, 40) - st.edge) * 0.1;
-    if (d.dest === 'review') st.rev.push(t); if (d.dest === 'execute' && (d.action === 'buy' || d.action === 'sell')) st.tix.push(t + 9000 + Math.random() * 20000);
-  });
-  let holderShown = '';
-  function flush() {
-    const t = performance.now(); while (st.rev.length && t - st.rev[0] > 30000) st.rev.shift(); st.tix = st.tix.filter((e) => e > t); if (st.tix.length > 6) st.tix.shift();
-    const fairBps = st.edge * 0.3, fair = M.price * (1 + fairBps / 1e4), d = st.d;
-    K('hand', String(Math.round(60 / st.gap * 1.7))); K('fair', fmt(Math.round(fair))); K('mkt', fmt(Math.round(M.price)));
-    K('edge', (fairBps >= 0 ? '+' : '-') + Math.abs(fairBps).toFixed(1) + 'bps'); chipC('edge', fairBps >= 0 ? 'green' : 'red');
-    K('open', String(Math.max(1, st.tix.length))); K('wait', st.rev.length + ' waiting'); K('spent', '$' + S.cost.toFixed(3)); K('floor', S.floor.toFixed(2));
-    K('kill', S.killed ? 'halted' : 'armed'); chipC('kill', S.killed ? 'red' : 'green');
-    if (d) { const a = d.action; K('last', (a === 'hold' ? 'hold ' + short(d.symbol) : a + ' ' + short(d.symbol) + ' ' + d.size + '%') + ' .' + String(Math.round(d.conf * 100)).padStart(2, '0') + ' · ' + d.dest); chipC('last', d.dest === 'execute' ? 'green' : d.dest === 'review' ? 'yellow' : 'gray'); }
-    const ag = AG[st.holder];
-    if (ag && holderShown !== st.holder) { holderShown = st.holder; K('holder', ag.name.toLowerCase()); const rgb = rgbOf(ag.col); holdChips.forEach((e) => { e.style.setProperty('--cc', ag.col); e.style.setProperty('--cc-rgb', rgb); }); }
+  $$('.dkt-c', set1).forEach((e) => { e.tabIndex = 0; });       // keyboard: tab through the chips (the marquee holds while one has focus); the clone stays out of the tab order
+  const mq = $('.dkt-mq', bar);
+  if (mq) {                                                      // touch: tap the strip to hold it, tap again to resume
+    mq.addEventListener('click', () => { if (matchMedia('(hover: none)').matches) mq.classList.toggle('dkt-hold'); });
   }
-  let ac = 0; flush(); J.task(card, (t, dt) => { ac += dt; if (ac < 0.25) return; ac = 0; flush(); });
+  let mqW = 0;
+  J.watch(set1, (r) => {
+    if (!r.width || (mqW && Math.abs(r.width - mqW) / mqW < 0.05)) return;
+    mqW = r.width; mt.style.setProperty('--mqd', Math.round(r.width / (J.narrow() ? 36 : 46)) + 's');
+  });
+  const clockEl = $('#dkt-clock'), navEl = $('#dkt-nav'), splEl = $('#dkt-spl'), flrEl = $('#dkt-flr');
+  let holderShown = '';
+  function flushBar() {
+    const t = nowMs();
+    setT(clockEl, new Date().toISOString().slice(11, 19));
+    while (reviews.length && t - reviews[0] > 30000) reviews.shift();
+    const fairBps = sim.edgeAvg * 0.3, fair = M.price * (1 + fairBps / 1e4), d = sim.last, delta = sim.bal - sim.open;
+    K('hand', String(Math.round(60 / sim.gap * 1.7)));
+    K('fair', fmt(Math.round(fair))); K('mkt', fmt(Math.round(M.price)));
+    K('edge', (fairBps >= 0 ? '+' : '-') + Math.abs(fairBps).toFixed(1) + 'bps'); chipC('edge', fairBps >= 0 ? 'green' : 'red');
+    K('open', String(sim.tix.length));
+    K('wait', reviews.length + ' waiting');
+    K('spent', '$' + S.cost.toFixed(3));
+    K('pnl', sgnUsd(delta)); chipC('pnl', delta >= 0 ? 'green' : 'red');
+    K('floor', S.floor.toFixed(2));
+    K('kill', S.killed ? 'halted' : 'armed'); chipC('kill', S.killed ? 'red' : 'green');
+    if (d) {
+      const a = d.action; K('last', (a === 'hold' ? 'hold ' + short(d.symbol) : a + ' ' + short(d.symbol) + ' ' + d.size + '%') + ' .' + String(Math.round(d.conf * 100)).padStart(2, '0') + ' · ' + d.dest);
+      chipC('last', d.dest === 'execute' ? 'green' : d.dest === 'review' ? 'yellow' : 'gray');
+    }
+    const ag = AG[sim.holder];
+    if (ag && holderShown !== sim.holder) {
+      holderShown = sim.holder; K('holder', ag.name.toLowerCase());
+      const rgb = rgbOf(ag.col); holdChips.forEach((e) => { e.style.setProperty('--cc', ag.col); e.style.setProperty('--cc-rgb', rgb); });
+    }
+    setT(navEl, '$' + (sim.bal / 1000).toFixed(1) + 'k'); setT(splEl, sgnUsd(delta)); if (splEl) splEl.style.color = delta >= 0 ? C.green : C.red;
+    setT(flrEl, S.floor.toFixed(2));
+  }
+
+  let acB = 0;
+  J.task(bar, (t, dt) => { acB += dt; if (acB < 0.25) return; acB = 0; flushBar(); });
+  const tg = { slide: 0, slot: 8 };   // standalone: no tape chunk here, tapeTick() only needs these
+  flushBar();
 });
 
 </script>

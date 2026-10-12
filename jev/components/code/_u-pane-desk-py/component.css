@@ -1,0 +1,10 @@
+/* ---- skin 1 + 3 : LIGHT ---- */
+.code-light { color: #2a2033; background: linear-gradient(180deg, #f7f4f8, #f0ecf2);
+  --code-hair: rgba(42, 32, 51, .11); --code-dot: #ff2e6e; --code-meta: #6c6277; --code-no: #8f84a0; --code-band: rgba(255, 46, 110, .075); --code-bandc: #ff2e6e; --code-caret: #e0105a; --code-sb: #cfc4d8;
+  --code-fade: #f6f3f8; --code-mmbg: rgba(42, 32, 51, .04); --code-mmv: rgba(224, 16, 90, .55); --code-mmvf: rgba(224, 16, 90, .08);
+  --code-sel: rgba(255, 46, 110, .24); --code-gut: rgba(255, 46, 110, .22); --code-gut-t: rgba(255, 46, 110, .55); --code-lkc: #e0105a; --code-lkbg: rgba(255, 46, 110, .14); --code-cph: rgba(42, 32, 51, .09); --code-mmvh: rgba(224, 16, 90, .16); --code-mmvc: rgba(224, 16, 90, .85);
+  --t-k: #c10f58; --t-s: #08704c; --t-n: #a14f00; --t-c: #6c6277; --t-f: #1b4fd1; --t-b: #7b34d8; --t-ct: #a63c06; --t-a: #2a2033; --t-o: #8a1f55; --t-v: #2a2033; --t-p: #5b5066; --t-jk: #2a2033; }
+.code-light .code-ph { background: linear-gradient(180deg, rgba(255, 255, 255, .7), rgba(255, 255, 255, 0)); }
+.code-light .code-ph b { color: #1c1424; }
+.code-light::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(120% 70% at 100% 0%, rgba(255, 46, 110, .07), transparent 60%); }
+

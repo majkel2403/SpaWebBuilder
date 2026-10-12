@@ -1,1 +1,19 @@
-{"title":"Impact ripples and flare","description":"Three destination ports (execute, review, skip) that throw expanding ripple rings and a lens-flare streak whenever a decision lands there.","width":"760px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}
+{
+  "title": "Impact ripples and flare",
+  "description": "Three destination ports (execute, review, skip) that throw expanding ripple rings and a lens-flare streak whenever a decision lands there.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
+}

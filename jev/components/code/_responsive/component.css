@@ -1,0 +1,20 @@
+/* ---- responsive ---- */
+@media (max-width: 1100px) { .code-win { --code-fs: 11.5px; --code-lh: 18px; } }
+@media (max-width: 760px) {
+  .code-view::before, .code-view::after { right: 22px; }
+  .code-fn { min-width: 0; padding: 8px 9px; } .code-fn small { display: none; } .code-fn b { font-size: 11px; margin-top: 0; } .code-fw { width: clamp(10px, 4vw, 22px); }
+  .code-win { --code-fs: 10.5px; --code-lh: 17px; --code-rows: 10; border-radius: 13px; }
+  .code-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 8px; }
+  .code-bar { height: 42px; padding: 0 12px; gap: 10px; font-size: 12px; }
+  .code-eq { width: 56px; }
+  .code-view { grid-template-columns: minmax(0, 1fr) 22px; }
+  .code-status { gap: 10px; padding: 6px 12px; font-size: 10px; }
+  .code-st-a { display: none; }
+  .code-st-q { gap: 9px; }
+  .code-st-l { display: none; }
+  .code-qbar { width: 46px; }
+  .code-meta { font-size: 9.5px; }
+}
+@media (max-width: 440px) { .code-win { --code-rows: 9; } .code-qbar { display: none; } .code-q i { margin-right: 4px; } .code-st-q { gap: 8px; } }
+@media (prefers-reduced-motion: reduce) { .code-bar::after, .code-hot::before, .code-df::after { animation: none; } .code-cp .ci, .code-cp .ck, .code-mm b { transition: none; } .code-caret { animation: none; } .code-band { transition: none; } }
+

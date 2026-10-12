@@ -1,0 +1,12 @@
+/* 3. state.json heat haze: warm plumes rising through the hot pane + a heat floor */
+.code-haze { position: absolute; inset: 0 26px 0 0; z-index: 2; pointer-events: none; overflow: hidden; opacity: .62; }
+.code-haze::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 46%; background: linear-gradient(0deg, rgba(255, 190, 90, .26), transparent); }
+.code-haze i { position: absolute; left: 0; right: 0; top: 0; height: 200%; will-change: transform;
+  background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(255, 255, 255, .09) 30px, transparent 44px, transparent 61px, rgba(255, 220, 160, .1) 72px, transparent 88px);
+  -webkit-mask: linear-gradient(180deg, transparent, #000 25%, #000 75%, transparent); mask: linear-gradient(180deg, transparent, #000 25%, #000 75%, transparent);
+  animation: codeHaze 5.5s linear infinite; }
+.code-haze i + i { background-position: 41px 0; background-size: 133px 100%; animation-duration: 8.3s; animation-direction: normal; opacity: .7; }
+@keyframes codeHaze { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+html[data-tier="1"] .code-haze { display: none; }
+html:not([data-tier="3"]) .code-haze i + i { display: none; }
+

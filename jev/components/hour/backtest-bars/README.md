@@ -1,15 +1,12 @@
 # hour / backtest-bars
 
-Panel "the backtest": 1,840 trades as up (green) / down (red) bars, the amber running-total curve, the -22% drawdown block, a draggable / keyboard-scrubbable crosshair with a tooltip and four count-up stats.
+panel C "the backtest": 1,840 seeded trades as up/down bars, running total, drawdown block and scrubber.
 
-## Reuse
-Copy this folder plus the three shared files into your project: `engine.js`, `core.js` and `base.css` (from `jev/src`). Inline them (or link them) in a page together with this folder's `component.css` / `component.html` / `component.js`, put the html inside a div about 620px wide, and call `JEV.boot()`. `node jev/build-components.mjs --only hour/backtest-bars` produces the ready-made `index.html`.
+**This folder is a chunk of the section `hour/full-section`.** `component.html/css/js` are the real source: joined, in order, with the other units of the section they reproduce the original section byte for byte (see `components/UNITS.md`). They are fragments of one closure, so they are not valid on their own; the standalone `index.html` is built from this unit plus the units named in `compose`.
 
-## Data it consumes
-- `buildBT()` — seeded simulation returning `ret[i]` (per-trade return), `eq[i]` (equity), `dd[i]` (drawdown), `pi`/`ti` (drawdown start / trough), `worst`, `annual`
-- bus `tier` — re-renders the heat glow
+canvas scrubber: hover, click to pin, arrow keys.
 
-## Swapping in real data
-Make `buildBT()` return the same shape from real trade results: `ret` (Float32Array of N returns), `eq` (N+1 equity multiples starting at 1), `dd` (N+1 drawdown fractions), `pi`/`ti` (peak / trough trade index), `worst`, `final`, `emax`, `emin`, `annual`. Set `N` to your trade count.
+## Reuse standalone
+Copy this folder plus the units it composes (hour/_head, hour/_grid, hour/_responsive, hour/_close (plus _solo-css/_solo-c, which holds the same countUp helper that lives in hour/_a-end in the section)) and `engine.js`, `core.js`, `base.css` from `jev/src`. `node jev/build-components.mjs --only hour/backtest-bars` produces the ready-made `index.html`.
 
 Everything shown is a simulation: no order is placed and no figure is a real result.

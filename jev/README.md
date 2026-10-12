@@ -18,15 +18,17 @@ The main page is **assembled from components** by `node jev/build.mjs` following
 
 | what | where | role |
 |---|---|---|
-| **sections** (hero, code, builds, hour, desk, lab) | `components/hero/full-section`, `components/code/full-section`, `components/builds/full-section`, `components/hour/full-section`, `components/desk/full-desk`, `components/lab/full-section` | **single source of truth**: `component.html/css/js` (desk has three css and three js files). Edit these; the main page and the standalone `index.html` of each both build from them. |
+| **sections** (hero, code, builds, hour, desk, lab) | `components/hero/full-section`, `components/code/full-section`, `components/builds/full-section`, `components/hour/full-section`, `components/desk/full-desk`, `components/lab/full-section` | assembled from **units**: the section json lists its units in order per kind; the page is the concatenation of their chunks (byte-identical to the former monolithic files) |
 | shared runtime | `src/js/engine.js`, `src/js/core.js`, `src/js/main.js`, `src/css/base.css` | engine, JEV API, shared css (used by the page and by every component page) |
 | page layers | `src/html/00-fx.html`, `src/css/fx.css`, `src/js/fx.js`, `src/html/05-hud.html`, `src/html/99-footer.html`, `src/shell.html` | background/overlays/boot, HUD, footer, document shell |
 | manifest | `page.json` | order of html/css/js: `src:<path>` for runtime files, `cmp:<group>/<name>:<html|css|js>` for component files |
-| atoms and pieces (178 more) | `components/<group>/<name>/` | extracted views of sections' parts (a chart, a tile, an effect). **Copies**: they do not feed the page; `node jev/tools/fidelity.py` reports how far they drifted from the sources of truth |
+| **atoms** (54 derived) | `components/<group>/<name>/` marked `section` in component.json | the real code of one part of a section: edit here and the page and the atom's own page both change. Standalone page = the atom's chunks + shared head/tail units (`compose`). See `components/UNITS.md` |
+| hidden units (237) | `components/<group>/_name/` | glue chunks of a section (heads, tails, shared markup/css) |
+| copies (123) | `components/<group>/<name>/` without `section` | focused standalone versions of parts that are too entangled with their section to cut out (hero, code panes, desk-world pieces, fx/hud demos). They do not feed the page; `node jev/tools/fidelity.py` reports drift |
 
 Build commands: `node jev/build.mjs` (page -> `dist/jev.html`), `node jev/build-components.mjs [--only group/name]` (every component page + gallery).
 Section ids (HUD nav links to them): `#hero #code #builds #hour #desk #lab`. Page order (see `page.json`): fx, hud, hero, code, builds, hour, desk, lab, footer.
-A change to a section's file changes both the page and that section's component page. A change to a copied atom only changes that component.
+A change to a unit's chunk changes the page and every standalone page that composes it. A change to a copy only changes that copy. Map of what is what: `components/SOURCE.md`.
 
 ## Module rules
 * **Own your files only.** If you need a change in `core.js`/`base.css`/`engine.js`, do not edit — describe it in your final report.

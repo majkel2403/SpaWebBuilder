@@ -1,0 +1,35 @@
+          <!-- 1 - desk.py : light -->
+          <article class="code-pane code-light" data-k="desk" aria-label="desk.py">
+            <header class="code-ph"><i class="code-pd"></i><b>desk.py</b><button class="code-cp" type="button" data-cp="desk.py" aria-label="copy desk.py (illustrative sample)" title="copy"><svg viewBox="0 0 16 16" aria-hidden="true"><g class="ci"><rect x="5.5" y="5.5" width="8" height="8" rx="1.8"/><path d="M10.5 3.6A1.8 1.8 0 0 0 8.7 1.8H3.8A1.8 1.8 0 0 0 2 3.6v4.9a1.8 1.8 0 0 0 1.8 1.8h.2"/></g><path class="ck" d="M3.6 8.6l3 3 5.8-6.4"/></svg></button><span class="code-led" aria-hidden="true"><i></i><i></i><i></i></span><span class="code-meta">ln <em class="code-ln-n">1</em> &middot; <em class="code-ts-n">0.0</em> t/s</span></header>
+            <i class="code-rip" aria-hidden="true"></i>
+            <div class="code-view">
+              <div class="code-body" tabindex="0" role="region" aria-label="desk.py source (scroll sideways on small screens)">
+                <div class="code-doc"><pre class="code-src" data-lang="py">import json
+from pathlib import Path
+from uuid import uuid4
+
+import jev
+from questions import QUESTIONS, FLOOR, gate
+
+# hermes wrote the intent. jev answers it. code decides.
+def desk(intent, state):
+    answer = jev.ask(state, questions=QUESTIONS)
+    reduces = answer.choice in ("close", "flatten")
+    ok = answer.confidence &gt;= FLOOR and (answer.risk_ok or reduces)
+    dest = "execute" if ok and gate(answer) else "review"
+    if answer.choice == "hold":
+        dest = "skip"
+
+    folder = Path(__file__).parent / "queue" / dest
+    folder.mkdir(parents=True, exist_ok=True)
+    job = folder / f"{uuid4().hex[:8]}.json"
+    job.write_text(json.dumps(dict(
+        intent=intent, choice=answer.choice,
+        size=answer.size, conf=answer.confidence,
+    )))
+    return job</pre></div>
+              </div>
+              <div class="code-mm" aria-hidden="true"><canvas></canvas><i></i></div>
+            </div>
+          </article>
+

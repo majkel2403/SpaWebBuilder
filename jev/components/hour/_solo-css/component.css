@@ -1,0 +1,3 @@
+/* standalone page only: a lone panel takes the whole row; the scroll-reveal (fx.js) is not loaded here, so panels are shown at once */
+.hr-grid > * { grid-column: 1 / -1 !important; }
+.hr-grid .rv { opacity: 1; transform: none; filter: none; }

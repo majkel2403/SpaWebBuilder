@@ -1,0 +1,12 @@
+{
+  "title": "_world-sa-open",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "standalone": true,
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ]
+}

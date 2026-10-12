@@ -1,0 +1,11 @@
+{
+  "title": "_world-stage-end",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ]
+}

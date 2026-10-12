@@ -1,0 +1,8 @@
+{
+  "hidden": true,
+  "harness": true,
+  "note": "Harness for standalone pages (NOT part of the section): feeds the decision stream to whichever tile/head parts the page contains.",
+  "js": [
+    "component.js"
+  ]
+}

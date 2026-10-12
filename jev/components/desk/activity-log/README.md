@@ -1,9 +1,6 @@
-# desk/activity-log — Activity log card
+# desk/activity-log
 
-Six-agent log, newest on top, per-agent mute/solo chips, live/pause, '+N' catch-up pill, full-message card.
+Activity log card: a real CHUNK of the desk section (module desk-bottom), not a copy. component.html/css/js are consecutive pieces of the section source (initLog (#dkb-log)); the page and this standalone are both built from them (see components/UNITS.md).
 
-**Reuse:** copy this folder plus `engine.js`, `core.js`, `base.css` (from `jev/src`); inline them with the component's `component.html/css/js` and call `JEV.boot()` (the shared `main.js` does it). `node jev/build-components.mjs --only desk/activity-log` builds a standalone `index.html`.
-
-**Data consumed:** bus `agentstep` ({agent, verb, pnl, text}) when present (otherwise synthesised), bus `decision` (JEV rows), bus `kill`; `JEV.AGENTS`, `JEV.market.price`, `JEV.recent`, `JEV.S.floor`.
-
-**Swap in real data:** emit `JEV.bus.emit('agentstep', {agent:'spotter', verb:'scan', pnl:null, text:'...'})` for each real step; the synthesiser stays quiet while real steps arrive.
+Standalone: `compose` = desk/_bottom-head + _bottom-stub-bayes, _bottom-stub-drift, _bottom-beat, _bottom-init-log, _bottom-close, _bottom-css-resp (+ itself). The _bottom-stub-* units are empty hidden cards that satisfy the module guard. Needs fx (the .rv reveal).
+Reuse: copy this folder + engine/core/base + the units listed in compose.

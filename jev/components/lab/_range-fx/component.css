@@ -1,0 +1,16 @@
+/* ================= spectacle (tier-gated; tier 1 keeps the plain look) ================= */
+/* slider : thumb trail, plasma fill, tick sparks */
+.lab-trl { position: absolute; top: 50%; height: 12px; margin-top: -6px; pointer-events: none; opacity: 0; --t0: 0; --t1: 0; --td: 90deg; border-radius: 6px;
+  left: calc(var(--tw) / 2 + (100% - var(--tw)) * var(--t0)); width: calc((100% - var(--tw)) * (var(--t1) - var(--t0)));
+  background: linear-gradient(var(--td), rgba(var(--cc-rgb), 0), rgba(var(--cc-rgb), .75) 70%, #fff); filter: blur(.6px); box-shadow: 0 0 16px rgba(var(--cc-rgb), .8); }
+.lab-row.bad .lab-trl { background: linear-gradient(var(--td), rgba(255, 77, 94, 0), rgba(255, 77, 94, .8) 70%, #fff); box-shadow: 0 0 16px rgba(255, 77, 94, .85); }
+.lab-spk { position: absolute; top: 50%; z-index: 3; width: 5px; height: 5px; border-radius: 50%; pointer-events: none; opacity: 0; background: #fff; box-shadow: 0 0 8px 1px var(--cc), 0 0 14px var(--cc);
+  left: calc(var(--tw) / 2 + (100% - var(--tw)) * var(--p, 0)); transform: translate(-50%, -50%); }
+.lab-row.bad .lab-spk { box-shadow: 0 0 8px 1px var(--red), 0 0 14px var(--red); }
+@keyframes lab-flow { to { background-position: -180px 0; } }
+html[data-tier="3"] .lab-fill, html[data-tier="2"] .lab-row.drag .lab-fill, html[data-tier="3"] .lab-row.drag .lab-fill {
+  background: linear-gradient(90deg, rgba(var(--cc-rgb), .5) 0, var(--cc) 38%, rgba(255, 255, 255, .85) 50%, var(--cc) 62%, rgba(var(--cc-rgb), .5) 100%) 0 0 / 180px 100% repeat-x;
+  animation: lab-flow 2.6s linear infinite; }
+html[data-tier="3"] .lab-row.drag .lab-fill, html[data-tier="2"] .lab-row.drag .lab-fill { animation-duration: 1s; }
+html[data-tier="2"] .lab-row.bad.drag .lab-fill, html[data-tier="3"] .lab-row.bad .lab-fill { background: linear-gradient(90deg, rgba(255, 77, 94, .5) 0, var(--red) 38%, rgba(255, 255, 255, .85) 50%, var(--red) 62%, rgba(255, 77, 94, .5) 100%) 0 0 / 180px 100% repeat-x; }
+

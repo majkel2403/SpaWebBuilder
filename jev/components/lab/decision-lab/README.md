@@ -1,14 +1,14 @@
 # lab / decision-lab
 
-The whole interactive lab without its section heading: a state card (nine sliders, scenario chips, decide / auto, confidence floor, kill switch), a tape of the last five decisions and the four-stage pipeline (encode, typed questions, the gate, code acts) with the ribbon / comet / particle canvases.
+The whole lab (everything but the section heading): state card, tape and the four-stage pipeline.
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js` and `base.css` (the builder in `build-components.mjs` inlines them), then call `JEV.boot()`. Open `index.html` for the standalone page.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
+
+* own chunks: nothing of its own (it only composes other units)
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/decision-lab`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-* Input: the nine sliders (`edge_bps, imbalance, spread_bps, vol_1h, position_pct, daily_pnl, drawdown_pct, latency_ms, signal_age_s`), `JEV.S.floor`, `JEV.S.killed`.
-* Bus: listens to `floor` and `kill` (two-way: the lab also calls `JEV.setFloor` / `JEV.setKilled`); emits a `decision` record on every committed run.
-* Decision fields shown: `action, size, conf, riskOk, pRisk, p{}, sizes[], dest, reason, ms, floor, killed, net`.
-
-## Swap in real data
-Replace `decideState()` in `component.js` (it wraps `JEV.decide(state)`) with a call to your model / service that returns the same decision fields, and replace the slider defaults in `FIELDS` with your own feature ranges.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

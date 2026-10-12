@@ -1,9 +1,6 @@
-# desk/drift-chart — Drift vs noise chart
+# desk/drift-chart
 
-140 random-walk equity curves with a small positive drift, ±2σ cone, live end-value histogram, hover probes and a halted state.
+Drift vs noise card: a real CHUNK of the desk section (module desk-bottom), not a copy. component.html/css/js are consecutive pieces of the section source (initDrift (#dkb-drift)); the page and this standalone are both built from them (see components/UNITS.md).
 
-**Reuse:** copy this folder plus `engine.js`, `core.js`, `base.css` (from `jev/src`); inline them with the component's `component.html/css/js` and call `JEV.boot()` (the shared `main.js` does it). `node jev/build-components.mjs --only desk/drift-chart` builds a standalone `index.html`.
-
-**Data consumed:** `JEV.S.killed` / body.killed (halts); bus `decision` only for the card heartbeat glow.
-
-**Swap in real data:** replace `gen()` so `PX[i*S1+k]` holds the equity (bps) of path i at step k; everything else follows.
+Standalone: `compose` = desk/_bottom-head + _bottom-css-wells, _bottom-stub-bayes, _bottom-stub-log, _bottom-beat, _bottom-init-drift, _bottom-close, _bottom-css-resp (+ itself). The _bottom-stub-* units are empty hidden cards that satisfy the module guard. Needs fx (the .rv reveal).
+Reuse: copy this folder + engine/core/base + the units listed in compose.

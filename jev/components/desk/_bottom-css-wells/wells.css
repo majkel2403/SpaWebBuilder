@@ -1,0 +1,6 @@
+/* ---------- canvas wells ---------- */
+.dkb-cvw { position: relative; flex: 1 1 auto; min-height: 232px; margin: 6px 8px 0; }
+.dkb-cvw canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.dkb-cvw canvas:last-child { cursor: crosshair; touch-action: pan-y; }
+#dkb-dq { opacity: 0; } /* the second path layer: a run dissolves in here while the finished one dissolves out */
+

@@ -1,20 +1,6 @@
-/* desk/activity-log — six-agent activity log, newest on top, filter chips, live/pause (prefix dkb-). Everything is SIMULATED.
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot() (the shared main.js does it).
- * JEV.* API relied on:
- *   JEV.mod, JEV.$, JEV.C, JEV.S (floor, killed), JEV.AGENTS[6] ({key,name,col,role}), JEV.market.price, JEV.recent[0], JEV.makeDecision()
- *   JEV.clamp/fmt/pick/rnd/ri, JEV.fit, JEV.watch, JEV.task, JEV.animate, JEV.reduce, JEV.tier
- *   JEV.bus: 'agentstep' ({agent, verb, pnl, text}, optional: self-synthesised when absent), 'decision', 'kill', 'pulse' (optional)
- * Swap in real data: JEV.bus.emit('agentstep', {agent:'spotter', verb:'scan', pnl:null, text:'...'}) for every agent step.
- * Everything else in the file is local to the closure. Missing optional DOM / bus events never throw. */
-JEV.mod('desk-activity-log', () => {
-    const J = JEV, $ = J.$, C = J.C, S = J.S, clamp = J.clamp, fmt = J.fmt, gauss = J.gauss, TAU = J.TAU;
-  const lgc = $('#dkb-log');
-  if (!lgc) return;
-  const rgbOf = (h) => { const n = parseInt(h.slice(1), 16); return (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255); };
-  const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
-  const sgn = (v, d) => (v >= 0 ? '+' : '-') + Math.abs(v).toFixed(d == null ? 1 : d);
-  const TIER = () => (J.tier || 2);
-  const FX_ON = () => TIER() >= 2 && !J.reduce;
+  /* =====================================================================================================
+   * 2) ACTIVITY LOG
+   * ===================================================================================================== */
   const initLog = () => {
     const list = $('#dkb-rl'), holder = $('#dkb-rows'), chipsEl = $('#dkb-chips'), cnt = $('#dkb-cnt'), liveB = $('#dkb-live'), lv = $('#dkb-lv');
     if (!list || !holder || !chipsEl) return;
@@ -233,16 +219,4 @@ JEV.mod('desk-activity-log', () => {
       if (q.length && now - lastIns > 400) { push(q.shift()); lastIns = now; }
     });
   };
-  /* heartbeat: the card breathes a glow on every decision */
-  /* heartbeat: the three cards breathe a synchronized glow on every decision / JEV.pulse (bus 'pulse' when core emits it) */
-  let lastBeat = -1e9;
-  const beat = (str) => {
-    if (!FX_ON() || J.hidden()) return;
-    const n = performance.now(); if (n - lastBeat < 260) return; lastBeat = n;
-    const a = 0.12 + 0.3 * clamp(str, 0, 1), k = S.killed ? '255,77,94' : '255,46,110';
-    [lgc].forEach((c) => J.animate(c, [{ boxShadow: '0 0 0 0 rgba(' + k + ',0), inset 0 0 0 rgba(' + k + ',0)' }, { boxShadow: '0 0 34px -6px rgba(' + k + ',' + a.toFixed(2) + '), inset 0 0 38px rgba(' + k + ',' + (a * 0.35).toFixed(2) + ')', offset: 0.2 }, { boxShadow: '0 0 12px -6px rgba(' + k + ',' + (a * 0.3).toFixed(2) + '), inset 0 0 14px rgba(' + k + ',' + (a * 0.1).toFixed(2) + ')', offset: 0.42 }, { boxShadow: '0 0 0 0 rgba(' + k + ',0), inset 0 0 0 rgba(' + k + ',0)' }], { duration: 1100, easing: 'ease-out' }));
-  };
-  J.bus.on('decision', (d) => beat(d && d.dest === 'execute' ? 0.8 : 0.4));
-  J.bus.on('pulse', (s) => beat(+s || 0.5));
-  initLog();
-});
+

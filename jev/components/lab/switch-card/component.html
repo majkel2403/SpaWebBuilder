@@ -1,16 +1,3 @@
-<div class="lab" id="lab-swc">
-  <section class="card lab-st" data-c="pink" aria-labelledby="lab-swc-t">
-    <i class="lab-edge" aria-hidden="true"></i>
-    <div class="lab-ph"><span class="lab-tag" id="lab-swc-t">switches</span><span class="lab-ps">click &middot; space &middot; enter</span></div>
-    <div class="lab-sub"><span>variants</span><i></i></div>
-    <div class="lab-swgrid">
-      <button class="lab-sw lab-auto on" type="button" role="switch" aria-checked="true" data-c="pink" data-on="re-decide on every input" data-off="manual &middot; press decide"><i class="tg"></i><span class="lab-sw-t"><b>auto</b><small>re-decide on every input</small></span></button>
-      <button class="lab-sw lab-dry" type="button" role="switch" aria-checked="false" data-c="green" data-on="orders logged, not routed" data-off="orders go to the venue"><i class="tg"></i><span class="lab-sw-t"><b>dry run</b><small>orders go to the venue</small></span></button>
-      <button class="lab-sw" type="button" role="switch" aria-checked="true" data-c="blue" data-on="hedge with the perp" data-off="spot only"><i class="tg"></i><span class="lab-sw-t"><b>hedge</b><small>hedge with the perp</small></span></button>
-      <button class="lab-sw" type="button" role="switch" aria-checked="false" aria-disabled="true" disabled data-c="gray"><i class="tg"></i><span class="lab-sw-t"><b>live orders</b><small>disabled &middot; simulation only</small></span></button>
-    </div>
-    <div class="lab-sub"><span>bound to the runtime</span><i></i><em>also key <kbd class="lab-kbd">K</kbd></em></div>
-    <button class="lab-sw lab-kill" type="button" role="switch" aria-checked="false" data-c="red" data-bind="kill" data-on="halted &middot; every order &rarr; review" data-off="armed &middot; orders flow"><i class="tg"></i><span class="lab-sw-t"><b>kill switch</b><small>armed &middot; orders flow</small></span></button>
-    <p class="lab-why" id="lab-swc-log" aria-live="polite">last change: none</p>
-  </section>
-</div>
+                <button class="lab-sw lab-auto on" id="lab-auto" type="button" role="switch" aria-checked="true" data-c="pink">
+                  <i class="tg"></i><span class="lab-sw-t"><b>auto</b><small id="lab-go-h">re-decide on every input</small></span>
+                </button>

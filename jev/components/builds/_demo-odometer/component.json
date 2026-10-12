@@ -1,0 +1,14 @@
+{
+  "hidden": true,
+  "harness": true,
+  "note": "Demo wrapper for the odometer atom page (NOT part of the section).",
+  "js": [
+    "component.js"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "html": [
+    "component.html"
+  ]
+}

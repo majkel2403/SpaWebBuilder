@@ -14,5 +14,7 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "derived": false,
+  "derivedNote": "generic six-stat strip re-write; the real count-up code (hour/_a-end, C stats) is bound to panel ids"
 }

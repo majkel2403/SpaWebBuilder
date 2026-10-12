@@ -1,55 +1,6 @@
-/* hour / hour-switches — the 60:00 ring (62 ticks, glowing head), six spring switches, the gantt rail and the ARMED banner; loops 0 -> 60 minutes,
- * flips each switch at its own minute and ends with a particle burst + shockwave when all six are on. Tap a switch to flip it yourself.
- *
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod  J.$ J.$$ J.C J.S J.TAU J.clamp  J.fit J.watch J.task J.onView  J.DPR J.reduce J.tier  J.bus 'kill'(bool) · 'floor'(number)  J.S.killed J.S.floor.
- * Optional: J.pulse(strength) (fx module) is called when the bot becomes armed, if present.
- * Data: the phase table PHS / GR / DUR (minute boundaries) and the six switch labels live in the markup + the constants at the top of the B section.
- * Everything is simulated.
- */
-JEV.mod('hour-hour-switches', () => {
-  const J = JEV, $ = J.$, $$ = J.$$, C = J.C, S = J.S, TAU = J.TAU, clamp = J.clamp;
-  const root = $('#hr-b');
-  if (!root) return;
-  const reduce = J.reduce;
-  const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
-  const pad2 = (n) => (n < 10 ? '0' : '') + n;
-  const NS = 'http://www.w3.org/2000/svg';
-  const svg = (tag, at, par) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (par) par.appendChild(e); return e; };
-  /* ---------- shared helpers ---------- */
-  /** J.fit, corrected for ancestors that are mid-transform (.rv reveal scales the box, which would make getBoundingClientRect lie) */
-  function fitC(c) {
-    const f = J.fit(c), cw = c.clientWidth, ch = c.clientHeight;
-    if (cw > 0 && ch > 0 && (cw !== f.W || ch !== f.H)) {
-      const w = Math.round(cw * J.DPR), h = Math.round(ch * J.DPR);
-      if (c.width !== w) c.width = w;
-      if (c.height !== h) c.height = h;
-      f.g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); f.W = cw; f.H = ch;
-    }
-    return f;
-  }
-  /** layout-space box of el inside the positioned ancestor `top` (transform-proof, unlike getBoundingClientRect) */
-  function offs(el, top) {
-    let x = 0, y = 0, e = el;
-    const w = el.offsetWidth, h = el.offsetHeight;
-    while (e && e !== top) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; }
-    return { x, y, w, h };
-  }
-  const SPR = {};
-  /** pre-rendered additive glow sprite (white core -> colour -> transparent) */
-  function glow(hex) {
-    if (SPR[hex]) return SPR[hex];
-    const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
-    const c = document.createElement('canvas'); c.width = c.height = 64;
-    const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.16, 'rgba(' + r + ',' + g + ',' + b + ',.95)');
-    gr.addColorStop(0.5, 'rgba(' + r + ',' + g + ',' + b + ',.26)'); gr.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
-    x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
-    return (SPR[hex] = c);
-  }
-  const blit = (g, hex, x, y, r, a) => { g.globalAlpha = a; g.drawImage(glow(hex), x - r, y - r, r * 2, r * 2); };
-  let killed = !!S.killed;
-
+  /* =====================================================================
+   * B · the hour
+   * ===================================================================== */
   const panB = $('#hr-b'), sws = $$('.hr-sw', panB), cells = $$('.hr-cells s', panB), armEl = $('#hr-arm');
   const clockEl = $('#hr-clock'), clockL = $('#hr-clock-l'), badgeB = $('#hr-b-badge'), armWt = $('#hr-arm-wt'), armB = $('#hr-arm-b'), armS = $('#hr-arm-s');
   const ticksG = $('#hr-ticks'), rprog = $('#hr-rprog'), rglow = $('#hr-rglow'), rhead = $('#hr-rhead'), burstCv = $('#hr-burst');
@@ -259,11 +210,3 @@ JEV.mod('hour-hour-switches', () => {
   });
   J.onView(panB, () => { if (!reduce) { mode = 'idle'; setTimeout(() => { if (mode === 'idle') beginLoop(); }, 350); } }, { threshold: 0.4 });
 
-  /* ---------- bus: kill switch + gate floor ---------- */
-  function showKill(v) { killed = !!v; armText(); }
-  J.bus.on('kill', (v) => showKill(v));
-  J.bus.on('floor', armText);
-  showKill(S.killed);
-  if (reduce) { mode = 'static'; renderB(true, 0); updArm(); }
-  else { mode = 'static'; }
-});

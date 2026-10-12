@@ -1,45 +1,3 @@
-/* hour / arithmetic-dial — a 270deg log gauge (5% .. 480% a year): drag the needle, use the slider, the presets or the keyboard and read the capital the bot needs
- * to earn $1,200,000 a year (capital = 1,200,000 / return). Magnets at 17 / 31 / 100%, spring needle, sparks shed from the tip, tick flares.
- *
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod  J.$ J.$$ J.C J.clamp J.fmt J.usd  J.fit J.watch J.task J.onView  J.DPR J.reduce J.tier.
- * Data: none from the bus. Inputs are the ANNUAL target (1,200,000), the log range RMIN..RMAX and the MAGS / SEG tables at the top of the D section.
- * Everything is simulated; not financial advice.
- */
-JEV.mod('hour-arithmetic-dial', () => {
-  const J = JEV, $ = J.$, $$ = J.$$, C = J.C, clamp = J.clamp, fmt = J.fmt;
-  const root = $('#hr-d');
-  if (!root) return;
-  const reduce = J.reduce;
-  const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
-  const NS = 'http://www.w3.org/2000/svg';
-  const svg = (tag, at, par) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (par) par.appendChild(e); return e; };
-  /* ---------- shared helpers ---------- */
-  /** J.fit, corrected for ancestors that are mid-transform (.rv reveal scales the box, which would make getBoundingClientRect lie) */
-  function fitC(c) {
-    const f = J.fit(c), cw = c.clientWidth, ch = c.clientHeight;
-    if (cw > 0 && ch > 0 && (cw !== f.W || ch !== f.H)) {
-      const w = Math.round(cw * J.DPR), h = Math.round(ch * J.DPR);
-      if (c.width !== w) c.width = w;
-      if (c.height !== h) c.height = h;
-      f.g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); f.W = cw; f.H = ch;
-    }
-    return f;
-  }
-  const SPR = {};
-  /** pre-rendered additive glow sprite (white core -> colour -> transparent) */
-  function glow(hex) {
-    if (SPR[hex]) return SPR[hex];
-    const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
-    const c = document.createElement('canvas'); c.width = c.height = 64;
-    const x = c.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.16, 'rgba(' + r + ',' + g + ',' + b + ',.95)');
-    gr.addColorStop(0.5, 'rgba(' + r + ',' + g + ',' + b + ',.26)'); gr.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)');
-    x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
-    return (SPR[hex] = c);
-  }
-  const blit = (g, hex, x, y, r, a) => { g.globalAlpha = a; g.drawImage(glow(hex), x - r, y - r, r * 2, r * 2); };
-
   /* =====================================================================
    * D · the arithmetic — log gauge, capital = 1,200,000 / return
    * ===================================================================== */
@@ -216,4 +174,4 @@ JEV.mod('hour-arithmetic-dial', () => {
   });
   J.onView(gaugeEl, () => { if (!reduce) { setU(1, true); renderG(0); G.cap = ANNUAL / (u2r(1) / 100); setTimeout(() => { if (!knob.classList.contains('used')) setU(r2u(31)); }, 450); } }, { threshold: 0.5 });
   renderG(0);
-});
+

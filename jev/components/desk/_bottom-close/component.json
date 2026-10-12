@@ -1,0 +1,8 @@
+{
+  "title": "_bottom-close",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "js": [
+    "close.js"
+  ]
+}

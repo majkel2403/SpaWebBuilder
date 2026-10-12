@@ -1,0 +1,9 @@
+{
+  "title": "_world-head",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "newScript": true,
+  "js": [
+    "component.js"
+  ]
+}

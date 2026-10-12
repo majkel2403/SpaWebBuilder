@@ -245,10 +245,24 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
-/* hour / honest-bars — rules copied from the hour module (prefix hr-) */
-.hr { position: relative; overflow-x: clip; --hr-k: #aaa1b8; --hr-t: #e9e3ef; --hr-line: rgba(255, 255, 255, .085); --hr-glass: linear-gradient(180deg, rgba(23, 14, 30, .9), rgba(9, 5, 14, .94)); }
-.hr-p { display: flex; flex-direction: column; padding: 14px clamp(14px, 1.7vw, 24px) 16px; background: var(--hr-glass); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: rgba(var(--cc-rgb), .24); container-type: inline-size; container-name: hrp; isolation: isolate; box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .04); }
+/* ===== hour — "three agents, sixty minutes, one bot": build · hour · backtest · arithmetic · honest part (prefix hr-) ===== */
+.hr { position: relative; overflow-x: clip; --hr-k: #aaa1b8; --hr-t: #e9e3ef; --hr-line: rgba(255, 255, 255, .085);
+  --hr-glass: linear-gradient(180deg, rgba(23, 14, 30, .9), rgba(9, 5, 14, .94)); }
+.hr-bgl { position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(60% 24% at 50% 8%, rgba(255, 138, 61, .08), transparent 72%), radial-gradient(45% 20% at 12% 58%, rgba(77, 141, 255, .06), transparent 70%),
+    radial-gradient(45% 20% at 88% 82%, rgba(166, 107, 255, .07), transparent 70%); }
+.hr .wrap { z-index: 1; }
+/* ---------- grid ---------- */
+.hr-grid { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 14px; container-type: inline-size; container-name: hrg; }
+.hr-grid > * { grid-column: 1 / -1; min-width: 0; }
+@media (min-width: 900px) { .hr-grid > .hr-b { grid-column: span 11; } .hr-grid > .hr-c { grid-column: span 9; } .hr-grid > .hr-d, .hr-grid > .hr-e { grid-column: span 10; } }
+
+/* ---------- panel shell ---------- */
+.hr-p { display: flex; flex-direction: column; padding: 14px clamp(14px, 1.7vw, 24px) 16px; background: var(--hr-glass); backdrop-filter: none; -webkit-backdrop-filter: none;
+  border-color: rgba(var(--cc-rgb), .24); container-type: inline-size; container-name: hrp; isolation: isolate;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .04); }
 .hr-p > * { position: relative; z-index: 1; }
+.hr-p > canvas.hr-burst { position: absolute; z-index: 5; }
 .hr-edge { position: absolute !important; left: 0; right: 0; top: 0; height: 1px; z-index: 2; background: linear-gradient(90deg, transparent, var(--cc), transparent); box-shadow: 0 0 18px 1px rgba(var(--cc-rgb), .7); opacity: .85; }
 .hr-p::selection { background: var(--cc); }
 .hr-ph { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--hr-k); }
@@ -256,36 +270,44 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .hr-ps { flex: 1 1 120px; min-width: 0; }
 .hr-badge { padding: 3px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: .1em; color: var(--cc); border: 1px solid rgba(var(--cc-rgb), .7); background: rgba(var(--cc-rgb), .09); white-space: nowrap; font-variant-numeric: tabular-nums; margin-left: auto; }
 .hr-t { margin-top: 14px; font: 600 clamp(15px, 1.5vw, 19.5px)/1.3 var(--sans); letter-spacing: -.005em; color: #fff; max-width: 60ch; text-wrap: balance; }
-.hr-t b { font-weight: 700; }
+.hr-t b { font-weight: 700; } .hr-cb { color: var(--blue); } .hr-cp { color: var(--pink); }
 .hr-note { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 10px; }
 .hr-note span { padding: 3px 9px; border-radius: 4px; font-size: 10px; line-height: 1.5; color: var(--cc, var(--hr-k)); border: 1px solid rgba(var(--cc-rgb, 255, 255, 255), .5); background: rgba(var(--cc-rgb, 255, 255, 255), .06); }
 .hr-foot { margin-top: auto; padding-top: 12px; text-align: center; font-size: 10.5px; line-height: 1.6; color: var(--hr-k); }
 .hr-foot::before { content: ''; display: block; height: 1px; margin-bottom: 12px; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .14) 0 4px, transparent 4px 9px); }
 .hr-fig { position: absolute !important; right: 14px; bottom: 6px; z-index: 0 !important; font: 900 clamp(34px, 5vw, 70px)/1 var(--serif); letter-spacing: -.02em; color: rgba(255, 255, 255, .045); pointer-events: none; user-select: none; }
+.hr-st4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 16px 0 6px; text-align: center; }
+.hr-st4 > div { padding: 0 2px; min-width: 0; }
+.hr-st4 b { font-feature-settings: 'tnum' 1, 'lnum' 1; font-kerning: none; display: block; font: 900 clamp(22px, 2.5vw, 34px)/1.05 var(--serif); color: var(--amber); font-variant-numeric: tabular-nums; text-shadow: 0 0 22px currentColor; white-space: nowrap; }
+.hr-st4 > div:nth-child(2) b { color: var(--blue); } .hr-st4 > div:nth-child(3) b { color: var(--green); } .hr-st4 > div:nth-child(4) b { color: var(--pink); }
+.hr-st4 b.up { color: var(--green); } .hr-st4 b.dn { color: var(--red); } .hr-st4 b.hr-amb { color: var(--amber); }
+.hr-c .hr-st4 > div:nth-child(2) b { color: var(--amber); } .hr-c .hr-st4 > div:nth-child(3) b { color: var(--red); } .hr-c .hr-st4 > div:nth-child(4) b { color: var(--ink); }
+@keyframes hrDone { 0% { text-shadow: 0 0 22px currentColor; } 35% { text-shadow: 0 0 44px currentColor, 0 0 8px #fff; filter: brightness(1.35); } 100% { text-shadow: 0 0 22px currentColor; filter: none; } }
+.hr-st4 b.hr-done { animation: hrDone .9s var(--ease); }
+.hr-st4 span { display: block; margin-top: 4px; font-size: 10px; line-height: 1.4; color: var(--hr-k); }
+.hr-st4 em { font-style: normal; color: var(--hr-k); opacity: .85; }
+
+/* ================= E · the honest part ================= */
 .hr-ec { position: relative; flex: 1 1 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 10px clamp(6px, 1.4vw, 18px); margin-top: 18px; }
 .hr-col { display: contents; }
-.hr-col-a .hr-barbox { grid-area: 1 / 1; }
-.hr-col-a .hr-bl { grid-area: 2 / 1; }
-.hr-col-b .hr-barbox { grid-area: 1 / 3; }
-.hr-col-b .hr-bl { grid-area: 2 / 3; }
+.hr-col-a .hr-barbox { grid-area: 1 / 1; } .hr-col-a .hr-bl { grid-area: 2 / 1; } .hr-col-b .hr-barbox { grid-area: 1 / 3; } .hr-col-b .hr-bl { grid-area: 2 / 3; }
 .hr-leak { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
 .hr-barbox { position: relative; min-height: clamp(196px, 21vw, 262px); }
-.hr-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 0; display: flex; justify-content: center; align-items: flex-start; padding-top: 12px; border-radius: 9px 9px 3px 3px; overflow: hidden; z-index: 2; transition: height 1.6s cubic-bezier(.2, .85, .2, 1) var(--d, 0s); }
+.hr-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 0; display: flex; justify-content: center; align-items: flex-start; padding-top: 12px; border-radius: 9px 9px 3px 3px; overflow: hidden; z-index: 2;
+  transition: height 1.6s cubic-bezier(.2, .85, .2, 1) var(--d, 0s); }
 .hr-bar::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, transparent 0 31px, rgba(0, 0, 0, .3) 31px 32px), linear-gradient(90deg, rgba(255, 255, 255, .22), transparent 28%, transparent 78%, rgba(0, 0, 0, .18)); }
 .hr-bar b { position: relative; font: 900 clamp(22px, 2.5vw, 34px)/1 var(--serif); color: #06150f; opacity: 0; transition: opacity .6s .9s; letter-spacing: -.01em; }
 .hr-bar-g { --d: .1s; background: linear-gradient(180deg, #4df5be, #1db07e); box-shadow: 0 0 34px rgba(46, 230, 166, .35), inset 0 1px 0 rgba(255, 255, 255, .5); }
 .hr-bar-a { --d: .45s; background: linear-gradient(180deg, #ffd269, #e19a14); box-shadow: 0 0 34px rgba(255, 193, 61, .32), inset 0 1px 0 rgba(255, 255, 255, .5); }
 .hr-bar-a b { color: #1d1203; }
-.hr-go .hr-bar-g { height: 100%; }
-.hr-go .hr-bar-a { height: 65.5%; }
-.hr-go .hr-bar b { opacity: 1; }
-.hr-ghost { position: absolute; left: 0; right: 0; bottom: 0; height: 100%; z-index: 1; border-radius: 9px; border: 1.5px dashed rgba(255, 77, 94, .6); opacity: 0; transition: opacity .8s 1.4s; background: repeating-linear-gradient(135deg, rgba(255, 77, 94, .2) 0 6px, rgba(255, 77, 94, .05) 6px 12px); }
+.hr-go .hr-bar-g { height: 100%; } .hr-go .hr-bar-a { height: 65.5%; } .hr-go .hr-bar b { opacity: 1; }
+.hr-ghost { position: absolute; left: 0; right: 0; bottom: 0; height: 100%; z-index: 1; border-radius: 9px; border: 1.5px dashed rgba(255, 77, 94, .6); opacity: 0; transition: opacity .8s 1.4s;
+  background: repeating-linear-gradient(135deg, rgba(255, 77, 94, .2) 0 6px, rgba(255, 77, 94, .05) 6px 12px); }
 .hr-ghost::after { content: 'never arrived'; position: absolute; left: 0; right: 0; top: 11%; text-align: center; font-size: 9.5px; letter-spacing: .06em; color: #ff9aa4; }
 .hr-go .hr-ghost { opacity: 1; }
 .hr-bl { text-align: center; font-size: 10.5px; line-height: 1.4; color: var(--hr-t); }
 .hr-mtxt { grid-area: 1 / 2; align-self: start; text-align: center; padding-top: 2px; min-width: 0; z-index: 2; }
-.hr-edge-t { font-size: 11.5px; line-height: 1.5; color: var(--hr-t); }
-.hr-edge-t b { font-weight: 800; color: var(--green); }
+.hr-edge-t { font-size: 11.5px; line-height: 1.5; color: var(--hr-t); } .hr-edge-t b { font-weight: 800; color: var(--green); }
 .hr-edge-t b.dn { color: #ff6b79; }
 .hr-edge-s { margin-top: 2px; font-size: 10.5px; color: var(--hr-k); }
 .hr-bin { grid-area: 1 / 2; align-self: end; position: relative; z-index: 2; width: 100%; padding: 9px 8px 8px; border-radius: 10px; overflow: hidden; text-align: center; border: 1.5px solid var(--red); background: rgba(255, 77, 94, .07); box-shadow: 0 0 28px rgba(255, 77, 94, .28), inset 0 0 20px rgba(255, 77, 94, .12); }
@@ -294,40 +316,54 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .hr-bin b { font: 900 clamp(18px, 1.9vw, 24px)/1.15 var(--serif); color: #fff; text-shadow: 0 0 16px rgba(255, 77, 94, .8); }
 .hr-bin em { position: relative; z-index: 1; display: block; font-style: normal; font-size: 9.5px; color: #ffb3bb; }
 .hr-bin i { position: absolute; inset: 0; transform-origin: bottom; background: linear-gradient(180deg, rgba(255, 77, 94, .0), rgba(255, 77, 94, .5)); transform: scaleY(.45); animation: hrFill 7s ease-in-out infinite; }
-.hr-bin.hr-hit-a { animation: hrHitA .32s ease-out; }
-.hr-bin.hr-hit-b { animation: hrHitB .32s ease-out; }
+.hr-bin.hr-hit-a { animation: hrHitA .32s ease-out; } .hr-bin.hr-hit-b { animation: hrHitB .32s ease-out; }
+@keyframes hrHitA { 0% { box-shadow: 0 0 46px rgba(255, 77, 94, .75), inset 0 0 26px rgba(255, 77, 94, .35); } 100% { box-shadow: 0 0 28px rgba(255, 77, 94, .28), inset 0 0 20px rgba(255, 77, 94, .12); } }
+@keyframes hrHitB { 0% { box-shadow: 0 0 46px rgba(255, 77, 94, .75), inset 0 0 26px rgba(255, 77, 94, .35); } 100% { box-shadow: 0 0 28px rgba(255, 77, 94, .28), inset 0 0 20px rgba(255, 77, 94, .12); } }
+@keyframes hrFill { 0%, 100% { transform: scaleY(.38); } 50% { transform: scaleY(.78); } }
 .hr-warn { margin-top: 16px; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255, 77, 94, .75); background: rgba(255, 77, 94, .08); box-shadow: 0 0 26px rgba(255, 77, 94, .15); font-size: 11px; line-height: 1.6; color: #ffd8dc; }
-.hr-warn p + p { margin-top: 3px; }
-.hr-warn i { font-style: normal; font-weight: 800; color: var(--red); margin-right: 8px; }
+.hr-warn p + p { margin-top: 3px; } .hr-warn i { font-style: normal; font-weight: 800; color: var(--red); margin-right: 8px; }
+
+/* ================= responsive ================= */
+@container hrp (max-width: 700px) { .hr-lower { grid-template-columns: 1fr; } .hr-rules { grid-template-columns: 1fr 1fr; } .hr-cap2 { grid-column: 1 / -1; text-align: center; } .hr-kill { grid-column: auto; } }
+@container hrp (max-width: 560px) { .hr-gx { grid-template-columns: 1fr; } .hr-read { align-items: center; text-align: center; } .hr-ctl { grid-template-columns: 1fr; justify-items: stretch; } .hr-pre { justify-content: center; } }
 @container hrp (max-width: 560px) {
   .hr-ec { grid-template-rows: auto minmax(0, 1fr) auto; }
   .hr-mtxt { grid-area: 1 / 1 / 2 / 4; display: flex; flex-wrap: wrap; justify-content: center; gap: 0 12px; margin-bottom: 4px; }
   .hr-edge-s { flex-basis: 100%; }
-  .hr-col-a .hr-barbox { grid-area: 2 / 1; }
-  .hr-col-a .hr-bl { grid-area: 3 / 1; }
-  .hr-col-b .hr-barbox { grid-area: 2 / 3; }
-  .hr-col-b .hr-bl { grid-area: 3 / 3; }
-  .hr-bin { grid-area: 2 / 2; }
+  .hr-col-a .hr-barbox { grid-area: 2 / 1; } .hr-col-a .hr-bl { grid-area: 3 / 1; } .hr-col-b .hr-barbox { grid-area: 2 / 3; } .hr-col-b .hr-bl { grid-area: 3 / 3; } .hr-bin { grid-area: 2 / 2; }
 }
 @media (max-width: 700px) {
   .hr-p { padding: 12px 12px 14px; }
+  .hr-stage { padding-top: 44px; padding-bottom: 44px; }
+  .hr-ag { --hr-av: 58px; } .hr-av { margin-bottom: 8px; }
+  .hr-al { font-size: 10px; line-height: 1.4; } .hr-as { display: none; }
+  .hr-an { font-size: 12.5px; letter-spacing: .1em; margin-bottom: 5px; }
+  .hr-ag { padding: 0 3px; }
+  .hr-last { margin-top: 6px; padding: 2px 8px; font-size: 8.5px; letter-spacing: 0; }
+  .hr-lbl { font-size: 9px; } .hr-lbl-r { font-size: 8.5px; padding: 3px 9px; }
+  .hr-rules { grid-template-columns: 1fr; }
+  .hr-st4 { gap: 2px; } .hr-st4 b { font-size: clamp(19px, 5.6vw, 24px); } .hr-st4 span { font-size: 9px; }
+  .hr-tape { height: 112px; }
   .hr-note span { font-size: 9.5px; }
-  .hr-ps { display: none; }
-  .hr-badge { margin-left: auto; }
-  .hr-ec { gap: 8px 6px; }
-  .hr-edge-t { font-size: 10px; }
-  .hr-edge-s { font-size: 9.5px; }
-  .hr-bin span { font-size: 9.5px; }
-  .hr-barbox { min-height: 188px; }
-  .hr-bl { font-size: 10px; }
+  .hr-ringbox { width: 196px; }
+  .hr-ps { display: none; } .hr-badge { margin-left: auto; }
+  .hr-bt-cv { min-height: 220px; }
+  .hr-gauge { max-width: 330px; }
+  .hr-ec { gap: 8px 6px; } .hr-edge-t { font-size: 10px; } .hr-edge-s { font-size: 9.5px; } .hr-bin span { font-size: 9.5px; }
+  .hr-barbox { min-height: 188px; } .hr-bl { font-size: 10px; }
   .hr-fig { font-size: 36px; }
+  .hr-trio { padding: 0 10px; }
+  .hr-last { max-width: 100%; justify-content: center; }
+  .hr-leg { display: none; }
+  #hr-a-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 6px; }
+  #hr-a-stats b { font-size: 30px; } #hr-a-stats span { font-size: 10px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .hr-bar { transition: none; }
-}
-@keyframes hrHitA { 0% { box-shadow: 0 0 46px rgba(255, 77, 94, .75), inset 0 0 26px rgba(255, 77, 94, .35); } 100% { box-shadow: 0 0 28px rgba(255, 77, 94, .28), inset 0 0 20px rgba(255, 77, 94, .12); }  }
-@keyframes hrHitB { 0% { box-shadow: 0 0 46px rgba(255, 77, 94, .75), inset 0 0 26px rgba(255, 77, 94, .35); } 100% { box-shadow: 0 0 28px rgba(255, 77, 94, .28), inset 0 0 20px rgba(255, 77, 94, .12); }  }
-@keyframes hrFill { 0%, 100% { transform: scaleY(.38); } 50% { transform: scaleY(.78); }  }
+@media (max-width: 380px) { .hr-pb { min-width: 46px; padding: 0 11px; } .hr-pills .pill { font-size: 9px; letter-spacing: .08em; } }
+@media (prefers-reduced-motion: reduce) { .hr-bar { transition: none; } .hr-rflash, .hr-gpulse { display: none; } .hr-av::before { animation: none; } }
+
+/* standalone page only: a lone panel takes the whole row; the scroll-reveal (fx.js) is not loaded here, so panels are shown at once */
+.hr-grid > * { grid-column: 1 / -1 !important; }
+.hr-grid .rv { opacity: 1; transform: none; filter: none; }
 
 
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
@@ -337,39 +373,49 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 
 <div class="cmp-stage" style="--cmp-w:680px">
-<div class="hr">
-<article class="card hr-p hr-e" id="hr-e" data-c="red" aria-labelledby="hr-e-t">
-  <i class="hr-edge" aria-hidden="true"></i>
-  <div class="hr-ph"><span class="hr-tag">the honest part</span><span class="hr-ps">31% on paper, 17% in life</span><span class="hr-badge" data-c="red">read this one</span></div>
-  <h3 class="hr-t" id="hr-e-t">Two columns from one strategy &mdash; and everything between them falls into the venue</h3>
-  <p class="hr-note"><span data-c="red">the red bin fills with what never reaches your account</span></p>
+<section class="sec hr" id="hour" aria-labelledby="hr-h2">
+  <i class="hr-lightb" id="hr-lightb" aria-hidden="true"></i><i class="hr-shock" id="hr-shock" aria-hidden="true"></i>
+  <i class="hr-bgl" aria-hidden="true"></i>
+  <div class="wrap">
 
-  <div class="hr-ec" id="hr-ec">
-    <canvas class="hr-leak" id="hr-leak" aria-hidden="true"></canvas>
-    <div class="hr-col hr-col-a">
-      <div class="hr-barbox"><div class="hr-bar hr-bar-g" id="hr-bar-a"><b>&times;2.9</b></div></div>
-      <span class="hr-bl">what the backtest promised</span>
-    </div>
-    <div class="hr-mtxt">
-      <p class="hr-edge-t"><b>0.19%</b> was the edge</p>
-      <p class="hr-edge-t"><b class="dn">0.07%</b> of it is the bill</p>
-      <p class="hr-edge-s">fees &middot; spread &middot; slippage</p>
-    </div>
-    <div class="hr-bin" id="hr-bin"><span>the venue</span><b>&times;1.0</b><em>never reached you</em><i aria-hidden="true"></i></div>
-    <div class="hr-col hr-col-b">
-      <div class="hr-barbox"><div class="hr-ghost" id="hr-ghost" aria-hidden="true"></div><div class="hr-bar hr-bar-a" id="hr-bar-b"><b>&times;1.9</b></div></div>
-      <span class="hr-bl">what reaches you</span>
+    <div class="hr-grid">
+
+      <!-- ============ E · THE HONEST PART ============ -->
+      <article class="card hr-p hr-e rv" id="hr-e" data-c="red" aria-labelledby="hr-e-t">
+        <i class="hr-edge" aria-hidden="true"></i>
+        <div class="hr-ph"><span class="hr-tag">the honest part</span><span class="hr-ps">31% on paper, 17% in life</span><span class="hr-badge" data-c="red">read this one</span></div>
+        <h3 class="hr-t" id="hr-e-t">Two columns from one strategy &mdash; and everything between them falls into the venue</h3>
+        <p class="hr-note"><span data-c="red">the red bin fills with what never reaches your account</span></p>
+
+        <div class="hr-ec" id="hr-ec">
+          <canvas class="hr-leak" id="hr-leak" aria-hidden="true"></canvas>
+          <div class="hr-col hr-col-a">
+            <div class="hr-barbox"><div class="hr-bar hr-bar-g" id="hr-bar-a"><b>&times;2.9</b></div></div>
+            <span class="hr-bl">what the backtest promised</span>
+          </div>
+          <div class="hr-mtxt">
+            <p class="hr-edge-t"><b>0.19%</b> was the edge</p>
+            <p class="hr-edge-t"><b class="dn">0.07%</b> of it is the bill</p>
+            <p class="hr-edge-s">fees &middot; spread &middot; slippage</p>
+          </div>
+          <div class="hr-bin" id="hr-bin"><span>the venue</span><b>&times;1.0</b><em>never reached you</em><i aria-hidden="true"></i></div>
+          <div class="hr-col hr-col-b">
+            <div class="hr-barbox"><div class="hr-ghost" id="hr-ghost" aria-hidden="true"></div><div class="hr-bar hr-bar-a" id="hr-bar-b"><b>&times;1.9</b></div></div>
+            <span class="hr-bl">what reaches you</span>
+          </div>
+        </div>
+
+        <div class="hr-warn" role="note">
+          <p><i>&times;</i> not one live dollar has traded &middot; sixty minutes proved it runs</p>
+          <p><i>&times;</i> four years of history is one market, and the stop is a line in a file</p>
+        </div>
+        <p class="hr-foot">sixty minutes proved the bot runs &middot; it proved nothing about whether it earns</p>
+        <span class="hr-fig" aria-hidden="true">FIG.5</span>
+      </article>
+
     </div>
   </div>
-
-  <div class="hr-warn" role="note">
-    <p><i>&times;</i> not one live dollar has traded &middot; sixty minutes proved it runs</p>
-    <p><i>&times;</i> four years of history is one market, and the stop is a line in a file</p>
-  </div>
-  <p class="hr-foot">sixty minutes proved the bot runs &middot; it proved nothing about whether it earns</p>
-  <span class="hr-fig" aria-hidden="true">FIG.5</span>
-</article>
-</div>
+</section>
 
 </div>
 <div class="cmp-note">jev / hour / honest-bars</div>
@@ -1011,18 +1057,24 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 </script>
 <script>
-/* hour / honest-bars — two bars from one strategy (x2.9 backtest vs x1.9 after costs) and the red leak ribbons that fall into "the venue" bin with splashes.
- *
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod  J.$ J.C J.TAU J.clamp  J.fit J.watch J.task J.onView  J.DPR J.reduce J.tier.
- * Data: static figures in the markup (x2.9, x1.9, 0.19% edge, 0.07% bill). Bar heights are CSS (see .hr-bar-g / .hr-bar-a in component.css).
- * Everything is simulated.
- */
-JEV.mod('hour-honest-bars', () => {
-  const J = JEV, $ = J.$, C = J.C, TAU = J.TAU, clamp = J.clamp;
-  const root = $('#hr-e');
+/* hour — "three agents, sixty minutes, one bot" (prefix hr-)
+ * A  the build       three heads joined by travelling-dot arcs · live decision packets · candle replay with entries + stops · live kill chip
+ * B  the hour        amber 60:00 ring · six spring switches · accelerated loop -> ARMED + particle burst
+ * C  the backtest    1,840 seeded trades as thin up/down bars · running total · -22% drawdown block · scrub it
+ * D  the arithmetic  270deg log gauge (drag the needle) · capital = 1,200,000 / return
+ * E  the honest part x2.9 vs x1.9 · the red leak falls into the venue
+ * Everything here is an illustrative simulation: no order is sent and no figure is a result. */
+JEV.mod('hour', () => {
+  const J = JEV, $ = J.$, $$ = J.$$, C = J.C, S = J.S, TAU = J.TAU, clamp = J.clamp, fmt = J.fmt, rgba = J.rgba;
+  const root = $('#hour');
   if (!root) return;
   const reduce = J.reduce;
+  const MONO = (getComputedStyle(document.documentElement).getPropertyValue('--mono') || 'monospace').trim();
+  const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
+  const pad2 = (n) => (n < 10 ? '0' : '') + n;
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = (tag, at, par) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (par) par.appendChild(e); return e; };
+
   /* ---------- shared helpers ---------- */
   /** J.fit, corrected for ancestors that are mid-transform (.rv reveal scales the box, which would make getBoundingClientRect lie) */
   function fitC(c) {
@@ -1076,6 +1128,19 @@ JEV.mod('hour-honest-bars', () => {
     for (let i = 0; i <= n; i++) { const t = i / n, u = 1 - t; a.push([u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0], u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1]]); }
     return a;
   }
+  function roundPoly(V, R, n) {
+    const out = [V[0].slice()];
+    for (let i = 1; i < V.length - 1; i++) {
+      const a = V[i - 1], b = V[i], c = V[i + 1], l1 = Math.hypot(b[0] - a[0], b[1] - a[1]), l2 = Math.hypot(c[0] - b[0], c[1] - b[1]), r = Math.min(R, l1 / 2, l2 / 2);
+      const p1 = [b[0] + (a[0] - b[0]) / l1 * r, b[1] + (a[1] - b[1]) / l1 * r], p2 = [b[0] + (c[0] - b[0]) / l2 * r, b[1] + (c[1] - b[1]) / l2 * r];
+      out.push(p1);
+      for (let k = 1; k < n; k++) { const t = k / n, u = 1 - t; out.push([u * u * p1[0] + 2 * u * t * b[0] + t * t * p2[0], u * u * p1[1] + 2 * u * t * b[1] + t * t * p2[1]]); }
+      out.push(p2);
+    }
+    out.push(V[V.length - 1].slice());
+    return out;
+  }
+  let killed = !!S.killed;
 
   /* =====================================================================
    * E · the honest part — bars grow in, the red leak falls into the venue
@@ -1151,6 +1216,7 @@ JEV.mod('hour-honest-bars', () => {
     if (reduce) start(); else setTimeout(start, 1500);
   }, { threshold: 0.3 });
   if (reduce) { ecEl.classList.add('hr-go'); }
+
 });
 
 </script>

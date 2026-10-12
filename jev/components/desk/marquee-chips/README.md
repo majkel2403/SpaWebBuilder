@@ -1,11 +1,10 @@
-# desk / marquee-chips
-The desk's scrolling chip marquee on its own: pill chips with a coloured pulsing dot, lowercase tracked labels and glowing values, looping seamlessly under an edge fade mask with a soft travelling light. Pauses on hover or keyboard focus; on touch a tap holds it ("held . tap to resume"). With reduced motion it becomes a scrollable strip. Simulated.
+# desk / marquee-chips (Marquee chips)
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js`, `base.css`, load the three component files and call `JEV.boot()`. Markup: `.dkt-mq > .dkt-mt > .dkt-ms` holding `<span class="dkt-c" data-c="green|blue|violet|pink|cyan|yellow|orange|red|gray">label <b data-k="key">value</b></span>` (the `data-c` accent comes from base.css and sets `--cc`/`--cc-rgb`). The script duplicates the `.dkt-ms` set and sets the loop duration `--mqd` from its width (about 46 px/s). Add `data-ck="name"` to a chip you want to recolour live.
+A **chunk of the section desk/full-desk** (module desk-top): the endless scrolling strip of live status chips (clone, edge fade, hover/focus/tap hold, --mqd speed). Its chunks are the marquee HTML, its CSS and the setup JS (clone, K()/chipC() helpers, tab order, speed watcher). Values are driven by flushBar() from desk/ticker, which the standalone page composes.
 
-## Data consumed
-Bus `decision` (last ticket, holder agent, handoff rate, review queue, edge), `JEV.market.price`, `JEV.S` (cost, floor, killed).
+The page is assembled from these chunks (byte-identical to the original desk-top.html/css/js; see components/UNITS.md). Edit the chunk here and both the main page and the standalone index.html follow.
 
-## Swap in real data
-Edit the `K('key', text)` calls in `flush()`, one per `data-k`, and call `chipC('key', 'green'|'red'|...)` to recolour; add chips in the HTML by repeating the pattern.
+## Reuse standalone
+Copy this folder + the units listed in component.json "compose" (desk/_top-head, _top-model, _top-events and the hidden desk/_top-* html/css fragments; the desk/_top-sx-* units are standalone-only glue: stub elements, small shims, the closing lines) + engine.js, core.js, base.css (and fx.js for the .rv reveal), then call JEV.boot(). Build with: node jev/build-components.mjs --only desk/marquee-chips
+
+Data: simulated; consumes bus events tick and decision.

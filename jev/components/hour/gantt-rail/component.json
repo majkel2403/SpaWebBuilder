@@ -14,5 +14,7 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "derived": false,
+  "derivedNote": "gantt rows are driven by renderB() inside the hour-switches chunk; no separable chunk"
 }

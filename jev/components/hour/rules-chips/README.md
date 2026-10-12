@@ -1,23 +1,12 @@
 # hour / rules-chips
 
-The hard-rule chips: a dim label on the left, a value pill on the right. Three are plain readouts (daily loss cap, max position, confidence floor); the fourth is a button that mirrors the global kill switch (green "armed" lamp, red "halted" with a fast pulse) and toggles it on click.
+the three hard-rule chips of panel A (daily loss cap, max position, kill switch).
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js`, `base.css`; add `component.html` and call `JEV.boot()`. Build the standalone page with `node jev/build-components.mjs --only hour/rules-chips`.
+**This folder is a chunk of the section `hour/full-section`.** `component.html/css/js` are the real source: joined, in order, with the other units of the section they reproduce the original section byte for byte (see `components/UNITS.md`). They are fragments of one closure, so they are not valid on their own; the standalone `index.html` is built from this unit plus the units named in `compose`.
 
-Markup:
-```html
-<div class="hr-rules">
-  <div class="hr-chip"><span>daily loss cap</span><b>$2,000</b></div>
-  <button class="hr-chip hr-kill" aria-pressed="false"><span>kill switch</span><b><i></i>armed</b></button>
-</div>
-```
-Add any number of `.hr-chip` rows; the grid is one column and goes two columns in a narrow container. Pill colour: edit `.hr-chip b` (amber by default); `.hr-kill b` is green / red via `body.killed`.
+showKill() touches the Jev orb, the arcs and the ARMED banner of other panels; standalone, _solo-chips replaces those with inert stubs.
 
-## Data it consumes
-`J.RULES.lossCap`, `J.RULES.maxPos`, `J.S.floor` + bus `floor`, `J.S.killed` + bus `kill`; click calls `J.setKilled`.
+## Reuse standalone
+Copy this folder plus the units it composes (hour/_head, hour/_grid, hour/_responsive, hour/_close (plus the standalone-only glue _solo-open/_solo-close/_solo-css/_solo-chips)) and `engine.js`, `core.js`, `base.css` from `jev/src`. `node jev/build-components.mjs --only hour/rules-chips` produces the ready-made `index.html`.
 
-## Swapping in real data
-Write your own limits into the `<b>` elements (`#hr-r-loss`, `#hr-r-pos`, `#hr-r-floor`) and replace the `J.setKilled` call with your own halt endpoint.
-
-Everything shown is a simulation.
+Everything shown is a simulation: no order is placed and no figure is a real result.

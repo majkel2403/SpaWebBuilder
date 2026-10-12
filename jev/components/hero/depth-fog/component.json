@@ -1,1 +1,19 @@
-{"title": "Depth fog", "description": "The hero's depth-of-field darkening: one pre-rendered fog ramp whose clear centre follows the layer the active wave is in, over a full layered mesh, with a fog on/off toggle.", "width": "1100px", "needs": {"fx": false, "hud": false}, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"]}
+{
+  "title": "Depth fog",
+  "description": "The hero's depth-of-field darkening: one pre-rendered fog ramp whose clear centre follows the layer the active wave is in, over a full layered mesh, with a fog on/off toggle.",
+  "width": "1100px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
+}

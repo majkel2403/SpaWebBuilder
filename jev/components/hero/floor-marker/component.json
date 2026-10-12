@@ -1,1 +1,19 @@
-{"title":"Confidence floor marker","description":"The 0.85 confidence floor as a spring-loaded marker on a probability track with a live confidence tick and floor step buttons.","width":"760px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}
+{
+  "title": "Confidence floor marker",
+  "description": "The 0.85 confidence floor as a spring-loaded marker on a probability track with a live confidence tick and floor step buttons.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
+}

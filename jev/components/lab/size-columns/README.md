@@ -1,18 +1,15 @@
 # lab / size-columns
 
-The "how much?" score question: four columns (0.5%, 1%, 2%, 4% of capital) whose height is the model's probability for that bucket. The chosen bucket (`sizeIdx`) turns pink with a glow and a light streak runs up it. On a hold decision the whole card dims and says "no order".
+Question "how much?": four size columns with the chosen one lit.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
+
+* own chunks: html, css, js
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/size-columns`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Bus `decision`: `d.action`, `d.size`, `d.sizes[4]` (probabilities for `JEV.SIZES` = 0.5, 1, 2, 4), `d.sizeIdx`.
-
-## Markup
-```html
-<div class="lab-szc on"><em>48%</em><i class="lab-col"><u style="transform:scaleY(.48)"></u></i><span>1%</span></div>
-```
-Column height is set by `.lab-sz { height }` (default 116px).
-
-## Swap in real data
-Emit `sizes` / `sizeIdx` from your sizing model (probabilities that sum to 1), or call `show(record, true)`. Change the buckets in `JEV.SIZES` (engine.js) and the labels follow.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

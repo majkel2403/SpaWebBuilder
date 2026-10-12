@@ -1,0 +1,4 @@
+/* 4. terminal: matrix rain behind the text, phosphor afterglow on the newest lines, CRT vignette */
+.code-rain { position: absolute; left: 0; top: 0; width: calc(100% - 26px); height: 100%; z-index: 0; pointer-events: none; opacity: .17; }
+html[data-tier="3"] .code-rain { opacity: .21; }
+html[data-tier="1"] .code-rain { display: none; }

@@ -1,0 +1,9 @@
+.dkt-kvs { display: flex; gap: clamp(14px, 2vw, 28px); flex: none; }
+.dkt-kvs b { display: block; font: 700 15px/1.2 var(--mono); white-space: nowrap; color: var(--dkt-ink); }
+.dkt-clk { display: flex; align-items: baseline; gap: 8px; margin-left: auto; flex: none; }
+.dkt-clk b { font: 700 clamp(22px, 2.6vw, 30px)/1 var(--mono); letter-spacing: .02em; color: #fff; text-shadow: 0 0 20px rgba(255, 255, 255, .28); }
+.dkt-clk i { font-style: normal; font-size: 9px; letter-spacing: .24em; text-transform: uppercase; color: var(--dkt-k); }
+.dkt-sim { margin-left: 6px; align-self: center; border-color: rgba(255, 193, 61, .4); color: var(--amber); }
+body.killed .dkt-bar { border-color: rgba(255, 77, 94, .5); }
+body.killed .dkt-bar .lamp { background: var(--red); box-shadow: 0 0 8px var(--red), 0 0 18px var(--red); animation-duration: .5s; }
+

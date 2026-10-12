@@ -245,7 +245,6 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
-/* hero / decision-chip — latest-decision readout chip with per-character odometer rolls. Prefix hero-. */
 /* ---- readout chip (top-right) ---- */
 .hero-chip { position: absolute; top: 14px; right: clamp(12px, 2vw, 28px); z-index: 4; max-width: calc(100% - 24px); pointer-events: none;
   display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 10px; font-size: 10.5px; line-height: 1.5; letter-spacing: .03em; color: #cfc6d8; white-space: nowrap;
@@ -265,17 +264,28 @@ body.killed .hero-badge[data-d="review"] { background: var(--red); color: #1a030
 .hero-c-why { font-size: 9.5px; color: var(--mut); letter-spacing: .06em; }
 .hero-c-why:empty { display: none; }
 body.killed .hero-chip { border-color: rgba(255, 77, 94, .55); box-shadow: 0 0 30px rgba(255, 60, 80, .3); }
+
+/* ---- detail layer: tooltip · chip odometer · idle hint ---- */
+.hero-tip { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity .16s ease; will-change: transform; display: flex; flex-direction: column; gap: 2px; min-width: 128px; max-width: 218px; padding: 8px 11px 7px; border-radius: 8px; font-size: 10px; line-height: 1.45; letter-spacing: .03em; color: #cfc6d8;
+  background: linear-gradient(180deg, rgba(26, 9, 30, .92), rgba(9, 4, 15, .94)); border: 1px solid rgba(255, 90, 156, .5); box-shadow: 0 0 26px rgba(255, 46, 110, .28), 0 8px 24px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .08); }
+.hero-tip.is-on { opacity: 1; }
+.hero-tip-h { font-size: 9.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--pink2); }
+.hero-tip-v { font: 600 20px/1.1 'Fraunces', 'Playfair Display', Georgia, serif; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.hero-net .hero-tip .hero-tip-sp { position: static; inset: auto; width: 100px; height: 22px; clip-path: none; transition: none; opacity: 1; display: block; margin: 2px 0; }
+.hero-tip-w { color: #b8aec4; font-size: 9.5px; }
+.hero-tip-s { color: #7d7389; font-size: 8px; letter-spacing: .2em; text-transform: uppercase; }
+body.killed .hero-tip { border-color: rgba(255, 77, 94, .55); }
 .hero-od { display: inline-block; position: relative; }
 .hero-od-o { position: absolute; left: 0; top: 0; pointer-events: none; font-style: normal; }
+.hero-leg-sim.is-idle { color: var(--pink2); animation: heroIdle 1.7s ease-in-out infinite; }
+@keyframes heroIdle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@media (max-width: 699px) { .hero-tip { min-width: 112px; max-width: 190px; padding: 6px 9px 5px; font-size: 9px; } .hero-tip-v { font-size: 17px; } }
+
 .hdc-stage { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; padding: 40px clamp(12px, 3vw, 36px) 28px; border-radius: 14px; background: radial-gradient(90% 90% at 70% 40%, #14061a 0%, #08040d 60%, #05030a 100%); }
 .hdc-stage .hero-chip { position: relative; top: auto; right: auto; }
 .hdc-btn { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .8); border: 1px solid rgba(255, 111, 166, .5); border-radius: 99px; padding: 11px 16px; min-height: 40px; cursor: pointer; }
 .hdc-btn:hover { background: rgba(255, 46, 110, .18); }
-@media (max-width: 899px) { .hero-c-lab, .hero-c-top { display: none; } }
-@media (max-width: 699px) {
   .hero-chip { max-width: 100%; white-space: normal; flex-wrap: wrap; gap: 2px 8px; padding: 6px 10px; font-size: 9.5px; line-height: 1.55; }
-  .hero-c-body { flex: 1 1 auto; min-width: 0; white-space: normal; }
-}
 
 
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
@@ -286,13 +296,13 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 <div class="cmp-stage" style="--cmp-w:900px">
 <section class="hdc-stage" aria-label="Latest decision readout (simulation)">
-  <div class="hero-chip" id="hero-chip">
-    <span class="hero-c-top"><i class="lamp pink"></i><span class="hero-c-lab">latest decision</span></span>
-    <span class="hero-c-body">
-      <b id="hero-c-sym">BTC-PERP</b><span class="hero-sep">·</span><b id="hero-c-act" class="hero-c-act">buy</b><span class="hero-sep">·</span><span class="hero-c-k">conf</span> <b id="hero-c-conf">0.93</b><span class="hero-sep">·</span><b id="hero-c-size">1%</b><span class="hero-sep">·</span><span class="hero-c-k">risk</span> <b id="hero-c-risk">ok</b><span class="hero-sep">&rarr;</span><em id="hero-c-dest" class="hero-badge" data-d="execute">execute</em><span class="hero-c-tail"><span class="hero-sep">·</span><span id="hero-c-ms">3.2</span> ms</span>
-    </span>
-    <span class="hero-c-why" id="hero-c-why"></span>
-  </div>
+      <div class="hero-chip" id="hero-chip">
+        <span class="hero-c-top"><i class="lamp pink"></i><span class="hero-c-lab">latest decision</span></span>
+        <span class="hero-c-body">
+          <b id="hero-c-sym">BTC-PERP</b><span class="hero-sep">·</span><b id="hero-c-act" class="hero-c-act">buy</b><span class="hero-sep">·</span><span class="hero-c-k">conf</span> <b id="hero-c-conf">0.93</b><span class="hero-sep">·</span><b id="hero-c-size">1%</b><span class="hero-sep">·</span><span class="hero-c-k">risk</span> <b id="hero-c-risk">ok</b><span class="hero-sep">&rarr;</span><em id="hero-c-dest" class="hero-badge" data-d="execute">execute</em><span class="hero-c-tail"><span class="hero-sep">·</span><span id="hero-c-ms">3.2</span> ms</span>
+        </span>
+        <span class="hero-c-why" id="hero-c-why"></span>
+      </div>
   <button class="hdc-btn" id="hdcFire" type="button">fire a decision</button>
 </section>
 
@@ -936,9 +946,7 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 </script>
 <script>
-/* hero / decision-chip — "latest decision" readout: symbol · action · conf · size · risk -> destination badge · ms, changed digits roll like an odometer.
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot()
- * Data: JEV.bus 'decision' (d.symbol d.action d.p d.conf d.size d.riskOk d.dest d.reason d.floor d.ms); body.killed (bus 'kill') recolours review badge red. */
+/* hero / decision-chip demo driver (standalone only): copy of the section chip code that feeds the real markup. Not part of the hero section's source. */
 JEV.mod('hero-decision-chip', () => {
   'use strict';
   const J = JEV, chipEl = J.$('#hero-chip');

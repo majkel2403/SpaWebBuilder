@@ -1,0 +1,2 @@
+/* harness (NOT part of the section): a standalone page with a single tile uses one grid column at every width */
+.bld-tiles { grid-template-columns: minmax(0, 1fr); }

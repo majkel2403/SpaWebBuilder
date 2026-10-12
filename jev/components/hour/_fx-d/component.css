@@ -1,0 +1,5 @@
+/* D · gauge: particles shed from the needle + tick flares */
+.hr-gcv { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.hr-cone { mix-blend-mode: screen; }
+html[data-tier="1"] .hr-gcv { display: none; }
+@media (prefers-reduced-motion: reduce) { .hr-sweep, .hr-scan, .hr-lightb, .hr-shock { display: none; } .hr-av .orb, .hr-robot, .hr-av-px .hr-robot { animation: none; } }

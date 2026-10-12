@@ -1,0 +1,12 @@
+.dkw-ob { --os: clamp(40px, 4vw, 60px); position: absolute; left: 0; top: 0; z-index: 0; width: var(--os); height: var(--os); margin: calc(var(--os) / -2) 0 0 calc(var(--os) / -2); border-radius: 50%; will-change: transform, opacity; transform: translate3d(-200px, 0, 0); }
+.dkw-ob .orb { --s: var(--os); display: block; }
+.dkw-ob .orb .e { transition: translate .5s var(--ease); }
+.dkw-ob em { position: absolute; top: calc(100% + 5px); left: 50%; transform: translateX(-50%); font-style: normal; font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; color: var(--dkw-ink); padding: 2px 7px; border-radius: 99px; background: rgba(8, 5, 14, .72); border: 1px solid rgba(var(--ac-rgb), .5); transition: border-color .3s, color .3s; }
+.dkw-ob.is-on em { color: #fff; border-color: var(--ac); box-shadow: 0 0 14px rgba(var(--ac-rgb), .55); }
+.dkw-ob::before { content: ''; position: absolute; inset: -9px; border-radius: 50%; border: 1.5px solid rgba(var(--ac-rgb), .85); box-shadow: 0 0 16px rgba(var(--ac-rgb), .5), inset 0 0 12px rgba(var(--ac-rgb), .25); opacity: 0; scale: .8; pointer-events: none; transition: opacity .4s, scale .5s var(--ease); }
+.dkw-ob.is-on::before { opacity: 1; scale: 1; animation: dkwHalo 2.2s ease-in-out infinite; }
+@keyframes dkwHalo { 50% { scale: 1.14; opacity: .45; } }
+.dkw-ob.is-on .orb { box-shadow: 0 0 calc(var(--os) * 1.1) rgba(var(--ac-rgb), .9), inset -6px -10px 18px rgba(0, 0, 0, .38), inset 4px 6px 12px rgba(255, 255, 255, .22); }
+.dkw-jv { position: absolute; left: 0; top: 0; z-index: 4; width: 86px; height: 86px; margin: -43px 0 0 -43px; opacity: 0; pointer-events: none; will-change: transform, opacity; transform: translate3d(-300px, 0, 0); }
+.dkw-jv .orb { --s: 86px; display: block; }
+.dkw-jv em { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); font-style: normal; font-size: 9px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; color: #fff; padding: 2px 8px; border-radius: 99px; background: rgba(8, 5, 14, .72); border: 1px solid rgba(255, 255, 255, .5); }

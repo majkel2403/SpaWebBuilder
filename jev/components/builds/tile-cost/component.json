@@ -1,11 +1,13 @@
 {
+  "section": "builds/full-section",
   "title": "Cost this run tile",
   "description": "A serif odometer showing the simulated running cost of all typed answers, with decisions count, cost each and a zero-token line.",
   "width": "398px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
+  "derived": true,
   "html": [
     "component.html"
   ],
@@ -14,5 +16,19 @@
   ],
   "js": [
     "component.js"
+  ],
+  "compose": [
+    "builds/_head",
+    "builds/_stub",
+    "builds/_tiles-base",
+    "builds/odometer",
+    "builds/value-bubble",
+    "builds/_tiles-open",
+    "self",
+    "builds/_tiles-close",
+    "builds/_drive",
+    "builds/_end",
+    "builds/_responsive",
+    "builds/_one-col"
   ]
 }

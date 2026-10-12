@@ -1,11 +1,11 @@
 # builds / value-bubble
-A one-element hover bubble that follows the pointer (and taps on touch) over any element with a data-vt attribute and shows its live value, demoed on five action-share bars.
+**Derived atom, a real chunk of `builds/full-section`.** The one-element hover/tap bubble that follows the pointer over any [data-vt] element of the tiles.
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js` and `base.css` (from `src/`), paste component.html/css/js into a page (inside a width-limited container) and call `JEV.boot()`. Everything is simulated.
+This folder holds its css and script; the page shows it over the real latency tile. The files here are not hand-made copies: they are consecutive pieces of the section's original source (see `components/UNITS.md`). The main page (`node jev/build.mjs`) is built from these same chunks, so editing them changes the page; do not edit a copy.
 
-## Markup
-One bubble `div.bld-vt` inside a `position: relative` host. Any descendant with the attribute `data-vt` shows the bubble while hovered (or tapped on touch, auto-hides after 2 s): either static `data-vt="text"` or a live function registered with `vtReg(el, () => 'text')` (the text is recomputed on show and on every refresh). The bubble is moved with `transform`, centred above the pointer and clamped to the host.
+## Standalone page
+`compose`: `builds/_head` + `builds/_stub` + `builds/_tiles-base` + `self` + `builds/_tiles-open` + `builds/tile-latency` + `builds/_tiles-close` + `builds/_drive` + `builds/_end` + `builds/_responsive` + `builds/_one-col` (`self` = the chunk files of this folder; `builds/_stub`, `builds/_one-col`, `builds/_drive`, `builds/_shim-latency` and `builds/_demo-odometer` are small harness units that exist only for standalone pages and are not part of the section).
+Rebuild with `node jev/build-components.mjs --only builds/value-bubble`.
 
-## Data
-Demo: counts of `d.action` (buy / sell / hold / close / flatten) over the decision stream. To use real data: register your own rows/bars with `vtReg`.
+## Reuse elsewhere
+Copy this folder and every unit folder listed in `compose`, plus the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css` (and `fx.js` / `fx.css` when `needs.fx` is true: the `.rv` reveal is driven by it); join the chunks in `compose` order (html, css, js each joined with ''), put the js in one <script> and call `JEV.boot()`. Everything is simulated; feed real data with `JEV.bus.emit('decision', d)`.

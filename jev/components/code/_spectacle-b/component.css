@@ -1,0 +1,20 @@
+/* 5. header status LEDs: rx (amber) = typing, ok (green) = hop / decision, tx (pink) = executed */
+.code-led { flex: none; display: inline-flex; gap: 4px; margin-left: auto; }
+.code-led + .code-meta { margin-left: 8px; }
+.code-led i { width: 5px; height: 5px; border-radius: 50%; background: var(--code-ledoff); transition: background-color .12s, box-shadow .12s; }
+.code-led i.on:nth-child(1) { background: #ffb02e; box-shadow: 0 0 6px 1px rgba(255, 176, 46, .9); }
+.code-led i.on:nth-child(2) { background: #1fd18f; box-shadow: 0 0 6px 1px rgba(46, 230, 166, .9); }
+.code-led i.on:nth-child(3) { background: #ff2e6e; box-shadow: 0 0 6px 1px rgba(255, 46, 110, .9); }
+.code-light { --code-ledoff: rgba(42, 32, 51, .16); } .code-dark { --code-ledoff: rgba(255, 255, 255, .15); } .code-hot { --code-ledoff: rgba(12, 2, 7, .3); }
+.code-hot .code-led i.on { background: #0c0207 !important; box-shadow: 0 0 6px 2px rgba(255, 255, 255, .9) !important; }
+.code-hot .code-led i.on:nth-child(2) { background: #fff !important; }
+@media (max-width: 440px) { .code-dark .code-led { display: none; } .code-dark .code-meta { margin-left: auto; } }
+
+/* 6. compile-success ripple: pane edge flash + a diagonal wavefront across the whole window */
+.code-rip { position: absolute; inset: 0; z-index: 5; border-radius: inherit; pointer-events: none; opacity: 0; box-shadow: inset 0 0 0 2px var(--rip, #2ee6a6), inset 0 0 44px -4px var(--rip, #2ee6a6); }
+html[data-tier="1"] .code-rip, html[data-tier="1"] .code-wave { display: none; }
+.code-wave { position: absolute; inset: 0; z-index: 5; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.code-wave b { position: absolute; top: -10%; bottom: -10%; left: 0; width: 34%; opacity: 0; will-change: transform; transform: translateX(300%) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(46, 230, 166, .1) 38%, rgba(190, 255, 230, .42) 50%, rgba(46, 230, 166, .1) 62%, transparent); }
+.code-status .lamp.ok { box-shadow: 0 0 10px 3px rgba(255, 255, 255, .9); background: #fff; }
+@media (prefers-reduced-motion: reduce) { .code-haze i, .code-crt::after { animation: none; } .code-rain, .code-scan, .code-wave { display: none; } .code-tl:not(.seed) { animation: none; } }

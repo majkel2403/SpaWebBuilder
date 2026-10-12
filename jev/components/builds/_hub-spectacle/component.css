@@ -1,0 +1,29 @@
+/* ================= spectacle (tier-gated: html[data-tier="1"] keeps the page as it was) ================= */
+/* (2) core as a refractive glass slab: chromatic edge split, pointer caustic, drifting specular band, holographic wordmark with a scanline wipe */
+html:not([data-tier="1"]) .bld-core-box { --split: -2px 0 3px -1px rgba(0, 235, 255, .45), 2px 0 3px -1px rgba(255, 40, 120, .55); }
+.bld-core-in::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: screen; display: none;
+  background: radial-gradient(180px circle at var(--cpx, 50%) var(--cpy, 40%), rgba(255, 255, 255, .2), rgba(255, 140, 190, .08) 45%, transparent 72%),
+    radial-gradient(100px 44px at calc(100% - var(--cpx, 50%)) calc(100% - var(--cpy, 40%)), rgba(110, 235, 255, .17), transparent 72%),
+    linear-gradient(180deg, rgba(255, 255, 255, .1), transparent 14%); }
+html:not([data-tier="1"]) .bld-core-in::before { display: block; }
+.bld-core-box::after { content: ''; position: absolute; top: -20%; bottom: -20%; left: 0; width: 34%; z-index: 4; pointer-events: none; display: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .02) 25%, rgba(255, 255, 255, .22) 50%, rgba(120, 235, 255, .06) 62%, transparent); skew: -18deg; translate: -160% 0; mix-blend-mode: screen; animation: bldGlint 8s ease-in-out 1.5s infinite; }
+html:not([data-tier="1"]) .bld-core-box::after { display: block; }
+@keyframes bldGlint { 0%, 52% { translate: -160% 0; } 82%, 100% { translate: 360% 0; } }
+.bld-wm-h { position: absolute; inset: 0; display: none; pointer-events: none; text-align: center; color: transparent; -webkit-text-fill-color: transparent; font: 900 clamp(54px, 5.6vw, 78px)/1 var(--serif); letter-spacing: .02em;
+  background: linear-gradient(180deg, transparent 0 42%, rgba(255, 255, 255, .98) 50%, transparent 58% 100%) 0 10% / 100% 300% no-repeat, linear-gradient(100deg, #6df3ff, #ff8fc0 34%, #c3a0ff 66%, #6df3ff) 0 0 / 200% 100% repeat-x;
+  -webkit-background-clip: text; background-clip: text; opacity: .6; animation: bldHolo 7s linear infinite, bldBreath 4.2s ease-in-out infinite alternate; }
+html:not([data-tier="1"]) .bld-wm-h { display: block; }
+body.killed .bld-wm-h { filter: hue-rotate(150deg) saturate(1.4); }
+@keyframes bldHolo { 0% { background-position: 0 10%, 0 0; } 35% { background-position: 0 90%, 50% 0; } 100% { background-position: 0 90%, 100% 0; } }
+@keyframes bldBreath { from { opacity: .3; scale: 1; } to { opacity: .8; scale: 1.018; } }
+
+/* (4) cards flip up in a stagger (inner layer, so measured rects stay put) + an edge light runs round the border once */
+html:not([data-tier="1"]) .bld-ci { transform-origin: 50% 100%; transition: transform 1s cubic-bezier(.2, .9, .25, 1.1) var(--d, 0s), opacity .3s; }
+html:not([data-tier="1"]) .bld-pre .bld-ci { transform: perspective(640px) rotateX(-76deg) translateY(18px); }
+.bld-card::before { content: ''; position: absolute; inset: 0; z-index: 3; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .95) 50%, transparent 62%) 160% 0 / 250% 100% no-repeat;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+html:not([data-tier="1"]) .bld-stage:not(.bld-pre) .bld-card::before { animation: bldEdge 1.5s cubic-bezier(.3, .6, .3, 1) calc(var(--d, 0s) + .3s) both; }
+@keyframes bldEdge { 0% { opacity: 1; background-position: 160% 0; } 80% { opacity: 1; } 100% { opacity: 0; background-position: -60% 0; } }
+

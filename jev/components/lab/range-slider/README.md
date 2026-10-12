@@ -1,18 +1,16 @@
 # lab / range-slider
 
-One glowing range slider as a reusable atom. A `.lab-row` is a label, a value readout and a track with: neon fill (bipolar from a zero mark, or from the left), a value bubble that pops above the thumb while dragging or focused, a light trail behind the thumb, tick sparks on every step, an optional hatched red risk band (the readout and fill turn red inside it) and a keyboard model (arrows, shift = x10, double-click resets). The demo shows five variants; the last one follows the live net edge of the decision stream until you grab it.
+The nine INPUT sliders of the STATE card (and the floor slider used by hard rules): glowing fill, thumb trail, tick sparks, value bubble, shift-nudge, double-click reset, red risk bands.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
 
-## Markup
-```html
-<div class="lab-row" data-c="yellow" data-label="spread_bps" data-min="0.2" data-max="20" data-step="0.1" data-value="1.8" data-dec="1" data-dz="8,20"></div>
-```
-Attributes: `data-c` accent (pink green blue yellow violet orange cyan red gray), `data-label`, `data-min/max/step/value`, `data-dec` decimals, `data-unit`, `data-sign` (always show +/-), `data-usd`, `data-bi` + `data-mark` (fill grows from the mark), `data-dz="a,b"` (red band), `data-follow="net"`. CSS variables on `.lab-rng`: `--rh` track height, `--tw` thumb width. Put rows in `.lab-sliders`; on narrow containers they stack label/readout over the track.
+* own chunks: html, css, js
+* satellite chunks (hidden units that hold other pieces of this atom's code, kept apart only because the original file interleaves them): `lab/_range-fx`, `lab/_slider-craft`
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/range-slider`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Emits `JEV.bus 'lab-slider' {key, value}` on every input. Rows with `data-follow="net"` consume bus `decision` (`d.net`).
-
-## Swap in real data
-Listen with `JEV.bus.on('lab-slider', e => ...)`, or read `input.value` of any row. To drive a row from a feed, call `setVal(row, value)` in `component.js` (or set `goal` on a follow row) instead of the decision handler.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

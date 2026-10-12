@@ -3,16 +3,67 @@
   "description": "The whole top of the desk: status ticker, SWARM P&L card and THE TAPE candlestick chart with order book, laid out like the page.",
   "width": "1380px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
-  "html": [
-    "component.html"
+  "section": "desk/full-desk",
+  "derived": true,
+  "units": [
+    "desk/_top-bar-open",
+    "desk/handoff-pulse",
+    "desk/_top-bar-kv",
+    "desk/_top-bar-top-end",
+    "desk/marquee-chips",
+    "desk/_top-bar-end",
+    "desk/pnl-panel",
+    "desk/candle-tape",
+    "desk/_top-css-base",
+    "desk/_top-css-bar-a",
+    "desk/_top-css-bar-b",
+    "desk/_top-css-resp",
+    "desk/_top-css-spec",
+    "desk/_top-head",
+    "desk/_top-model",
+    "desk/_top-events",
+    "desk/ticker",
+    "desk/_top-bar-task",
+    "desk/_top-tail"
   ],
-  "css": [
-    "component.css"
-  ],
-  "js": [
-    "component.js"
-  ]
+  "order": {
+    "html": [
+      "desk/_top-sx-grid-open",
+      "desk/_top-bar-open",
+      "desk/handoff-pulse",
+      "desk/_top-bar-kv",
+      "desk/_top-bar-top-end",
+      "desk/marquee-chips",
+      "desk/_top-bar-end",
+      "desk/pnl-panel",
+      "desk/candle-tape",
+      "desk/_top-sx-grid-close"
+    ],
+    "css": [
+      "desk/_top-css-base",
+      "desk/_top-css-bar-a",
+      "desk/handoff-pulse",
+      "desk/_top-css-bar-b",
+      "desk/marquee-chips",
+      "desk/pnl-panel",
+      "desk/candle-tape",
+      "desk/_top-css-resp",
+      "desk/_top-css-spec"
+    ],
+    "js": [
+      "desk/_top-head",
+      "desk/_top-model",
+      "desk/_top-events",
+      "desk/marquee-chips",
+      "desk/ticker",
+      "desk/handoff-pulse",
+      "desk/_top-bar-task",
+      "desk/pnl-panel",
+      "desk/candle-tape",
+      "desk/_top-tail"
+    ]
+  }
 }

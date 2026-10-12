@@ -1,18 +1,16 @@
 # lab / encode-chips
 
-Stage 01 of the pipeline on its own: the ten features Jev sees. Nine come straight from the simulated market state (edge, imbalance, spread, vol, position, pnl, drawdown, latency, signal age), the tenth is the derived net edge (dashed chip). Every chip shows a value and a glowing bar: centred and signed for bipolar features (a red bar when negative), left-anchored for the others. Values inside a risk band get a red outline. On every decision the chips pop in with a stagger and the card flashes.
+Stage 01 ENCODE: nine state inputs plus net edge as bar chips with a change marker.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
 
-## Markup
-```html
-<div class="lab-ft bi" data-c="pink"><span>edge</span><b>+9.0</b><i class="lab-cb"><u style="--v:.22"></u></i></div>
-```
-`--v` is -1..1 for `.bi` chips and 0..1 otherwise. Add `neg`, `bad` or `drv` for the red bar, red outline and dashed derived style. The grid is `.lab-fts` (auto-fill, min 128px).
+* own chunks: html, css, js
+* satellite chunks (hidden units that hold other pieces of this atom's code, kept apart only because the original file interleaves them): `lab/_detail-encode`
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/encode-chips`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Bus `decision`: `d.state{edge_bps, imbalance, spread_bps, vol_1h, position_pct, daily_pnl, drawdown_pct, latency_ms, signal_age_s}` and `d.net`.
-
-## Swap in real data
-Emit decision-like records on `JEV.bus` with those fields, or call `show({state, net}, true)` from `component.js`. Ranges and risk bands live in the `FIELDS` table.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

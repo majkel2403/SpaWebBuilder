@@ -1,0 +1,20 @@
+/* =====================================================================
+ * SPECTACLE (tier-gated: html[data-tier="1"] keeps the page as it was)
+ * ===================================================================== */
+/* 1. glass reflection that follows the pointer (position set on the element itself: no subtree restyle) */
+.code-gloss { position: absolute; inset: 0; z-index: 4; border-radius: inherit; pointer-events: none; opacity: var(--go, 0); transition: opacity .5s;
+  background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 30%), rgba(255, 255, 255, .13), rgba(255, 190, 220, .04) 45%, transparent 70%),
+    linear-gradient(115deg, transparent calc(var(--gs, 40%) - 9%), rgba(255, 255, 255, .07) var(--gs, 40%), transparent calc(var(--gs, 40%) + 7%)); }
+html[data-tier="1"] .code-gloss { display: none; }
+
+/* 2. scanner beam: rides the line being typed, bloom bar + hot spot at the caret */
+.code-scan { position: absolute; left: 0; right: 26px; top: 0; height: 22px; pointer-events: none; opacity: 0; transition: opacity .45s; will-change: transform; }
+.code-typing .code-scan { opacity: 1; }
+.code-scan::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 22px; background: linear-gradient(0deg, rgba(var(--scn, 255, 46, 110), .2), transparent); }
+.code-scan::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: linear-gradient(90deg, rgba(var(--scn, 255, 46, 110), 0), rgba(var(--scn, 255, 46, 110), .9) 12%, rgba(var(--scn, 255, 46, 110), .55) 70%, rgba(var(--scn, 255, 46, 110), 0)); box-shadow: 0 0 10px 1px rgba(var(--scn, 255, 46, 110), .8); }
+.code-scan b { position: absolute; left: -40px; bottom: -9px; width: 80px; height: 18px; border-radius: 50%; background: radial-gradient(closest-side, #fff, rgba(var(--scn, 255, 46, 110), .75) 35%, transparent); opacity: .85; will-change: transform; }
+.code-hot { --scn: 255, 255, 255; }
+.code-hot .code-scan::before { background: linear-gradient(0deg, rgba(255, 255, 255, .3), transparent); }
+.code-dark .code-scan { display: none; }
+html[data-tier="1"] .code-scan { display: none; }
+

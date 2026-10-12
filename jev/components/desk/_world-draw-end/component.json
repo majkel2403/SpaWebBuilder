@@ -1,0 +1,8 @@
+{
+  "title": "_world-draw-end",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "js": [
+    "component.js"
+  ]
+}

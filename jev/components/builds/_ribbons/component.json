@@ -1,0 +1,7 @@
+{
+  "section": "builds/full-section",
+  "hidden": true,
+  "js": [
+    "component.js"
+  ]
+}

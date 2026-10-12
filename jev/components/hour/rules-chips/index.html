@@ -245,9 +245,24 @@ html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
 
-.hr { position: relative; overflow-x: clip; --hr-k: #aaa1b8; --hr-t: #e9e3ef; --hr-line: rgba(255, 255, 255, .085); --hr-glass: linear-gradient(180deg, rgba(23, 14, 30, .9), rgba(9, 5, 14, .94)); }
-.hr-p { display: flex; flex-direction: column; padding: 14px clamp(14px, 1.7vw, 24px) 16px; background: var(--hr-glass); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: rgba(var(--cc-rgb), .24); container-type: inline-size; container-name: hrp; isolation: isolate; box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .04); }
+/* ===== hour — "three agents, sixty minutes, one bot": build · hour · backtest · arithmetic · honest part (prefix hr-) ===== */
+.hr { position: relative; overflow-x: clip; --hr-k: #aaa1b8; --hr-t: #e9e3ef; --hr-line: rgba(255, 255, 255, .085);
+  --hr-glass: linear-gradient(180deg, rgba(23, 14, 30, .9), rgba(9, 5, 14, .94)); }
+.hr-bgl { position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(60% 24% at 50% 8%, rgba(255, 138, 61, .08), transparent 72%), radial-gradient(45% 20% at 12% 58%, rgba(77, 141, 255, .06), transparent 70%),
+    radial-gradient(45% 20% at 88% 82%, rgba(166, 107, 255, .07), transparent 70%); }
+.hr .wrap { z-index: 1; }
+/* ---------- grid ---------- */
+.hr-grid { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 14px; container-type: inline-size; container-name: hrg; }
+.hr-grid > * { grid-column: 1 / -1; min-width: 0; }
+@media (min-width: 900px) { .hr-grid > .hr-b { grid-column: span 11; } .hr-grid > .hr-c { grid-column: span 9; } .hr-grid > .hr-d, .hr-grid > .hr-e { grid-column: span 10; } }
+
+/* ---------- panel shell ---------- */
+.hr-p { display: flex; flex-direction: column; padding: 14px clamp(14px, 1.7vw, 24px) 16px; background: var(--hr-glass); backdrop-filter: none; -webkit-backdrop-filter: none;
+  border-color: rgba(var(--cc-rgb), .24); container-type: inline-size; container-name: hrp; isolation: isolate;
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .04); }
 .hr-p > * { position: relative; z-index: 1; }
+.hr-p > canvas.hr-burst { position: absolute; z-index: 5; }
 .hr-edge { position: absolute !important; left: 0; right: 0; top: 0; height: 1px; z-index: 2; background: linear-gradient(90deg, transparent, var(--cc), transparent); box-shadow: 0 0 18px 1px rgba(var(--cc-rgb), .7); opacity: .85; }
 .hr-p::selection { background: var(--cc); }
 .hr-ph { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--hr-k); }
@@ -255,37 +270,76 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .hr-ps { flex: 1 1 120px; min-width: 0; }
 .hr-badge { padding: 3px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: .1em; color: var(--cc); border: 1px solid rgba(var(--cc-rgb), .7); background: rgba(var(--cc-rgb), .09); white-space: nowrap; font-variant-numeric: tabular-nums; margin-left: auto; }
 .hr-t { margin-top: 14px; font: 600 clamp(15px, 1.5vw, 19.5px)/1.3 var(--sans); letter-spacing: -.005em; color: #fff; max-width: 60ch; text-wrap: balance; }
-.hr-t b { font-weight: 700; }
-.hr-cb { color: var(--blue); }
-.hr-cp { color: var(--pink); }
+.hr-t b { font-weight: 700; } .hr-cb { color: var(--blue); } .hr-cp { color: var(--pink); }
 .hr-note { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 10px; }
 .hr-note span { padding: 3px 9px; border-radius: 4px; font-size: 10px; line-height: 1.5; color: var(--cc, var(--hr-k)); border: 1px solid rgba(var(--cc-rgb, 255, 255, 255), .5); background: rgba(var(--cc-rgb, 255, 255, 255), .06); }
 .hr-foot { margin-top: auto; padding-top: 12px; text-align: center; font-size: 10.5px; line-height: 1.6; color: var(--hr-k); }
 .hr-foot::before { content: ''; display: block; height: 1px; margin-bottom: 12px; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .14) 0 4px, transparent 4px 9px); }
+.hr-fig { position: absolute !important; right: 14px; bottom: 6px; z-index: 0 !important; font: 900 clamp(34px, 5vw, 70px)/1 var(--serif); letter-spacing: -.02em; color: rgba(255, 255, 255, .045); pointer-events: none; user-select: none; }
+.hr-st4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 16px 0 6px; text-align: center; }
+.hr-st4 > div { padding: 0 2px; min-width: 0; }
+.hr-st4 b { font-feature-settings: 'tnum' 1, 'lnum' 1; font-kerning: none; display: block; font: 900 clamp(22px, 2.5vw, 34px)/1.05 var(--serif); color: var(--amber); font-variant-numeric: tabular-nums; text-shadow: 0 0 22px currentColor; white-space: nowrap; }
+.hr-st4 > div:nth-child(2) b { color: var(--blue); } .hr-st4 > div:nth-child(3) b { color: var(--green); } .hr-st4 > div:nth-child(4) b { color: var(--pink); }
+.hr-st4 b.up { color: var(--green); } .hr-st4 b.dn { color: var(--red); } .hr-st4 b.hr-amb { color: var(--amber); }
+.hr-c .hr-st4 > div:nth-child(2) b { color: var(--amber); } .hr-c .hr-st4 > div:nth-child(3) b { color: var(--red); } .hr-c .hr-st4 > div:nth-child(4) b { color: var(--ink); }
+@keyframes hrDone { 0% { text-shadow: 0 0 22px currentColor; } 35% { text-shadow: 0 0 44px currentColor, 0 0 8px #fff; filter: brightness(1.35); } 100% { text-shadow: 0 0 22px currentColor; filter: none; } }
+.hr-st4 b.hr-done { animation: hrDone .9s var(--ease); }
+.hr-st4 span { display: block; margin-top: 4px; font-size: 10px; line-height: 1.4; color: var(--hr-k); }
+.hr-st4 em { font-style: normal; color: var(--hr-k); opacity: .85; }
+
 .hr-rules { display: grid; gap: 6px; align-content: end; }
-.hr-chip { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 6px 8px 6px 12px; border-radius: 8px; text-align: left; font-size: 10.5px; color: var(--hr-k); background: rgba(255, 255, 255, .035); border: 1px solid var(--hr-line); transition: border-color .3s, box-shadow .3s, background .3s; }
+.hr-chip { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 6px 8px 6px 12px; border-radius: 8px; text-align: left; font-size: 10.5px; color: var(--hr-k);
+  background: rgba(255, 255, 255, .035); border: 1px solid var(--hr-line); transition: border-color .3s, box-shadow .3s, background .3s; }
 .hr-chip b { padding: 3px 9px; border-radius: 6px; color: #fff; font-weight: 700; font-size: 11px; background: rgba(255, 193, 61, .13); border: 1px solid rgba(255, 193, 61, .45); white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
-.hr-kill { cursor: pointer; border-color: rgba(46, 230, 166, .35); }
-.hr-kill:hover { background: rgba(46, 230, 166, .08); box-shadow: 0 0 18px rgba(46, 230, 166, .2); }
+.hr-kill { cursor: pointer; border-color: rgba(46, 230, 166, .35); } .hr-kill:hover { background: rgba(46, 230, 166, .08); box-shadow: 0 0 18px rgba(46, 230, 166, .2); }
 .hr-kill b { color: var(--green); background: rgba(46, 230, 166, .1); border-color: rgba(46, 230, 166, .55); letter-spacing: .08em; text-transform: uppercase; }
 .hr-kill b i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 9px var(--green); animation: lampPulse 1.6s infinite; }
 .hr-kill:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
-body.killed .hr-kill { border-color: rgba(255, 77, 94, .6); background: rgba(255, 77, 94, .08); }
-body.killed .hr-kill b { color: var(--red); background: rgba(255, 77, 94, .13); border-color: var(--red); }
+body.killed .hr-kill { border-color: rgba(255, 77, 94, .6); background: rgba(255, 77, 94, .08); } body.killed .hr-kill b { color: var(--red); background: rgba(255, 77, 94, .13); border-color: var(--red); }
 body.killed .hr-kill b i { background: var(--red); box-shadow: 0 0 10px var(--red); animation-duration: .5s; }
 .hr-cap2 { font-size: 10px; color: var(--hr-k); text-align: right; padding-right: 4px; }
-@container hrp (max-width: 700px) {
-  .hr-rules { grid-template-columns: 1fr 1fr; }
-  .hr-cap2 { grid-column: 1 / -1; text-align: center; }
-  .hr-kill { grid-column: auto; }
+
+/* ================= responsive ================= */
+@container hrp (max-width: 700px) { .hr-lower { grid-template-columns: 1fr; } .hr-rules { grid-template-columns: 1fr 1fr; } .hr-cap2 { grid-column: 1 / -1; text-align: center; } .hr-kill { grid-column: auto; } }
+@container hrp (max-width: 560px) { .hr-gx { grid-template-columns: 1fr; } .hr-read { align-items: center; text-align: center; } .hr-ctl { grid-template-columns: 1fr; justify-items: stretch; } .hr-pre { justify-content: center; } }
+@container hrp (max-width: 560px) {
+  .hr-ec { grid-template-rows: auto minmax(0, 1fr) auto; }
+  .hr-mtxt { grid-area: 1 / 1 / 2 / 4; display: flex; flex-wrap: wrap; justify-content: center; gap: 0 12px; margin-bottom: 4px; }
+  .hr-edge-s { flex-basis: 100%; }
+  .hr-col-a .hr-barbox { grid-area: 2 / 1; } .hr-col-a .hr-bl { grid-area: 3 / 1; } .hr-col-b .hr-barbox { grid-area: 2 / 3; } .hr-col-b .hr-bl { grid-area: 3 / 3; } .hr-bin { grid-area: 2 / 2; }
 }
 @media (max-width: 700px) {
   .hr-p { padding: 12px 12px 14px; }
+  .hr-stage { padding-top: 44px; padding-bottom: 44px; }
+  .hr-ag { --hr-av: 58px; } .hr-av { margin-bottom: 8px; }
+  .hr-al { font-size: 10px; line-height: 1.4; } .hr-as { display: none; }
+  .hr-an { font-size: 12.5px; letter-spacing: .1em; margin-bottom: 5px; }
+  .hr-ag { padding: 0 3px; }
+  .hr-last { margin-top: 6px; padding: 2px 8px; font-size: 8.5px; letter-spacing: 0; }
+  .hr-lbl { font-size: 9px; } .hr-lbl-r { font-size: 8.5px; padding: 3px 9px; }
   .hr-rules { grid-template-columns: 1fr; }
+  .hr-st4 { gap: 2px; } .hr-st4 b { font-size: clamp(19px, 5.6vw, 24px); } .hr-st4 span { font-size: 9px; }
+  .hr-tape { height: 112px; }
   .hr-note span { font-size: 9.5px; }
-  .hr-ps { display: none; }
-  .hr-badge { margin-left: auto; }
+  .hr-ringbox { width: 196px; }
+  .hr-ps { display: none; } .hr-badge { margin-left: auto; }
+  .hr-bt-cv { min-height: 220px; }
+  .hr-gauge { max-width: 330px; }
+  .hr-ec { gap: 8px 6px; } .hr-edge-t { font-size: 10px; } .hr-edge-s { font-size: 9.5px; } .hr-bin span { font-size: 9.5px; }
+  .hr-barbox { min-height: 188px; } .hr-bl { font-size: 10px; }
+  .hr-fig { font-size: 36px; }
+  .hr-trio { padding: 0 10px; }
+  .hr-last { max-width: 100%; justify-content: center; }
+  .hr-leg { display: none; }
+  #hr-a-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 6px; }
+  #hr-a-stats b { font-size: 30px; } #hr-a-stats span { font-size: 10px; }
 }
+@media (max-width: 380px) { .hr-pb { min-width: 46px; padding: 0 11px; } .hr-pills .pill { font-size: 9px; letter-spacing: .08em; } }
+@media (prefers-reduced-motion: reduce) { .hr-bar { transition: none; } .hr-rflash, .hr-gpulse { display: none; } .hr-av::before { animation: none; } }
+
+/* standalone page only: a lone panel takes the whole row; the scroll-reveal (fx.js) is not loaded here, so panels are shown at once */
+.hr-grid > * { grid-column: 1 / -1 !important; }
+.hr-grid .rv { opacity: 1; transform: none; filter: none; }
 
 
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
@@ -295,21 +349,25 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 
 <div class="cmp-stage" style="--cmp-w:520px">
-<div class="hr">
-<article class="card hr-p" data-c="orange" aria-labelledby="hr-rc-t">
+<section class="sec hr" id="hour" aria-labelledby="hr-h2">
+  <i class="hr-lightb" id="hr-lightb" aria-hidden="true"></i><i class="hr-shock" id="hr-shock" aria-hidden="true"></i>
+  <i class="hr-bgl" aria-hidden="true"></i>
+  <div class="wrap">
+
+    <div class="hr-grid">
+
+<article class="card hr-p hr-a" data-c="orange">
   <i class="hr-edge" aria-hidden="true"></i>
-  <div class="hr-ph"><span class="hr-tag">hard rules</span><span class="hr-ps">held by code, not by the model</span><span class="hr-badge" data-c="yellow">chips</span></div>
-  <h3 class="hr-t" id="hr-rc-t">Four chips: the loss cap, the position cap, the floor and the kill switch</h3>
-  <div class="hr-rules" id="hr-rules" role="group" aria-label="Hard rules, held by code" style="margin-top:16px">
-    <div class="hr-chip"><span>daily loss cap</span><b id="hr-r-loss">$2,000</b></div>
-    <div class="hr-chip"><span>max position</span><b id="hr-r-pos">4%</b></div>
-    <div class="hr-chip"><span>confidence floor</span><b id="hr-r-floor">0.85</b></div>
-    <button class="hr-chip hr-kill" id="hr-kill" type="button" aria-pressed="false" title="Mirrors the kill switch. Click to throw / release it."><span>kill switch</span><b id="hr-kill-t"><i></i>armed</b></button>
-    <p class="hr-cap2">jev holds all four</p>
-  </div>
-  <p class="hr-foot">label + value pill &middot; the kill chip is a button that follows the global switch</p>
+          <div class="hr-rules" role="group" aria-label="Hard rules, held by code">
+            <div class="hr-chip"><span>daily loss cap</span><b id="hr-r-loss">$2,000</b></div>
+            <div class="hr-chip"><span>max position</span><b id="hr-r-pos">4%</b></div>
+            <button class="hr-chip hr-kill" id="hr-kill" type="button" aria-pressed="false" title="Live: mirrors the kill switch in the header. Click to throw / release it."><span>kill switch</span><b id="hr-kill-t"><i></i>armed</b></button>
+            <p class="hr-cap2">jev holds all three</p>
+          </div>
 </article>
-</div>
+    </div>
+  </div>
+</section>
 
 </div>
 <div class="cmp-note">jev / hour / rules-chips</div>
@@ -951,19 +1009,26 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
 
 </script>
 <script>
-/* hour / rules-chips — hard-rule chips (label + value pill) and the kill chip that mirrors / toggles the kill switch.
- *
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod  J.$ J.usd J.RULES J.setKilled  J.bus 'kill'(bool) · 'floor'(number)  J.S.killed J.S.floor.
- * Everything is simulated.
- */
-JEV.mod('hour-rules-chips', () => {
+/* hour — "three agents, sixty minutes, one bot" (prefix hr-)
+ * A  the build       three heads joined by travelling-dot arcs · live decision packets · candle replay with entries + stops · live kill chip
+ * B  the hour        amber 60:00 ring · six spring switches · accelerated loop -> ARMED + particle burst
+ * C  the backtest    1,840 seeded trades as thin up/down bars · running total · -22% drawdown block · scrub it
+ * D  the arithmetic  270deg log gauge (drag the needle) · capital = 1,200,000 / return
+ * E  the honest part x2.9 vs x1.9 · the red leak falls into the venue
+ * Everything here is an illustrative simulation: no order is sent and no figure is a result. */
+JEV.mod('hour', () => {
   const J = JEV, $ = J.$, $$ = J.$$, C = J.C, S = J.S, TAU = J.TAU, clamp = J.clamp, fmt = J.fmt, rgba = J.rgba;
+  const root = $('#hour');
+  if (!root) return;
   const reduce = J.reduce;
   const MONO = (getComputedStyle(document.documentElement).getPropertyValue('--mono') || 'monospace').trim();
   const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
   const pad2 = (n) => (n < 10 ? '0' : '') + n;
-  /** J.fit, corrected for ancestors that are mid-transform */
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = (tag, at, par) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (par) par.appendChild(e); return e; };
+
+  /* ---------- shared helpers ---------- */
+  /** J.fit, corrected for ancestors that are mid-transform (.rv reveal scales the box, which would make getBoundingClientRect lie) */
   function fitC(c) {
     const f = J.fit(c), cw = c.clientWidth, ch = c.clientHeight;
     if (cw > 0 && ch > 0 && (cw !== f.W || ch !== f.H)) {
@@ -974,7 +1039,7 @@ JEV.mod('hour-rules-chips', () => {
     }
     return f;
   }
-  /** layout-space box of el inside the positioned ancestor `top` (transform-proof) */
+  /** layout-space box of el inside the positioned ancestor `top` (transform-proof, unlike getBoundingClientRect) */
   function offs(el, top) {
     let x = 0, y = 0, e = el;
     const w = el.offsetWidth, h = el.offsetHeight;
@@ -994,6 +1059,7 @@ JEV.mod('hour-rules-chips', () => {
     return (SPR[hex] = c);
   }
   const blit = (g, hex, x, y, r, a) => { g.globalAlpha = a; g.drawImage(glow(hex), x - r, y - r, r * 2, r * 2); };
+  /* polylines with cumulative length so dots can travel at constant speed */
   function makePath(pts) {
     const n = pts.length, x = new Float32Array(n), y = new Float32Array(n), s = new Float32Array(n);
     let L = 0;
@@ -1014,21 +1080,36 @@ JEV.mod('hour-rules-chips', () => {
     for (let i = 0; i <= n; i++) { const t = i / n, u = 1 - t; a.push([u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0], u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1]]); }
     return a;
   }
-  const tier = () => J.tier || 2;
-  let killed = !!S.killed;
-  const box = $('#hr-rules'); if (!box) return;
-  setT($('#hr-r-loss'), J.usd(J.RULES.lossCap)); setT($('#hr-r-pos'), J.RULES.maxPos + '%');
-  const fl = $('#hr-r-floor'), setFloor = (v) => setT(fl, Number(v).toFixed(2));
-  setFloor(S.floor); J.bus.on('floor', setFloor);
-  const btn = $('#hr-kill'), txt = $('#hr-kill-t');
-  function showKill(v) {
-    killed = !!v; btn.setAttribute('aria-pressed', String(killed));
-    txt.lastChild.nodeValue = killed ? 'halted' : 'armed';
+  function roundPoly(V, R, n) {
+    const out = [V[0].slice()];
+    for (let i = 1; i < V.length - 1; i++) {
+      const a = V[i - 1], b = V[i], c = V[i + 1], l1 = Math.hypot(b[0] - a[0], b[1] - a[1]), l2 = Math.hypot(c[0] - b[0], c[1] - b[1]), r = Math.min(R, l1 / 2, l2 / 2);
+      const p1 = [b[0] + (a[0] - b[0]) / l1 * r, b[1] + (a[1] - b[1]) / l1 * r], p2 = [b[0] + (c[0] - b[0]) / l2 * r, b[1] + (c[1] - b[1]) / l2 * r];
+      out.push(p1);
+      for (let k = 1; k < n; k++) { const t = k / n, u = 1 - t; out.push([u * u * p1[0] + 2 * u * t * b[0] + t * t * p2[0], u * u * p1[1] + 2 * u * t * b[1] + t * t * p2[1]]); }
+      out.push(p2);
+    }
+    out.push(V[V.length - 1].slice());
+    return out;
   }
-  showKill(S.killed);
-  btn.addEventListener('click', () => J.setKilled(!S.killed));
-  J.bus.on('kill', showKill);
+  let killed = !!S.killed;
 
+  /* ---------- chips (hard rules) ---------- */
+  setT($('#hr-r-loss'), J.usd(J.RULES.lossCap)); setT($('#hr-r-pos'), J.RULES.maxPos + '%');
+  const killBtn = $('#hr-kill'), killTxt = $('#hr-kill-t');
+  function showKill(v) {
+    killed = !!v;
+    killBtn.setAttribute('aria-pressed', String(killed));
+    killTxt.lastChild.nodeValue = killed ? 'halted' : 'armed';
+    if (jevOrb) { jevOrb.classList.toggle('red', killed); jevOrb.classList.toggle('pink', !killed); }
+    buildStaticA(); armText();
+  }
+  killBtn.addEventListener('click', () => J.setKilled(!S.killed));
+
+  /* standalone tail: the other panels do not exist here, so their hooks are inert */
+  const jevOrb = null, buildStaticA = () => {}, armText = () => {};
+  J.bus.on('kill', (v) => showKill(v));
+  showKill(S.killed);
 });
 
 </script>

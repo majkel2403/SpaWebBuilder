@@ -1,18 +1,16 @@
 # lab / decide-button
 
-The magnetic DECIDE button: hot-pink gradient, a light sweep every few seconds, a spotlight that follows the mouse, a pull toward the pointer (mouse only), a click ripple from the exact click point, an Enter key hint and a pulsing `dirty` state for "inputs changed, press to re-run". Clicking fires a simulated decision with `JEV.fire()`.
+The magnetic DECIDE button of the STATE card (ripple, Enter shortcut, pulsing dirty state).
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
 
-## Markup
-```html
-<div class="lab-magw"><button class="lab-go" type="button"><span class="lab-go-t">decide</span><kbd class="lab-kbd">↵</kbd><svg class="lab-go-i">…</svg></button></div>
-```
-The `.lab-magw` wrapper gives the pointer a larger hit area for the pull. Add `dirty` for the pulsing halo. Variables on the button: `--tx`, `--ty` (pull) and `--mx`, `--my` (spotlight) are set by the script.
+* own chunks: html, css, js
+* satellite chunks (hidden units that hold other pieces of this atom's code, kept apart only because the original file interleaves them): `lab/_lower-open`, `lab/_decide-open`, `lab/_decide-close`, `lab/_decide-keys`, `lab/_decide-magnet`
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/decide-button`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Calls `JEV.fire()` (a normal `decision` on the bus) and `JEV.pulse()` if the fx module is loaded. Emits `JEV.bus 'lab-decide' {n}`. The readout subscribes to `decision`.
-
-## Swap in real data
-Replace the `J.fire()` call in `decide()` with your own trigger (post the current inputs to your model, then emit its answer as a `decision` record on `JEV.bus`).
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

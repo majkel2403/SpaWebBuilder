@@ -1,0 +1,6 @@
+/* ===== builds — "ten builds, one decision layer": particle hub + live tiles (prefix bld-) ===== */
+@property --hi { syntax: '<number>'; inherits: true; initial-value: 1.2; }
+@property --hs { syntax: '<number>'; inherits: true; initial-value: 1; }
+.bld { position: relative; overflow-x: clip; --spring: cubic-bezier(.34, 1.5, .5, 1); --spring-s: cubic-bezier(.3, 1.3, .5, 1); --bld-side: clamp(186px, 20.5vw, 272px); --bld-vg: clamp(62px, 8.4vw, 100px); --bld-k: #aaa1b8; --bld-line: rgba(255, 255, 255, .06);
+  background: radial-gradient(64% 34% at 50% 30%, rgba(255, 46, 110, .075), transparent 72%), radial-gradient(40% 20% at 50% 78%, rgba(255, 197, 61, .035), transparent 70%); }
+

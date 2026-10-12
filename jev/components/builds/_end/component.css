@@ -1,0 +1,2 @@
+.bld-foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--bld-line); font-size: 9.5px; letter-spacing: .1em; color: var(--bld-k); }
+

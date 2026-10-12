@@ -3,16 +3,28 @@
   "description": "The six live dashboard tiles together: decision stream, latency by build, cost this run, primitive mix, where it runs and what code owns.",
   "width": "1100px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
-  "html": [
-    "component.html"
-  ],
-  "css": [
-    "component.css"
-  ],
-  "js": [
-    "component.js"
+  "section": "builds/full-section",
+  "derived": true,
+  "compose": [
+    "builds/_head",
+    "builds/_stub",
+    "builds/_tiles-base",
+    "builds/odometer",
+    "builds/value-bubble",
+    "builds/_tiles-open",
+    "builds/tile-decision-stream",
+    "builds/tile-latency",
+    "builds/tile-cost",
+    "builds/tile-primitive-mix",
+    "builds/tile-where-it-runs",
+    "builds/tile-code-owns",
+    "builds/_tiles-enter",
+    "builds/_tiles-close",
+    "builds/_drive",
+    "builds/_end",
+    "builds/_responsive"
   ]
 }

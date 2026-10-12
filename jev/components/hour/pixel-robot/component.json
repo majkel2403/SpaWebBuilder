@@ -14,5 +14,7 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "derived": false,
+  "derivedNote": "the robot is plain svg + css inside build-trio markup, no js of its own; compact re-write kept as is"
 }

@@ -14,5 +14,7 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "derived": false,
+  "derivedNote": "the last-answer chip is woven into the Jev mascot / comet code of build-trio (landDecision shares hop(), jevAv, spawnPacket); no separable chunk"
 }

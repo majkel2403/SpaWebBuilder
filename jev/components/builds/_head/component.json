@@ -1,0 +1,13 @@
+{
+  "section": "builds/full-section",
+  "hidden": true,
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

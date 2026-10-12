@@ -1,12 +1,11 @@
 # builds / section-head-stats
-The builds section header: eyebrow, serif headline, lede and a glass stat strip with a decisions odometer, median latency, token count and a live lamp.
+**Derived atom, a real chunk of `builds/full-section`.** The section header (eyebrow, headline, lede) and the glass stat strip with the decisions odometer, median latency, token count and live lamp.
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js` and `base.css` (from `src/`), paste component.html/css/js into a page (inside a width-limited container) and call `JEV.boot()`. Everything is simulated.
+This folder holds html, css and the head-stats script (updStats / updRules readouts). The files here are not hand-made copies: they are consecutive pieces of the section's original source (see `components/UNITS.md`). The main page (`node jev/build.mjs`) is built from these same chunks, so editing them changes the page; do not edit a copy.
 
-## Markup
-`.sec-head.bld-head` with the text block `.bld-head-t` (`.eb`, `h2.h2`, `p.lede`) and the stat strip `.bld-stats`: cells `div > label + b` (give the value `class="hot"` for pink glow) and `.bld-live` (lamp + status). The decisions number is an odometer (reels per digit, readable copy in `.sr-only`).
+## Standalone page
+`compose`: `builds/_head` + `builds/_stub` + `builds/odometer` + `self` + `builds/_drive` + `builds/_end` + `builds/_responsive` (`self` = the chunk files of this folder; `builds/_stub`, `builds/_one-col`, `builds/_drive`, `builds/_shim-latency` and `builds/_demo-odometer` are small harness units that exist only for standalone pages and are not part of the section).
+Rebuild with `node jev/build-components.mjs --only builds/section-head-stats`.
 
-## Data
-`JEV.S.count` -> decisions, median of `JEV.S.ms` -> median, `JEV.S.killed` -> live / halted. Tokens (0) and local (2) are static text.
-To use real data: change `upd()` to read your own counters; the odometer is `odo(el, text).set('1,893')`.
+## Reuse elsewhere
+Copy this folder and every unit folder listed in `compose`, plus the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css` (and `fx.js` / `fx.css` when `needs.fx` is true: the `.rv` reveal is driven by it); join the chunks in `compose` order (html, css, js each joined with ''), put the js in one <script> and call `JEV.boot()`. Everything is simulated; feed real data with `JEV.bus.emit('decision', d)`.

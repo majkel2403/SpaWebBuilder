@@ -3,9 +3,24 @@
   "description": "The SWARM P&L card: serif odometer balance with neon glow, balance-history line with a live head, win/loss strip, route/size bars and lifetime stats.",
   "width": "520px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
+  "section": "desk/full-desk",
+  "derived": true,
+  "compose": [
+    "desk/_top-head",
+    "desk/_top-model",
+    "desk/_top-events",
+    "desk/_top-css-base",
+    "self",
+    "desk/_top-css-resp",
+    "desk/_top-css-spec",
+    "desk/_top-sx-no-bar",
+    "desk/_top-sx-no-tape",
+    "desk/_top-sx-tg",
+    "desk/_top-sx-end-pnl"
+  ],
   "html": [
     "component.html"
   ],

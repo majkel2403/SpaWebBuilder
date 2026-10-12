@@ -6,14 +6,75 @@
     "fx": true,
     "hud": false
   },
-  "html": [
-    "component.html"
+  "sourceOfTruth": true,
+  "units": [
+    "hour/_a-end",
+    "hour/_a-lower-close",
+    "hour/_a-lower-open",
+    "hour/_a-open",
+    "hour/_close",
+    "hour/_fx-a",
+    "hour/_fx-b",
+    "hour/_fx-d",
+    "hour/_grid",
+    "hour/_head",
+    "hour/_intro",
+    "hour/_responsive",
+    "hour/_tail",
+    "hour/arithmetic-dial",
+    "hour/backtest-bars",
+    "hour/build-trio",
+    "hour/candle-replay",
+    "hour/honest-bars",
+    "hour/hour-switches",
+    "hour/rules-chips"
   ],
-  "css": [
-    "component.css"
-  ],
-  "js": [
-    "component.js"
-  ],
-  "sourceOfTruth": true
+  "order": {
+    "html": [
+      "hour/_head",
+      "hour/_intro",
+      "hour/_grid",
+      "hour/_a-open",
+      "hour/build-trio",
+      "hour/_a-lower-open",
+      "hour/candle-replay",
+      "hour/rules-chips",
+      "hour/_a-lower-close",
+      "hour/_a-end",
+      "hour/hour-switches",
+      "hour/backtest-bars",
+      "hour/arithmetic-dial",
+      "hour/honest-bars",
+      "hour/_close"
+    ],
+    "css": [
+      "hour/_head",
+      "hour/_intro",
+      "hour/_grid",
+      "hour/build-trio",
+      "hour/_a-lower-open",
+      "hour/candle-replay",
+      "hour/rules-chips",
+      "hour/hour-switches",
+      "hour/backtest-bars",
+      "hour/arithmetic-dial",
+      "hour/honest-bars",
+      "hour/_responsive",
+      "hour/_fx-a",
+      "hour/_fx-b",
+      "hour/_fx-d"
+    ],
+    "js": [
+      "hour/_head",
+      "hour/build-trio",
+      "hour/candle-replay",
+      "hour/rules-chips",
+      "hour/_a-end",
+      "hour/hour-switches",
+      "hour/backtest-bars",
+      "hour/arithmetic-dial",
+      "hour/honest-bars",
+      "hour/_tail"
+    ]
+  }
 }

@@ -1,1 +1,64 @@
-{ "title": "Jev decides network", "description": "A luminous neural-network diagram where every simulated decision flows from state through encode and Jev system one into typed questions, answers and code acts, with a live readout chip and title card.", "width": "1440px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }
+{
+  "title": "Jev decides network",
+  "description": "A luminous neural-network diagram where every simulated decision flows from state through encode and Jev system one into typed questions, answers and code acts, with a live readout chip and title card.",
+  "width": "1440px",
+  "needs": {
+    "fx": true,
+    "hud": false
+  },
+  "section": "hero/full-section",
+  "derived": true,
+  "units": [
+    "hero/_open",
+    "hero/backdrop-fx",
+    "hero/_plane",
+    "hero/_vig",
+    "hero/_crt-fig",
+    "hero/decision-chip",
+    "hero/legend-strip",
+    "hero/_net-end",
+    "hero/title-card",
+    "hero/_stage-end",
+    "hero/_rule",
+    "hero/_close",
+    "hero/_base",
+    "hero/_fig",
+    "hero/_responsive",
+    "hero/_detail",
+    "hero/_spectacle",
+    "hero/_card-fx",
+    "hero/_js"
+  ],
+  "order": {
+    "html": [
+      "hero/_open",
+      "hero/backdrop-fx",
+      "hero/_plane",
+      "hero/_vig",
+      "hero/_crt-fig",
+      "hero/decision-chip",
+      "hero/legend-strip",
+      "hero/_net-end",
+      "hero/title-card",
+      "hero/_stage-end",
+      "hero/_rule",
+      "hero/_close"
+    ],
+    "css": [
+      "hero/_base",
+      "hero/backdrop-fx",
+      "hero/decision-chip",
+      "hero/_fig",
+      "hero/legend-strip",
+      "hero/title-card",
+      "hero/_rule",
+      "hero/_responsive",
+      "hero/_detail",
+      "hero/_spectacle",
+      "hero/_card-fx"
+    ],
+    "js": [
+      "hero/_js"
+    ]
+  }
+}

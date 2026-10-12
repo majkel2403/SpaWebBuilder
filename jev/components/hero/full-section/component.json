@@ -6,14 +6,58 @@
     "fx": true,
     "hud": false
   },
-  "html": [
-    "component.html"
+  "sourceOfTruth": true,
+  "units": [
+    "hero/_base",
+    "hero/_card-fx",
+    "hero/_close",
+    "hero/_crt-fig",
+    "hero/_detail",
+    "hero/_fig",
+    "hero/_js",
+    "hero/_net-end",
+    "hero/_open",
+    "hero/_plane",
+    "hero/_responsive",
+    "hero/_rule",
+    "hero/_spectacle",
+    "hero/_stage-end",
+    "hero/_vig",
+    "hero/backdrop-fx",
+    "hero/decision-chip",
+    "hero/legend-strip",
+    "hero/title-card"
   ],
-  "css": [
-    "component.css"
-  ],
-  "js": [
-    "component.js"
-  ],
-  "sourceOfTruth": true
+  "order": {
+    "html": [
+      "hero/_open",
+      "hero/backdrop-fx",
+      "hero/_plane",
+      "hero/_vig",
+      "hero/_crt-fig",
+      "hero/decision-chip",
+      "hero/legend-strip",
+      "hero/_net-end",
+      "hero/title-card",
+      "hero/_stage-end",
+      "hero/_rule",
+      "hero/_close"
+    ],
+    "css": [
+      "hero/_base",
+      "hero/backdrop-fx",
+      "hero/decision-chip",
+      "hero/_fig",
+      "hero/legend-strip",
+      "hero/title-card",
+      "hero/_rule",
+      "hero/_responsive",
+      "hero/_detail",
+      "hero/_spectacle",
+      "hero/_card-fx"
+    ],
+    "js": [
+      "hero/_js"
+    ]
+  }
 }

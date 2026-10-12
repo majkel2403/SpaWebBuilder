@@ -1,11 +1,13 @@
 {
+  "section": "builds/full-section",
   "title": "Section header with live stats",
   "description": "The builds section header: eyebrow, serif headline, lede and a glass stat strip with a decisions odometer, median latency, token count and a live lamp.",
   "width": "1216px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
+  "derived": true,
   "html": [
     "component.html"
   ],
@@ -14,5 +16,14 @@
   ],
   "js": [
     "component.js"
+  ],
+  "compose": [
+    "builds/_head",
+    "builds/_stub",
+    "builds/odometer",
+    "self",
+    "builds/_drive",
+    "builds/_end",
+    "builds/_responsive"
   ]
 }

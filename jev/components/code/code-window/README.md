@@ -1,16 +1,13 @@
-# code-window
+# code/code-window
 
-The four-pane `jev-starter` editor window (desk.py light, state.json hot pink, questions.py light, zsh dark) with title-bar tabs and equaliser, the status bar with live queue counters (execute / review / skip), handoff light packets from the terminal to the counters, the compile-success ripple, glass reflection and pointer tilt.
+The window shell (stage, glow, card frame, header container) of the jev-starter editor.
 
-## Reuse
-Copy this folder (`component.html`, `component.css`, `component.js`, `component.json`) next to the three shared files `engine.js`, `core.js` and `base.css` of the JEV runtime,
-inline them in that order into your page (css, html, then `engine.js` -> `core.js` -> `component.js`) and call `JEV.boot()` once. `build-components.mjs` does exactly this and writes `index.html` next to this README.
-No other component is needed; optional pieces (the fx module's toast) are used only when present.
+**This is a chunk of the `code/full-section` section** (derived component, `"derived": true`). Its files hold the REAL source that the main page is built from; the section is the concatenation of these chunks, byte for byte identical to the original. Chunk kinds here: html: window frame open; css: stage/glow/window/h2.
 
-## Data it consumes
-* `JEV.bus` event `decision` (fields `id symbol action conf size sizes sizeIdx riskOk pRisk dest reason ms floor killed state{price edge_bps spread_bps imbalance position_pct daily_pnl latency_ms}`), `kill` (bool), `floor` (number).
-* `JEV.recent[]` (seed lines) and `JEV.S` (floor, killed) from `core.js`.
-* `JEV.S.dest` (counters), `JEV.S.floor`, `JEV.S.killed`.
+## Use standalone
+The chunks are pieces of one closure (`JEV.mod('code', ...)`), so they are not valid alone. Its `compose` list in `component.json` names every unit the standalone page needs (head, panes, hidden helper units, tail); `node jev/build-components.mjs --only code/code-window` assembles them into `index.html`.
+To reuse elsewhere copy this folder, the units listed in `compose` (all under `components/code/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`; concatenate the chunks of each kind in the compose order and call `JEV.boot()`.
+Note: the code is tightly coupled (one shared closure), so the standalone page shows the whole editor window, not only this piece.
 
-## Swap in real data
-Skip the simulator: replace the `decision` emitter by your own call `JEV.bus.emit('decision', {...})` with the fields above (core.js's simulated feed is the only producer; drop it or ignore it). The status bar reads `JEV.S.dest {execute,review,skip}` in `status()`; point it at your own counts.
+Data consumed: `JEV.bus` events `decision`, `kill`, `floor`, `JEV.S`, `JEV.recent` (see code/code-window README).
+Edit here: changes to these files change the main page after `node jev/build.mjs`.

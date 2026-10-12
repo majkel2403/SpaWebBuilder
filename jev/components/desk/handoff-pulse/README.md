@@ -1,11 +1,10 @@
-# desk / handoff-pulse
-The "handoff pulse": each decision of the last 60 s is a 2 px bar at its age position (newest right, scrolling left and fading), coloured by gate result (green execute, amber review, grey skip) and sized by confidence; fresh executions get an additive glow. A legend counts the bars. Seeded with 44 earlier events so it never starts empty. Simulated.
+# desk / handoff-pulse (Handoff pulse)
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js`, `base.css`, load the three component files and call `JEV.boot()`. The canvas (`.dkt-pu canvas`) takes its height from CSS and its width from the container.
+A **chunk of the section desk/full-desk** (module desk-top): the 60 s heartbeat canvas of decisions (green executed, amber review, grey skipped). Chunks: its HTML block, CSS rules and the seed + drawPulse() JS.
 
-## Data consumed
-Bus `decision`: `dest`, `conf`.
+The page is assembled from these chunks (byte-identical to the original desk-top.html/css/js; see components/UNITS.md). Edit the chunk here and both the main page and the standalone index.html follow.
 
-## Swap in real data
-Push `{t: performance.now(), dest: 'execute'|'review'|'skip', conf: 0..1}` into `pulseEv` for every event of your own stream (any event with three classes and a 0..1 magnitude works); the window length is the `60000` ms constant in `draw()`.
+## Reuse standalone
+Copy this folder + the units listed in component.json "compose" (desk/_top-head, _top-model, _top-events and the hidden desk/_top-* html/css fragments; the desk/_top-sx-* units are standalone-only glue: stub elements, small shims, the closing lines) + engine.js, core.js, base.css (and fx.js for the .rv reveal), then call JEV.boot(). Build with: node jev/build-components.mjs --only desk/handoff-pulse
+
+Data: simulated; consumes bus events tick and decision.

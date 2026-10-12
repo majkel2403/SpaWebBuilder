@@ -1,0 +1,3 @@
+/* ---------- detail pass : diff · shimmer · tape restore · copy tools ---------- */
+.lab-ft.chg { border-color: rgba(var(--cc-rgb), .75); box-shadow: 0 0 14px -4px rgba(var(--cc-rgb), .8); }
+.lab-ft.chg::after { content: ''; position: absolute; right: 6px; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 8px var(--pink); }

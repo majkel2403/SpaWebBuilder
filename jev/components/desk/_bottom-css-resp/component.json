@@ -1,0 +1,8 @@
+{
+  "title": "_bottom-css-resp",
+  "hidden": true,
+  "section": "desk/full-desk",
+  "css": [
+    "resp.css"
+  ]
+}

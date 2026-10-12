@@ -1,0 +1,17 @@
+/* ---------- narrow screens ---------- */
+@media (max-width: 700px) {
+  .lab { --lab-gap: 30px; }
+  .lab-pipe { padding-left: 24px; }
+  .lab-sc { min-height: 42px; padding: 9px 14px; }
+  .lab-fts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lab-st { padding: 11px 12px 14px; }
+  .lab-ring { width: 80px; height: 80px; }
+  .lab-pph .lab-ps { display: none; }
+  .lab-pill { font-size: 9px; }
+}
+@media (max-width: 420px) {
+  .lab-fl-t { padding: 5px 8px; letter-spacing: .06em; }
+  .lab-sh h3 { letter-spacing: .1em; }
+}
+@media (hover: none) { .lab-sc:hover { transform: none; } .lab-go { transform: none; } }
+

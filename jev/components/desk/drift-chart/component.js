@@ -1,66 +1,6 @@
-/* desk/drift-chart — drift vs noise: 140 random walks + live end-value histogram (prefix dkb-). Everything is SIMULATED.
- * Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot() (the shared main.js does it).
- * JEV.* API relied on:
- *   JEV.mod, JEV.$, JEV.S (killed), JEV.clamp/gauss/TAU/rnd, JEV.fit, JEV.watch, JEV.task, JEV.onView, JEV.animate, JEV.reduce, JEV.DPR, JEV.tier
- *   JEV.bus: 'pulse' (optional), 'decision' (heartbeat only); halts on body.killed / JEV.S.killed
- * Swap in real data: replace gen() (PX[i*S1+k] = equity of path i at step k, in bps) with your own paths.
- * Everything else in the file is local to the closure. Missing optional DOM / bus events never throw. */
-JEV.mod('desk-drift-chart', () => {
-    const J = JEV, $ = J.$, C = J.C, S = J.S, clamp = J.clamp, fmt = J.fmt, gauss = J.gauss, TAU = J.TAU;
-  const drc = $('#dkb-drift');
-  if (!drc) return;
-  const MONO = "'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace";
-  const setT = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
-  /** odometer: per-digit cells; a changed digit rolls in from below (up) or above (down) while the old one leaves — transform/opacity only, no clipping so the glow survives */
-  const odo = (el) => {
-    let cells = [], cur = '';
-    return (s) => {
-      if (s === cur) return;
-      const up = parseFloat(s) >= parseFloat(cur || s);
-      if (s.length !== cur.length) {
-        el.textContent = ''; cells = [];
-        for (let i = 0; i < s.length; i++) { const c = document.createElement('span'), t = document.createElement('i'); c.className = 'dkb-dg'; c.setAttribute('aria-hidden', 'true'); t.textContent = s[i]; c.appendChild(t); el.appendChild(c); cells.push(c); }
-      } else {
-        for (let i = 0; i < s.length; i++) {
-          if (s[i] === cur[i]) continue;
-          const c = cells[i], t = c.firstChild, old = t.textContent; t.textContent = s[i];
-          if (J.reduce || s[i] === '.' || old === '.') continue;
-          const gh = document.createElement('i'); gh.className = 'dkb-gh'; gh.textContent = old; c.appendChild(gh);
-          const d = up ? 1 : -1;
-          const a1 = J.animate(gh, [{ transform: 'translateY(0)', opacity: 0.9 }, { transform: 'translateY(' + -0.42 * d + 'em)', opacity: 0 }], { duration: 360, easing: 'cubic-bezier(.3,.7,.2,1)' });
-          if (a1) a1.onfinish = () => gh.remove(); else gh.remove();
-          J.animate(t, [{ transform: 'translateY(' + 0.42 * d + 'em)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2,.9,.25,1)' });
-        }
-      }
-      cur = s; el.setAttribute('role', 'img'); el.setAttribute('aria-label', s);
-    };
-  };
-  const sgn = (v, d) => (v >= 0 ? '+' : '-') + Math.abs(v).toFixed(d == null ? 1 : d);
-  const rr = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
-  /** soft additive glow sprite (drawn with 'lighter'; replaces shadowBlur) */
-  const sprite = (rgb) => {
-    const c = document.createElement('canvas'); c.width = c.height = 48;
-    const g = c.getContext('2d'), gr = g.createRadialGradient(24, 24, 0, 24, 24, 24);
-    gr.addColorStop(0, 'rgba(' + rgb + ',1)'); gr.addColorStop(.28, 'rgba(' + rgb + ',.35)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)');
-    g.fillStyle = gr; g.fillRect(0, 0, 48, 48); return c;
-  };
-  /** cards reveal with a small scale/translate (.rv) — JEV.fit measures the transformed rect, so re-fit once the reveal settles */
-  const afterReveal = (card, fn) => {
-    card.addEventListener('transitionend', (e) => { if (e.target === card && e.propertyName === 'transform') fn(); });
-    J.onView(card, () => setTimeout(fn, 1300), { threshold: 0.05 });
-  };
-  /** bake a pill label to a tiny sprite (text is the costly part of a canvas frame; sprites are re-baked only when the label changes) */
-  const bake = (cv, txt, w, h, fill, stroke, color, font) => {
-    cv.width = Math.round(w * J.DPR); cv.height = Math.round(h * J.DPR);
-    const g = cv.getContext('2d'); g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0);
-    rr(g, 0.5, 0.5, w - 1, h - 1, 4); g.fillStyle = fill; g.fill(); g.strokeStyle = stroke; g.lineWidth = 1; g.stroke();
-    g.font = font; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillStyle = color; g.fillText(txt, w / 2, h / 2 + 3.4);
-  };
-  const onFonts = []; // canvas text needs the web font loaded; redraw static layers once it is
-  try { if (document.fonts && document.fonts.load) Promise.all([document.fonts.load("700 9px 'JetBrains Mono'"), document.fonts.load("9px 'JetBrains Mono'")]).then(() => onFonts.forEach((f) => f())).catch(() => {}); } catch (e) { /* ignore */ }
-  const TIER = () => (J.tier || 2);
-  const FX_ON = () => TIER() >= 2 && !J.reduce;
-  const DASH = [3, 4], DOT = [1.5, 3.5], NODASH = [], F_TAG = '700 9px ' + MONO, F_HALT = '700 9.5px ' + MONO;
+  /* =====================================================================================================
+   * 3) DRIFT VS NOISE
+   * ===================================================================================================== */
   const initDrift = () => {
     const wrap = $('#dkb-dw'), cs = $('#dkb-ds'), cA = $('#dkb-dp'), cB = $('#dkb-dq'), co = $('#dkb-do');
     if (!wrap || !cs || !cA || !cB || !co) return;
@@ -321,16 +261,4 @@ JEV.mod('desk-drift-chart', () => {
     J.watch(wrap, lay); afterReveal(drc, lay);
     J.task(drc, frame);
   };
-  /* heartbeat: the card breathes a glow on every decision */
-  /* heartbeat: the three cards breathe a synchronized glow on every decision / JEV.pulse (bus 'pulse' when core emits it) */
-  let lastBeat = -1e9;
-  const beat = (str) => {
-    if (!FX_ON() || J.hidden()) return;
-    const n = performance.now(); if (n - lastBeat < 260) return; lastBeat = n;
-    const a = 0.12 + 0.3 * clamp(str, 0, 1), k = S.killed ? '255,77,94' : '255,46,110';
-    [drc].forEach((c) => J.animate(c, [{ boxShadow: '0 0 0 0 rgba(' + k + ',0), inset 0 0 0 rgba(' + k + ',0)' }, { boxShadow: '0 0 34px -6px rgba(' + k + ',' + a.toFixed(2) + '), inset 0 0 38px rgba(' + k + ',' + (a * 0.35).toFixed(2) + ')', offset: 0.2 }, { boxShadow: '0 0 12px -6px rgba(' + k + ',' + (a * 0.3).toFixed(2) + '), inset 0 0 14px rgba(' + k + ',' + (a * 0.1).toFixed(2) + ')', offset: 0.42 }, { boxShadow: '0 0 0 0 rgba(' + k + ',0), inset 0 0 0 rgba(' + k + ',0)' }], { duration: 1100, easing: 'ease-out' }));
-  };
-  J.bus.on('decision', (d) => beat(d && d.dest === 'execute' ? 0.8 : 0.4));
-  J.bus.on('pulse', (s) => beat(+s || 0.5));
-  initDrift();
-});
+

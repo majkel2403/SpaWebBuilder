@@ -1,0 +1,5 @@
+.hr .h2 { max-width: 25ch; font-size: clamp(26px, 4.2vw, 56px); }
+.hr-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.hr-pill { color: var(--cc); border-color: rgba(var(--cc-rgb), .45); background: rgba(var(--cc-rgb), .08); padding: 5px 12px; font-size: 10px; letter-spacing: .12em; }
+.hr-pill .lamp { width: 6px; height: 6px; }
+

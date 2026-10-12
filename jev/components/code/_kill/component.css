@@ -1,0 +1,5 @@
+/* kill-switch line on questions.py */
+body.killed .code-ln[data-kill].on { background: rgba(255, 77, 94, .2); box-shadow: inset 2px 0 0 var(--red); }
+body.killed .code-ln[data-kill].on::after { content: ' # KILL file found - all orders to review'; color: #b3001c; font-style: italic; font-weight: 700; }
+body.killed .code-light { --code-bandc: #e0102f; --code-band: rgba(255, 77, 94, .1); --code-caret: #e0102f; }
+

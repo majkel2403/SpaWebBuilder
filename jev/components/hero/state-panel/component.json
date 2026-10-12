@@ -1,1 +1,19 @@
-{"title":"State panel","description":"The STATE input column: fifteen ports with live values and 20-decision sparklines, lighting up whichever field changed.","width":"420px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}
+{
+  "title": "State panel",
+  "description": "The STATE input column: fifteen ports with live values and 20-decision sparklines, lighting up whichever field changed.",
+  "width": "420px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
+}

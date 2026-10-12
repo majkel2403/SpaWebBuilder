@@ -1,13 +1,11 @@
 # builds / odometer
-A rolling-digit odometer atom (reel per digit, forward roll on 9 to 0, digit flash) shown as four variants: decisions count, running cost, median latency and a manual stepper.
+**Derived atom, a real chunk of `builds/full-section`.** The rolling-digit odometer (odo()) used by the head stats, the cost tile and the primitive-mix tile.
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js` and `base.css` (from `src/`), paste component.html/css/js into a page (inside a width-limited container) and call `JEV.boot()`. Everything is simulated.
+This folder holds its css and the odo() function; the demo page wraps it with builds/_demo-odometer (not part of the section). The files here are not hand-made copies: they are consecutive pieces of the section's original source (see `components/UNITS.md`). The main page (`node jev/build.mjs`) is built from these same chunks, so editing them changes the page; do not edit a copy.
 
-## Markup
-Any element becomes an odometer: `const o = odo(el, '1,892'); o.set('1,893')`. It writes a visually-hidden `.sr-only` copy (screen readers) and an `aria-hidden` `.bld-odo` made of `.bld-od` reels (one per digit) and `.bld-op` literals (`,` `$` `.` letters). Size it with font props on the host and the CSS variable `--oh` (reel height, e.g. `1.12em`; must equal the line-height). Digits roll forward only (a spare 0 reel makes 9 -> 0 keep rolling), changed digits flash white.
+## Standalone page
+`compose`: `builds/_head` + `self` + `builds/_demo-odometer` + `builds/_end` + `builds/_responsive` (`self` = the chunk files of this folder; `builds/_stub`, `builds/_one-col`, `builds/_drive`, `builds/_shim-latency` and `builds/_demo-odometer` are small harness units that exist only for standalone pages and are not part of the section).
+Rebuild with `node jev/build-components.mjs --only builds/odometer`.
 
-Options on `set(text, {quiet, stagger})`: `quiet` = no flash, `stagger` = digits roll with a 70 ms delay each (nice for first reveal). When the string length changes the odometer rebuilds.
-
-## Data
-Live demos read `JEV.S.count`, `JEV.S.cost`, median of `JEV.S.ms`; the fourth is driven by buttons. To use real data call `.set()` with your own formatted string. The function is also published as `JEV.odo` when this component loads.
+## Reuse elsewhere
+Copy this folder and every unit folder listed in `compose`, plus the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css` (and `fx.js` / `fx.css` when `needs.fx` is true: the `.rv` reveal is driven by it); join the chunks in `compose` order (html, css, js each joined with ''), put the js in one <script> and call `JEV.boot()`. Everything is simulated; feed real data with `JEV.bus.emit('decision', d)`.

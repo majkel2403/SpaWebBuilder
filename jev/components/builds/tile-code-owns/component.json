@@ -1,11 +1,13 @@
 {
+  "section": "builds/full-section",
   "title": "What code owns tile",
   "description": "Five bars for the things plain code holds (the menu, thresholds, orders, the stop, the log); the stop turns red under the kill switch.",
   "width": "398px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
+  "derived": true,
   "html": [
     "component.html"
   ],
@@ -14,5 +16,18 @@
   ],
   "js": [
     "component.js"
+  ],
+  "compose": [
+    "builds/_head",
+    "builds/_stub",
+    "builds/_tiles-base",
+    "builds/value-bubble",
+    "builds/_tiles-open",
+    "self",
+    "builds/_tiles-close",
+    "builds/_drive",
+    "builds/_end",
+    "builds/_responsive",
+    "builds/_one-col"
   ]
 }

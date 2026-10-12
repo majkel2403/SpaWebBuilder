@@ -1,0 +1,4 @@
+/* stage ignition : the card flashes when the pulse reaches it */
+@keyframes lab-ignite { 0% { box-shadow: 0 0 0 2px rgba(var(--cc-rgb), 1), 0 0 110px -4px rgba(var(--cc-rgb), 1), inset 0 0 90px -10px rgba(var(--cc-rgb), 1); } 100% { } }
+html:not([data-tier="1"]) .lab-st.on { animation: lab-ignite .75s ease-out; }
+

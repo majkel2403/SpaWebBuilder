@@ -1,0 +1,5 @@
+@media (prefers-reduced-motion: reduce) {
+  .lab-trl, .lab-spk, .lab-ring::after, .lab-bar u::after, .lab-col u::after { display: none; }
+  .lab-fill { animation: none !important; }
+  .lab-st.on { animation: none !important; }
+}

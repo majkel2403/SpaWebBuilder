@@ -1,9 +1,7 @@
 # hero / decision-network
-The "JEV DECIDES" hero: a canvas neural-network diagram (state, encode, Jev system one, 3 typed questions, 11 answers, 3 code acts), a latest-decision readout chip, a title card, hover tooltips on state fields. Click or tap fires a simulated decision.
+Unit of the section hero/full-section: the whole hero section (decision network canvas, chip, legend, title card, backdrop) assembled from its units. It is a chunk of the real source (derived), not a copy; edits here change the main page.
 
 ## Reuse
-Copy this folder plus `engine.js`, `core.js` and `base.css` (from `src/`), include component.html/css/js in a page, and call `JEV.boot()`. The container must have a width; the stage height is `clamp(560px, 88vh, 920px)` (see `.hero-stage`).
+Copy this folder plus engine/core/base (and fx) from src/; the standalone page is the section built from every hero unit (html/css/js orders in component.json). JS lives in the hidden unit hero/_js (one closure, not splittable without rewriting).
 
-## Data
-Consumes `JEV.bus` events `decision` (fields `state, action, p, conf, size, sizes, riskOk, pRisk, dest, reason, ms, floor, killed`), `kill` (bool), `floor` (number); seeds from `JEV.recent[0]`.
-To use real data: call `JEV.bus.emit('decision', d)` with records in that shape (and `JEV.setKilled`/`JEV.setFloor`) instead of the simulated stream.
+Everything shown is simulated; no orders are placed.

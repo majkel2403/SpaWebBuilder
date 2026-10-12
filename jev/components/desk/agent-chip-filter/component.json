@@ -2,8 +2,18 @@
   "title": "Agent filter chips",
   "description": "A row of six agent chips with live step counters; click mutes an agent, double-click solos it, and the filter is broadcast on the bus.",
   "width": "480px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"],
-  "js": ["component.js"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
 }

@@ -1,0 +1,5 @@
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-tier="1"]) .bld-pre .bld-ci { transform: none; }
+  .bld-card::before, .bld-core-box::after { display: none !important; animation: none; }
+  .bld-wm-h { animation: none; opacity: .45; }
+}

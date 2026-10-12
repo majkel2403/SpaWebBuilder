@@ -2,8 +2,18 @@
   "title": "Venue feed rows",
   "description": "Single venue feed rows with a price that rolls on every tick, 12 spark bars, latency, bps versus the oracle and a deviation heat glow.",
   "width": "440px",
-  "needs": { "fx": false, "hud": false },
-  "html": ["component.html"],
-  "css": ["component.css"],
-  "js": ["component.js"]
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "derived": false
 }

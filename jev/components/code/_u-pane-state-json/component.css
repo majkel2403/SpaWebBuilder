@@ -1,0 +1,30 @@
+/* ---- skin 2 : HOT PINK ---- */
+.code-hot { color: #0c0207; background: linear-gradient(165deg, #ff3a7d 0%, #e0105a 125%);
+  box-shadow: 0 0 0 1px rgba(255, 140, 180, .35), 0 0 56px -6px rgba(255, 46, 110, .6), 0 16px 36px -18px rgba(0, 0, 0, .85);
+  --code-hair: rgba(12, 2, 7, .22); --code-dot: #fff; --code-meta: #14030b; --code-no: #54112d; --code-band: rgba(255, 255, 255, .26); --code-bandc: #0c0207; --code-caret: #0c0207; --code-sb: rgba(12, 2, 7, .4);
+  --code-mmbg: rgba(12, 2, 7, .1); --code-mmv: rgba(12, 2, 7, .7); --code-mmvf: rgba(255, 255, 255, .22);
+  --code-sel: rgba(255, 255, 255, .55); --code-gut: rgba(255, 255, 255, .3); --code-lkc: #fff; --code-lkbg: rgba(255, 255, 255, .22); --code-cph: rgba(12, 2, 7, .16); --code-mmvh: rgba(255, 255, 255, .36); --code-mmvc: #0c0207;
+  --t-k: #0c0207; --t-s: #0c0207; --t-n: #0c0207; --t-c: #0c0207; --t-f: #0c0207; --t-b: #0c0207; --t-ct: #0c0207; --t-a: #0c0207; --t-o: #0c0207; --t-v: #0c0207; --t-p: #0c0207; --t-jk: #0c0207; }
+.code-hot > * { position: relative; z-index: 1; }
+.code-hot::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .24) 50%, transparent 62%) no-repeat; background-size: 60% 100%; animation: codeSheen 7.5s ease-in-out infinite; will-change: transform; }
+@keyframes codeSheen { 0% { transform: translateX(-70%); } 55%, 100% { transform: translateX(170%); } }
+.code-hot::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(165deg, #ff6a3d 0%, #e0301a 125%); opacity: 0; transition: opacity .7s; }
+body.killed .code-hot::after { opacity: 1; }
+.code-hot .code-ph { background: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0)); }
+.code-hot .code-ph b { color: #0c0207; }
+.code-hot .code-jk { font-weight: 800; }
+.code-hot .code-live { border-radius: 3px; background: rgba(255, 255, 255, .3); box-shadow: 0 0 0 2px rgba(255, 255, 255, .3); }
+.code-hot .code-bool { background: #0c0207; color: #ffd5e4; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-bool.no { color: #ffd36b; }
+.code-hot .code-d-execute, .code-hot .code-d-buy { background: #0c0207; color: #7dffd0; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-d-review { background: #0c0207; color: #ffd36b; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-d-skip { background: #0c0207; color: #d9d0e2; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-d-hold { background: #0c0207; color: #d9d0e2; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-d-close { background: #0c0207; color: #ffb98a; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-d-flatten { background: #0c0207; color: #cdaaff; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-d-sell { background: #0c0207; color: #ff8f9b; box-shadow: 0 0 0 2px #0c0207; font-weight: 700; }
+.code-hot .code-ln span:empty { box-shadow: none !important; background: none !important; }
+.code-hot .code-tag { color: #0c0207; background: rgba(255, 255, 255, .5); border-color: transparent; font-weight: 700; }
+.code-hot .code-tag::before { content: ''; display: inline-block; width: 5px; height: 5px; margin-right: 5px; border-radius: 50%; background: #0c0207; vertical-align: 1px; animation: lampPulse 1.2s ease-in-out infinite; }
+.code-hot .code-mm canvas { mix-blend-mode: normal; }
+

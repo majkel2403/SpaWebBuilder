@@ -1,0 +1,8 @@
+{
+  "hidden": true,
+  "harness": true,
+  "note": "Harness for the hub-only standalone page.",
+  "js": [
+    "component.js"
+  ]
+}

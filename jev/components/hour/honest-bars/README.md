@@ -1,14 +1,12 @@
 # hour / honest-bars
 
-Panel "the honest part": a green "backtest" bar (x2.9), an amber "reality" bar (x1.9) with a ghost of the lost part, red particle ribbons leaking into the "venue" bin with splash droplets, and the edge-vs-bill captions.
+panel E "the honest part": x2.9 vs x1.9 bars and the red leak falling into the venue.
 
-## Reuse
-Copy this folder plus the three shared files into your project: `engine.js`, `core.js` and `base.css` (from `jev/src`). Inline them (or link them) in a page together with this folder's `component.css` / `component.html` / `component.js`, put the html inside a div about 680px wide, and call `JEV.boot()`. `node jev/build-components.mjs --only hour/honest-bars` produces the ready-made `index.html`.
+**This folder is a chunk of the section `hour/full-section`.** `component.html/css/js` are the real source: joined, in order, with the other units of the section they reproduce the original section byte for byte (see `components/UNITS.md`). They are fragments of one closure, so they are not valid on their own; the standalone `index.html` is built from this unit plus the units named in `compose`.
 
-## Data it consumes
-- no live feed — the figures (x2.9, x1.9, 0.19%, 0.07%) are text in `component.html`; bar heights are CSS custom properties / heights in `component.css`
+canvas ribbons and droplets over a css bar chart.
 
-## Swapping in real data
-Edit the text figures in `component.html` and the two bar heights (`.hr-bar-g`, `.hr-bar-a`, `.hr-ghost`) in `component.css`; the leak canvas follows the layout automatically.
+## Reuse standalone
+Copy this folder plus the units it composes (hour/_head, hour/_grid, hour/_responsive, hour/_close (plus _solo-css/_solo-end)) and `engine.js`, `core.js`, `base.css` from `jev/src`. `node jev/build-components.mjs --only hour/honest-bars` produces the ready-made `index.html`.
 
 Everything shown is a simulation: no order is placed and no figure is a real result.

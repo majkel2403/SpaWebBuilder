@@ -1,15 +1,16 @@
 # lab / hard-rules
 
-The "held by code, not the model" card: the confidence-floor slider (orange, with a mark at the 0.85 default), the red kill switch and the loss-cap / max-position chips. A live line shows what the gate would do to the newest decision under the current floor and kill state, so moving the floor visibly flips the verdict.
+The HARD RULES block of the STATE card: draggable confidence-floor slider, the kill switch and the loss-cap / max-position chips.
 
-## Reuse
-Copy this folder + `engine.js`, `core.js`, `base.css`, call `JEV.boot()`.
+**This is a chunk of the `lab/full-section` source, not a copy.** The lab page is assembled from the chunks of its units (see `components/UNITS.md`); editing this folder changes the page, and the standalone page below is built from the very same chunks.
+
+* own chunks: html, css, js
+* satellite chunks (hidden units that hold other pieces of this atom's code, kept apart only because the original file interleaves them): `lab/_rules-kill`
+* standalone page (`index.html`, built by `node jev/build-components.mjs --only lab/hard-rules`): the `order` lists in `component.json` give, per kind, the units it is made of: the shared head (`lab/_head`, `_config`, `_refs`, `_decision`, `_render`, `_tail` ...), the real chunks of this atom, and `lab/_demo` (cycles the scenarios so a lone atom is alive).
+* The lab script is one closure over every part of the lab, so every standalone page runs the whole script; parts that are not this atom are present but wrapped in a hidden container (`lab/_hide-open` ... `lab/_hide-close`).
+
+## Reuse elsewhere
+Copy this folder, the folders of the units listed in `component.json` `order` (they are all under `components/lab/`) and the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, then call `JEV.boot()`.
 
 ## Data
-Two-way: dragging the floor calls `JEV.setFloor(v)` (0.50 to 0.99), the switch calls `JEV.setKilled(bool)`; bus `floor` and `kill` repaint the card when another component (HUD, gate-bar, key `K`) changes them. Consumes bus `decision` (`conf`, `action`, `riskOk`). Caps come from `JEV.RULES.lossCap` and `maxPos`.
-
-## Gate semantics
-hold -> skip; kill switch -> review; failed risk flag -> review (not for close / flatten); conf < floor -> review; else execute.
-
-## Swap in real data
-Read `JEV.S.floor` / `JEV.S.killed` as the single source of truth, or replace `setFloor` / `setKilled` calls with your own risk-service API and re-emit `floor` / `kill` on the bus. Edit the cap chips in `component.html`.
+Everything is simulated. The lab drives the real engine (`JEV.decide`) from its own sliders; it listens to the bus events `floor` and `kill` and publishes every committed decision as a `decision` event.

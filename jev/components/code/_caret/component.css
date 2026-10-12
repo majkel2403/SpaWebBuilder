@@ -1,0 +1,4 @@
+.code-caret { display: inline-block; width: 2px; height: 1.2em; margin-left: 1px; vertical-align: -.22em; border-radius: 1px; background: var(--code-caret); box-shadow: 0 0 8px var(--code-caret); animation: codeBlink 1.15s cubic-bezier(.4, 0, .6, 1) infinite; }
+.code-typing .code-caret { animation: none; }
+@keyframes codeBlink { 0%, 38% { opacity: 1; } 62%, 80% { opacity: .08; } 100% { opacity: 1; } }
+

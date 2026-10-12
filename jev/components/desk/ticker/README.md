@@ -1,11 +1,10 @@
-# desk / ticker
-The cinematic status-ticker card of the JEV desk: pink-lit wordmark, a 60 s "handoff pulse" canvas (green executed, amber review, grey skipped), desk nav, session p&l, floor, a UTC clock and a looping marquee of chips (model fair vs market, edge, open tickets, spend, last ticket, kill switch). Simulated.
+# desk / ticker (Status ticker)
 
-## Reuse
-Copy this folder plus `engine.js`, `core.js`, `base.css` (from `src/`), include `component.css`/`component.html`/`component.js` and call `JEV.boot()`. `index.html` here is a ready-built example.
+A **chunk of the section desk/full-desk** (module desk-top): the status bar card: wordmark, handoff pulse, nav / session p&l / floor, UTC clock and the marquee of live chips. The JS chunk in this folder is flushBar() (4 Hz readouts: clock, kv strip, chip values, holder colour); the card HTML/CSS is spread over the sub-units handoff-pulse, marquee-chips and the hidden desk/_top-bar-* / _top-css-bar-* fragments.
 
-## Data it consumes
-Bus events from `engine.js`/`core.js`: `tick` ({price, dp}, 4 Hz), `decision` (action, symbol, size, conf, dest, venue, build, state), `kill` (via `JEV.S.killed`). Everything is simulated.
+The page is assembled from these chunks (byte-identical to the original desk-top.html/css/js; see components/UNITS.md). Edit the chunk here and both the main page and the standalone index.html follow.
 
-## Swap in real data
-Replace the bus emitters (`JEV.bus.emit('tick', {price, dp})`, `JEV.bus.emit('decision', d)`) with your own feed and set `JEV.S.cost`, `JEV.S.floor`, `JEV.S.killed`; the p&l/nav shown on the ticker is a local simulation (`sim.bal`) driven by those events - bind it to your real account balance instead.
+## Reuse standalone
+Copy this folder + the units listed in component.json "compose" (desk/_top-head, _top-model, _top-events and the hidden desk/_top-* html/css fragments; the desk/_top-sx-* units are standalone-only glue: stub elements, small shims, the closing lines) + engine.js, core.js, base.css (and fx.js for the .rv reveal), then call JEV.boot(). Build with: node jev/build-components.mjs --only desk/ticker
+
+Data: simulated; consumes bus events tick and decision.
