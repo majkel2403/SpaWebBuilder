@@ -200,3 +200,6 @@ All 184 pages were built, loaded in headless Chromium at 1100x650 (desktop) and 
 - Components are extracted copies; the main page is still built from `src/`.
 - `hero/*` pieces are compact re-implementations of the diagram parts; the full-page extras (node hover tooltip, depth fog, bloom, parallax, CRT kill overlay, signal trace) are also available as their own components (`hero/node-tooltip`, `depth-fog`, `bloom-pass`, `parallax-layers`, `kill-crt-overlay`, `signal-trace`).
 - Pieces that only make sense inside the full page chrome (HUD metrics, section tint) are demoed with small stand-in layouts.
+
+## Fidelity check (page vs component)
+Side-by-side captures of the main page and the standalone component were compared for: `desk/candle-tape`, `hour/arithmetic-dial`, `hour/honest-bars`, `builds/tile-latency` (identical layout, copy, colours and live behaviour; values differ only by simulation noise). The six hero effect components (`node-tooltip`, `depth-fog`, `bloom-pass`, `parallax-layers`, `kill-crt-overlay`, `signal-trace`) were reviewed at desktop and 390px. All 184 pages were reviewed on contact sheets at both sizes.
