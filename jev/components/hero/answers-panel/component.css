@@ -1,0 +1,25 @@
+/* ===== answers-panel — typed questions · answers · code acts (prefix aps-) ===== */
+.aps { position: relative; isolation: isolate; }
+.aps-stage { position: relative; height: clamp(500px, 64vh, 600px); overflow: hidden; border-radius: 14px; border: 1px solid rgba(255, 70, 140, .22);
+  background: radial-gradient(90% 80% at 55% 46%, #14061a 0%, #08040d 58%, #05030a 100%); box-shadow: 0 0 60px rgba(255, 46, 110, .08); }
+.aps-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#aps-live { cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.aps-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.aps-bg > i { position: absolute; display: block; }
+.aps-aura { left: 62%; top: 50%; width: min(900px, 120%); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; mix-blend-mode: screen; opacity: .7;
+  background: conic-gradient(from 0deg, transparent 0, rgba(255, 46, 110, .24) 8%, transparent 26%, rgba(166, 107, 255, .13) 44%, transparent 60%, rgba(255, 46, 110, .18) 78%, transparent 100%);
+  -webkit-mask: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, .55) 45%, transparent 100%); mask: radial-gradient(closest-side, #000 0, rgba(0, 0, 0, .55) 45%, transparent 100%);
+  animation: apsSpin 46s linear infinite; }
+@keyframes apsSpin { to { rotate: 360deg; } }
+.aps-grid { inset: 0; opacity: .45; background-image: radial-gradient(rgba(255, 120, 170, .22) 1px, transparent 1.3px); background-size: 26px 26px; background-position: 13px 13px;
+  -webkit-mask: radial-gradient(75% 70% at 55% 48%, #000 0, transparent 100%); mask: radial-gradient(75% 70% at 55% 48%, #000 0, transparent 100%); }
+.aps-legend { position: absolute; left: 14px; right: 14px; bottom: 6px; z-index: 2; display: flex; align-items: center; flex-wrap: wrap; gap: 2px 14px; pointer-events: none;
+  font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: #a89db3; }
+.aps-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.aps-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.aps-dot-ex { background: var(--pink); box-shadow: 0 0 8px var(--pink); } .aps-dot-rv { background: var(--amber); box-shadow: 0 0 8px var(--amber); } .aps-dot-sk { background: #8d8499; }
+.aps-sim { color: #8d8499; letter-spacing: .12em; margin-left: auto; }
+.aps.is-killed .aps-stage { border-color: rgba(255, 77, 94, .5); box-shadow: 0 0 50px rgba(255, 60, 80, .2); }
+.aps.is-killed .aps-dot-rv { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.aps.is-killed .aps-aura { filter: hue-rotate(15deg) saturate(1.25); }
+@media (max-width: 700px) { .aps-stage { height: 470px; border-radius: 10px; } .aps-sim { display: none; } .aps-legend { font-size: 8px; gap: 2px 10px; } }
