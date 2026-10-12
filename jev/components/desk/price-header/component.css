@@ -10,4 +10,4 @@
 .dkt-pxp { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: .05em; font-variant-numeric: tabular-nums; color: var(--green); border: 1px solid rgba(46, 230, 166, .45); background: rgba(46, 230, 166, .1); box-shadow: 0 0 16px rgba(46, 230, 166, .16); }
 .dkt-pxp i { font-style: normal; font-size: 9px; }
 .dkt-pxp.dn { color: var(--red); border-color: rgba(255, 77, 94, .5); background: rgba(255, 77, 94, .1); box-shadow: 0 0 16px rgba(255, 77, 94, .16); }
-.dkph .dkt-th { padding: 14px 16px 18px; } .dkph .dkt-pxv { font-size: clamp(34px, 6vw, 52px); } .dkph .dkt-pxv b { transition: color .35s, text-shadow .35s; } .dkph .dkt-pxv.up b { color: #e6fff6; text-shadow: 0 0 26px rgba(46,230,166,.6); } .dkph .dkt-pxv.dn b { color: #ffe3e6; text-shadow: 0 0 26px rgba(255,77,94,.6); }
+.dkph .dkt-th { padding: 8px 16px 6px; } .dkph .dkt-pxv b { transition: color .35s, text-shadow .35s; } .dkph .dkt-pxv.up b { color: #e6fff6; text-shadow: 0 0 26px rgba(46,230,166,.6); } .dkph .dkt-pxv.dn b { color: #ffe3e6; text-shadow: 0 0 26px rgba(255,77,94,.6); }

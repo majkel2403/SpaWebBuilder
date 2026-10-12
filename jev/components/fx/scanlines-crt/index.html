@@ -247,11 +247,11 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 
 /* fx / scanlines-crt (prefix fx-). Strength: --scan. Parent must be position:relative (or use position:fixed for a page overlay). */
 .fx-scan{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;opacity:var(--scan,.5);background:repeating-linear-gradient(180deg,rgba(0,0,0,.24) 0 1px,transparent 1px 3px)}
-.fx-scan i{position:absolute;left:0;right:0;top:0;height:26%;min-height:90px;transform:translateY(-120%);will-change:transform;animation:fxRoll 7s linear infinite;
-  background:linear-gradient(180deg,transparent,rgba(255,60,120,.07) 45%,rgba(255,110,170,.12) 78%,transparent)}
-body.killed .fx-scan i{background:linear-gradient(180deg,transparent,rgba(255,60,50,.09) 45%,rgba(255,110,70,.15) 78%,transparent)}
-@keyframes fxRoll{to{transform:translateY(480%)}}
-@media (hover:none),(pointer:coarse){.fx-scan{opacity:calc(var(--scan,.5)*.55)}}
+.fx-scan i{position:absolute;left:0;right:0;top:0;height:26%;transform:translateY(-115%);will-change:transform;animation:fxRoll 11s linear infinite;
+  background:linear-gradient(180deg,transparent,rgba(255,60,120,.035) 45%,rgba(255,110,170,.06) 78%,transparent)}
+body.killed .fx-scan i{background:linear-gradient(180deg,transparent,rgba(255,60,50,.045) 45%,rgba(255,110,70,.075) 78%,transparent)}
+@keyframes fxRoll{to{transform:translateY(500%)}}
+@media (hover:none),(pointer:coarse){.fx-scan{opacity:calc(var(--scan,.5)*.52)}}
 @media (prefers-reduced-motion:reduce){.fx-scan i{display:none}}
 @media print{.fx-scan{display:none!important}}
 .fxd-stage{position:relative;overflow:hidden;isolation:isolate;border-radius:16px;border:1px solid var(--line);background:#05030a}

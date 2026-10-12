@@ -6,3 +6,10 @@
 .hudx-sec p { max-width: 60ch; font-size: 12px; margin-top: 8px; }
 .hudx-sec kbd { font: 700 10px/1 var(--mono); padding: 3px 6px; border: 1px solid var(--line2); border-radius: 5px; color: var(--pink2); }
 .hudx-last { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* match the page: bar spans the full viewport width (undo the demo body padding) and carries the fx nav state (active link + sliding underline, from fx.css section 7) */
+.hud { margin-inline: calc(-1 * clamp(12px, 3vw, 40px)); }
+.nav { position: relative; }
+.nav a.on { color: #fff; background: rgba(255, 46, 110, .11); text-shadow: 0 0 14px rgba(255, 46, 110, .7); }
+.fx-navbar { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0; border-radius: 2px; pointer-events: none; opacity: 0; background: linear-gradient(90deg, var(--pink), var(--pink2)); box-shadow: 0 0 10px var(--pink), 0 0 24px rgba(255, 46, 110, .75); transition: left .5s var(--ease), width .5s var(--ease), opacity .3s; }
+.fx-navbar.on { opacity: 1; }

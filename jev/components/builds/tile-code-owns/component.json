@@ -1,7 +1,7 @@
 {
   "title": "What code owns tile",
   "description": "Five bars for the things plain code holds (the menu, thresholds, orders, the stop, the log); the stop turns red under the kill switch.",
-  "width": "460px",
+  "width": "398px",
   "needs": {
     "fx": false,
     "hud": false

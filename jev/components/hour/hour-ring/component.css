@@ -43,5 +43,5 @@ html[data-tier="1"] .hr-sweep { display: none; }
 @keyframes hrRfA { 0% { opacity: 1; transform: scale(.9); } 100% { opacity: 0; transform: scale(1.22); } }
 @keyframes hrRfB { 0% { opacity: 1; transform: scale(.9); } 100% { opacity: 0; transform: scale(1.22); } }
 .hr-rwrap { display: grid; place-items: center; padding: 22px 0 6px; }
-.hr-ringbox { cursor: pointer; width: clamp(196px, 52vw, 260px); }
+.hr-ringbox { cursor: pointer; }
 .hr-ringbox:focus-visible { outline: 2px solid var(--amber); outline-offset: 6px; border-radius: 50%; }

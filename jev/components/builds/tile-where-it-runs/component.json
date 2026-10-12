@@ -1,7 +1,7 @@
 {
   "title": "Where it runs tile",
   "description": "Three rows of ten squares show how many builds run on the api, on a laptop and on a gpu box; the api squares ping on every decision.",
-  "width": "460px",
+  "width": "398px",
   "needs": {
     "fx": false,
     "hud": false

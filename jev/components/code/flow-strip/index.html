@@ -246,10 +246,10 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 
 
 .cx-fs { display: flex; justify-content: center; padding: 28px 0; }
-.code-flow { display: flex; align-items: center; gap: 0; min-width: 0; max-width: 100%; }
+.code-flow { display: flex; align-items: center; gap: 0; min-width: 0; max-width: 100%; padding-bottom: 6px; }
 .code-fn { --cc: var(--pink); --cc-rgb: 255, 46, 110; position: relative; flex: none; min-width: 88px; padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(var(--cc-rgb), .28); background: linear-gradient(180deg, rgba(var(--cc-rgb), .1), rgba(var(--cc-rgb), .02)); transition: box-shadow .4s, border-color .4s, background .4s; }
-.code-fn[data-c="orange"] { --cc: #ff8a3d; --cc-rgb: 255, 138, 61; } .code-fn[data-c="pink"] { --cc: #ff2e6e; --cc-rgb: 255, 46, 110; }
-.code-fn[data-c="yellow"] { --cc: #ffc13d; --cc-rgb: 255, 193, 61; } .code-fn[data-c="green"] { --cc: #2ee6a6; --cc-rgb: 46, 230, 166; }
+.code-fn[data-c="orange"] { --cc: #ff8a3d; --cc-rgb: 255, 138, 61; } .code-fn[data-c="pink"] { --cc: #ff6fa6; --cc-rgb: 255, 111, 166; }
+.code-fn[data-c="yellow"] { --cc: #ffc53d; --cc-rgb: 255, 197, 61; } .code-fn[data-c="green"] { --cc: #35e0a8; --cc-rgb: 53, 224, 168; }
 .code-fn::before { content: ''; position: absolute; left: 12px; right: 12px; top: -1px; height: 2px; border-radius: 2px; background: var(--cc); opacity: .7; box-shadow: 0 0 10px var(--cc); }
 .code-fn small { display: block; font-size: 8.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--mut); }
 .code-fn b { display: block; margin-top: 4px; font: 700 14px/1.1 var(--mono); color: var(--ink); white-space: nowrap; }

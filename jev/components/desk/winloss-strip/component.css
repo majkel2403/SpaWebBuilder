@@ -8,4 +8,4 @@
 .dkt-pbar { display: flex; gap: 2px; height: 8px; min-width: 0; }
 .dkt-pbar i { display: block; flex: 0 0 var(--w, 25%); min-width: 2px; height: 100%; background: var(--c); border-radius: 3px; box-shadow: 0 0 10px var(--c), inset 0 1px 0 rgba(255, 255, 255, .38); transition: flex-basis .8s var(--ease); }
 .dkws-b { padding: 12px 16px 16px; display: grid; gap: 12px; }
-.dkt-wl { height: 72px; }
+

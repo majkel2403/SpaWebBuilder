@@ -1,8 +1,11 @@
 /* fx / nav-indicator (prefix fx-). */
-.fx-nav{position:relative;display:flex;flex-wrap:wrap;gap:2px;margin-top:14px;border-bottom:1px solid var(--line)}
-.fx-nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;font:700 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mut);border-radius:8px 8px 0 0;transition:color .25s,background .25s;text-decoration:none}
-.fx-nav a:hover{color:var(--ink)}
+.fx-nav{position:relative;display:flex;gap:2px;flex:none;margin-top:14px;width:max-content;max-width:100%}
+.fx-nav a{padding:6px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);border-radius:7px;transition:color .25s,background .25s;text-decoration:none}
+.fx-nav a:hover{color:#fff;background:rgba(255,46,110,.16)} .fx-nav a:active{transform:scale(.96)}
+.fx-nav a i{font-style:normal}
 .fx-nav a.on{color:#fff;background:rgba(255,46,110,.11);text-shadow:0 0 14px rgba(255,46,110,.7)}
+@media (max-width:1239px){.fx-nav a{padding:6px 8px}.fx-nav a i{display:none}}
+@media (pointer:coarse){.fx-nav a{display:inline-flex;align-items:center;min-height:40px}}
 .fx-navbar{position:absolute;left:0;bottom:-1px;height:2px;width:0;border-radius:2px;pointer-events:none;opacity:0;
   background:linear-gradient(90deg,var(--pink),var(--pink2));box-shadow:0 0 10px var(--pink),0 0 24px rgba(255,46,110,.75);
   transition:left .5s var(--ease),width .5s var(--ease),opacity .3s}

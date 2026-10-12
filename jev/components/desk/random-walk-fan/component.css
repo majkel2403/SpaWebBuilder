@@ -5,7 +5,7 @@
 .dkb-ph-s { font-style: normal; letter-spacing: .09em; color: var(--dkb-k); }
 .dkb-hn { flex: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; letter-spacing: .1em; text-transform: lowercase; color: var(--dkb-k); font-variant-numeric: tabular-nums; }
 .dkb-hn b { color: var(--dkb-ink); font-weight: 700; letter-spacing: .08em; }
-.dkb-cvw { position: relative; flex: 1 1 auto; min-height: 232px; margin: 6px 8px 0; }
+.dkb-cvw { position: relative; flex: 1 1 auto; min-height: 280px; margin: 6px 8px 0; }
 .dkb-cvw canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 .dkb-cvw canvas:last-child { cursor: crosshair; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
 .dkb-cvw canvas:focus-visible { outline: 2px solid var(--pink2); outline-offset: -2px; border-radius: 6px; }

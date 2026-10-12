@@ -255,7 +255,7 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .dkt-scrub.on { opacity: 1; }
 .dkt-scrub b { font: 700 12px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
 .dkt-scrub span { font: 500 9.5px/1.2 var(--mono); color: #b4abc2; letter-spacing: .04em; }
-.dkbl-w { position: relative; flex: 1 1 200px; min-height: 200px; margin: 8px 6px 0; }
+.dkbl-w { position: relative; flex: 1 1 200px; min-height: 200px; margin: 0; }
 .dkbl-w canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: pan-y; cursor: crosshair; }
 .dkbl-ft { display: flex; justify-content: space-between; padding: 8px 16px 12px; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--dkt-k); border-top: 1px solid var(--line); }
 .dkbl-ft b { color: var(--dkt-ink); letter-spacing: .06em; margin-left: 6px; }
@@ -984,17 +984,23 @@ const card = $('#dkbl'), cv = $('#dkbl-cv'); if (!card || !cv) return;
   function draw(t) {
     if (!st) return; const g = st.g, W = st.W, H = st.H; g.clearRect(0, 0, W, H);
     let lo = sim.open, hi = sim.open; for (let i = 0; i < HN; i++) { const v = hat(i); if (v < lo) lo = v; if (v > hi) hi = v; }
-    const pad = Math.max(30, (hi - lo) * 0.14); lo -= pad; hi += pad;
-    const L = 6, R = W - 18, T = 10, B = H - 8, X = (i) => L + i / (HN - 1) * (R - L), Y = (v) => B - (v - lo) / (hi - lo) * (B - T), y0 = Y(sim.open);
-    g.strokeStyle = 'rgba(255,255,255,.05)'; g.lineWidth = 1; for (let k = 1; k < 4; k++) { const y = T + (B - T) * k / 4; g.beginPath(); g.moveTo(L, y); g.lineTo(R, y); g.stroke(); }
+    const rLo = lo, rHi = hi, pad = Math.max(30, (hi - lo) * 0.16); lo -= pad; hi += pad;
+    const ax = W < 300 ? 54 : 64, fs = clamp(W / 110, 9.5, 10.5), MONO = "'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace";
+    const L = 8, R = W - ax, T = 16, B = H - 10, X = (i) => L + i / (HN - 1) * (R - L), Y = (v) => B - (v - lo) / (hi - lo) * (B - T), y0 = Y(sim.open);
+    g.strokeStyle = 'rgba(255,255,255,.05)'; g.lineWidth = 1; for (let k = 1; k < 4; k++) { const y = T + (B - T) * k / 4; g.beginPath(); g.moveTo(L, y); g.lineTo(R + 6, y); g.stroke(); }
     g.setLineDash([4, 5]); g.strokeStyle = 'rgba(255,255,255,.22)'; g.beginPath(); g.moveTo(L, y0); g.lineTo(R, y0); g.stroke(); g.setLineDash([]);
     const path = () => { g.beginPath(); for (let i = 0; i < HN; i++) { const x = X(i), y = Y(hat(i)); i ? g.lineTo(x, y) : g.moveTo(x, y); } };
     [[0, y0, GRN, 0], [y0, H, RED, 1]].forEach((z) => {
       g.save(); g.beginPath(); g.rect(0, z[0], W, z[1] - z[0]); g.clip();
       path(); g.lineTo(X(HN - 1), y0); g.lineTo(X(0), y0); g.closePath();
       const gr = g.createLinearGradient(0, y0, 0, z[3] ? B : T); gr.addColorStop(0, 'rgba(' + z[2] + ',0)'); gr.addColorStop(1, 'rgba(' + z[2] + ',.3)'); g.fillStyle = gr; g.fill();
-      g.lineJoin = 'round'; path(); g.strokeStyle = 'rgba(' + z[2] + ',.22)'; g.lineWidth = 6; g.stroke(); path(); g.strokeStyle = 'rgb(' + z[2] + ')'; g.lineWidth = 1.8; g.stroke(); g.restore();
+      g.lineJoin = 'round'; path(); g.strokeStyle = 'rgba(' + z[2] + ',.22)'; g.lineWidth = 6; g.stroke(); path(); g.strokeStyle = 'rgb(' + z[2] + ')'; g.lineWidth = 2; g.stroke(); g.restore();
     });
+    g.font = '500 ' + fs + 'px ' + MONO; g.textBaseline = 'middle'; g.textAlign = 'left';
+    g.fillStyle = '#b4abc2'; g.fillText('open', R + 8, clamp(y0, T + 6, B - 6));
+    g.fillStyle = '#cfc6dc'; g.fillText(fmt(Math.round(rHi)), R + 8, T - 3); g.fillText(fmt(Math.round(rLo)), R + 8, B + 1);
+    { const tw = ax - 9, ty = clamp(Y(sim.bal), T + 9, B - 9); g.beginPath(); g.roundRect(R + 5, ty - 8, tw, 16, 4); g.fillStyle = sim.bal >= sim.open ? C.green : C.red; g.fill();
+      g.fillStyle = '#0a0710'; g.font = '700 ' + fs + 'px ' + MONO; g.fillText(fmt(Math.round(sim.bal)), R + 9, ty + 0.5); }
     const lx = X(HN - 1), ly = Y(sim.bal), up = sim.bal >= sim.open, pulse = 0.75 + 0.25 * Math.sin(t * 4);
     g.globalCompositeOperation = 'lighter'; g.globalAlpha = pulse; const r = 15 + 3 * pulse; g.drawImage(up ? SG : SR, lx - r, ly - r, r * 2, r * 2); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
     g.fillStyle = '#fff'; g.beginPath(); g.arc(lx, ly, 2.4, 0, TAU); g.fill();

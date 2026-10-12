@@ -12,7 +12,8 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 @keyframes gx1 { 0%, 100% { opacity: 0; } 10% { opacity: .95; transform: translate(-6px, 1px); clip-path: inset(8% 0 62% 0); } 30% { opacity: .95; transform: translate(5px, -2px); clip-path: inset(56% 0 10% 0); } 55% { opacity: .95; transform: translate(-3px, 0); clip-path: inset(30% 0 40% 0); } 80% { opacity: .95; transform: translate(4px, 1px); clip-path: inset(70% 0 4% 0); } }
 @keyframes gx2 { 0%, 100% { opacity: 0; } 15% { opacity: .95; transform: translate(6px, -1px); clip-path: inset(52% 0 14% 0); } 40% { opacity: .95; transform: translate(-5px, 2px); clip-path: inset(12% 0 58% 0); } 65% { opacity: .95; transform: translate(3px, 0); clip-path: inset(40% 0 30% 0); } 85% { opacity: .95; transform: translate(-4px, 0); clip-path: inset(4% 0 80% 0); } }
 .glitch:hover::before { animation: gx1 .55s steps(1) infinite; } .glitch:hover::after { animation: gx2 .55s steps(1) infinite; }
-.hx-gl-xl { font: 800 clamp(64px, 17vw, 168px)/.95 var(--sans); letter-spacing: -.04em; color: #fff; text-shadow: 0 0 40px rgba(255,46,110,.5); }
+.hx-gl-xl { font: 900 clamp(54px, 5.6vw, 78px)/1 var(--serif); letter-spacing: .02em; color: #fff; text-shadow: 0 0 22px rgba(255, 90, 150, .75), 0 0 60px rgba(255, 46, 110, .55); } /* = .bld-wm on the page */
+.glitch::before, .glitch::after { font: inherit; letter-spacing: inherit; }
 .hx-gl-l { font: 800 clamp(26px, 6vw, 54px)/1 var(--sans); letter-spacing: .04em; }
 .hx-gl-m { font: 700 15px/1 var(--mono); letter-spacing: .3em; }
 

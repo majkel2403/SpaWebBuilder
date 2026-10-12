@@ -1,7 +1,7 @@
 {
   "title": "Section header with live stats",
   "description": "The builds section header: eyebrow, serif headline, lede and a glass stat strip with a decisions odometer, median latency, token count and a live lamp.",
-  "width": "1100px",
+  "width": "1216px",
   "needs": {
     "fx": false,
     "hud": false

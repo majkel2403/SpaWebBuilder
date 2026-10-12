@@ -254,6 +254,13 @@ html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-bl
 .hudx-sec kbd { font: 700 10px/1 var(--mono); padding: 3px 6px; border: 1px solid var(--line2); border-radius: 5px; color: var(--pink2); }
 .hudx-last { color: var(--ink); font-variant-numeric: tabular-nums; }
 
+/* match the page: bar spans the full viewport width (undo the demo body padding) and carries the fx nav state (active link + sliding underline, from fx.css section 7) */
+.hud { margin-inline: calc(-1 * clamp(12px, 3vw, 40px)); }
+.nav { position: relative; }
+.nav a.on { color: #fff; background: rgba(255, 46, 110, .11); text-shadow: 0 0 14px rgba(255, 46, 110, .7); }
+.fx-navbar { position: absolute; left: 0; bottom: -1px; height: 2px; width: 0; border-radius: 2px; pointer-events: none; opacity: 0; background: linear-gradient(90deg, var(--pink), var(--pink2)); box-shadow: 0 0 10px var(--pink), 0 0 24px rgba(255, 46, 110, .75); transition: left .5s var(--ease), width .5s var(--ease), opacity .3s; }
+.fx-navbar.on { opacity: 1; }
+
 
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
 .cmp-stage{width:100%;max-width:var(--cmp-w,1200px);position:relative}
@@ -937,6 +944,19 @@ JEV.mod('hud-full-section', () => {
   for (const a of J.$$('#hud .nav a')) { const id = (a.getAttribute('href') || '').slice(1); if (id && !document.getElementById(id)) a.hidden = true; }
   const last = document.getElementById('hudxLast');
   if (last) J.bus.on('decision', (d) => { last.textContent = d.symbol + ' ' + d.action + ' ' + d.size + '% conf ' + d.conf.toFixed(2) + ' -> ' + d.dest + (d.reason !== 'ok' ? ' (' + d.reason + ')' : ''); });
+  /* scrollspy as on the page (fx.js section 7): .on on the link of the section in view + sliding underline */
+  const nav = J.$('#hud .nav');
+  if (nav) {
+    const links = J.$$('a[href^="#"]', nav).filter((a) => !a.hidden), secs = links.map((a) => document.getElementById(a.getAttribute('href').slice(1)));
+    const bar = document.createElement('i'); bar.className = 'fx-navbar'; bar.setAttribute('aria-hidden', 'true'); nav.appendChild(bar);
+    let cur = -1;
+    const place = () => { const a = links[cur]; if (!a || !a.offsetWidth) { bar.classList.remove('on'); return; } bar.style.left = a.offsetLeft + 10 + 'px'; bar.style.width = Math.max(4, a.offsetWidth - 20) + 'px'; bar.classList.add('on'); };
+    const mark = (i) => { if (i === cur) return; cur = i; links.forEach((a, j) => { a.classList.toggle('on', j === i); if (j === i) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); }); place(); };
+    const io = new IntersectionObserver((es) => { es.forEach((e) => (e.isIntersecting ? band.add(e.target) : band.delete(e.target))); let idx = -1; secs.forEach((s, i) => { if (s && band.has(s)) idx = i; }); if (idx >= 0) mark(idx); }, { rootMargin: '-38% 0px -58% 0px', threshold: 0 });
+    const band = new Set(); secs.forEach((s) => s && io.observe(s));
+    if (scrollY < 80) mark(0);
+    new ResizeObserver(place).observe(nav); if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
+  }
 });
 
 </script>
