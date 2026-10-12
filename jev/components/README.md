@@ -1,10 +1,10 @@
 # JEV components
 
-Every section, chart, widget and effect of the JEV Desk as a standalone page: **184 components** (builds 24, code 20, desk 47, fx 16, hero 20, hour 18, hud 18, lab 21). Open `components/index.html` for the live gallery.
+Every section, chart, widget and effect of the JEV Desk as a standalone page: **185 components** (builds 24, code 20, desk 48, fx 16, hero 20, hour 18, hud 18, lab 21). Open `components/index.html` for the live gallery.
 
 **Use one elsewhere:** copy its folder (`component.html`, `component.css`, `component.js`, `component.json`) plus the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, put the markup in a container and call `JEV.boot()` after loading the scripts. Each folder's own `README.md` lists the data it consumes (bus events `decision`, `tick`, `kill`, `floor`, `JEV.market`) and how to feed it real data.
 **Rebuild pages:** `node jev/build-components.mjs` (all) or `--only group/name`. Each `index.html` is generated and fully self-contained.
-Note: components are extracted copies of the main page's modules; the main page (`node jev/build.mjs`) is still built from `src/`. All data is simulated.
+**Source of truth:** the six section components (`hero/full-section`, `code/full-section`, `builds/full-section`, `hour/full-section`, `desk/full-desk`, `lab/full-section`) are what the main page is built from (`jev/page.json`). All other components are extracted copies of parts of those sections; run `python3 jev/tools/fidelity.py` to see how far a copy has drifted. All data is simulated.
 
 | component | title | description |
 |---|---|---|
@@ -16,7 +16,7 @@ Note: components are extracted copies of the main page's modules; the main page 
 | `builds/core-card` | JEV core card | The glass JEV system-one card: a spinning pink rim, pulsing halo and rings, a holographic JEV wordmark that tilts with the pointer, a live action chip and last-answer line. |
 | `builds/core-halo` | Core halo + conic sweep | The glow stack behind the JEV core: a breathing radial halo that swells with confidence, a slow conic-gradient sweep, two orbiting dashed rings and a flash on every answer, red under the kill switch. |
 | `builds/decision-cards` | Answer cards (enter, size, route, exit, flatten) | Five answer cards that code acts on (enter, size, route, exit, flatten); the ones a decision actually uses light up, the route card shows the gate result. |
-| `builds/full-section` | Builds full section | The whole "ten builds, one decision layer" section: head with live stats, the particle hub, the circuit traces and all six live dashboard tiles. |
+| `builds/full-section` | Builds full section | The whole "ten builds, one decision layer" section: head with live stats, the particle hub, the circuit traces and all six live dashboard tiles. **(source of truth for the page)** |
 | `builds/hub` | Builds hub | The full decision hub: a glass JEV core card fed by ten build cards through particle ribbons, then three typed questions, five answers and the hard-rules row, all live from the simulated decision stream. |
 | `builds/odometer` | Odometer digits | A rolling-digit odometer atom (reel per digit, forward roll on 9 to 0, digit flash) shown as four variants: decisions count, running cost, median latency and a manual stepper. |
 | `builds/primitive-cards` | Typed-question cards | The three primitive cards (which one? how much? yes or no?) with live answer, confidence below the floor in amber and a glowing confidence bar. |
@@ -35,7 +35,7 @@ Note: components are extracted copies of the main page's modules; the main page 
 | `code/code-window` | jev-starter window | The whole jev-starter editor window: desk.py, a live hot-pink state.json, questions.py and a streaming zsh terminal with queue counters, handoff packets, ripples and pointer tilt. |
 | `code/copy-button` | Copy button morph | A copy button whose clipboard glyph morphs into an animated check mark, shown in a light, a hot-pink and a dark header, with the copied text and a status line. |
 | `code/flow-strip` | Flow strip: hermes > jev > code > queue | A four-node pipeline strip (hermes intent, jev ask(), code gate(), queue/ destination) joined by dashed wires with travelling light; nodes light up in sequence for each decision and the last one takes the destination colour. |
-| `code/full-section` | code section | The complete code section: headline with the hermes > jev > code > queue flow strip, followed by the four-pane jev-starter window. |
+| `code/full-section` | code section | The complete code section: headline with the hermes > jev > code > queue flow strip, followed by the four-pane jev-starter window. **(source of truth for the page)** |
 | `code/handoff-packets` | Handoff packets into queue counters | Every "Saved handoff" line fires a comet burst of additive glow sprites that arcs into its queue/ counter (execute pink, review amber, skip grey), which bumps and flares on arrival. |
 | `code/highlighter` | Syntax highlighter | The tiny regex highlighter behind the editor panes: edit python or json in a textarea and see it coloured live in a dark, light or hot-pink skin. |
 | `code/hot-haze` | Hot-pink pane with heat haze | A CSS-only hot-pink code pane: a diagonal sheen sweeping across, warm haze plumes rising through the text over a heat floor, and a shift to orange-red under the kill switch. |
@@ -66,6 +66,7 @@ Note: components are extracted copies of the main page's modules; the main page 
 | `desk/drift-chart` | Drift vs noise | 140 random-walk equity curves with a small positive drift fanning out, a live end-value histogram and hover probes. |
 | `desk/end-histogram` | End-value histogram | A live histogram of where 140 simulated paths stand, bars coloured loss to profit from pink to amber, with a mean tag, a zero line and a pointer probe that reads the share above a level. |
 | `desk/full-bottom` | Desk bottom row | Bayesian update, six-agent activity log and drift-vs-noise charts side by side, exactly as in the desk section. |
+| `desk/full-desk` | Desk (full section) | The whole JEV desk section: status ticker, P&L, candle tape with order book, the globe world card with ticket and agents, Bayesian update, activity log and drift chart. Source of truth for the main page desk. **(source of truth for the page)** |
 | `desk/full-top` | Desk top (ticker, P&L, tape) | The whole top of the desk: status ticker, SWARM P&L card and THE TAPE candlestick chart with order book, laid out like the page. |
 | `desk/globe-arcs` | Great-circle arcs | A graticule sphere with eight venue markers that ping, great-circle arcs lifted above the surface and glowing data packets that fly along them; every decision launches a pink packet. |
 | `desk/globe` | Dotted globe | A draggable 3D dotted globe with eight venue markers, data packets on great-circle arcs, aurora, rings and six agent orbs in orbit. |
@@ -124,7 +125,7 @@ Note: components are extracted copies of the main page's modules; the main page 
 | `hero/depth-fog` | Depth fog | The hero's depth-of-field darkening: one pre-rendered fog ramp whose clear centre follows the layer the active wave is in, over a full layered mesh, with a fog on/off toggle. |
 | `hero/encode-panel` | Encode panel | The narrow ENCODE column that folds the fifteen state ports into twelve zig-zag vector nodes, with pink beams running through on every decision. |
 | `hero/floor-marker` | Confidence floor marker | The 0.85 confidence floor as a spring-loaded marker on a probability track with a live confidence tick and floor step buttons. |
-| `hero/full-section` | Hero full section | The complete JEV DECIDES hero section: decision network canvas, readout chip, legend and title card. |
+| `hero/full-section` | Hero full section | The complete JEV DECIDES hero section: decision network canvas, readout chip, legend and title card. **(source of truth for the page)** |
 | `hero/impact-ripples` | Impact ripples and flare | Three destination ports (execute, review, skip) that throw expanding ripple rings and a lens-flare streak whenever a decision lands there. |
 | `hero/jev-mesh` | Jev system one mesh | The glowing JEV SYSTEM ONE panel: three layers of dense additive mesh woven with a bright cable, with white-hot beams hopping layer to layer on each decision. |
 | `hero/kill-crt-overlay` | Kill switch CRT overlay | The hero's kill-switch look: red flash and flicker, beam stutter, CRT scanlines and the power-down and power-up collapse of the plane when the kill switch is toggled. |
@@ -143,7 +144,7 @@ Note: components are extracted copies of the main page's modules; the main page 
 | `hour/candle-replay` | Candle replay strip | A seeded endless candlestick strip with green buy arrows, dashed red stops and exit markers scrolling under a glowing playhead; it slows when the kill switch is thrown. |
 | `hour/energy-arc` | Energy arc with comet packets | A dotted glowing arc between two orb mascots with ambient light beads, and a comet packet that rides it for every simulated decision, bursts on arrival and flashes the receiving orb. |
 | `hour/fig-panel` | FIG panel shell | The glass figure-panel shell used by every hour card: accent edge, tag, subtitle, badge, headline, note chips, dashed footer and the giant FIG.n watermark, in four accents. |
-| `hour/full-section` | The hour: full section | The whole "three agents, sixty minutes, one bot" section: the build, the hour, the backtest, the arithmetic dial and the honest part together. |
+| `hour/full-section` | The hour: full section | The whole "three agents, sixty minutes, one bot" section: the build, the hour, the backtest, the arithmetic dial and the honest part together. **(source of truth for the page)** |
 | `hour/gantt-rail` | Phase gantt rail | Six colour-coded phase bars on a sixty-minute rail with a glowing playhead and a lit axis, replaying the six phases of the hour in a loop. |
 | `hour/honest-bars` | The honest part: backtest vs reality | Two bars from one strategy, backtest versus what reaches you, with red leak ribbons falling into the venue bin. |
 | `hour/hour-ring` | 60:00 ring | The amber sixty-tick ring with a glowing head and a serif 60:00 clock that fills over twelve seconds, colours every tick by phase and flashes when the hour is up. |
@@ -177,7 +178,7 @@ Note: components are extracted copies of the main page's modules; the main page 
 | `lab/decision-tape` | Decision tape | A five-row tape of the latest decisions (id, action, size, confidence, destination dot, reason) where new rows slide in with a pink flash, rows are clickable and a button copies the tape as JSON. |
 | `lab/dest-badge` | Destination badge | The big EXECUTE / REVIEW / SKIP verdict badge that scrambles in with a 3D flip, a ring pulse, a particle burst on execute, a shimmer, a shake on kill and a live tally of all three routes. |
 | `lab/encode-chips` | Encode feature chips | Ten feature chips (nine state inputs plus net edge) each with a value and a centred or left-anchored glowing bar; risky values turn red and every decision pops the chips in. |
-| `lab/full-section` | Lab full section | The complete lab section as on the page: heading, state controls, decision tape and the four-stage animated pipeline. |
+| `lab/full-section` | Lab full section | The complete lab section as on the page: heading, state controls, decision tape and the four-stage animated pipeline. **(source of truth for the page)** |
 | `lab/gate-bar` | Confidence gate bar | A tiny reusable 0-1 confidence gate with a draggable floor marker, live confidence pin and pass / below-floor / halt verdict. |
 | `lab/handoff-json` | Handoff JSON viewer | A mini editor window that types out the typed handoff from Jev to code (action, size, venue, conf, risk_ok, reason, dest) as syntax-coloured JSON on every decision, with a copy-json button. |
 | `lab/hard-rules` | Hard rules | The rules held by code, not the model: a draggable confidence-floor slider, the kill switch and the loss-cap and max-position chips, with a live line showing what the gate does to the latest decision. |
@@ -197,7 +198,7 @@ Note: components are extracted copies of the main page's modules; the main page 
 All 184 pages were built, loaded in headless Chromium at 1100x650 (desktop) and 390x700 (touch phone), screenshotted and reviewed on contact sheets: each renders its own content with live simulated data, no empty scene, no console errors, no horizontal overflow (see `node build-components.mjs` + the audit used during development).
 
 ## Known limits (by design)
-- Components are extracted copies; the main page is still built from `src/`.
+- Atoms and pieces are extracted copies; only the six section components feed the main page.
 - `hero/*` pieces are compact re-implementations of the diagram parts; the full-page extras (node hover tooltip, depth fog, bloom, parallax, CRT kill overlay, signal trace) are also available as their own components (`hero/node-tooltip`, `depth-fog`, `bloom-pass`, `parallax-layers`, `kill-crt-overlay`, `signal-trace`).
 - Pieces that only make sense inside the full page chrome (HUD metrics, section tint) are demoed with small stand-in layouts.
 

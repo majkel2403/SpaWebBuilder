@@ -5,10 +5,7 @@
  * D  the arithmetic  270deg log gauge (drag the needle) · capital = 1,200,000 / return
  * E  the honest part x2.9 vs x1.9 · the red leak falls into the venue
  * Everything here is an illustrative simulation: no order is sent and no figure is a result. */
-/* Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: the whole JEV.* runtime (see README) — decision / kill / floor / tier bus events and J.RULES.
- */
-JEV.mod('hour-full-section', () => {
+JEV.mod('hour', () => {
   const J = JEV, $ = J.$, $$ = J.$$, C = J.C, S = J.S, TAU = J.TAU, clamp = J.clamp, fmt = J.fmt, rgba = J.rgba;
   const root = $('#hour');
   if (!root) return;

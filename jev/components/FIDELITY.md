@@ -207,4 +207,4 @@ Fixed in this pass (divergent -> close/identical): flow-strip, matrix-rain, mini
 ## Not claimed
 - Not a pixel diff: live data and animation states make 1:1 pixel equality impossible.
 - 'close' means same look with named minor differences (demo width, missing page-only overlay, live values).
-- Components are extracted copies; the main page still builds from `src/`.
+- Only the six section components feed the main page; the other 179 are extracted copies (the main page is byte-identical to the build from before this change).

@@ -442,4 +442,3 @@ html:not([data-tier="1"]) .lab-s2.on .lab-szc.on .lab-col u::after { animation: 
   .lab-fill { animation: none !important; }
   .lab-st.on { animation: none !important; }
 }
-

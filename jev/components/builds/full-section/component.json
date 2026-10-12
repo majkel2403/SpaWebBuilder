@@ -14,5 +14,6 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "sourceOfTruth": true
 }

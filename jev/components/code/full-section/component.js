@@ -2,11 +2,7 @@
  * desk.py (light) · state.json (hot pink, re-types itself with the latest real decision) · questions.py (light) · zsh (dark, streams real decisions)
  * own tiny highlighter · per-line typing reveal · moving current-line band · minimaps · audio-bars glyph · live queue status bar.
  * Everything is simulated: the decisions come from the shared JEV bus. */
-/* Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * JEV.* APIs relied on (all from core.js): JEV.mod, $, $$, clamp, reduce, tier, time, task, watch, fit, animate, hidden, bus.on, S, recent, fire, narrow, toast(optional)
- * Data: bus 'decision' (d.action d.conf d.size d.sizes d.riskOk d.pRisk d.dest d.reason d.ms d.id d.symbol d.floor d.killed d.state{...}), 'kill'(bool), 'floor'(number).
- * Optional: JEV.toast (fx module) is used for the copy toast when present. Everything is simulated. */
-JEV.mod('code-full-section', () => {
+JEV.mod('code', () => {
   const J = JEV, $ = J.$, clamp = J.clamp, reduce = J.reduce, T = () => J.tier || 2;
   const root = $('#code'), win = root && $('#code-win', root);
   if (!win) return;

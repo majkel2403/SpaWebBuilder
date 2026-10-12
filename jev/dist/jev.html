@@ -258,7 +258,7 @@ html[data-tier="1"] .card { backdrop-filter: none; -webkit-backdrop-filter: none
 html[data-tier="1"] .rv { filter: none; }
 html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
 
-/* ---- builds.css ---- */
+/* ---- builds/full-section/component.css ---- */
 /* ===== builds — "ten builds, one decision layer": particle hub + live tiles (prefix bld-) ===== */
 @property --hi { syntax: '<number>'; inherits: true; initial-value: 1.2; }
 @property --hs { syntax: '<number>'; inherits: true; initial-value: 1; }
@@ -574,7 +574,7 @@ html:not([data-tier="1"]) .bld-stage:not(.bld-pre) .bld-card::before { animation
   .bld-wm-h { animation: none; opacity: .45; }
 }
 
-/* ---- code.css ---- */
+/* ---- code/full-section/component.css ---- */
 /* ===== code — "jev-starter" editor window: light / hot-pink / light / dark-terminal panes (prefix code-) ===== */
 #code { position: relative; overflow-x: clip; padding-top: clamp(40px, 6vw, 84px); }
 .code-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px 40px; align-items: end; margin-bottom: clamp(18px, 2.6vw, 30px); }
@@ -885,7 +885,7 @@ html[data-tier="1"] .code-rip, html[data-tier="1"] .code-wave { display: none; }
 .code-status .lamp.ok { box-shadow: 0 0 10px 3px rgba(255, 255, 255, .9); background: #fff; }
 @media (prefers-reduced-motion: reduce) { .code-haze i, .code-crt::after { animation: none; } .code-rain, .code-scan, .code-wave { display: none; } .code-tl:not(.seed) { animation: none; } }
 
-/* ---- desk-bottom.css ---- */
+/* ---- desk/full-desk/desk-bottom.css ---- */
 /* ===== desk-bottom — bayesian update · activity log · drift vs noise (prefix dkb-) ===== */
 .dkb-card { --dkb-k: #aaa1b8; --dkb-ink: #ece5f2; display: flex; flex-direction: column; container: dkb / inline-size; }
 .dkb-bayes { background: radial-gradient(78% 52% at 0% 0%, rgba(46, 230, 166, .12), transparent 66%), radial-gradient(60% 40% at 100% 100%, rgba(77, 141, 255, .08), transparent 70%), var(--panel); }
@@ -1067,7 +1067,7 @@ html[data-tier="1"] .dkb-j.new { animation: dkbIn .75s var(--ease) both; }
 }
 @media (prefers-reduced-motion: reduce) { .dkb-halt { animation: none; } .dkb-r.new { animation: none; } .dkb-r.new::before { animation: none; opacity: 0; } .dkb-r.new::after, .dkb-r.new .dkb-ag, .dkb-r.new .dkb-ms, .dkb-j.new { animation: none; } .dkb-rain { display: none; } .dkb-more { animation: none; } .dkb-tip { transition: none; } }
 
-/* ---- desk-top.css ---- */
+/* ---- desk/full-desk/desk-top.css ---- */
 /* ===== desk-top — status ticker · swarm P&L · the tape (prefix dkt-) ===== */
 .dkt-bar, .dkt-pnl, .dkt-tape { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
 .dkt-pnl, .dkt-tape { display: flex; flex-direction: column; }
@@ -1251,7 +1251,7 @@ html:not([data-tier="1"]) .dkt-mq::before { content: ''; position: absolute; ins
 @keyframes dktTl { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 @media (prefers-reduced-motion: reduce) { .dkt-mq::before { display: none; } .dkt-big::before { animation: none !important; } }
 
-/* ---- desk-world.css ---- */
+/* ---- desk/full-desk/desk-world.css ---- */
 /* ===== desk-world — the world: globe · global feeds · ticket in flight · six-agent strip (prefix dkw-) ===== */
 .dkw-world { --dkw-k: #aaa1b8; --dkw-ink: #ece5f2; --dkw-glass: rgba(9, 6, 17, .6); border-color: rgba(120, 170, 255, .2);
   background: radial-gradient(60% 80% at 50% 54%, rgba(44, 96, 210, .16), transparent 72%), radial-gradient(40% 60% at 0% 0%, rgba(255, 46, 110, .12), transparent 70%), radial-gradient(40% 60% at 100% 100%, rgba(166, 107, 255, .1), transparent 70%), var(--panel); }
@@ -1738,7 +1738,7 @@ body.killed .fx-tk.on { background: var(--red); box-shadow: 0 0 6px var(--red); 
 }
 @media print { #fx-bg, .fx-ov, #fx-boot, #fx-toasts, #fx-shock, #fx-glitch, #fx-push, #fx-prog, #fx-cur { display: none !important; } }
 
-/* ---- hero.css ---- */
+/* ---- hero/full-section/component.css ---- */
 /* ===== hero — "JEV DECIDES" luminous decision network (prefix hero-) ===== */
 #hero { position: relative; background: var(--bg); isolation: isolate; }
 .hero-stage { position: relative; height: clamp(560px, 88vh, 920px); overflow: hidden; background: radial-gradient(90% 70% at 50% 46%, #14061a 0%, #08040d 56%, #05030a 100%); }
@@ -1914,7 +1914,7 @@ body.killed .hero-l { color: #ffd6da; text-shadow: 0 0 30px rgba(255, 77, 94, .7
 html[data-tier="1"] .hero-l { animation: none !important; opacity: 1 !important; }
 @media (prefers-reduced-motion: reduce) { .hero-l { animation: none !important; opacity: 1 !important; } .hero-card::before { animation: none !important; } .hero-crt { animation: none !important; } }
 
-/* ---- hour.css ---- */
+/* ---- hour/full-section/component.css ---- */
 /* ===== hour — "three agents, sixty minutes, one bot": build · hour · backtest · arithmetic · honest part (prefix hr-) ===== */
 .hr { position: relative; overflow-x: clip; --hr-k: #aaa1b8; --hr-t: #e9e3ef; --hr-line: rgba(255, 255, 255, .085);
   --hr-glass: linear-gradient(180deg, rgba(23, 14, 30, .9), rgba(9, 5, 14, .94)); }
@@ -2297,7 +2297,7 @@ html[data-tier="2"] .hr-lightb { display: none; }
 html[data-tier="1"] .hr-gcv { display: none; }
 @media (prefers-reduced-motion: reduce) { .hr-sweep, .hr-scan, .hr-lightb, .hr-shock { display: none; } .hr-av .orb, .hr-robot, .hr-av-px .hr-robot { animation: none; } }
 
-/* ---- lab.css ---- */
+/* ---- lab/full-section/component.css ---- */
 /* ===== lab — the interactive finale: state sliders · scenarios · decide · hard rules · live pipeline (prefix lab-) ===== */
 @property --lab-v { syntax: '<number>'; inherits: true; initial-value: 0; }
 
@@ -2793,7 +2793,7 @@ html:not([data-tier="1"]) .lab-s2.on .lab-szc.on .lab-col u::after { animation: 
 </header>
 <main id="main" tabindex="-1">
 
-<!-- 10-hero.html -->
+<!-- hero/full-section/component.html -->
 <section id="hero" class="hero" aria-label="Jev decides: state, encode, typed questions, answers, code acts (simulation)">
   <div class="hero-stage" id="heroStage">
     <div class="hero-net" id="heroNet">
@@ -2827,7 +2827,7 @@ html:not([data-tier="1"]) .lab-s2.on .lab-szc.on .lab-col u::after { animation: 
   <div class="hero-rule" aria-hidden="true"></div>
 </section>
 
-<!-- 20-code.html -->
+<!-- code/full-section/component.html -->
 <section class="sec" id="code" aria-label="jev-starter: the plain code around jev - illustrative python and a simulated terminal">
   <div class="wrap">
     <div class="sec-head code-head rv">
@@ -2985,7 +2985,7 @@ def gate(answer):
   </div>
 </section>
 
-<!-- 30-builds.html -->
+<!-- builds/full-section/component.html -->
 <section class="sec bld" id="builds" aria-labelledby="bld-h2">
   <div class="wrap">
 
@@ -3171,7 +3171,7 @@ def gate(answer):
   </div>
 </section>
 
-<!-- 40-hour.html -->
+<!-- hour/full-section/component.html -->
 <section class="sec hr" id="hour" aria-labelledby="hr-h2">
   <i class="hr-lightb" id="hr-lightb" aria-hidden="true"></i><i class="hr-shock" id="hr-shock" aria-hidden="true"></i>
   <i class="hr-bgl" aria-hidden="true"></i>
@@ -3451,7 +3451,7 @@ def gate(answer):
   </div>
 </section>
 
-<!-- 50-desk-open.html -->
+<!-- desk/full-desk/component.html -->
 <section class="sec" id="desk">
   <div class="wrap">
     <div class="sec-head rv">
@@ -3466,7 +3466,6 @@ def gate(answer):
     </div>
     <div class="dk-grid">
 
-<!-- 51-desk-top.html -->
 <!-- ===== desk-top: status ticker · swarm p&l · the tape (prefix dkt-) — direct children of .dk-grid ===== -->
 <div class="card dkt-bar rv" id="dkt-bar" role="region" aria-label="desk status">
   <i class="dkt-scan" aria-hidden="true"></i>
@@ -3549,7 +3548,6 @@ def gate(answer):
   <div class="dkt-lg"><span><i class="dkt-g up">▲</i> buy fired</span><span><i class="dkt-g dn">▼</i> sell fired</span><span><i class="dkt-g am">◆</i> close / flatten</span><span><i class="dkt-g vi">▬</i> vwap ±1σ</span><span class="dkt-lgx">1 candle = 1 sim-minute · 6 s live · feed is simulated</span></div>
 </div>
 
-<!-- 52-desk-world.html -->
 <!-- ===== desk-world: the world (globe · global feeds · ticket in flight) + six-agent strip (prefix dkw-) — direct children of .dk-grid ===== -->
 <div class="card dkw-world rv" id="dkw-world" role="region" aria-label="the world: eight venues, one oracle, one book, six agents in orbit (simulated)">
   <div class="ph dkw-ph">
@@ -3642,7 +3640,6 @@ def gate(answer):
   <button type="button" class="dkw-tab" data-k="closer" style="--ac:#ff8a3d;--ac-rgb:255,138,61" aria-pressed="false"><span class="orb orange"><i class="e l"></i><i class="e r"></i></span><span class="dkw-tn"><i>06 · close</i><b>closer</b></span><em class="dkw-ts">idle</em></button>
 </div>
 
-<!-- 53-desk-bottom.html -->
 <!-- ===== desk-bottom: bayesian update · activity log · drift vs noise (prefix dkb-) — three direct children of .dk-grid ===== -->
 <div class="card span-4 dkb-card dkb-bayes rv" id="dkb-bayes" style="--i:3" role="region" aria-label="bayesian update, simulated">
   <div class="ph">
@@ -3715,12 +3712,11 @@ def gate(answer):
   </div>
 </div>
 
-<!-- 59-desk-close.html -->
     </div>
   </div>
 </section>
 
-<!-- 70-lab.html -->
+<!-- lab/full-section/component.html -->
 <section class="sec lab" id="lab" aria-labelledby="lab-h2">
   <i class="lab-bgl" aria-hidden="true"></i>
   <div class="wrap">
@@ -4552,7 +4548,7 @@ def gate(answer):
 })();
 
 </script>
-<script>/* ---- builds.js ---- */
+<script>/* ---- builds/full-section/component.js ---- */
 /* builds — "ten builds, one decision layer": one particle canvas behind a DOM hub + six live tiles (prefix bld-) */
 JEV.mod('builds', () => {
   const J = JEV, $ = J.$, $$ = J.$$, C = J.C, S = J.S, B = J.BUILDS, TAU = J.TAU, clamp = J.clamp, fmt = J.fmt;
@@ -5558,7 +5554,7 @@ JEV.mod('builds', () => {
 });
 
 </script>
-<script>/* ---- code.js ---- */
+<script>/* ---- code/full-section/component.js ---- */
 /* code — the "jev-starter" editor window under the hero (bottom of the JEV DECIDES reference).
  * desk.py (light) · state.json (hot pink, re-types itself with the latest real decision) · questions.py (light) · zsh (dark, streams real decisions)
  * own tiny highlighter · per-line typing reveal · moving current-line band · minimaps · audio-bars glyph · live queue status bar.
@@ -6306,7 +6302,7 @@ JEV.mod('code', () => {
 });
 
 </script>
-<script>/* ---- desk-bottom.js ---- */
+<script>/* ---- desk/full-desk/desk-bottom.js ---- */
 /* desk-bottom — bayesian update · activity log · drift vs noise (prefix dkb-). Everything here is SIMULATED.
  * bayes : conjugate-gaussian prior x book likelihood -> posterior, re-centred on every 'decision' (edge_bps nudges the book)
  * log   : DOM list, newest on top, rows slide by transform only; fed by bus 'agentstep' + 'decision' (self-synthesised if absent)
@@ -7208,7 +7204,7 @@ JEV.mod('desk-bottom', () => {
 });
 
 </script>
-<script>/* ---- desk-top.js ---- */
+<script>/* ---- desk/full-desk/desk-top.js ---- */
 /* desk-top — status ticker · swarm P&L · the tape (prefix dkt-). Everything here is SIMULATED:
  * candles come from JEV.market ticks (+ a seeded back-history), P&L moves on executed decisions (+ mark-to-market of open tickets). */
 JEV.mod('desk-top', () => {
@@ -8072,7 +8068,7 @@ JEV.mod('desk-top', () => {
 });
 
 </script>
-<script>/* ---- desk-world.js ---- */
+<script>/* ---- desk/full-desk/desk-world.js ---- */
 /* ===== desk-world — the world: hand-rolled 3D globe · global feeds · ticket in flight · six-agent strip (prefix dkw-) =====
  * Everything is simulated. One frame task (gated by the card's visibility) draws the globe canvas and moves the orbiting
  * DOM agents; a light timer chain keeps the six-agent state machine (and its 'agentstep' bus event) going, but only
@@ -9891,7 +9887,7 @@ JEV.mod('fx', () => {
 });
 
 </script>
-<script>/* ---- hero.js ---- */
+<script>/* ---- hero/full-section/component.js ---- */
 /* hero — "JEV DECIDES": a luminous neural-network diagram. Every live decision flows left -> right:
  * state -> encode -> jev system one -> typed questions -> answers -> code acts.  Two canvases:
  *   #hero-static  cached mesh (panels, ~1100 additive edges, nodes, labels) — redrawn only on resize / fonts
@@ -10809,7 +10805,7 @@ JEV.mod('hero', () => {
 });
 
 </script>
-<script>/* ---- hour.js ---- */
+<script>/* ---- hour/full-section/component.js ---- */
 /* hour — "three agents, sixty minutes, one bot" (prefix hr-)
  * A  the build       three heads joined by travelling-dot arcs · live decision packets · candle replay with entries + stops · live kill chip
  * B  the hour        amber 60:00 ring · six spring switches · accelerated loop -> ARMED + particle burst
@@ -11894,7 +11890,7 @@ JEV.mod('hour', () => {
 });
 
 </script>
-<script>/* ---- lab.js ---- */
+<script>/* ---- lab/full-section/component.js ---- */
 /* lab — the interactive finale. State sliders + scenarios + hard rules drive the real engine (JEV.decide); the pipeline replays every decision
  * stage by stage: encode -> typed questions -> gate -> code acts. Two canvases (static ribbons + additive particle layer), WAAPI/CSS for the rest.
  * Floor + kill switch are two-way synced with the rest of the page over the bus. Everything is simulated. */

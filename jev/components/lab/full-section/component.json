@@ -3,7 +3,7 @@
   "description": "The complete lab section as on the page: heading, state controls, decision tape and the four-stage animated pipeline.",
   "width": "1380px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
   "html": [
@@ -14,5 +14,6 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "sourceOfTruth": true
 }

@@ -1,16 +1,10 @@
-/* Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod, J.$ J.clamp J.rng J.fit J.watch J.task J.onView J.animate J.scramble J.reduce J.DPR J.tier,
- *   J.bus 'decision' | 'kill' | 'floor', J.recent[0] / J.makeDecision() (seed), J.fire() (click fires a sample decision),
- *   J.STATE_KEYS, J.ACTIONS, J.S / J.RULES (floor). Optional: body.killed class (set by core on kill), #fx-boot (waited for if present).
- * Data: decision fields d.state, d.action, d.p, d.conf, d.size, d.sizes, d.riskOk, d.pRisk, d.dest, d.reason, d.ms, d.floor, d.killed.
- */
 /* hero — "JEV DECIDES": a luminous neural-network diagram. Every live decision flows left -> right:
  * state -> encode -> jev system one -> typed questions -> answers -> code acts.  Two canvases:
  *   #hero-static  cached mesh (panels, ~1100 additive edges, nodes, labels) — redrawn only on resize / fonts
  *   #hero-live    per-frame: beams (white-hot head, pink tail), flashes, bars, counters, pointer glow
  *   + four small offscreen text canvases (state values, answer %, code cards, typed-question labels) blitted on top, each re-drawn only when its text changes
  * Everything is simulated; decisions come from the shared JEV bus. */
-JEV.mod('hero-full-section', () => {
+JEV.mod('hero', () => {
   'use strict';
   const J = JEV, clamp = J.clamp;
   const stage = J.$('#heroStage'), net = J.$('#heroNet'), cs = J.$('#hero-static'), cl = J.$('#hero-live');

@@ -1,0 +1,36 @@
+{
+  "shell": "src/shell.html",
+  "html": [
+    "src:html/00-fx.html",
+    "src:html/05-hud.html",
+    "cmp:hero/full-section:html",
+    "cmp:code/full-section:html",
+    "cmp:builds/full-section:html",
+    "cmp:hour/full-section:html",
+    "cmp:desk/full-desk:html",
+    "cmp:lab/full-section:html",
+    "src:html/99-footer.html"
+  ],
+  "css": [
+    "src:css/base.css",
+    "cmp:builds/full-section:css",
+    "cmp:code/full-section:css",
+    "cmp:desk/full-desk:css",
+    "src:css/fx.css",
+    "cmp:hero/full-section:css",
+    "cmp:hour/full-section:css",
+    "cmp:lab/full-section:css"
+  ],
+  "js": [
+    "src:js/engine.js",
+    "src:js/core.js",
+    "cmp:builds/full-section:js",
+    "cmp:code/full-section:js",
+    "cmp:desk/full-desk:js",
+    "src:js/fx.js",
+    "cmp:hero/full-section:js",
+    "cmp:hour/full-section:js",
+    "cmp:lab/full-section:js",
+    "src:js/main.js"
+  ]
+}

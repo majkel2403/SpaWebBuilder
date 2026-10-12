@@ -1,0 +1,23 @@
+{
+  "title": "Desk (full section)",
+  "description": "The whole JEV desk section: status ticker, P&L, candle tape with order book, the globe world card with ticket and agents, Bayesian update, activity log and drift chart. Source of truth for the main page desk.",
+  "width": "1380px",
+  "needs": {
+    "fx": true,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "desk-bottom.css",
+    "desk-top.css",
+    "desk-world.css"
+  ],
+  "js": [
+    "desk-bottom.js",
+    "desk-top.js",
+    "desk-world.js"
+  ],
+  "sourceOfTruth": true
+}

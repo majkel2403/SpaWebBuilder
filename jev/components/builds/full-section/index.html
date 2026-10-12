@@ -1007,7 +1007,6 @@ body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-s
   </div>
 </section>
 
-
 </div>
 <div class="cmp-note">jev / builds / full-section</div>
 <script>
@@ -2495,13 +2494,8 @@ JEV.mod('fx', () => {
 
 </script>
 <script>
-/* Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: everything the main page uses for this section: J.$ J.$$ J.C J.S J.BUILDS J.rng J.fit J.watch J.task J.onView J.animate J.tier J.pointer J.DPR J.reduce J.hidden J.fmt J.sgn J.usd J.RULES J.recent J.makeDecision J.bus.
- * Data: decision records (see README), JEV.S live counters (count, cost, ms, counts, floor, killed).
- * Optional: body.killed class (set by core on kill). Everything is simulated.
- */
 /* builds — "ten builds, one decision layer": one particle canvas behind a DOM hub + six live tiles (prefix bld-) */
-JEV.mod('builds-full-section', () => {
+JEV.mod('builds', () => {
   const J = JEV, $ = J.$, $$ = J.$$, C = J.C, S = J.S, B = J.BUILDS, TAU = J.TAU, clamp = J.clamp, fmt = J.fmt;
   const root = $('#builds'), stage = $('#bld-stage'), cv = $('#bld-cv');
   if (!root || !stage || !cv) return;

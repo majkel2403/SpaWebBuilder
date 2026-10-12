@@ -3,7 +3,7 @@
   "description": "The whole \"three agents, sixty minutes, one bot\" section: the build, the hour, the backtest, the arithmetic dial and the honest part together.",
   "width": "1440px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
   "html": [
@@ -14,5 +14,6 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "sourceOfTruth": true
 }

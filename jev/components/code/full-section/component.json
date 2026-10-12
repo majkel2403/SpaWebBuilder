@@ -3,7 +3,7 @@
   "description": "The complete code section: headline with the hermes > jev > code > queue flow strip, followed by the four-pane jev-starter window.",
   "width": "1200px",
   "needs": {
-    "fx": false,
+    "fx": true,
     "hud": false
   },
   "html": [
@@ -14,5 +14,6 @@
   ],
   "js": [
     "component.js"
-  ]
+  ],
+  "sourceOfTruth": true
 }

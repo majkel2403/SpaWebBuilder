@@ -1,1 +1,19 @@
-{ "title": "Hero full section", "description": "The complete JEV DECIDES hero section: decision network canvas, readout chip, legend and title card.", "width": "1440px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }
+{
+  "title": "Hero full section",
+  "description": "The complete JEV DECIDES hero section: decision network canvas, readout chip, legend and title card.",
+  "width": "1440px",
+  "needs": {
+    "fx": true,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ],
+  "sourceOfTruth": true
+}

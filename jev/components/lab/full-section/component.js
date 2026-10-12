@@ -1,10 +1,7 @@
-/* Reuse: copy this folder + engine.js + core.js + base.css; call JEV.boot().
- * Relies on: JEV.mod J.$ J.$$ J.C J.S J.RULES J.bus ('decision' emitted, 'floor' 'kill' two-way) J.decide J.setFloor J.setKilled J.market J.recent
- *   J.fit J.watch J.task J.rgba J.fmt J.sgn J.scramble J.clamp J.lerp J.tier J.reduce J.hidden J.pointer J.scroll J.ACTIONS J.SIZES J.shortcut; optional J.hud J.toast.
- * Data: JEVEngine.sampleState (random scenario) + J.decide(state) on a hand-built state {edge_bps, imbalance, spread_bps, vol_1h, position_pct, daily_pnl,
- *   drawdown_pct, latency_ms, signal_age_s}. Every commit publishes a 'decision' record on the bus. Everything is simulated.
- */
-JEV.mod('lab-full-section', () => {
+/* lab — the interactive finale. State sliders + scenarios + hard rules drive the real engine (JEV.decide); the pipeline replays every decision
+ * stage by stage: encode -> typed questions -> gate -> code acts. Two canvases (static ribbons + additive particle layer), WAAPI/CSS for the rest.
+ * Floor + kill switch are two-way synced with the rest of the page over the bus. Everything is simulated. */
+JEV.mod('lab', () => {
   'use strict';
   const J = JEV;
   const root = J.$('#lab');
@@ -792,7 +789,7 @@ JEV.mod('lab-full-section', () => {
       S.count++; S.cost += 0.00003; S.ms.push(d.ms); if (S.ms.length > 41) S.ms.shift(); S.counts.choice++;
       if (S.dest[d.dest] != null) S.dest[d.dest]++;
       J.recent.unshift(rec); if (J.recent.length > 40) J.recent.pop();
-      J.bus.emit('decision', rec); if (J.hud) J.hud();
+      J.bus.emit('decision', rec); J.hud();
     } catch (e) { /* the lab never breaks the page */ }
   }
   /** full cinematic decision: ~1.3 s, stage by stage. why: 'decide' | 'preset' | 'input' | 'floor' | 'kill' | 'view' | 'replay' */

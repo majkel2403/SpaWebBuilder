@@ -13,20 +13,20 @@ node jev/tools/shot.mjs --file jev/dist/jev.html --out /tmp/a.png --sel '#desk' 
 ```
 `shot.mjs` flags: `--w --h --mobile --sel CSS --full --wait ms --after ms --eval 'js' --frames N --gap ms --viewport`; it prints console/page errors.
 
-## Layout of `src/`
-| path | what |
-|---|---|
-| `shell.html` | document shell (fonts, `<style>`, markers) |
-| `css/base.css` | tokens + shared primitives (**owned by core**; modules never edit) |
-| `css/<module>.css` | module styles, every class prefixed with the module prefix |
-| `html/NN-name.html` | section fragments, concatenated in filename order |
-| `js/engine.js` | pure decision engine (`window.JEVEngine`) |
-| `js/core.js` | shared runtime (`window.JEV`) |
-| `js/<module>.js` | module = one closure registered with `JEV.mod(name, init)` |
-| `js/main.js` | boots modules (each in try/catch) |
+## Where the code lives (components are the source of truth)
+The main page is **assembled from components** by `node jev/build.mjs` following the manifest `page.json`.
 
-Fragment order: `00-fx` · `05-hud` · `10-hero` · `20-code` · `30-builds` · `40-hour` · `50-desk-open` · `51-desk-top` · `52-desk-world` · `53-desk-bottom` · `59-desk-close` · `70-lab` · `99-footer`.
-Section ids (HUD nav links to them): `#hero #builds #hour #desk #lab` (the code panes live in `#code`, right under the hero).
+| what | where | role |
+|---|---|---|
+| **sections** (hero, code, builds, hour, desk, lab) | `components/hero/full-section`, `components/code/full-section`, `components/builds/full-section`, `components/hour/full-section`, `components/desk/full-desk`, `components/lab/full-section` | **single source of truth**: `component.html/css/js` (desk has three css and three js files). Edit these; the main page and the standalone `index.html` of each both build from them. |
+| shared runtime | `src/js/engine.js`, `src/js/core.js`, `src/js/main.js`, `src/css/base.css` | engine, JEV API, shared css (used by the page and by every component page) |
+| page layers | `src/html/00-fx.html`, `src/css/fx.css`, `src/js/fx.js`, `src/html/05-hud.html`, `src/html/99-footer.html`, `src/shell.html` | background/overlays/boot, HUD, footer, document shell |
+| manifest | `page.json` | order of html/css/js: `src:<path>` for runtime files, `cmp:<group>/<name>:<html|css|js>` for component files |
+| atoms and pieces (178 more) | `components/<group>/<name>/` | extracted views of sections' parts (a chart, a tile, an effect). **Copies**: they do not feed the page; `node jev/tools/fidelity.py` reports how far they drifted from the sources of truth |
+
+Build commands: `node jev/build.mjs` (page -> `dist/jev.html`), `node jev/build-components.mjs [--only group/name]` (every component page + gallery).
+Section ids (HUD nav links to them): `#hero #code #builds #hour #desk #lab`. Page order (see `page.json`): fx, hud, hero, code, builds, hour, desk, lab, footer.
+A change to a section's file changes both the page and that section's component page. A change to a copied atom only changes that component.
 
 ## Module rules
 * **Own your files only.** If you need a change in `core.js`/`base.css`/`engine.js`, do not edit — describe it in your final report.
