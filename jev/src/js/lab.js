@@ -18,6 +18,7 @@ JEV.mod('lab', () => {
   const ease3 = (p) => 1 - Math.pow(1 - p, 3);
   const eio = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
   const now = () => performance.now();
+  const tierN = () => J.tier || 2;
   const setTxt = (el, t) => { if (el.textContent !== t) el.textContent = t; };
   const hex2 = (n) => (n & 255).toString(16).padStart(2, '0');
   const rhex = (n) => { let s = ''; while (s.length < n) s += Math.floor(Math.random() * 16).toString(16); return s; };
@@ -91,21 +92,52 @@ JEV.mod('lab', () => {
     if (f.dz) dz = '<i class="lab-dz' + (f.dz[0] <= f.min ? ' lo' : '') + '"></i>';
     const mark = f.mark != null ? '<i class="lab-zero"></i>' : '';
     row.innerHTML = '<label for="' + id + '">' + f.label + '</label><output id="' + id + '-o" for="' + id + '"></output>' +
-      '<div class="lab-rng"><i class="lab-tr"></i>' + dz + mark + '<i class="lab-fill"></i><b class="lab-bub" aria-hidden="true"></b>' +
+      '<div class="lab-rng"><i class="lab-tr"></i>' + dz + mark + '<i class="lab-trl"></i><i class="lab-fill"></i><b class="lab-bub" aria-hidden="true"></b>' +
       '<input id="' + id + '" type="range" min="' + f.min + '" max="' + f.max + '" step="' + f.step + '" value="' + f.v + '"></div>';
     host.appendChild(row);
     const rng = $('.lab-rng', row);
     if (f.dz) { rng.style.setProperty('--za', clamp((f.dz[0] - f.min) / span, 0, 1).toFixed(4)); rng.style.setProperty('--zb', clamp((f.dz[1] - f.min) / span, 0, 1).toFixed(4)); }
     if (f.mark != null) rng.style.setProperty('--zp', clamp((f.mark - f.min) / span, 0, 1).toFixed(4));
-    const r = { f, row, rng, input: $('input', row), out: $('output', row), bub: $('.lab-bub', row), hold: 0 };
+    const r = { f, row, rng, input: $('input', row), out: $('output', row), bub: $('.lab-bub', row), trl: $('.lab-trl', row), hold: 0, lp: null, tail: null, tra: null, sp: null, sk: 0, si: 0, lq: null };
     paintRow(r, f.v);
     return r;
+  }
+  /* glowing trail behind the thumb: a pooled element + ONE reusable WAAPI fade per row (no per-input allocation) */
+  function trail(r, p) {
+    const lp = r.lp; r.lp = p;
+    if (lp == null || J.reduce || !HAS_WA || tierN() < 2 || J.hidden() || Math.abs(p - lp) < 0.0012) return;
+    if (r.tail == null) r.tail = lp;
+    r.tail = lerp(r.tail, p, 0.1);
+    const lo = Math.min(r.tail, p), hi = Math.max(r.tail, p), dir = p >= r.tail ? '90deg' : '270deg';
+    const st = r.trl.style;
+    st.setProperty('--t0', lo.toFixed(4)); st.setProperty('--t1', hi.toFixed(4));
+    if (r.td !== dir) { r.td = dir; st.setProperty('--td', dir); }
+    if (!r.tra) {
+      try { r.tra = r.trl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 720, easing: 'ease-out', fill: 'both' }); r.tra.onfinish = () => { r.tail = null; }; } catch (e) { r.tra = null; return; }
+    } else { r.tra.currentTime = 0; r.tra.play(); }
+  }
+  /* tick sparks when the value snaps to a new step (3 pooled dots per row, replayed WAAPI) */
+  const SPK = [[-11, -15], [1, -20], [12, -14]];
+  function spark(r) {
+    if (J.reduce || !HAS_WA || tierN() < 2 || J.hidden()) return;
+    const t = now(); if (t - r.sk < 55) return; r.sk = t;
+    if (!r.sp) {
+      r.sp = SPK.map((d) => {
+        const el = document.createElement('i'); el.className = 'lab-spk'; el.setAttribute('aria-hidden', 'true'); r.rng.appendChild(el);
+        let a = null; try { a = el.animate([{ transform: 'translate(-50%,-50%) scale(1.3)', opacity: 1 }, { transform: 'translate(calc(-50% + ' + d[0] + 'px),calc(-50% + ' + d[1] + 'px)) scale(.1)', opacity: 0 }], { duration: 460, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both' }); a.cancel(); } catch (e) { a = null; }
+        return a;
+      });
+    }
+    const n = tierN() >= 3 ? 3 : 2;
+    for (let i = 0; i < n; i++) { const a = r.sp[(r.si + i) % 3]; if (a) { a.currentTime = 0; a.play(); } }
+    r.si = (r.si + 1) % 3;
   }
   function paintRow(r, v) {
     const f = r.f, span = f.max - f.min;
     const p = clamp((v - f.min) / span, 0, 1), z = f.mark != null ? clamp((f.mark - f.min) / span, 0, 1) : 0;
     const a = f.bi ? Math.min(p, z) : 0, b = f.bi ? Math.max(p, z) : p;
     r.rng.style.setProperty('--a', a.toFixed(4)); r.rng.style.setProperty('--b', b.toFixed(4)); r.rng.style.setProperty('--p', p.toFixed(4));
+    trail(r, p);
     const txt = fmtV(f, v);
     if (r.out.textContent !== txt) { r.out.textContent = txt; r.bub.textContent = txt; r.input.setAttribute('aria-valuetext', txt); }
   }
@@ -254,6 +286,10 @@ JEV.mod('lab', () => {
       fxa(gt, [{ boxShadow: '0 0 0 0 rgba(' + col + ',.0), inset 0 0 0 0 rgba(' + col + ',0)' }, { boxShadow: '0 0 0 3px rgba(' + col + ',.55), 0 0 34px rgba(' + col + ',.55), inset 0 0 22px rgba(' + col + ',.35)', offset: 0.28 }, { boxShadow: '0 0 0 0 rgba(' + col + ',0), inset 0 0 0 0 rgba(' + col + ',0)' }], { duration: 900, delay: 520, easing: 'ease-out' });
       fxa($('.lab-cf-o', cf), [{ transform: 'scale(1)' }, { transform: 'scale(1.7)', offset: 0.22 }, { transform: 'scale(.88)', offset: 0.5 }, { transform: 'scale(1)' }], { duration: 640, delay: 560, easing: 'ease-out' });
       fxa(verdict, [{ transform: 'scale(1)' }, { transform: 'scale(1.22)', offset: 0.3 }, { transform: 'scale(1)' }], { duration: 520, delay: 560, easing: 'cubic-bezier(.2,1.6,.4,1)' });
+      if (v === 'below' && tierN() >= 2) {
+        fxa(gt, [{ transform: 'translateX(0)', filter: 'none' }, { transform: 'translateX(-5px)', filter: 'drop-shadow(4px 0 0 rgba(255,77,94,.85)) drop-shadow(-4px 0 0 rgba(0,229,255,.7))', offset: 0.14 }, { transform: 'translateX(6px)', offset: 0.3 }, { transform: 'translateX(-3px)', filter: 'drop-shadow(-3px 0 0 rgba(255,77,94,.8)) drop-shadow(3px 0 0 rgba(0,229,255,.6))', offset: 0.5 }, { transform: 'translateX(2px)', offset: 0.75 }, { transform: 'none', filter: 'none' }], { duration: 520, delay: 560, easing: 'steps(9, jump-none)' });
+        fxa(verdict, [{ clipPath: 'inset(0 0 0 0)', transform: 'translateX(0)' }, { clipPath: 'inset(8% 0 58% 0)', transform: 'translateX(-7px)', offset: 0.16 }, { clipPath: 'inset(56% 0 6% 0)', transform: 'translateX(6px)', offset: 0.34 }, { clipPath: 'inset(0 0 0 0)', transform: 'translateX(-3px)', offset: 0.55 }, { clipPath: 'inset(30% 0 30% 0)', transform: 'translateX(4px)', offset: 0.7 }, { clipPath: 'inset(0 0 0 0)', transform: 'none' }], { duration: 480, delay: 560, easing: 'steps(8, jump-none)' });
+      } else if (v === 'below') fxa(gt, [{ transform: 'translateX(0)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'none' }], { duration: 300, delay: 560, easing: 'ease-out' });
       if (v === 'halt') fxa(gt, [{ transform: 'translateX(0)' }, { transform: 'translateX(-7px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(2px)' }, { transform: 'none' }], { duration: 420, delay: 560, easing: 'ease-out' });
     }
     cf.style.left = (d.conf * 100).toFixed(2) + '%'; cf.setAttribute('data-v', v);
@@ -273,11 +309,12 @@ JEV.mod('lab', () => {
     treeEl.appendChild(fo);
     folders[k] = { el: fo, em: $('em', fo), list: $('.lab-fi-l', fo) };
   });
+  const flyDelay = () => (J.reduce || tierN() < 2 ? 0 : 430);
   function renderFolder(k, fresh) {
     const f = folders[k], a = files[k];
     setTxt(f.em, String(fcount[k]));
     let h = '';
-    for (let i = 0; i < 2; i++) h += a[i] ? '<div class="lab-fi' + (fresh && i === 0 ? ' new' : '') + '">' + a[i] + '</div>' : '<div class="lab-fi ghost">-</div>';
+    for (let i = 0; i < 2; i++) h += a[i] ? '<div class="lab-fi' + (fresh && i === 0 ? ' new' : '') + '"' + (fresh && i === 0 && flyDelay() ? ' style="animation-delay:' + flyDelay() + 'ms"' : '') + '>' + a[i] + '</div>' : '<div class="lab-fi ghost">-</div>';
     f.list.innerHTML = h;
   }
   function landFile(d, pop) {
@@ -304,6 +341,10 @@ JEV.mod('lab', () => {
       anim(destEl, [{ transform: 'perspective(520px) rotateX(64deg) scale(1.45)', opacity: 0 }, { transform: 'perspective(520px) rotateX(0) scale(1)', opacity: 1 }], { duration: 460, easing: 'cubic-bezier(.2,1.3,.3,1)' });
       anim(destR, [{ opacity: 0.9, transform: 'scale(.9)' }, { opacity: 0, transform: 'scale(1.3)' }], { duration: 760, easing: 'ease-out' });
       if (d.killed && d.dest === 'review') anim(destEl, [{ transform: 'translateX(0)' }, { transform: 'translateX(-9px) rotate(-.6deg)' }, { transform: 'translateX(8px) rotate(.5deg)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(-2px)' }, { transform: 'none' }], { duration: 460, delay: 440, easing: 'ease-out' });
+      if (d.dest === 'skip') {
+        fxa(destEl, [{ filter: 'brightness(1)' }, { filter: 'brightness(.5) saturate(.3)', offset: 0.4 }, { filter: 'brightness(.8) saturate(.7)' }], { duration: 900, delay: 440, easing: 'ease-out' });
+        fxa(destT, [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.8, .55)', opacity: 0.25, offset: 0.4 }, { transform: 'scale(1)', opacity: 1 }], { duration: 820, delay: 440, easing: 'cubic-bezier(.3,0,.3,1)' });
+      }
       if (d.dest === 'execute' && !J.reduce) {
         destEl.classList.remove('shim'); void destEl.offsetWidth; destEl.classList.add('shim');
         clearTimeout(destEl._sh); destEl._sh = setTimeout(() => destEl.classList.remove('shim'), 1500);
@@ -383,12 +424,17 @@ JEV.mod('lab', () => {
     };
     [C.blue, C.pink, C.orange, C.green, C.red, C.amber, C.pink2, '#b8b2c2', '#ffffff'].forEach(sprite);
     const act = [0, 0, 0], np = [0, 0, 0, 0];
-    const cm = { y: 0, from: 0, to: 0, t0: 0, a: 0, fade: false, si: 0 };
+    const cm = { y: 0, from: 0, to: 0, t0: 0, a: 0, fade: false, si: 0, pend: 0, pt: 0 };
     const rp = [];
     for (let g = 0; g < 3; g++) for (let k = 0; k < 14; k++) rp.push({ g, r: 0, u: Math.random(), sp: 0.3 + Math.random() * 0.5 });
     const sd = [];
     for (let k = 0; k < 7; k++) sd.push({ ph: k / 7 + Math.random() * 0.05 });
-    const BP = Array.from({ length: 150 }, () => ({ on: 0, x: 0, y: 0, vx: 0, vy: 0, t: 0, d: 1, s: 10, c: C.pink }));
+    const BP = Array.from({ length: 190 }, () => ({ gv: 40, dm: 1.8, on: 0, x: 0, y: 0, vx: 0, vy: 0, t: 0, d: 1, s: 10, c: C.pink }));
+    const RG = Array.from({ length: 20 }, () => ({ on: 0, x: 0, y: 0, t0: 0, d: 600, r0: 4, r1: 60, c: C.pink, lw: 2, dir: 1 }));
+    const BD = Array.from({ length: 10 }, () => ({ on: 0, x: 0, w: 0, y0: 0, y1: 0, h: 20, t0: 0, d: 600, c: C.amber, fl: 0 }));
+    const MT = Array.from({ length: 40 }, (_, i) => ({ x: Math.random(), y: Math.random(), z: 0.25 + Math.random() * 0.75, ph: Math.random() * 6.28, c: SC[i & 3] }));
+    const fl = [0, 0, 0, 0], FI = { on: 0, t0: 0, d: 520, x0: 0, y0: 0, x1: 0, y1: 0, cx: 0, cy: 0, c: C.green, dest: 'execute' };
+    let landCb = null;
     const FL = Array.from({ length: 40 }, () => ({ on: 0, x0: 0, y0: 0, x1: 0, y1: 0, cx: 0, cy: 0, t0: 0, d: 600, c: C.pink, s: 14 }));
 
     function off(el) {
@@ -422,7 +468,8 @@ JEV.mod('lab', () => {
       ];
       const fo = {};
       ['execute', 'review', 'skip'].forEach((k) => (fo[k] = off(folders[k].el)));
-      L = { sx, st, n: nodes, gaps, gt: off(gt), dest: off(destEl), js: off($('.lab-jsw', stg[3])), fo };
+      const fi = {}; ['execute', 'review', 'skip'].forEach((k) => (fi[k] = off(folders[k].list)));
+      L = { sx, st, n: nodes, gaps, gt: off(gt), dest: off(destEl), js: off($('.lab-jsw', stg[3])), fo, fi };
       if (cm.a < 0.01) { cm.y = nodes[0]; cm.from = nodes[0]; cm.to = nodes[0]; }
     }
     function drawStatic() {
@@ -461,12 +508,12 @@ JEV.mod('lab', () => {
       g0 = a.g; g1 = b.g; W = a.W; H = a.H;
       measure(); drawStatic();
     }
-    function spawn(x, y, col, n, spd, size, life) {
+    function spawn(x, y, col, n, spd, size, life, up, gv, dm) {
       if (J.reduce) return;
       for (let i = 0, k = 0; i < BP.length && k < n; i++) {
         const p = BP[i]; if (p.on) continue;
         const a = Math.random() * J.TAU, s = spd * (0.35 + Math.random() * 0.8);
-        p.on = 1; p.x = x; p.y = y; p.vx = Math.cos(a) * s; p.vy = Math.sin(a) * s - spd * 0.12; p.t = 0; p.d = life * (0.6 + Math.random() * 0.6); p.s = size * (0.6 + Math.random() * 0.7); p.c = col;
+        p.on = 1; p.x = x; p.y = y; p.vx = Math.cos(a) * s; p.vy = Math.sin(a) * s - spd * 0.12 - (up || 0) * (0.5 + Math.random() * 0.5); p.gv = gv == null ? 40 : gv; p.dm = dm == null ? 1.8 : dm; p.t = 0; p.d = life * (0.6 + Math.random() * 0.6); p.s = size * (0.6 + Math.random() * 0.7); p.c = col;
         k++;
       }
     }
@@ -481,13 +528,61 @@ JEV.mod('lab', () => {
         k++;
       }
     }
+    function ring(x, y, c, r0, r1, d, lw, delay, dir) {
+      if (J.reduce) return;
+      for (let i = 0; i < RG.length; i++) {
+        const r = RG[i]; if (r.on) continue;
+        r.on = 1; r.x = x; r.y = y; r.c = c; r.r0 = r0; r.r1 = r1; r.d = d; r.lw = lw; r.t0 = now() + (delay || 0); r.dir = dir || 1;
+        return;
+      }
+    }
+    function band(x, w, y0, y1, h, d, c, flick, delay) {
+      if (J.reduce) return;
+      for (let i = 0; i < BD.length; i++) {
+        const b = BD[i]; if (b.on) continue;
+        b.on = 1; b.x = x; b.w = w; b.y0 = y0; b.y1 = y1; b.h = h; b.d = d; b.c = c; b.fl = flick ? 1 : 0; b.t0 = now() + (delay || 0);
+        return;
+      }
+    }
+    function implode(x, y, col, n, R, life) {
+      if (J.reduce) return;
+      for (let i = 0, k = 0; i < BP.length && k < n; i++) {
+        const p = BP[i]; if (p.on) continue;
+        const a = Math.random() * J.TAU, rr = R * (0.7 + Math.random() * 0.4);
+        p.on = 1; p.x = x + Math.cos(a) * rr; p.y = y + Math.sin(a) * rr * 0.7; p.t = 0; p.d = life * (0.8 + Math.random() * 0.3); p.gv = 0; p.dm = 0;
+        p.vx = -Math.cos(a) * rr / (p.d * 0.9); p.vy = -Math.sin(a) * rr * 0.7 / (p.d * 0.9); p.s = 8 + Math.random() * 7; p.c = col; k++;
+      }
+    }
+    function ignite(i) { // the pulse reached stage i (1..4): flare + shockwave
+      const y = L.n[i - 1], col = J.S.killed ? C.red : SC[i - 1], T = tierN();
+      np[i - 1] = 1; fl[i - 1] = 1;
+      spawn(L.sx, y, col, T >= 2 ? 12 : 8, 70, 14, 0.7);
+      ring(L.sx, y, col, 6, T >= 2 ? 92 : 60, 720, 2.4);
+      if (T >= 2) ring(L.st[i - 1].x, y, col, 3, 46, 560, 1.5, 90);
+      if (T >= 3) ring(L.sx, y, '#ffffff', 2, 54, 520, 1.2, 50);
+    }
+    function fileFly(dest) {
+      if (J.reduce || !L || !L.fi[dest]) return;
+      const a = L.js, b = L.fi[dest];
+      FI.on = 1; FI.t0 = now(); FI.d = 520; FI.x0 = a.x + a.w - 8; FI.y0 = a.y + a.h * 0.5; FI.x1 = b.x + 16; FI.y1 = b.y + 10;
+      FI.cx = (FI.x0 + FI.x1) / 2 + 26; FI.cy = Math.min(FI.y0, FI.y1) - 46; FI.c = DHEX[dest]; FI.dest = dest;
+    }
     function drawS(g, c, x, y, s, a) { if (a <= 0.005) return; g.globalAlpha = a > 1 ? 1 : a; g.drawImage(spr[c], x - s / 2, y - s / 2, s, s); }
     function frame(t, dt) {
       if (!g1 || !L) return;
       const g = g1, killed = J.S.killed, pc = killed ? C.red : C.pink, n = now();
+      const T = tierN(), bloom = T >= 3;
       g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter';
+      if (T >= 2 && !J.reduce) { // depth motes: far = small + slow, near = bigger; pointer + scroll parallax
+        const cnt = T >= 3 ? 40 : 16, px = (J.pointer && J.pointer.nx) || 0, sy = (J.scroll && J.scroll.y) || 0;
+        for (let i = 0; i < cnt; i++) {
+          const m = MT[i], x = m.x * W - px * 18 * m.z, y = (((m.y * H - sy * 0.22 * m.z - t * 7 * m.z) % H) + H) % H;
+          drawS(g, m.c, x, y, 5 + m.z * 13, (0.05 + 0.15 * m.z) * (0.65 + 0.35 * Math.sin(t * 0.9 + m.ph)));
+        }
+      }
+      if (cm.pend && n >= cm.pt) { const pi = cm.pend; cm.pend = 0; ignite(pi); }
       for (let i = 0; i < 3; i++) act[i] = Math.max(0, act[i] - dt * 1.1);
-      for (let i = 0; i < 4; i++) np[i] = Math.max(0, np[i] - dt * 1.3);
+      for (let i = 0; i < 4; i++) { np[i] = Math.max(0, np[i] - dt * 1.3); fl[i] = Math.max(0, fl[i] - dt * 1.7); }
       // ribbon particles
       for (let i = 0; i < rp.length; i++) {
         const p = rp[i], gp = L.gaps[p.g];
@@ -504,14 +599,29 @@ JEV.mod('lab', () => {
       const sx = L.sx, y0 = L.n[0], len = L.n[3] - y0;
       if (len > 10) for (let i = 0; i < sd.length; i++) { const k = ((t * 0.045 + sd[i].ph) % 1), y = y0 + k * len; drawS(g, pc, sx, y, 8, Math.sin(k * Math.PI) * 0.55); }
       // nodes
-      for (let i = 0; i < 4; i++) drawS(g, killed ? C.red : SC[i], sx, L.n[i], 22 + np[i] * 40, 0.3 + np[i] * 0.7);
+      for (let i = 0; i < 4; i++) {
+        const col = killed ? C.red : SC[i];
+        drawS(g, col, sx, L.n[i], 22 + np[i] * 40, 0.3 + np[i] * 0.7);
+        if (fl[i] > 0.02) { // ignition flare: horizontal lens streak into the stage + a vertical spike on the spine
+          const f = fl[i], y = L.n[i], w = L.st[i].x - sx + 8;
+          if (w > 8) { g.globalAlpha = Math.min(1, f * 0.85); g.drawImage(spr[col], sx - 6, y - 4 - 14 * f, w + 6, 8 + 28 * f); g.globalAlpha = f * 0.6; g.drawImage(spr['#ffffff'], sx - 6, y - 1.5 - 2 * f, w * 0.8, 3 + 4 * f); }
+          g.globalAlpha = f * 0.7; g.drawImage(spr['#ffffff'], sx - 3, y - 70 * f, 6, 140 * f);
+          if (bloom) drawS(g, col, sx, y, 110 * f + 30, f * 0.35);
+        }
+      }
       // comet
       if (cm.a > 0.01) {
         const p = clamp((n - cm.t0) / 300, 0, 1);
         cm.y = lerp(cm.from, cm.to, ease3(p));
         if (cm.fade) cm.a = Math.max(0, cm.a - dt * 1.6);
         const col = killed ? C.red : SC[Math.max(0, Math.min(3, cm.si | 0))];
-        for (let k = 6; k >= 1; k--) { const ty = cm.y - k * 7; if (ty >= y0 - 2) drawS(g, col, sx, ty, 34 - k * 3.4, (1 - k / 7) * 0.5 * cm.a); }
+        if (T >= 2 && cm.y > y0) { // the line stays lit behind the pulse
+          g.strokeStyle = col; g.lineCap = 'round'; g.lineWidth = 2.4; g.globalAlpha = 0.5 * cm.a; g.beginPath(); g.moveTo(sx, y0); g.lineTo(sx, cm.y); g.stroke();
+          g.lineWidth = 9; g.globalAlpha = 0.12 * cm.a; g.stroke();
+        }
+        const TK = T >= 2 ? 12 : 6, SP = T >= 2 ? 5 : 7;
+        for (let k = TK; k >= 1; k--) { const ty = cm.y - k * SP; if (ty >= y0 - 2) drawS(g, col, sx, ty, 34 - k * (T >= 2 ? 1.8 : 3.4), (1 - k / (TK + 1)) * 0.5 * cm.a); }
+        if (bloom) drawS(g, col, sx, cm.y, 96, 0.3 * cm.a);
         drawS(g, col, sx, cm.y, 46, cm.a); drawS(g, '#ffffff', sx, cm.y, 16, 0.9 * cm.a);
       }
       // flyers
@@ -525,45 +635,117 @@ JEV.mod('lab', () => {
           drawS(g, f.c, x, y, f.s * (1 - k * 0.28), (1 - k * 0.3) * Math.min(1, (1 - p) * 3));
         }
       }
+      // file flight : curved path, comet tail, landing ripple
+      if (FI.on) {
+        const p = (n - FI.t0) / FI.d;
+        if (p >= 1) {
+          FI.on = 0;
+          ring(FI.x1, FI.y1, FI.c, 3, 40, 620, 2); ring(FI.x1, FI.y1, '#ffffff', 2, 22, 460, 1.2, 110);
+          spawn(FI.x1, FI.y1, FI.c, T >= 2 ? 14 : 8, 90, 10, 0.6);
+          if (landCb) landCb(FI.dest);
+        } else if (p >= 0) {
+          const TN = T >= 2 ? 14 : 8;
+          for (let k = TN; k >= 1; k--) {
+            const q = Math.max(0, p - k * 0.026), e = q * q * (3 - 2 * q), mt = 1 - e;
+            drawS(g, FI.c, mt * mt * FI.x0 + 2 * mt * e * FI.cx + e * e * FI.x1, mt * mt * FI.y0 + 2 * mt * e * FI.cy + e * e * FI.y1, 22 - k * 1.2, (1 - k / (TN + 1)) * 0.6);
+          }
+          const e = p * p * (3 - 2 * p), mt = 1 - e;
+          const x = mt * mt * FI.x0 + 2 * mt * e * FI.cx + e * e * FI.x1, y = mt * mt * FI.y0 + 2 * mt * e * FI.cy + e * e * FI.y1;
+          const ang = Math.atan2(2 * mt * (FI.cy - FI.y0) + 2 * e * (FI.y1 - FI.cy), 2 * mt * (FI.cx - FI.x0) + 2 * e * (FI.x1 - FI.cx));
+          drawS(g, FI.c, x, y, 40, 0.9); if (bloom) drawS(g, FI.c, x, y, 84, 0.3);
+          g.globalAlpha = 1; g.save(); g.translate(x, y); g.rotate(ang * 0.35);
+          g.fillStyle = 'rgba(255,255,255,.92)'; g.fillRect(-4, -5.5, 8, 11); g.strokeStyle = FI.c; g.lineWidth = 1.2; g.strokeRect(-4.5, -6, 9, 12);
+          g.restore();
+        }
+      }
+      // shockwave rings
+      for (let i = 0; i < RG.length; i++) {
+        const r = RG[i]; if (!r.on) continue;
+        const p = (n - r.t0) / r.d; if (p < 0) continue;
+        if (p >= 1) { r.on = 0; continue; }
+        const e = ease3(p), rad = r.dir > 0 ? lerp(r.r0, r.r1, e) : lerp(r.r1, r.r0, e), a = Math.pow(1 - p, 1.5);
+        g.strokeStyle = r.c; g.beginPath(); g.arc(r.x, r.y, rad, 0, J.TAU);
+        g.lineWidth = r.lw * (1 - p * 0.55) + 0.4; g.globalAlpha = a * 0.9; g.stroke();
+        if (bloom) { g.lineWidth = r.lw * 5; g.globalAlpha = a * 0.16; g.stroke(); }
+      }
+      // sweeps and tears
+      for (let i = 0; i < BD.length; i++) {
+        const b = BD[i]; if (!b.on) continue;
+        const p = (n - b.t0) / b.d; if (p < 0) continue;
+        if (p >= 1) { b.on = 0; continue; }
+        const y = lerp(b.y0, b.y1, eio(p)); let a = Math.sin(p * Math.PI);
+        if (b.fl && Math.random() < 0.45) a *= 0.35;
+        g.globalAlpha = a * 0.9; g.drawImage(spr[b.c], b.x, y - b.h / 2, b.w, b.h);
+        g.globalAlpha = a * 0.75; g.drawImage(spr['#ffffff'], b.x + b.w * 0.05, y - b.h * 0.09, b.w * 0.9, b.h * 0.18);
+      }
       // bursts
       for (let i = 0; i < BP.length; i++) {
         const p = BP[i]; if (!p.on) continue;
         p.t += dt;
         if (p.t >= p.d) { p.on = 0; continue; }
-        p.vx *= 1 - dt * 1.8; p.vy = p.vy * (1 - dt * 1.8) + 40 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+        p.vx *= 1 - dt * p.dm; p.vy = p.vy * (1 - dt * p.dm) + p.gv * dt; p.x += p.vx * dt; p.y += p.vy * dt;
         const k = 1 - p.t / p.d;
         drawS(g, p.c, p.x, p.y, p.s * (0.4 + k), k * 0.95);
+        if (bloom) drawS(g, p.c, p.x, p.y, p.s * (0.4 + k) * 2.5, k * 0.2);
       }
       g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
     }
     return {
       resize, frame, restyle: drawStatic,
-      begin() { cm.a = 1; cm.fade = false; cm.y = cm.from = cm.to = L ? L.n[0] : 0; cm.si = 0; cm.t0 = now(); },
+      begin() { cm.pend = 0; cm.a = 1; cm.fade = false; cm.y = cm.from = cm.to = L ? L.n[0] : 0; cm.si = 0; cm.t0 = now(); },
       end() { cm.fade = true; },
       stage(i) { // i = 1..4
         if (!L) return;
         cm.from = cm.y; cm.to = L.n[i - 1]; cm.t0 = now(); cm.si = i - 1; cm.a = 1; cm.fade = false;
-        np[i - 1] = 1; if (i > 1) act[i - 2] = 1;
-        spawn(L.sx, L.n[i - 1], killed() ? C.red : SC[i - 1], 8, 70, 14, 0.7);
+        if (i > 1) act[i - 2] = 1;
+        if (J.reduce) { np[i - 1] = 1; return; }
+        cm.pend = i; cm.pt = cm.t0 + (i > 1 ? 210 : 0); // flare + shockwave fire when the pulse arrives
       },
       gate(conf, v) {
         if (!L) return;
         const x = L.gt.x + conf * L.gt.w, y = L.gt.y + L.gt.h / 2, col = v === 'pass' ? C.green : v === 'halt' ? C.red : C.amber;
         spawn(x, y, col, 26, 150, 16, 0.9); spawn(x, y, '#ffffff', 8, 90, 10, 0.6);
+        if (tierN() >= 2) ring(x, y, col, 4, 70, 640, 2.2);
+        if (v === 'below') { // red glitch tear across the gate bar
+          const w = L.gt.w + 24;
+          for (let k = 0; k < 4; k++) band(L.gt.x - 12 + (Math.random() - 0.5) * 14, w, L.gt.y + 3 + Math.random() * (L.gt.h - 6), L.gt.y + 3 + Math.random() * (L.gt.h - 6), 10 + Math.random() * 8, 280 + k * 50, C.red, true, k * 70);
+        }
       },
       land(dest) {
         if (!L) return;
         const f = L.fo[dest]; if (!f) return;
-        stream(L.js.x + L.js.w - 8, L.js.y + L.js.h * 0.5, f.x + 12, f.y + 12, DHEX[dest], 16);
+        stream(L.js.x + L.js.w - 8, L.js.y + L.js.h * 0.5, f.x + 12, f.y + 12, DHEX[dest], tierN() >= 2 ? 9 : 16);
+        fileFly(dest);
       },
-      stamp(dest) {
+      setLand(f) { landCb = f; },
+      stamp(dest, d) {
         if (!L) return;
-        const x = L.dest.x + L.dest.w / 2, y = L.dest.y + L.dest.h / 2;
-        spawn(x, y, DHEX[dest], 34, 200, 18, 1.0); spawn(x, y, '#ffffff', 10, 120, 10, 0.7);
+        const x = L.dest.x + L.dest.w / 2, y = L.dest.y + L.dest.h / 2, T = tierN(), col = DHEX[dest], B = L.dest;
+        if (T < 2) { spawn(x, y, col, 34, 200, 18, 1.0); spawn(x, y, '#ffffff', 10, 120, 10, 0.7); return; }
+        if (dest === 'execute') { // green radial burst + particle shower
+          spawn(x, y, col, 34, 210, 18, 1.0); spawn(x, y, '#ffffff', 10, 120, 10, 0.7);
+          ring(x, y, col, 8, Math.max(B.w, 150) * 0.8, 780, 3); ring(x, y, '#ffffff', 4, 70, 520, 1.4, 70);
+          spawn(x, y - B.h * 0.2, col, T >= 3 ? 46 : 24, 130, 12, 1.4, 250, 340, 0.7);
+        } else if (dest === 'review') { // amber scan-line sweep
+          const c = d && d.killed ? C.red : C.amber;
+          band(B.x - 6, B.w + 12, B.y - 4, B.y + B.h + 4, 40, 720, c, false);
+          if (T >= 3) band(B.x - 6, B.w + 12, B.y + B.h + 4, B.y - 4, 30, 640, c, false, 640);
+          ring(x, y, c, 10, Math.max(B.w, 150) * 0.6, 760, 2); spawn(x, y, c, 14, 150, 14, 0.8);
+        } else { // skip: dim collapse, everything drains inward
+          ring(x, y, col, 8, Math.max(B.w, 150) * 0.6, 700, 2, 0, -1);
+          implode(x, y, col, T >= 3 ? 26 : 16, Math.max(B.w, 140) * 0.55, 0.7);
+        }
       },
     };
     function killed() { return J.S.killed; }
   })();
+
+  // the flying file landed: ripple the folder badge
+  fx.setLand((k) => {
+    const f = folders[k]; if (!f) return;
+    fxa(f.em, [{ transform: 'scale(1)' }, { transform: 'scale(1.7)', offset: 0.25 }, { transform: 'scale(.92)', offset: 0.6 }, { transform: 'scale(1)' }], { duration: 560, easing: 'ease-out' });
+    fxa(f.el, [{ boxShadow: '-6px 0 0 -2px rgba(255,255,255,0)' }, { boxShadow: '-10px 0 22px -8px var(--cc)', offset: 0.3 }, { boxShadow: '-6px 0 0 -2px rgba(255,255,255,0)' }], { duration: 700, easing: 'ease-out' });
+  });
 
   /* ------------------------------------------------------------------ run : live scrub vs cinematic commit ------------------------------------------------------------------ */
   const TL = [0, 290, 720, 990, 1300];
@@ -643,7 +825,7 @@ JEV.mod('lab', () => {
     T(TL[3], () => { stageOn(4); rActs(d, true); });
     if (!replay) T(TL[3] + 230, () => { landFile(d, true); fx.land(d.dest); });
     else T(TL[3] + 230, () => { folders[d.dest].el.classList.add('hit'); setTimeout(() => folders[d.dest].el.classList.remove('hit'), 1500); fx.land(d.dest); });
-    T(TL[3] + 400, () => fx.stamp(d.dest));
+    T(TL[3] + 400, () => fx.stamp(d.dest, d));
     T(TL[4], () => {
       finishRun(d, why, true);
       if (!replay) { pushTape(d); renderTape(true); if (why !== 'view') publish(d); }
@@ -700,10 +882,10 @@ JEV.mod('lab', () => {
   }
   FIELDS.forEach((f) => {
     const r = rows[f.k];
-    r.input.addEventListener('input', () => { tween = null; V[f.k] = +r.input.value; paintRow(r, V[f.k]); onChange(); });
+    r.input.addEventListener('input', () => { tween = null; V[f.k] = +r.input.value; if (r.lq !== V[f.k]) { r.lq = V[f.k]; spark(r); } paintRow(r, V[f.k]); onChange(); });
     r.input.addEventListener('change', () => { if (auto) scheduleCommit(90, 'input'); });
   });
-  floorR.input.addEventListener('input', () => { touch(); J.setFloor(+floorR.input.value); });
+  floorR.input.addEventListener('input', () => { touch(); spark(floorR); J.setFloor(+floorR.input.value); });
   presetBtns.forEach((b) => b.addEventListener('click', () => runPreset(b.getAttribute('data-p'), b)));
   function decideNow(x, y) {
     if (tween) { FIELDS.forEach((f) => setVal(f, tween.to[f.k])); tween = null; }

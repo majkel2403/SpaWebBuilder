@@ -1,4 +1,5 @@
 <section class="sec hr" id="hour" aria-labelledby="hr-h2">
+  <i class="hr-lightb" id="hr-lightb" aria-hidden="true"></i><i class="hr-shock" id="hr-shock" aria-hidden="true"></i>
   <i class="hr-bgl" aria-hidden="true"></i>
   <div class="wrap">
 
@@ -28,7 +29,7 @@
 
             <div class="hr-ag" data-k="hermes" data-c="orange">
               <div class="hr-av hr-av-px" id="hr-av0">
-                <svg class="hr-robot" viewBox="0 0 14 13" shape-rendering="crispEdges" aria-hidden="true" focusable="false">
+                <i class="hr-scan" aria-hidden="true"></i><svg class="hr-robot" viewBox="0 0 14 13" shape-rendering="crispEdges" aria-hidden="true" focusable="false">
                   <path fill="#b34a0c" d="M6 1h2v1H6zM2 2h10v1H2zM1 3h1v8H1zM12 3h1v8h-1zM2 11h10v1H2zM4 12h2v1H4zM8 12h2v1H8z"/>
                   <path fill="#ff8a3d" d="M2 3h10v8H2z"/>
                   <path fill="#ffc79a" d="M3 4h3v1H3zM3 5h1v1H3z"/>
@@ -41,21 +42,21 @@
                   <rect class="hr-eye" x="8" y="6" width="2" height="2" fill="#14080a"/>
                 </svg>
               </div>
-              <b class="hr-an">HERMES</b>
+              <i class="hr-shd" aria-hidden="true"></i><b class="hr-an">HERMES</b>
               <span class="hr-al">writes the strategy and the risk rules</span>
               <span class="hr-as">hermes agent &middot; strategy.yaml</span>
             </div>
 
             <div class="hr-ag" data-k="dots" data-c="blue">
               <div class="hr-av" id="hr-av1"><span class="orb blue"><i class="e l"></i><i class="e r"></i></span></div>
-              <b class="hr-an">DOTS</b>
+              <i class="hr-shd" aria-hidden="true"></i><b class="hr-an">DOTS</b>
               <span class="hr-al">pulls and cleans four years of data</span>
               <span class="hr-as">the data side</span>
             </div>
 
             <div class="hr-ag" data-k="jev" data-c="pink" id="hr-jev">
               <div class="hr-av" id="hr-av2"><span class="orb pink" id="hr-jev-orb"><i class="e l"></i><i class="e r"></i></span></div>
-              <b class="hr-an">JEV</b>
+              <i class="hr-shd" aria-hidden="true"></i><b class="hr-an">JEV</b>
               <span class="hr-al">backtests, caps and arms it</span>
               <span class="hr-as">the gate &middot; cap &middot; kill switch &middot; orders</span>
               <span class="hr-last" id="hr-last" data-d="skip" aria-live="off"><i></i><span id="hr-last-t">last answer &middot; waiting</span></span>
@@ -100,6 +101,7 @@
 
         <div class="hr-hour" id="hr-hour">
           <div class="hr-ringbox">
+            <i class="hr-sweep" aria-hidden="true"></i>
             <i class="hr-rflash" aria-hidden="true"></i>
             <svg class="hr-ring" id="hr-ring" viewBox="0 0 220 220" aria-hidden="true" focusable="false">
               <defs>
@@ -191,6 +193,7 @@
           <div class="hr-gauge" id="hr-gauge">
             <svg id="hr-gsvg" viewBox="0 0 320 250" role="img" aria-label="Gauge: return per year on a log scale from 5 percent to 480 percent" focusable="false">
               <defs>
+                <linearGradient id="hr-gcone" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff2e6e" stop-opacity="0"/><stop offset=".55" stop-color="#ff4d8f" stop-opacity=".16"/><stop offset="1" stop-color="#ff9cc4" stop-opacity=".5"/></linearGradient>
                 <radialGradient id="hr-gtip"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#ff7ab3" stop-opacity=".95"/><stop offset="1" stop-color="#ff2e6e" stop-opacity="0"/></radialGradient>
                 <radialGradient id="hr-gbg" cx=".5" cy=".56" r=".6"><stop offset="0" stop-color="#a66bff" stop-opacity=".22"/><stop offset="1" stop-color="#a66bff" stop-opacity="0"/></radialGradient>
               </defs>
@@ -199,6 +202,7 @@
               <g id="hr-glit"></g>
               <g id="hr-gticks"></g>
               <g id="hr-gneedle">
+                <path class="hr-cone" d="M160 140 L136 40 Q160 24 184 40 Z" fill="url(#hr-gcone)"/>
                 <line x1="160" y1="140" x2="160" y2="58" stroke="rgba(255,46,110,.35)" stroke-width="7" stroke-linecap="round"/>
                 <line x1="160" y1="140" x2="160" y2="58" stroke="#ff7ab3" stroke-width="2.6" stroke-linecap="round"/>
                 <circle cx="160" cy="46" r="17" fill="url(#hr-gtip)"/>
@@ -208,6 +212,7 @@
               <circle cx="160" cy="140" r="4.5" fill="#ff7ab3"/>
               <text id="hr-gtag" x="160" y="178" class="hr-gtag" text-anchor="middle">31%</text>
             </svg>
+            <canvas class="hr-gcv" id="hr-gcv" data-dpr="1.5" aria-hidden="true"></canvas>
             <div class="hr-knob" id="hr-knob" role="slider" tabindex="0" aria-label="Return per year, log scale (arrow keys, Home, End; magnets at 17, 31 and 100 percent)" aria-valuemin="5" aria-valuemax="480" aria-valuenow="31" aria-valuetext="31% a year, $3.87M of capital needed"></div>
           </div>
 

@@ -85,7 +85,7 @@ JEV.mod('fx', () => {
   const VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
   const FS = [
     '#ifdef GL_FRAGMENT_PRECISION_HIGH', 'precision highp float;', '#else', 'precision mediump float;', '#endif',
-    'uniform vec2 uRes,uPtr;uniform float uSc,uT,uKill,uScroll,uProg,uPA,uVel;uniform vec2 uPu[3];',
+    'uniform vec2 uRes,uPtr,uLt;uniform float uSc,uT,uKill,uScroll,uProg,uPA,uVel,uHeat,uDir,uFlash,uDim,uIn,uTA;uniform vec3 uPu[3],uTint;',
     'const float CAP=.0049;', // linear-luminance ceiling of the plasma: keeps 12px grey text >= 4.5:1 anywhere
     'const mat2 ROT=mat2(.8,-.6,.6,.8);const vec3 LW=vec3(.2126,.7152,.0722);',
     'vec3 hue(vec3 c){return c/dot(c,LW);}',
@@ -93,10 +93,10 @@ JEV.mod('fx', () => {
     'float h12(vec2 p){vec3 q=fract(vec3(p.xyx)*.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}',
     'float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h12(i),h12(i+vec2(1.,0.)),f.x),mix(h12(i+vec2(0.,1.)),h12(i+vec2(1.,1.)),f.x),f.y);}',
     'float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<OCT;i++){v+=a*vn(p);p=ROT*p*2.02+17.3;a*=.5;}return v;}',
-    'float ring(float d,vec2 u){float r=u.x*.62,w=.03+u.x*.045,x=(d-r)/w;return u.y*exp(-x*x)*exp(-u.x*1.4);}',
+    'float ring(float d,vec3 u){float r=u.x*.62,w=.03+u.x*.045,x=(d-r)/w;return u.y*exp(-x*x)*exp(-u.x*1.4);}',
     'void main(){',
-    ' vec2 fc=gl_FragCoord.xy,uv=fc/uRes;float asp=uRes.x/uRes.y;vec2 p=(uv-.5)*vec2(asp,1.);',
-    ' float d0=length(p);float rg=ring(d0,uPu[0])+ring(d0,uPu[1])+ring(d0,uPu[2]);',
+    ' vec2 fc=gl_FragCoord.xy,uv=fc/uRes;float asp=uRes.x/uRes.y;vec2 p=(uv-.5)*vec2(asp,1.)*(1.+.2*uIn*uIn);', // intro: camera push (features start small, settle)
+    ' float d0=length(p);float q0=ring(d0,uPu[0]),q1=ring(d0,uPu[1]),q2=ring(d0,uPu[2]);float rg=q0+q1+q2;float rgA=(q0*uPu[0].z+q1*uPu[1].z+q2*uPu[2].z)/max(rg,.001);',
     ' vec2 pw=p+(p/(d0+.001))*rg*.06;', // ripple refracts the plasma
     ' float t=uT;vec2 q=pw*1.7+vec2(0.,uScroll*.00024);',
     ' vec2 w=vec2(fbm(q+vec2(0.,t*.05)),fbm(q+vec2(5.2,1.3)+vec2(-t*.04,t*.012)));',
@@ -105,16 +105,41 @@ JEV.mod('fx', () => {
     // palette at unit luminance, so every layer below has an explicit luminance budget (linear light)
     ' vec3 hInd=hue(mix(vec3(.03,.05,.60),vec3(.55,.03,.02),k));',
     ' vec3 hVio=hue(mix(vec3(.30,.02,.80),vec3(.95,.30,.012),k));',
-    ' vec3 hMag=hue(mix(vec3(1.,.025,.28),vec3(1.,.08,.04),k));',
-    ' float hf=smoothstep(.26,.74,.55*f+.45*w.y+.14*sin(uProg*6.2832));', // hue field: indigo -> violet -> magenta, drifts with plasma + page progress
+    ' vec3 hMag=hue(mix(mix(vec3(1.,.025,.28),max(uTint,vec3(.02)),uTA*.75),vec3(1.,.08,.04),k));',
+    ' float hf=clamp(smoothstep(.26,.74,.55*f+.45*w.y+.14*sin(uProg*6.2832))+uDir*uHeat*.12,0.,1.);', // hue field: indigo -> violet -> magenta, drifts with plasma + page progress
     ' vec3 hc=mix(mix(hInd,hVio,clamp(hf*2.,0.,1.)),hMag,clamp(hf*2.-1.,0.,1.));',
     ' float a1=smoothstep(.30,.78,f);float a2=smoothstep(.42,.82,.5*(w.x+w.y)+.4*(f-.45));',
     ' float r1=pow(1.-abs(2.*f-1.),6.)*smoothstep(.28,.66,f);float r2=pow(1.-abs(2.*w.x-1.),8.)*smoothstep(.3,.7,w.y);', // aurora filaments (iso-contours of the noise)
     ' float ray=pow(.5+.5*sin(pw.x*9.+w.y*6.5+t*.12),6.)*smoothstep(.15,.95,uv.y)*smoothstep(.3,.72,f);', // slow vertical curtains, strongest toward the top
-    ' vec3 col=vec3(.0015,.0009,.003);',
-    ' col+=hc*(a1*.0017+a2*.0010);',
-    ' col+=mix(hVio,hMag,.6)*(r1*.0024+r2*.0011);',
-    ' col+=hInd*ray*.0013;',
+    ' vec3 col=vec3(.0011,.0006,.0022);',
+    ' col+=hc*(a1*.00065+a2*.0004);',
+    ' col+=mix(hVio,hMag,.6)*(r1*.0012+r2*.0005);',
+    ' col+=hInd*ray*.0008;',
+    // moving light source above the frame: volumetric shafts (angular value noise, occluded by the plasma) + core glow
+    ' vec2 lp=vec2(uLt.x*asp*.5,uLt.y);vec2 ld=p-lp;float lr=length(ld);float ang=atan(ld.x+.0001,-ld.y);',
+    ' float sh=vn(vec2(ang*9.+t*.04,t*.07));',
+    '#if TIER>=2',
+    ' sh=sh*.6+.4*vn(vec2(ang*23.-t*.06,3.1+t*.05));',
+    '#endif',
+    ' sh=pow(smoothstep(.4,.88,sh),2.6)*(.45+1.0*f);',
+    ' float fall=exp(-lr*1.1)*smoothstep(0.,.22,lr);',
+    ' col+=mix(hVio,hMag,.35+.3*sh)*(sh*fall*.0120+exp(-lr*lr*9.)*.0034)*(1.+uHeat*.9);',
+    // faint perspective grid under a horizon: lines recede toward the vanishing point, a bright band rolls toward the horizon
+    ' float gd=.3-uv.y;float gz=.05/max(gd,.004);float gxl=(uv.x-.5)*gz*7.;float gzl=gz+t*(.32+.5*uHeat);',
+    ' float gw=.012+.012*gz;float gl=max(1.-smoothstep(0.,gw,abs(fract(gxl)-.5)),1.-smoothstep(0.,gw,abs(fract(gzl)-.5)));',
+    ' float gv=step(0.,gd)*smoothstep(0.,.05,gd)*exp(-gd*4.2);',
+    ' float gband=exp(-pow((fract(gz*.22-t*.16)-.5)*7.,2.));',
+    ' vec3 gcol=mix(hVio,hMag,.5)*(gl*gv*(.0012+gband*.0034)*(1.+uHeat)+exp(-pow((uv.y-.3)/.006,2.))*.0030*(.6+.4*sin(t*.9)));col+=mix(hVio,hMag,.5)*exp(-pow((uv.y-.3)/.1,2.))*.0010;',
+    '#if TIER>=2',
+    // parallax aurora ribbons (own scroll rates), soft bloom bands, slow full-width scanline
+    ' for(int Ri=0;Ri<RIB;Ri++){float fi=float(Ri);float xw=p.x*(1.1+.45*fi)+t*(.03+.012*fi);',
+    '  float yc=.5+.17*fi+.09*sin(xw*2.1+fi*1.7+w.x*2.)+.05*sin(xw*4.7-t*.2)+uScroll*.00004*(1.+fi);',
+    '  float cu=.45+.55*vn(vec2(p.x*(12.+fi*4.)+fi*5.,t*.1));',
+    '  col+=mix(mix(hInd,hVio,fi*.5),hMag,.2+.25*fi)*exp(-pow((uv.y-yc)/(.028+.018*fi),2.))*cu*(.0046-.0010*fi)*(1.+uHeat*.7);}',
+    ' col+=hc*exp(-pow((uv.y-(.55+.3*sin(t*.045)))*2.6,2.))*.0010*(.6+uHeat);',
+    ' col+=hMag*exp(-pow((fract(uv.y*.5-t*.025)-.5)*30.,2.))*.0007;',
+    '#endif',
+    ' col*=(1.+uHeat*.25)*(1.-.3*uDim);',
     ' float side=smoothstep(.15,.95,abs(p.x)/(asp*.5));float wide=smoothstep(1.25,1.9,asp);', // calmer behind the centre column on wide screens
     ' col*=mix(1.,mix(.55,1.15,side),wide);',
     // faint horizontal data bands: dashed hairline + soft fill, sliding segments (css-px space)
@@ -125,12 +150,15 @@ JEV.mod('fx', () => {
     ' col+=mix(hVio,hMag,hf)*on*inSeg*(line*.0016+.0005*(1.-smoothstep(0.,30.,my)));',
     // killed: slow red sweep
     ' float sw=exp(-pow((fract(uv.y*.9-t*.16)-.5)*8.,2.));col+=vec3(.9,.04,.02)*sw*k*.003;',
+    ' float sb=pow(max(0.,cos(ang-t*1.05)),20.)*exp(-lr*.6)+pow(max(0.,cos(ang-t*1.05+3.1416)),20.)*exp(-lr*.9)*.5;col+=vec3(.95,.03,.02)*sb*k*(.006+.002*sin(t*3.));',
     // soft luminance limiter
     ' float L=dot(col,LW);col*=1./pow(1.+pow(L/CAP,3.),1./3.);',
     // vignette baked in (plasma only, never over text): dark corners, red-hot edges while killed
-    ' float vg=smoothstep(.5,1.12,length(p*vec2(.86,1.)));col*=1.-.7*vg;col+=vec3(.9,.02,.03)*k*vg*.0011;',
+    ' float vg=smoothstep(.5+.035*sin(t*.45+uHeat*2.),1.12,length(p*vec2(.86,1.)));col*=1.-.7*vg;col+=gcol*(1.-.6*vg);col+=vec3(.9,.02,.03)*k*vg*.0011;',
     // edge dispersion: cyan fringe left, magenta fringe right, swelling with scroll velocity (added after the vignette: a few % of the text-contrast budget)
-    ' float ex=p.x/(asp*.5);col+=mix(vec3(.04,.5,.9),vec3(.9,.05,.22),step(0.,ex))*smoothstep(.55,1.05,abs(ex))*(.0004+.0012*uVel)*(1.-.5*k);',
+    ' float ex=p.x/(asp*.5);col+=mix(vec3(.04,.5,.9),vec3(.9,.05,.22),step(0.,ex))*smoothstep(.55,1.05,abs(ex))*(.0004+.0012*uVel+.004*uIn)*(1.-.5*k);',
+    ' col+=vec3(1.,.5,.8)*pow(h11(floor(atan(p.x,p.y)*40.)),6.)*smoothstep(.1,.7,d0)*uIn*.004;', // intro: zoom-blur streaks
+    ' col+=mix(vec3(1.,.5,.18),vec3(1.,.1,.05),k)*uFlash*exp(-lr*.9)*.0035;', // execute: warm flash from the light
     // drifting data motes: two parallax layers of tiny twinkling points (full-quality path only; points are far too small to touch text contrast)
     '#ifdef MOTES',
     ' float mo=0.;',
@@ -142,8 +170,11 @@ JEV.mod('fx', () => {
     // pointer glow + ripple light (added after the limiter, small bounded budget)
     ' vec2 pp=(uPtr-.5)*vec2(asp,1.);float dg=length(p-pp);float g=exp(-dg*dg*60.)*.8+exp(-dg*dg*7.)*.2;',
     ' col+=mix(vec3(.9,.03,.22),vec3(1.,.12,.03),k)*g*uPA*.0065;',
-    ' col+=mix(vec3(.9,.1,.5),vec3(1.,.4,.05),k)*min(rg,1.3)*.0125;',
-    ' col=pow(col,vec3(.4545));col+=(h12(fc+fract(t*7.3)*91.7)-.5)*.0075;', // gamma + dither/grain
+    ' col+=mix(mix(vec3(.9,.1,.5),vec3(1.,.4,.05),k),vec3(1.,.55,.04),rgA)*min(rg,1.3)*.0125;',
+    '#if TIER>=2',
+    ' float Lx=dot(col,LW);col+=vec3(1.,.22,.1)*smoothstep(.5,1.,Lx/CAP)*.0006;', // halation: red bleed around the brightest plasma
+    '#endif',
+    ' col=pow(col,vec3(.4545));col+=(h12(fc+fract(t*7.3)*91.7)-.5)*(.0075+.004*dot(col,LW));', // gamma + dither/grain
     ' gl_FragColor=vec4(col,1.);}',
   ].join('\n');
 
@@ -151,9 +182,9 @@ JEV.mod('fx', () => {
    * messages: Float32Array[nx, ny, idle, away, scroll, prog, vel] · {t:'k',v} kill · {t:'p',s} pulse · {t:'r',w,h} css size */
   function createBg(canvas, VS, FS, o) {
     const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
-    const S = { T: 11.7, kill: o.killed ? 1 : 0, killT: o.killed ? 1 : 0, sx: 0.5, sy: 0.55, pa: 0.5, vel: 0, nx: 0.5, ny: 0.5, idle: 1, away: 0, scroll: 0, prog: 0, cw: o.w, ch: o.h, qual: 1, reduce: !!o.reduce };
-    const P = [{ a: 9, s: 0 }, { a: 9, s: 0 }, { a: 9, s: 0 }], pu = new Float32Array(6);
-    let pi = 0, gl = null, U = null, soft = false, info = '', warm = 0, gAcc = 0, gN = 0;
+    const S = { T: 11.7, kill: o.killed ? 1 : 0, killT: o.killed ? 1 : 0, tier: o.tier || 0, fixed: !!o.tier, heat: 0, heatT: 0, dir: 0, dirT: 0, flash: 0, dim: 0, intro: 0, tint: [0, 0, 0], ta: 0, lx: 0, ly: 0.62, sx: 0.5, sy: 0.55, pa: 0.5, vel: 0, nx: 0.5, ny: 0.5, idle: 1, away: 0, scroll: 0, prog: 0, cw: o.w, ch: o.h, qual: 1, reduce: !!o.reduce };
+    const P = [{ a: 9, s: 0, k: 0 }, { a: 9, s: 0, k: 0 }, { a: 9, s: 0, k: 0 }], pu = new Float32Array(9), tt = new Float32Array(3);
+    let pi = 0, gl = null, U = null, soft = false, pr = null, built = 0, info = '', warm = 0, gAcc = 0, gN = 0;
     const cb = o.cb || function () {};
 
     function init() {
@@ -169,33 +200,42 @@ JEV.mod('fx', () => {
         const dbg = g.getExtension('WEBGL_debug_renderer_info');
         soft = /swiftshader|llvmpipe|software|basic render/i.test(String(dbg ? g.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : ''));
       } catch (e) { soft = false; }
-      if (soft) S.qual = 0.4;
+      pr = null; gl = g;
+      if (!S.tier) S.tier = soft ? 1 : 2; // core's tier wins when it exists; otherwise software rasterisers start cheap
+      if (soft) S.qual = 0.6;
+      if (!build()) { gl = null; return false; }
+      return true;
+    }
+    function build() { // (re)compile the program for the current tier; keeps the old one when it fails
+      const g = gl, t2 = performance.now(), T = S.tier;
       const mk = (type, src) => { const sh = g.createShader(type); g.shaderSource(sh, src); g.compileShader(sh); return g.getShaderParameter(sh, g.COMPILE_STATUS) ? sh : null; };
-      const vs = mk(g.VERTEX_SHADER, VS), fs = mk(g.FRAGMENT_SHADER, '#define OCT ' + (soft ? 3 : 4) + '\n' + (soft ? '' : '#define MOTES\n') + FS);
+      const vs = mk(g.VERTEX_SHADER, VS), fs = mk(g.FRAGMENT_SHADER, '#define OCT ' + (T >= 3 ? 4 : T === 2 ? 4 : 3) + '\n#define TIER ' + T + '\n#define RIB ' + (T >= 3 ? 3 : 2) + '\n' + (T >= 3 ? '#define MOTES\n' : '') + FS);
       if (!vs || !fs) return false;
-      const pr = g.createProgram(); g.attachShader(pr, vs); g.attachShader(pr, fs); g.linkProgram(pr);
-      if (!g.getProgramParameter(pr, g.LINK_STATUS)) return false;
-      g.useProgram(pr);
+      const p2 = g.createProgram(); g.attachShader(p2, vs); g.attachShader(p2, fs); g.linkProgram(p2);
+      if (!g.getProgramParameter(p2, g.LINK_STATUS)) return false;
+      g.useProgram(p2);
       g.bindBuffer(g.ARRAY_BUFFER, g.createBuffer());
       g.bufferData(g.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), g.STATIC_DRAW);
-      const al = g.getAttribLocation(pr, 'a'); g.enableVertexAttribArray(al); g.vertexAttribPointer(al, 2, g.FLOAT, false, 0, 0);
-      U = {};
-      ['uRes', 'uPtr', 'uSc', 'uT', 'uKill', 'uScroll', 'uProg', 'uPA', 'uVel'].forEach((n) => (U[n] = g.getUniformLocation(pr, n)));
-      U.uPu = g.getUniformLocation(pr, 'uPu[0]');
-      gl = g;
-      info = (soft ? 'software' : 'hw') + ' ctx ' + (t1 - t0).toFixed(0) + 'ms compile+link ' + (performance.now() - t1).toFixed(0) + 'ms';
+      const al = g.getAttribLocation(p2, 'a'); g.enableVertexAttribArray(al); g.vertexAttribPointer(al, 2, g.FLOAT, false, 0, 0);
+      const u = {};
+      ['uRes', 'uPtr', 'uSc', 'uT', 'uKill', 'uScroll', 'uProg', 'uPA', 'uVel', 'uLt', 'uHeat', 'uDir', 'uFlash', 'uDim', 'uIn', 'uTA', 'uTint'].forEach((n) => (u[n] = g.getUniformLocation(p2, n)));
+      u.uPu = g.getUniformLocation(p2, 'uPu[0]');
+      if (pr) g.deleteProgram(pr);
+      pr = p2; U = u; built = T;
+      info = (soft ? 'software' : 'hw') + ' tier ' + T + ' compile+link ' + (performance.now() - t2).toFixed(0) + 'ms';
       return true;
     }
     function size() {
       if (!gl) return;
-      const base = Math.min(0.5, Math.sqrt(520000 / Math.max(1, S.cw * S.ch))); // <= 0.5x, and <= ~0.5 MP on huge screens
+      const rs = S.tier >= 3 ? 0.6 : S.tier === 2 ? 0.5 : 0.35, base = Math.min(rs, Math.sqrt((S.tier >= 3 ? 720000 : 520000) / Math.max(1, S.cw * S.ch))); // tier 1/2/3 = 0.35x / 0.5x / 0.6x, and <= ~0.5-0.7 MP on huge screens
       const w = Math.max(16, Math.round(S.cw * base * S.qual)), h = Math.max(16, Math.round(S.ch * base * S.qual));
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
       draw();
     }
     function draw() {
       if (!gl) return;
-      pu[0] = P[0].a; pu[1] = P[0].s; pu[2] = P[1].a; pu[3] = P[1].s; pu[4] = P[2].a; pu[5] = P[2].s;
+      for (let i = 0; i < 3; i++) { pu[i * 3] = P[i].a; pu[i * 3 + 1] = P[i].s; pu[i * 3 + 2] = P[i].k; }
+      tt[0] = S.tint[0]; tt[1] = S.tint[1]; tt[2] = S.tint[2];
       gl.uniform2f(U.uRes, canvas.width, canvas.height);
       gl.uniform2f(U.uPtr, S.sx, S.sy);
       gl.uniform1f(U.uSc, canvas.width / S.cw);
@@ -205,7 +245,10 @@ JEV.mod('fx', () => {
       gl.uniform1f(U.uProg, S.prog);
       gl.uniform1f(U.uPA, S.pa);
       gl.uniform1f(U.uVel, S.vel);
-      gl.uniform2fv(U.uPu, pu);
+      gl.uniform3fv(U.uPu, pu);
+      gl.uniform2f(U.uLt, S.lx, S.ly);
+      gl.uniform1f(U.uHeat, S.heat); gl.uniform1f(U.uDir, S.dir); gl.uniform1f(U.uFlash, S.flash); gl.uniform1f(U.uDim, S.dim);
+      gl.uniform1f(U.uIn, S.intro); gl.uniform1f(U.uTA, S.ta); gl.uniform3fv(U.uTint, tt);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
     function step(dt) {
@@ -217,6 +260,15 @@ JEV.mod('fx', () => {
       else { tx = S.nx; ty = S.ny; ta = S.away ? 0.35 : 1; }
       const k = 1 - Math.exp(-dt * 5); S.sx += (tx - S.sx) * k; S.sy += (ty - S.sy) * k; S.pa += (ta - S.pa) * k;
       for (let i = 0; i < 3; i++) { const p = P[i]; if (p.s > 0) { p.a += dt; if (p.a > 3) p.s = 0; } }
+      if (S.reduce) { S.heat = S.flash = S.dim = S.intro = 0; S.lx = 0.1; return; } // reduced motion: calm, static atmosphere
+      const kh = 1 - Math.exp(-dt * 2.5);
+      S.heat += (S.heatT - S.heat) * kh; S.heatT *= Math.exp(-dt * 0.6); S.dir += (S.dirT - S.dir) * kh;
+      S.flash *= Math.exp(-dt * 3.2); S.dim *= Math.exp(-dt * 1.6);
+      if (S.intro > 0) S.intro = Math.max(0, S.intro - dt / 1.35);
+      S.ta += ((S.tint[0] + S.tint[1] + S.tint[2] > 0 ? 1 : 0) - S.ta) * (1 - Math.exp(-dt * 2));
+      // the light drifts above the frame; while killed it parks at top-centre and a siren beam sweeps from it
+      const kk = S.kill;
+      S.lx = (Math.sin(S.T * 0.07) * 0.7 + 0.25 * Math.sin(S.T * 0.173)) * (1 - kk); S.ly = 0.62 + 0.05 * Math.sin(S.T * 0.11) - 0.04 * kk;
     }
     function once() { step(0.016); draw(); }
     const api = {
@@ -227,12 +279,17 @@ JEV.mod('fx', () => {
       tick(dt) {
         step(dt); draw();
         // resolution governor: if the plasma itself cannot keep ~24 fps, drop its resolution (floor 0.4 x)
-        if (!S.reduce && ++warm > 60) { gAcc += dt; if (++gN >= 60) { if (gAcc / gN > 0.05 && S.qual > 0.4) { S.qual = Math.max(0.4, S.qual * 0.85); size(); } gAcc = gN = 0; } }
+        if (!S.reduce && ++warm > 60) { gAcc += dt; if (++gN >= 60) { if (gAcc / gN > 0.05) { if (S.qual > 0.4) { S.qual = Math.max(0.4, S.qual * 0.85); size(); } else if (!S.fixed && S.tier > 1) { S.tier--; build(); size(); } } gAcc = gN = 0; } }
       },
       msg(m) {
         if (m instanceof Float32Array) { S.nx = m[0]; S.ny = m[1]; S.idle = m[2]; S.away = m[3]; S.scroll = m[4]; S.prog = m[5]; S.vel = m[6] || 0; return; }
         if (m.t === 'k') { S.killT = m.v ? 1 : 0; if (S.reduce) { S.kill = S.killT; once(); } }
-        else if (m.t === 'p') { const p = P[pi]; p.a = 0; p.s = m.s; pi = (pi + 1) % 3; if (S.reduce) once(); }
+        else if (m.t === 'p') { const p = P[pi]; p.a = 0; p.s = m.s; p.k = m.k || 0; pi = (pi + 1) % 3; if (S.reduce) once(); }
+        else if (m.t === 'x') { if (m.k === 1) S.flash = 1; else if (m.k === 2) S.dim = 1; } // 1 execute flash · 2 skip dim
+        else if (m.t === 'h') { S.heatT = Math.max(S.heatT, m.v); S.dirT = m.d; }
+        else if (m.t === 'c') { S.tint[0] = m.c[0]; S.tint[1] = m.c[1]; S.tint[2] = m.c[2]; }
+        else if (m.t === 'i') { if (!S.reduce) S.intro = 1; }
+        else if (m.t === 'q') { if (m.v !== S.tier && m.v >= 1 && m.v <= 3) { S.tier = m.v; S.fixed = true; if (gl && build()) size(); } }
         else if (m.t === 'r') { S.cw = m.w; S.ch = m.h; size(); }
       },
     };
@@ -295,7 +352,7 @@ JEV.mod('fx', () => {
   }
   function startMain() { // fallback: same renderer on the main thread
     if (bgMode) return; bgMode = 'main';
-    const inst = createBg(bg, VS, FS, { w: winW, h: winH, reduce, killed: J.S.killed, cb: (t) => { if (t === 'lost') root.classList.add('fx-nogl'); else root.classList.remove('fx-nogl'); } });
+    const inst = createBg(bg, VS, FS, { w: winW, h: winH, reduce, killed: J.S.killed, tier: J.tier | 0, cb: (t) => { if (t === 'lost') root.classList.add('fx-nogl'); else root.classList.remove('fx-nogl'); } });
     if (!inst.ok) { root.classList.add('fx-nogl'); return; }
     note('fx-gl main-thread ' + inst.info);
     wireBg((m) => inst.msg(m), inst);
@@ -316,7 +373,7 @@ JEV.mod('fx', () => {
         clearTimeout(to); try { URL.revokeObjectURL(url); } catch (err) { /* ignore */ }
         try {
           const off = bg.transferControlToOffscreen(); transferred = true;
-          wk.postMessage({ t: 'init', c: off, vs: VS, fs: FS, w: winW, h: winH, reduce, killed: J.S.killed }, [off]);
+          wk.postMessage({ t: 'init', c: off, vs: VS, fs: FS, w: winW, h: winH, reduce, killed: J.S.killed, tier: J.tier | 0 }, [off]);
           bgPost = (msg) => wk.postMessage(msg); // messages queue behind init, so a kill thrown while the context is still warming up is never lost
         } catch (err) { toMain(); }
       } else if (m.t === 'ready') {
@@ -553,6 +610,15 @@ JEV.mod('fx', () => {
   /* =====================================================================
    * 5. boot overlay (<= 1.6 s, click / any key skips, removes itself)
    * ===================================================================== */
+  /* cinematic intro when the overlay lifts: shader camera push + zoom-blur streaks + chromatic split settling (tier >= 2, never under reduced motion) */
+  const push = $('#fx-push');
+  function intro() {
+    if (reduce) return;
+    if (bgPost) bgPost({ t: 'i' });
+    if (!push || (J.tier || 2) < 2) return;
+    root.classList.add('fx-intro');
+    setTimeout(() => root.classList.remove('fx-intro'), 1250);
+  }
   if (!boot) startBgOnce();
   if (boot) {
     if (reduce) { boot.remove(); releaseReveal(); startBgOnce(); }
@@ -574,7 +640,7 @@ JEV.mod('fx', () => {
         if (over) return; over = true;
         if (tk) tk.stop();
         boot.classList.add('fx-out'); if (fast) boot.classList.add('fx-fast');
-        releaseReveal(); startBgOnce();
+        releaseReveal(); startBgOnce(); intro();
         doc.removeEventListener('keydown', skip, true);
         setTimeout(() => boot.remove(), fast ? 330 : 560);
       };
@@ -740,7 +806,38 @@ JEV.mod('fx', () => {
     decEl.style.transformOrigin = 'left center';
     decAnim = decEl.animate([{ color: '#fff', textShadow: '0 0 14px #ff2e6e, 0 0 30px rgba(255,46,110,.9)', transform: 'scale(1.14)', offset: 0 }, { offset: 1 }], { duration: 640, easing: 'ease-out' });
   }
-  J.bus.on('decision', (d) => { if (d && d.dest === 'execute') { J.pulse(0.35); flashDec(); } });
+  /* the atmosphere listens to the desk: execute = warm flash from the light, review = amber ripple, skip = dim; ticks drive intensity */
+  J.bus.on('decision', (d) => {
+    if (!d || doc.hidden) return;
+    if (d.dest === 'execute') { J.pulse(0.35); flashDec(); if (bgPost) bgPost({ t: 'x', k: 1 }); }
+    else if (d.dest === 'review') { if (bgPost) bgPost({ t: 'p', s: 0.5, k: 1 }); }
+    else if (bgPost) bgPost({ t: 'x', k: 2 });
+  });
+  let lastPx = 0;
+  J.bus.on('tick', (m) => {
+    if (!m || !bgPost || doc.hidden || reduce) return;
+    const px = m.price; if (!lastPx) lastPx = px;
+    const bps = (px - lastPx) / lastPx * 1e4; lastPx = px;
+    bgPost({ t: 'h', v: clamp(Math.abs(bps) / 3, 0, 1), d: clamp(bps / 3, -1, 1) });
+  });
+  /* tint (core may provide JEV.tint as '#rrggbb' | [r,g,b] | {r,g,b}) and quality tier (JEV.tier / html[data-tier]); both guarded */
+  const tv = [-9, -9, -9];
+  let tierSeen = J.tier | 0;
+  function parseTint(v) {
+    if (!v) return null;
+    if (typeof v === 'string') { const m = /^#?([0-9a-f]{6})$/i.exec(v.trim()); return m ? [0, 2, 4].map((i) => parseInt(m[1].substr(i, 2), 16) / 255) : null; }
+    const a = Array.isArray(v) ? v : [v.r, v.g, v.b]; if (!(a[0] >= 0 && a[1] >= 0 && a[2] >= 0)) return null;
+    const sc = Math.max(a[0], a[1], a[2]) > 1 ? 255 : 1; return [a[0] / sc, a[1] / sc, a[2] / sc];
+  }
+  function syncEnv() {
+    if (!bgPost) return;
+    const tn = J.tint, a0 = tn ? tn[0] : -1, a1 = tn ? tn[1] : -1, a2 = tn ? tn[2] : -1; // core eases J.tint in place: compare values, not the reference
+    if (Math.abs(a0 - tv[0]) + Math.abs(a1 - tv[1]) + Math.abs(a2 - tv[2]) > 2) { tv[0] = a0; tv[1] = a1; tv[2] = a2; const c = parseTint(tn); bgPost({ t: 'c', c: c || [0, 0, 0] }); }
+    const q = J.tier | 0; if (q && q !== tierSeen) { tierSeen = q; bgPost({ t: 'q', v: q }); }
+  }
+  setInterval(() => { if (!doc.hidden) syncEnv(); }, 300);
+  J.bus.on('tint', () => syncEnv());
+  J.bus.on('tier', () => syncEnv());
 
   let floorT = 0;
   J.bus.on('floor', (v) => { clearTimeout(floorT); floorT = setTimeout(() => J.toast('floor -> ' + (+v).toFixed(2)), 600); });

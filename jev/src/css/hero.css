@@ -120,3 +120,55 @@ body.killed .hero-tip { border-color: rgba(255, 77, 94, .55); }
 .hero-leg-sim.is-idle { color: var(--pink2); animation: heroIdle 1.7s ease-in-out infinite; }
 @keyframes heroIdle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 @media (max-width: 699px) { .hero-tip { min-width: 112px; max-width: 190px; padding: 6px 9px 5px; font-size: 9px; } .hero-tip-v { font-size: 17px; } }
+
+/* ======================= spectacle layer (tier-gated: html[data-tier] 2 / 3; tier 1 = the page as it was) ======================= */
+.hero-plane { position: absolute; inset: 0; }
+.hero-bg > .hero-grid { will-change: auto; }
+/* parallax layers are moved with the individual `translate` / `scale` properties (JS, only when the value changes), so the intro `transform` transitions keep working */
+html[data-tier="2"] .hero-plane, html[data-tier="3"] .hero-plane, html[data-tier="2"] .hero-grid, html[data-tier="3"] .hero-grid { will-change: translate, scale; }
+
+/* CRT overlay for the kill state */
+.hero-crt { position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 2; display: none; mix-blend-mode: normal;
+  background: repeating-linear-gradient(180deg, rgba(255, 40, 60, .0) 0 2px, rgba(255, 40, 60, .11) 2px 3px), radial-gradient(120% 100% at 50% 50%, transparent 40%, rgba(255, 30, 50, .22) 100%); transition: opacity .5s ease; }
+html[data-tier="2"] .hero-crt, html[data-tier="3"] .hero-crt { display: block; }
+body.killed .hero-crt { opacity: .8; }
+html[data-tier="3"] body.killed .hero-crt { animation: heroCrt 2.4s steps(1) infinite; }
+@keyframes heroCrt { 0% { opacity: .8; } 7% { opacity: .45; } 9% { opacity: .85; } 52% { opacity: .8; } 54% { opacity: .55; } 57% { opacity: .9; } 100% { opacity: .8; } }
+
+/* title card: animated conic-gradient border + holographic sheen that follows the pointer */
+@property --hero-ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.hero-card { --hero-a: var(--pink); --hero-b: #ffd0e2; --hero-c: var(--violet); }
+body.killed .hero-card { --hero-a: var(--red); --hero-b: #ffc0c6; --hero-c: #ff8a4a; }
+.hero-card::before, .hero-card::after { content: ''; position: absolute; pointer-events: none; opacity: 0; border-radius: inherit; }
+.hero-card::before { inset: -1px; padding: 1.5px; background: conic-gradient(from var(--hero-ang), transparent 0 50%, var(--hero-a) 68%, var(--hero-b) 78%, var(--hero-c) 88%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); transition: opacity .8s ease; }
+.hero-card::after { inset: 0; mix-blend-mode: screen; transition: opacity .35s ease;
+  background: radial-gradient(150px 110px at var(--hx, 50%) var(--hy, 50%), rgba(255, 255, 255, .17), transparent 70%),
+    linear-gradient(112deg, transparent 22%, rgba(0, 240, 255, .13) 40%, rgba(255, 46, 110, .17) 50%, rgba(166, 107, 255, .15) 60%, transparent 78%) calc(var(--hxn, .5) * 100%) 0 / 240% 100% no-repeat; }
+html[data-tier="2"] .hero-card::before, html[data-tier="3"] .hero-card::before { opacity: .85; }
+html[data-tier="3"] .hero-card::before { animation: heroAng 7s linear infinite; }
+@keyframes heroAng { to { --hero-ang: 360deg; } }
+.hero-card.is-holo::after { opacity: 1; }
+.hero-card.is-holo::before { opacity: 1; }
+.hero-pre .hero-card::before { opacity: 0; }
+
+/* title: letter-by-letter neon ignition (spans built by hero.js at tier >= 2) */
+.hero-l { display: inline-block; }
+.hero-pre .hero-l { opacity: 0; }
+.hero-ign .hero-l { animation: heroIgn 1.15s steps(1, end) both; animation-delay: calc(var(--i) * 95ms + 120ms); }
+@keyframes heroIgn {
+  0% { opacity: .05; text-shadow: none; color: #5a2a48; }
+  10% { opacity: 1; color: #fff; text-shadow: 0 0 6px #fff, 0 0 26px #ff2e6e, 0 0 70px #ff2e6e; }
+  18% { opacity: .1; color: #5a2a48; text-shadow: none; }
+  30% { opacity: 1; color: #fff; text-shadow: 0 0 6px #fff, 0 0 34px #ff2e6e, 0 0 80px #ff2e6e; }
+  38% { opacity: .22; color: #7a3a60; text-shadow: none; }
+  52% { opacity: 1; color: #fff; text-shadow: 0 0 4px #fff, 0 0 30px #ff2e6e, 0 0 90px #ff2e6e; }
+  100% { opacity: 1; color: #fff; text-shadow: 0 0 32px rgba(255, 46, 110, .55), 0 0 2px rgba(255, 255, 255, .6); }
+}
+/* a few letters keep a faulty-tube flicker (opacity only, long cycle, paused off-screen by core) */
+.hero-ign .hero-l:nth-child(3), .hero-ign .hero-l:nth-child(8) { animation: heroIgn 1.15s steps(1, end) both, heroFl 9s steps(1, end) 3.4s infinite; animation-delay: calc(var(--i) * 95ms + 120ms), 3.4s; }
+.hero-ign .hero-l:nth-child(8) { animation-duration: 1.15s, 13s; }
+@keyframes heroFl { 0%, 100% { opacity: 1; } 91% { opacity: .35; } 92% { opacity: 1; } 93% { opacity: .5; } 94% { opacity: 1; } }
+body.killed .hero-l { color: #ffd6da; text-shadow: 0 0 30px rgba(255, 77, 94, .7), 0 0 2px rgba(255, 255, 255, .6); transition: color .4s ease; }
+html[data-tier="1"] .hero-l { animation: none !important; opacity: 1 !important; }
+@media (prefers-reduced-motion: reduce) { .hero-l { animation: none !important; opacity: 1 !important; } .hero-card::before { animation: none !important; } .hero-crt { animation: none !important; } }

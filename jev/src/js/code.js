@@ -3,7 +3,7 @@
  * own tiny highlighter · per-line typing reveal · moving current-line band · minimaps · audio-bars glyph · live queue status bar.
  * Everything is simulated: the decisions come from the shared JEV bus. */
 JEV.mod('code', () => {
-  const J = JEV, $ = J.$, clamp = J.clamp, reduce = J.reduce;
+  const J = JEV, $ = J.$, clamp = J.clamp, reduce = J.reduce, T = () => J.tier || 2;
   const root = $('#code'), win = root && $('#code-win', root);
   if (!win) return;
   const doc = document;
@@ -60,6 +60,9 @@ JEV.mod('code', () => {
     }, cfg);
     P.band.className = 'code-band'; P.band.setAttribute('aria-hidden', 'true'); P.caret.className = 'code-caret'; P.caret.setAttribute('aria-hidden', 'true');
     P.mmT = doc.createElement('b'); P.mmT.setAttribute('aria-hidden', 'true'); mm.appendChild(P.mmT); P.actI = -1; P.seekUntil = 0;
+    P.scan = doc.createElement('i'); P.scan.className = 'code-scan'; P.scan.setAttribute('aria-hidden', 'true'); P.scanB = doc.createElement('b'); P.scan.appendChild(P.scanB);
+    P.view = $('.code-view', el); P.view.insertBefore(P.scan, P.view.firstChild); P.sby = 0; P.sx = 0; P.cw = 7.2; P.scanOn = false;
+    P.led = J.$$('.code-led i', el); P.ledv = [0, 0, 0]; P.okAt = 0; P.txAt = 0; P.rip = $('.code-rip', el);
     panes[k] = P;
     return P;
   };
@@ -141,14 +144,19 @@ JEV.mod('code', () => {
     J.watch(P.body, () => {
       const cs = getComputedStyle(win);
       P.lh = parseFloat(cs.getPropertyValue('--code-lh')) || 19; P.rows = parseFloat(cs.getPropertyValue('--code-rows')) || 14;
-      P.hv = P.rows * P.lh + 16; P.dh = P.lines.length * P.lh + 16; P.mmV.style.height = (P.rows * 4 + 2) + 'px';
+      P.cw = (parseFloat(cs.getPropertyValue('--code-fs')) || 12) * 0.6; P.hv = P.rows * P.lh + 16; P.dh = P.lines.length * P.lh + 16; P.mmV.style.height = (P.rows * 4 + 2) + 'px';
       band(P, P.cur); P.sy = P.ty = clamp(P.ty, 0, Math.max(0, P.dh - P.hv)); applyScroll(P);
     });
   }
 
   /* ---- typing engine: one line at a time, tokens in order; "live" tokens (json values) pop in whole with a flash ---- */
-  function flash(el) {
+  function flash(el, hot) {
     if (reduce || !el.animate) return;
+    if (hot && T() >= 2) { // state.json: the value blooms white-hot, then cools through a pink halo
+      el.animate([{ backgroundColor: '#ffffff', boxShadow: '0 0 0 3px #fff, 0 0 30px 9px rgba(255,255,255,.95), 0 0 64px 20px rgba(255,150,195,.7)' },
+        { offset: 0.3, backgroundColor: 'rgba(255,255,255,.78)', boxShadow: '0 0 0 3px rgba(255,255,255,.7), 0 0 22px 6px rgba(255,255,255,.55), 0 0 42px 12px rgba(255,150,195,.35)' }], { duration: 1150, easing: 'ease-out' });
+      return;
+    }
     el.animate([{ backgroundColor: '#ffffff', boxShadow: '0 0 0 3px #fff, 0 0 22px 6px rgba(255,255,255,.95)' }], { duration: 950, easing: 'ease-out' });
   }
   function beginLine(P, L) {
@@ -181,7 +189,7 @@ JEV.mod('code', () => {
       if (!P.began) beginLine(P, L);
       const k = L.toks[P.ti];
       if (!k) { endLine(P, L); if (P.pause > 0) break; continue; }
-      if (k.live) { k.tn.nodeValue = k.t; flash(k.el); if (k.df) { k.el.classList.add('code-df', k.df); k.df = ''; } L.el.insertBefore(P.caret, k.el.nextSibling); P.ti++; P.ci = 0; n -= 3; continue; }
+      if (k.live) { k.tn.nodeValue = k.t; flash(k.el, P.skin === 'hot'); if (k.df) { k.el.classList.add('code-df', k.df); k.df = ''; } L.el.insertBefore(P.caret, k.el.nextSibling); P.ti++; P.ci = 0; n -= 3; continue; }
       if (!k.t.trim()) { k.tn.nodeValue = k.t; P.ti++; P.ci = 0; continue; } // indentation is free
       const take = Math.min(n, k.t.length - P.ci);
       P.ci += take; n -= take; k.tn.nodeValue = k.t.slice(0, P.ci);
@@ -297,7 +305,7 @@ JEV.mod('code', () => {
     zout.appendChild(el); el.appendChild(Z.caret);
     while (zout.childNodes.length > 40) zout.removeChild(zout.firstChild);
     Z.hist.push(e.toks); if (Z.hist.length > 60) Z.hist.shift();
-    Z.n++; Z.dirty = true; Z.lastPrint = J.time;
+    Z.n++; Z.dirty = true; Z.lastPrint = J.time; if (e.dec && !instant && !e.seed) Zp.okAt = J.time + 0.35;
     if (e.toks.fx && !instant && !e.seed && !reduce) land(e.toks.fx);
     if (!instant && !e.seed && !reduce) Z.off = Math.min(Z.off + Z.lh, Z.lh * 3);
   }
@@ -402,7 +410,7 @@ JEV.mod('code', () => {
       hops.splice(i, 1);
       if (t - h.at > 1.5) continue; // stale (frame stall / tab was hidden): skip instead of replaying
       if (h.flow != null) { fnode(h.flow, h.d); continue; }
-      if (h.P.mode === 'idle' && !h.P.out) { band(h.P, h.i); pop(h.P.dot); sel(h.P); }
+      if (h.P.mode === 'idle' && !h.P.out) { band(h.P, h.i); pop(h.P.dot); sel(h.P); h.P.okAt = t + 0.4; }
       if (h.tab) tab(h.tab);
     }
   }
@@ -472,6 +480,7 @@ JEV.mod('code', () => {
   }
   if (fxc) { J.watch(zbody, () => { geoDirty = true; }); J.watch(win, () => { geoDirty = true; }); }
   function land(dest) {
+    rBoost = 1; ripple(dest, J.time);
     if (!fg || !qEls[dest]) return;
     if (geoDirty) measure();
     const g = geo[dest]; if (!g || fW < 2) return;
@@ -519,25 +528,103 @@ JEV.mod('code', () => {
     if (!alive && !ring.execute && !ring.review && !ring.skip) fg.clearRect(0, 0, fW, fH);
   }
 
-  /* pointer tilt (fine pointers only): the whole window leans a degree or two toward the cursor */
-  const stage = $('.code-stage', root), fineP = !!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches);
-  const tilt = { rx: 0, ry: 0, tx: 0, ty: 0, r: null, dirty: true, on: false };
+  /* pointer tilt + glass reflection (fine pointers only): the window leans toward the cursor, a soft glare and a diagonal streak follow it */
+  const stage = $('.code-stage', root), fineP = !!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches), gloss = $('.code-gloss', win);
+  const tilt = { rx: 0, ry: 0, tx: 0, ty: 0, gx: 50, gy: 30, tgx: 50, tgy: 30, go: 0, r: null, dirty: true, on: false };
   if (fineP && !reduce && stage) {
     stage.addEventListener('pointermove', (e) => {
       if (e.pointerType !== 'mouse') return;
       if (tilt.dirty || !tilt.r) { tilt.r = stage.getBoundingClientRect(); tilt.dirty = false; }
-      const r = tilt.r; tilt.tx = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1) * 1.5; tilt.ty = -clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1) * 1.1; tilt.on = true;
+      const r = tilt.r, nx = clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1), ny = clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1), tr = T(), a = tr >= 3 ? 2 : tr >= 2 ? 1.6 : 1;
+      tilt.tx = nx * 1.5 * a; tilt.ty = -ny * 1.1 * a; tilt.tgx = (nx + 1) * 50; tilt.tgy = (ny + 1) * 50; tilt.go = 1; tilt.on = true;
     }, { passive: true });
-    stage.addEventListener('pointerleave', () => { tilt.tx = tilt.ty = 0; });
+    stage.addEventListener('pointerleave', () => { tilt.tx = tilt.ty = 0; tilt.go = 0; });
     window.addEventListener('scroll', () => { tilt.dirty = true; }, { passive: true });
     window.addEventListener('resize', () => { tilt.dirty = true; }, { passive: true });
   }
+  let goSet = -1;
   function tiltStep(dt) {
     if (!tilt.on) return;
     const k = 1 - Math.exp(-dt * 6);
     tilt.rx += (tilt.ty - tilt.rx) * k; tilt.ry += (tilt.tx - tilt.ry) * k;
+    if (gloss && T() >= 2) {
+      tilt.gx += (tilt.tgx - tilt.gx) * k; tilt.gy += (tilt.tgy - tilt.gy) * k;
+      gloss.style.setProperty('--gx', tilt.gx.toFixed(1) + '%'); gloss.style.setProperty('--gy', tilt.gy.toFixed(1) + '%'); gloss.style.setProperty('--gs', (20 + tilt.gx * 0.6).toFixed(1) + '%');
+      if (goSet !== tilt.go) { goSet = tilt.go; gloss.style.setProperty('--go', String(tilt.go)); }
+    }
     if (!tilt.tx && !tilt.ty && Math.abs(tilt.rx) < 0.01 && Math.abs(tilt.ry) < 0.01) { tilt.rx = tilt.ry = 0; tilt.on = false; stage.style.transform = ''; return; }
     stage.style.transform = 'perspective(1500px) rotateX(' + tilt.rx.toFixed(3) + 'deg) rotateY(' + tilt.ry.toFixed(3) + 'deg)';
+  }
+
+  /* =====================================================================
+   * 4d. spectacle: scanner beam · header LEDs · compile-success ripple · terminal matrix rain
+   * ===================================================================== */
+  const Zp = { led: J.$$('.code-led i', zel), ledv: [0, 0, 0], okAt: 0, txAt: 0, rip: $('.code-rip', zel) };
+  function scanStep(P, dt) { // bloom bar rides the line being typed; its hot spot rides the caret
+    if (T() < 2 || P.skin === 'dark') return;
+    const typing = P.mode === 'type';
+    if (!typing && !P.scanOn) return;
+    const ty = 8 + (P.cur + 1) * P.lh - P.sy - 22, k = 1 - Math.exp(-dt * 16);
+    if (typing && !P.scanOn) { P.sby = ty; P.sx = 5 * P.cw; }
+    P.scanOn = typing;
+    P.sby += (ty - P.sby) * k;
+    P.scan.style.transform = 'translate3d(0,' + P.sby.toFixed(1) + 'px,0)';
+    const L = P.lines[P.li]; let n = 0;
+    if (L && P.began) { for (let i = 0; i < P.ti && i < L.toks.length; i++) n += L.toks[i].t.length; n += P.ci; }
+    P.sx += ((5 + n) * P.cw - P.sx) * k;
+    P.scanB.style.transform = 'translate3d(' + P.sx.toFixed(1) + 'px,0,0)';
+  }
+  function ledSet(P, i, on) { const b = on ? 1 : 0; if (P.ledv[i] === b) return; P.ledv[i] = b; P.led[i].classList.toggle('on', !!b); }
+  function ledStep(t) {
+    for (let i = 0; i < 3; i++) {
+      const P = PANES[i], typing = P.mode === 'type';
+      ledSet(P, 0, typing && Math.sin(t * 41 + i * 2.3) > -0.25); ledSet(P, 1, t < P.okAt); ledSet(P, 2, t < P.txAt);
+    }
+    ledSet(Zp, 0, Z.hold || t - Z.lastPrint < 0.22 && Math.sin(t * 47) > -0.2); ledSet(Zp, 1, t < Zp.okAt); ledSet(Zp, 2, t < Zp.txAt);
+  }
+  const stLamp = $('.lamp', win), rips = []; let okUntil = 0;
+  const RIPM = { execute: '#2ee6a6', review: '#ffc13d' };
+  function ripple(dest, t) { // a decision executes: the handoff line lights the terminal, then the wavefront crosses the other three panes
+    if (T() < 2 || reduce || J.hidden() || !RIPM[dest] || rips.length > 10) return;
+    const wb = $('.code-wave b', win), nar = J.narrow();
+    const seq = dest !== 'execute' ? [[Zp, 0]] : nar ? [[Zp, 0], [Q, 0.1], [S, 0.2], [D, 0.3]] : [[Zp, 0], [S, 0.14], [Q, 0.14], [D, 0.28]];
+    for (const [P, d] of seq) rips.push({ at: t + d, P, col: RIPM[dest] });
+    if (dest === 'execute' && wb) J.animate(wb, [{ transform: 'translateX(300%) skewX(-18deg)', opacity: 0 }, { opacity: 1, offset: 0.16 }, { opacity: 1, offset: 0.7 }, { transform: 'translateX(-130%) skewX(-18deg)', opacity: 0 }], { duration: nar ? 700 : 950, easing: 'cubic-bezier(.45,.05,.3,1)' });
+  }
+  function runRips(t) {
+    for (let i = rips.length - 1; i >= 0; i--) {
+      const r = rips[i]; if (r.at > t) continue;
+      rips.splice(i, 1);
+      if (t - r.at > 1.2 || !r.P.rip) continue;
+      r.P.rip.style.setProperty('--rip', r.col); r.P.txAt = t + 0.8; r.P.okAt = Math.max(r.P.okAt, t + 0.5);
+      J.animate(r.P.rip, [{ opacity: 0 }, { opacity: 1, offset: 0.16 }, { opacity: 0 }], { duration: 780, easing: 'ease-out' });
+      if (r.P === Zp && stT && stLamp && r.col === RIPM.execute) { okUntil = t + 1.7; if (!lkKey) stT.textContent = 'build ok · gate passed · simulated'; stLamp.classList.add('ok'); }
+    }
+    if (okUntil && t > okUntil) { okUntil = 0; if (!lkKey && stT) stT.textContent = stTxt; if (stLamp) stLamp.classList.remove('ok'); }
+  }
+
+  /* terminal matrix rain: heads only are drawn (pre-rendered glyph atlas), a 20 Hz destination-out fade makes the trails; tier >= 2 */
+  const rc = $('.code-rain', zel), RCW = 9, RCH = 13, RG = '0123456789abcdef$%+-<>/=#{}', atl = doc.createElement('canvas');
+  atl.width = RCW * RG.length; atl.height = RCH;
+  { const g = atl.getContext('2d'); g.font = '700 11px ui-monospace, Menlo, Consolas, monospace'; g.textBaseline = 'middle'; g.fillStyle = '#ff8fbd'; for (let i = 0; i < RG.length; i++) g.fillText(RG[i], i * RCW + 1, RCH / 2 + 0.5); }
+  let rg = null, rW = 0, rH = 0, ry = new Float32Array(0), rs = new Float32Array(0), rOn = false, rFade = 0, rBoost = 0;
+  if (rc && !reduce) J.watch(rc, () => {
+    const f = J.fit(rc, 1); rg = f.g; rW = f.W; rH = f.H; const n = Math.max(1, Math.floor(rW / RCW));
+    ry = new Float32Array(n); rs = new Float32Array(n);
+    for (let i = 0; i < n; i++) { ry[i] = -Math.random() * (rH / RCH); rs[i] = 5 + Math.random() * 9; }
+  });
+  function rainStep(dt) {
+    if (!rg) return;
+    if (T() < 2) { if (rOn) { rOn = false; rg.clearRect(0, 0, rW, rH); } return; }
+    rOn = true; rBoost *= Math.exp(-dt * 2.2);
+    rFade += dt;
+    if (rFade >= 0.05) { rg.globalCompositeOperation = 'destination-out'; rg.fillStyle = 'rgba(0,0,0,' + (1 - Math.exp(-rFade * 1.5)).toFixed(3) + ')'; rg.fillRect(0, 0, rW, rH); rg.globalCompositeOperation = 'source-over'; rFade = 0; }
+    const k = (1 + rBoost * 2.2) * dt, rows = rH / RCH;
+    for (let i = 0; i < ry.length; i++) {
+      const p = ry[i] | 0; ry[i] += rs[i] * k;
+      if ((ry[i] | 0) !== p && ry[i] > 0) rg.drawImage(atl, ((Math.random() * RG.length) | 0) * RCW, 0, RCW, RCH, i * RCW, (ry[i] | 0) * RCH, RCW, RCH);
+      if (ry[i] > rows + 2) { ry[i] = -Math.random() * 18; rs[i] = 5 + Math.random() * 9; }
+    }
   }
 
   /* =====================================================================
@@ -630,6 +717,8 @@ JEV.mod('code', () => {
     runHops(t);
     zFlush(t, dt);
     drawFx(dt); tiltStep(dt);
+    for (let i = 0; i < 3; i++) scanStep(PANES[i], dt);
+    ledStep(t); runRips(t); rainStep(dt);
     for (const k in tabs) { const o = tabs[k]; if (o.on && t > o.until) { o.on = false; o.el.classList.remove('hot'); } }
     for (const o of fnodes) if (o.on && t > o.until) { o.on = false; o.el.classList.remove('on'); }
     if (t - lastMeta > 0.25) { lastMeta = t; for (let i = 0; i < 3; i++) meta(PANES[i], t); zMeta(t); status(); }

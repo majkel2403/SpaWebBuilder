@@ -52,6 +52,18 @@ JEV.mod('hero', () => {
     x.globalCompositeOperation = 'destination-in'; gr = x.createLinearGradient(0, 0, 128, 0); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,.25)'); x.fillStyle = gr; x.fillRect(0, 0, 128, 32); return s;
   });
 
+  /* ---------- spectacle assets (pre-rendered once): depth fog profile + light-sweep bands ---------- */
+  const tierOf = () => J.tier || 2;
+  const FOGS = (() => { // horizontal alpha ramp: clear at the centre (the focus), dark far away; stretched over 2.4 x stage width so it always covers the stage
+    const c = document.createElement('canvas'); c.width = 256; c.height = 2; const x = c.getContext('2d'), id = x.createImageData(256, 2);
+    for (let i = 0; i < 256; i++) { const u = Math.abs(i - 127.5) / 127.5, a = Math.min(1, Math.pow(u * 2.4, 1.7)); for (let r = 0; r < 2; r++) { const o = (r * 256 + i) * 4; id.data[o] = 6; id.data[o + 1] = 3; id.data[o + 2] = 11; id.data[o + 3] = Math.round(a * 255); } }
+    x.putImageData(id, 0, 0); return c;
+  })();
+  const SWEEP = RGB.map((c) => {
+    const s = document.createElement('canvas'); s.width = 64; s.height = 2; const x = s.getContext('2d'), gr = x.createLinearGradient(0, 0, 64, 0), hi = c.map((v) => Math.round(v + (255 - v) * 0.7)).join(',');
+    gr.addColorStop(0, 'rgba(' + c.join(',') + ',0)'); gr.addColorStop(0.55, 'rgba(' + c.join(',') + ',.35)'); gr.addColorStop(0.86, 'rgba(' + hi + ',.95)'); gr.addColorStop(1, 'rgba(' + c.join(',') + ',0)'); x.fillStyle = gr; x.fillRect(0, 0, 64, 2); return s;
+  });
+
   /* ---------- graph: 8 layers, one flat node array, one flat edge array ---------- */
   const LC = [15, 12, 18, 24, 18, 3, 11, 3]; // state · encode · jev a/b/c · questions · answers · code
   const LS = [0]; for (let i = 0; i < 8; i++) LS.push(LS[i] + LC[i]);
@@ -186,6 +198,7 @@ JEV.mod('hero', () => {
       const s = esrc[i], d = edst[i]; ex0[i] = nx[s]; ey0[i] = ny[s]; ex1[i] = nx[d]; ey1[i] = ny[d];
       const dx = ex1[i] - ex0[i], dy = ey1[i] - ey0[i]; e2[i] = dx * dx + dy * dy + 1; elen[i] = Math.sqrt(e2[i]) * (ec[i] ? 1.06 : 1);
     }
+    { const pj = P[2]; LX[0] = P[0].x + P[0].w / 2; LX[1] = P[1].x + P[1].w / 2; LX[2] = pj.x + pj.w * 0.13; LX[3] = jcx; LX[4] = pj.x + pj.w * 0.87; LX[5] = P[3].x + P[3].w / 2; LX[6] = P[4].x + P[4].w / 2; LX[7] = P[5].x + P[5].w / 2; fcx = jcx; }
     net.style.setProperty('--hero-jx', jcx.toFixed(0) + 'px'); net.style.setProperty('--hero-jy', jcy.toFixed(0) + 'px');
   }
 
@@ -363,6 +376,33 @@ JEV.mod('hero', () => {
 
   const RIPN = 8, ripT = new Float32Array(RIPN).fill(-9), ripK = new Uint8Array(RIPN), ripC = new Uint8Array(RIPN); let ripI = 0;
 
+  /* spectacle state: shockwave rings + light sweep (code-act hit) · signal trace (path of the latest decision) · kill CRT · bloom · parallax · depth focus */
+  const SHN = 4, shT = new Float32Array(SHN).fill(-9), shK = new Uint8Array(SHN), shC = new Uint8Array(SHN); let shI = 0, punch = 0, swT = -9, swC = 0, swS = 0;
+  const TRN = 2, TRE = 13, trE = [0, 1].map(() => new Int16Array(TRE)), trT = new Float32Array(TRN).fill(-9), trC = new Uint8Array(TRN); let trI = 0;
+  const TPX = new Float32Array(TRE * 9), TPY = new Float32Array(TRE * 9), TPN = new Uint8Array(TRE), TPD = new Uint8Array(TRE);
+  const LX = new Float32Array(8); let fcx = 0, fAmt = 0.5, killT0 = -9;
+  const planeEl = J.$('#heroPlane'), gridEl = J.$('.hero-grid', stage), legEl = J.$('.hero-legend', stage);
+  const PRL = [{ el: planeEl, x: 1e9, y: 1e9, s: 1 }, { el: gridEl, x: 1e9, y: 1e9, s: 1 }, { el: cardEl, x: 1e9, y: 1e9, s: 1 }, { el: chipEl, x: 1e9, y: 1e9, s: 1 }, { el: legEl, x: 1e9, y: 1e9, s: 1 }];
+  let parOn = false, lox = 0, loy = 0;
+  const bA = document.createElement('canvas'), bB = document.createElement('canvas'), bgA = bA.getContext('2d'), bgB = bB.getContext('2d'); let bFrame = 0;
+  bgA.imageSmoothingQuality = 'high'; bgB.imageSmoothingQuality = 'high';
+  function setPar(o, x, y, sc) { // writes the individual translate / scale properties only when the value moved
+    if (!o.el) return; const nx = Math.round(x * 4) / 4, ny = Math.round(y * 4) / 4;
+    if (nx !== o.x || ny !== o.y) { o.x = nx; o.y = ny; o.el.style.translate = nx + 'px ' + ny + 'px'; }
+    if (sc !== undefined && Math.abs(sc - o.s) > 0.0004) { o.s = sc; o.el.style.scale = sc.toFixed(4); }
+  }
+  function parReset() { for (const o of PRL) if (o.el) { o.el.style.translate = ''; o.el.style.scale = ''; o.x = o.y = 1e9; o.s = 1; } lox = loy = 0; parOn = false; }
+  /* layered parallax: far = grid + aura, mid = the network plane (mesh, panels, beams), near = labels (cached text) and the glass cards; pointer + scroll, tier >= 2 */
+  function parallax(TR, t) {
+    if (TR < 2 || J.reduce) { if (parOn) parReset(); return; }
+    parOn = true; const nar = M, sc = clamp((J.scroll ? J.scroll.y : 0) / (H || 600), 0, 1), kx = nar ? 0 : ax, ky = nar ? 0 : ay;
+    let jx = 0, jy = 0; if (killed && TR >= 3 && t - killT0 < 1.4) { jx = Math.sin(t * 131) * 2.2; jy = Math.sin(t * 97) * 1.2; }
+    setPar(PRL[0], -kx * 0.3 + jx, -ky * 0.3 + jy + sc * 22, TR >= 3 ? 1 + punch * 0.006 : undefined);
+    setPar(PRL[1], kx * 0.9, ky * 0.9 + sc * 60);
+    if (!nar) { setPar(PRL[2], -kx * 0.5, -ky * 0.5 - sc * 14); setPar(PRL[3], -kx * 0.35, -ky * 0.35 - sc * 10); setPar(PRL[4], -kx * 0.25, -ky * 0.25 - sc * 8); }
+    const D = J.DPR; lox = Math.round(-kx * 0.12 * D) / D; loy = Math.round(-ky * 0.12 * D) / D;
+  }
+
   /* beams: ring buffer, struct-of-arrays */
   const BN = 520, bE = new Int16Array(BN), bT0 = new Float32Array(BN), bDur = new Float32Array(BN), bW = new Float32Array(BN), bTint = new Uint8Array(BN), bAmb = new Uint8Array(BN), bDone = new Uint8Array(BN);
   /* ambient shimmer is capped: nAmb live beams at most (AMB_CAP, scaled by the cost governor ambK), so the arrive() chain can never snowball */
@@ -437,8 +477,22 @@ JEV.mod('hero', () => {
       const dk = w.dk, tint = dk === 2 ? T_DIM : dk === 1 ? (killed ? T_RED : T_AMB) : PK;
       cPulse[dk] = 1; fFl[dk] = 1; cTint[dk] = tint; nfl[LS[7] + dk] = 1; ripT[ripI] = w.t0 + ST[7]; ripK[ripI] = dk; ripC[ripI] = tint; ripI = (ripI + 1) % RIPN;
       if (!w.demo) cCount[dk]++;
+      if (!w.demo && !J.reduce) { // spectacle: energy rings + light sweep over the answers + the signal trace of this decision
+        const ts = w.t0 + ST[7]; shT[shI] = ts; shK[shI] = dk; shC[shI] = tint; shI = (shI + 1) % SHN; punch = dk === 0 ? 1 : 0.45;
+        if (dk < 2) { swT = ts; swC = tint; swS = dk === 0 ? 1 : 0.55; }
+        makeTrace(w, dk, tint, ts);
+      }
       w.on = false;
     }
+  }
+  /* signal trace: walks the real graph edges of this decision (strongest state field -> encode -> jev a/b/c -> the three questions -> chosen answers -> code card) */
+  function makeTrace(w, dk, tint, ts) {
+    const R = Math.random, ev = trE[trI], d = w.d; let bs = -1, bv = -1, n, k = 0;
+    for (let i = 2; i < 13; i++) if (w.lit[i] && w.sal[i] > bv) { bv = w.sal[i]; bs = i; } n = bs < 0 ? 1 : bs;
+    for (let l = 0; l < 4; l++) { if (!noutN[n]) return; const e = nout0[n] + ((R() * noutN[n]) | 0); ev[k++] = e; n = edst[e]; }
+    const rows = [ACTS.indexOf(d.action), 5 + d.sizeIdx, d.riskOk ? 9 : 10];
+    for (let q = 0; q < 3; q++) { const e1 = nout0[n] + q, qn = edst[e1], e2 = nout0[qn] + (rows[q] - GFIRST[q]), rn = edst[e2], e3 = nout0[rn] + dk; ev[k++] = e1; ev[k++] = e2; ev[k++] = e3; }
+    trT[trI] = ts; trC[trI] = tint; trI = (trI + 1) % TRN;
   }
   /* one number everywhere: the bar, the tick and the chip all show the probability of the chosen action. core.makeDecision jitters d.conf by up to 3.5% below it,
      so d.conf is used only when that jitter alone pushed a decision under the floor (p >= floor but d.conf < floor, ~0.3% of decisions) and the printed reason must stay true. */
@@ -492,7 +546,7 @@ JEV.mod('hero', () => {
     tAns = -1;
   }
   function txBegin(i) { const g = txG[i], r = txR[i], D = J.DPR; g.setTransform(D, 0, 0, D, -r.x * D, -r.y * D); g.clearRect(r.x, r.y, r.w, r.h); g.textBaseline = 'middle'; txD[i] = 0; return g; }
-  function blit(g, i) { const r = txR[i]; g.drawImage(txCv[i], r.x, r.y, r.w, r.h); }
+  function blit(g, i) { const r = txR[i]; g.drawImage(txCv[i], r.x + lox, r.y + loy, r.w, r.h); } // lox/loy: the label layer floats a hair in front of the panels (parallax, tier >= 2)
   function txState() {
     const g = txBegin(0), pst = P[0]; g.font = '500 ' + FS + 'px ' + FF;
     if (stVals && hCount > 2) { // sparkline history (last 20 decisions) sits behind each numeric value, newest at the right
@@ -565,16 +619,29 @@ JEV.mod('hero', () => {
     ambAcc += dk * (M ? 8 : 15) * ambK; const cap = AMB_CAP(); while (ambAcc >= 1) { ambAcc -= 1; if (nAmb >= cap) continue; const e = lES[1] + ((Math.random() * (lES[5] - lES[1])) | 0); beam(e, t, 0.8 + Math.random() * 0.8, 0.22 + Math.random() * 0.2, PK, 1); }
     // value tweens (bars, row glow) follow the wall clock, not the dt that core caps at 50 ms: on a slow GPU they still land ~0.5 s after the wave reaches them (the readout waits for them)
     const dA = Math.exp(-dk * 2.1), dB = Math.exp(-dk * 3.4), dC = Math.exp(-dk * 2.2), kE = Math.min(1, Math.max(dk, Math.min(0.3, t - prevT)) * 8); prevT = t;
-    g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); g.clearRect(0, 0, W, H); g.lineCap = 'round'; g.globalCompositeOperation = 'lighter';
+    const TR = tierOf();
+    g.setTransform(J.DPR, 0, 0, J.DPR, 0, 0); g.clearRect(0, 0, W, H); g.lineCap = 'round';
+    if (auraEl) { const tx = J.pointer.nx * 16, ty = J.pointer.ny * 10; ax += (tx - ax) * Math.min(1, dk * 2.5); ay += (ty - ay) * Math.min(1, dk * 2.5); }
+    if (punch > 0.003) punch *= Math.exp(-dk * 4.5); else punch = 0;
+    parallax(TR, t);
+    /* depth of field: the layers away from the active wave sink into the dark, the layer the wave is in stays sharp (one pre-rendered ramp, one draw) */
+    if (TR >= 2) {
+      let nw = null; for (let i = 0; i < WV.length; i++) { const w = WV[i]; if (w.on && (!nw || w.t0 > nw.t0)) nw = w; }
+      const tgt = nw ? LX[Math.max(0, Math.min(7, nw.st - 1))] : jcx; fcx += (tgt - fcx) * Math.min(1, dk * 5); fAmt += ((nw ? 1 : 0.55) - fAmt) * Math.min(1, dk * 3);
+      g.globalAlpha = (TR >= 3 ? 0.3 : 0.2) * fAmt; const fw = W * 2.4; g.drawImage(FOGS, fcx - fw / 2, 0, fw, H); g.globalAlpha = 1;
+    }
+    g.globalCompositeOperation = 'lighter';
     /* bokeh dust: drifting in depth behind the mesh, parallax from the pointer (<= 56 soft sprites) */
+    const dpx = TR >= 2 ? 3.6 : 2.2, dsy = TR >= 2 && J.scroll ? clamp(J.scroll.y / (H || 600), 0, 1) * 70 : 0;
     for (let i = 0; i < dN; i++) {
-      const z = dZ[i], L = W + 80, Lh = H + 80; let x = (dX[i] + t * (2 + 6 * z)) % L; x = (x < 0 ? x + L : x) - 40 - ax * z * 2.2; let y = (dY[i] - t * (1.5 + 4 * z)) % Lh; y = (y < 0 ? y + Lh : y) - 40 - ay * z * 2.2;
+      const z = dZ[i], L = W + 80, Lh = H + 80; let x = (dX[i] + t * (2 + 6 * z)) % L; x = (x < 0 ? x + L : x) - 40 - ax * z * dpx; let y = (dY[i] - t * (1.5 + 4 * z)) % Lh; y = (y < 0 ? y + Lh : y) - 40 - ay * z * dpx - dsy * z;
       const sz = (M ? 7 : 9) + z * (M ? 18 : 30), a = (0.05 + 0.2 * z) * (0.55 + 0.45 * Math.sin(t * (0.5 + z) + dP[i])), k = dK[i];
       g.globalAlpha = a; g.drawImage(SOFT[k === 2 ? T_WHT : k === 1 ? T_DIM : PK], x - sz / 2, y - sz / 2, sz, sz);
     }
     g.globalAlpha = 1;
-    if (killFl > 0.01) { spr(T_RED, jcx, jcy, Math.max(W, H) * 1.3, killFl * 0.35); killFl *= Math.exp(-dk * 1.8); }
-    if (auraEl) { const tx = J.pointer.nx * 16, ty = J.pointer.ny * 10; ax += (tx - ax) * Math.min(1, dk * 2.5); ay += (ty - ay) * Math.min(1, dk * 2.5); if (Math.abs(ax - lax) + Math.abs(ay - lay) > 0.08) { lax = ax; lay = ay; auraEl.style.transform = 'translate3d(' + ax.toFixed(1) + 'px,' + ay.toFixed(1) + 'px,0)'; } }
+    if (killFl > 0.01) { spr(T_RED, jcx, jcy, Math.max(W, H) * 1.3, killFl * 0.35 * (TR >= 2 ? 0.55 + 0.45 * Math.sin(t * 83) * Math.sin(t * 29) : 1)); killFl *= Math.exp(-dk * 1.8); }
+    if (killed && TR >= 2) spr(T_RED, jcx, jcy, Math.max(W, H) * 0.9, 0.05 + 0.03 * Math.sin(t * 2));
+    if (auraEl) { if (Math.abs(ax - lax) + Math.abs(ay - lay) > 0.08) { lax = ax; lay = ay; auraEl.style.transform = 'translate3d(' + ax.toFixed(1) + 'px,' + ay.toFixed(1) + 'px,0)'; } }
     /* pointer: soft spotlight, nearby edges + nodes light up */
     const inside = mx > -1000; hov += ((inside ? 1 : 0) - hov) * Math.min(1, dk * 7);
     if (hov > 0.02) {
@@ -587,13 +654,14 @@ JEV.mod('hero', () => {
       for (let i = 0; i < NN; i++) { const dx = nx[i] - mx, dy = ny[i] - my, d2 = dx * dx + dy * dy; if (d2 < R2) { const k = 1 - Math.sqrt(d2) / PR; spr(PK, nx[i], ny[i], (M ? 12 : 16) + 18 * k, k * 0.95 * hov); } }
     }
     /* idle shimmer + wave beams */
-    let aN = 0;
+    let aN = 0; const stut = killed && TR >= 2, stutM = t - killT0 < 1.6 ? 1 : 3;
     for (let b = 0; b < BN; b++) {
       const dur = bDur[b]; if (dur === 0) continue;
       const u = (t - bT0[b]) / dur; if (u < 0) continue;
       const e = bE[b], amb = bAmb[b], span = Math.min(0.75, Math.max(0.16, (amb ? 56 : 120) / (elen[e] + 1)));
       if (u >= 1 && !bDone[b]) { bDone[b] = 1; arrive(b, e); }
       if (u >= 1 + span) { bDur[b] = 0; if (amb) nAmb--; continue; }
+      if (stut && ((b + ((t * 22) | 0)) & stutM) === 0) continue; // kill state: beams stutter
       const hu = u > 1 ? 1 : u, tu = u - span < 0 ? 0 : u - span, w = bW[b] * (u > 1 ? 1 - (u - 1) / span : 1), R = BRAMP[bTint[b]];
       ep(e, tu); const x0 = PX, y0 = PY; ep(e, hu); const x3 = PX, y3 = PY;
       if (amb) { const ri = (w * 0.55 * 32) | 0; if (ri > 0) { aX0[aN] = x0; aY0[aN] = y0; aX1[aN] = x3; aY1[aN] = y3; aKey[aN++] = bTint[b] * 8 + (ri > 7 ? 7 : ri); } if (w > 0.1) spr(bTint[b], x3, y3, 7, w * 0.8); continue; }
@@ -667,6 +735,42 @@ JEV.mod('hero', () => {
     /* inspected node: crisp ring that breathes */
     if (tipN >= 0 && tipN < LS[6]) { const l = nL[tipN], r = (l === 5 ? qr + 5 : M ? 6 : 7.5) + 1.2 * Math.sin(t * 6); g.globalAlpha = 0.9; g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1.2; g.beginPath(); g.arc(nx[tipN], ny[tipN], r, 0, J.TAU); g.stroke(); }
     if (tipExp && t > tipExp) hideTip();
+    if (TR >= 2) {
+      /* energy rings at the code-act hit: three staggered ground-plane ellipses + a hot core */
+      for (let i = 0; i < SHN; i++) {
+        const age = t - shT[i]; if (age < 0 || age > 1.1) continue; const k = age / 1.1, c = CARDS[shK[i]], cx = c.x + c.w * 0.5, cy = c.y + c.h * 0.5, RR = M ? 70 : 150, R = RAMP[shC[i]];
+        spr(shC[i], c.x, cy, (M ? 40 : 70) * (1 - k * 0.5), (1 - k) * (1 - k));
+        for (let j = 0; j < 3; j++) { const kj = k - j * 0.09; if (kj <= 0) continue; const e = 1 - (1 - kj) * (1 - kj), a = Math.pow(1 - kj, 1.4); g.lineWidth = 0.8 + 3.2 * (1 - kj); g.strokeStyle = R[(a * 0.8 * 32) | 0]; g.beginPath(); g.ellipse(cx, cy, 14 + e * RR, 8 + e * RR * 0.55, 0, 0, J.TAU); g.stroke(); }
+      }
+      /* rolling light sweep across the answer + code panels when a decision executes */
+      const sa = (t - swT) / 0.85;
+      if (sa >= 0 && sa < 1) {
+        const pa4 = P[4], pc = P[5], x0 = pa4.x, x1 = pc.x + pc.w, bw2 = (M ? 60 : 130), e = sa * sa * (3 - 2 * sa), bx = x0 - bw2 + (x1 - x0 + bw2 * 1.6) * e, cy = pa4.y + pa4.h / 2;
+        g.save(); g.beginPath(); g.rect(pa4.x, pa4.y, pa4.w, pa4.h); g.rect(pc.x, pc.y, pc.w, pc.h); g.clip(); g.translate(0, cy); g.transform(1, 0, -0.42, 1, 0, 0);
+        g.globalAlpha = swS * Math.sin(Math.PI * sa) * 0.8; g.drawImage(SWEEP[swC], bx, -pa4.h / 2 - 4, bw2, pa4.h + 8); g.restore(); g.globalAlpha = 1;
+      }
+      /* signal trace: the path of the latest decision draws on, holds, then fades (2 s) */
+      for (let q = 0; q < TRN; q++) {
+        const age = t - trT[q]; if (age < 0 || age > 2.1) continue; const prog = Math.min(1, age / 0.6), fa = age < 0.9 ? 1 : Math.max(0, 1 - (age - 0.9) / 1.2), ev = trE[q], tn = trC[q];
+        let np = 0;
+        for (let i = 0; i < TRE; i++) {
+          const pe = i < 4 ? clamp(prog / 0.4 * 4 - i, 0, 1) : clamp((prog - 0.4) / 0.6 * 3 - ((i - 4) % 3), 0, 1), e = ev[i]; TPD[i] = pe >= 1 ? 1 : 0;
+          if (pe <= 0) { TPN[i] = 0; continue; } const ns = 1 + Math.ceil(7 * pe); TPN[i] = ns; const o = i * 9;
+          for (let s2 = 0; s2 < ns; s2++) { ep(e, pe * s2 / (ns - 1)); TPX[o + s2] = PX; TPY[o + s2] = PY; } np++;
+        }
+        if (!np) continue;
+        for (let pass = TR >= 2 ? 0 : 1; pass < 3; pass++) {
+          g.lineWidth = pass === 0 ? (M ? 5 : 7) : pass === 1 ? (M ? 1.6 : 2.2) : 1; g.strokeStyle = pass === 0 ? RAMP[tn][(fa * 0.17 * 32) | 0] : pass === 1 ? BRAMP[tn][(fa * 0.62 * 32) | 0] : RAMP[T_WHT][(fa * 0.9 * 32) | 0];
+          g.beginPath(); for (let i = 0; i < TRE; i++) { const ns = TPN[i]; if (!ns) continue; const o = i * 9; g.moveTo(TPX[o], TPY[o]); for (let s2 = 1; s2 < ns; s2++) g.lineTo(TPX[o + s2], TPY[o + s2]); } g.stroke();
+        }
+        for (let i = 0; i < TRE; i++) if (TPD[i]) spr(tn, nx[edst[ev[i]]], ny[edst[ev[i]]], (M ? 9 : 13), fa * 0.8);
+      }
+      /* bloom: a two-step downsampled (1/3, 1/9) copy of everything drawn so far, added back over itself; re-captured every 2nd / 3rd frame */
+      if (bB.width > 1) {
+        if ((bFrame++ % (TR >= 3 ? 2 : 3)) === 0) { bgA.clearRect(0, 0, bA.width, bA.height); bgA.drawImage(cl, 0, 0, bA.width, bA.height); bgB.clearRect(0, 0, bB.width, bB.height); bgB.drawImage(bA, 0, 0, bB.width, bB.height); }
+        g.globalAlpha = TR >= 3 ? 0.62 : 0.46; g.drawImage(bB, 0, 0, W, H); g.globalAlpha = 1;
+      }
+    }
     /* idle: after 12 s without any pointer / key interaction (the simulated stream itself never stops), soft rings around the tower + a 'tap to fire' plate */
     idleA += (((t - lastDecT > 12 && hov < 0.2 && tipN < 0) ? 1 : 0) - idleA) * Math.min(1, dk * 3);
     const hx = jcx, hy = jcy + P[2].h * 0.16;
@@ -742,19 +846,32 @@ JEV.mod('hero', () => {
   function rebuild() {
     const a = J.fit(cs), b = J.fit(cl); gs = a.g; gl = b.g; W = a.W; H = a.H; M = W < 700;
     const dens = M ? 0 : W < 1000 ? 1 : 2; if (dens !== topoMode) buildTopo(dens);
-    layout(); dustInit(); stVals = !M && P[0].w >= 128; txLayout(); drawStatic(); if (!J.reduce || !lastRun) frame(performance.now() / 1000, 0.016); else frame(lastRun, 0.016);
+    layout(); dustInit(); bA.width = Math.max(8, (cl.width / 3) | 0); bA.height = Math.max(8, (cl.height / 3) | 0); bB.width = Math.max(4, (bA.width / 3) | 0); bB.height = Math.max(4, (bA.height / 3) | 0); bgA.imageSmoothingQuality = 'high'; bgB.imageSmoothingQuality = 'high'; stVals = !M && P[0].w >= 128; txLayout(); drawStatic(); if (!J.reduce || !lastRun) frame(performance.now() / 1000, 0.016); else frame(lastRun, 0.016);
   }
   J.watch(net, rebuild);
   if (document.fonts) { document.fonts.ready.then(() => W && rebuild()).catch(() => {}); if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => W && rebuild()); }
 
   /* ---------- events ---------- */
+  const KILL_KF = [{ transform: 'scale(1,1)', filter: 'brightness(1)', opacity: 1, offset: 0 }, { transform: 'scale(1,.012)', filter: 'brightness(3.2) saturate(.3)', opacity: 1, offset: 0.26 },
+    { transform: 'scale(.04,.012)', filter: 'brightness(5)', opacity: 1, offset: 0.42 }, { transform: 'scale(0,0)', filter: 'brightness(5)', opacity: 0, offset: 0.52 },
+    { transform: 'scale(1,.012)', filter: 'brightness(3) saturate(.2)', opacity: 1, offset: 0.64 }, { transform: 'scale(1,1)', filter: 'brightness(1.7)', opacity: 1, offset: 0.84 }, { transform: 'scale(1,1)', filter: 'brightness(1)', opacity: 1, offset: 1 }];
+  const REV_KF = [{ transform: 'scale(1,.02)', filter: 'brightness(3.5)', opacity: 0.2 }, { transform: 'scale(1,1)', filter: 'brightness(1.5)', opacity: 1, offset: 0.7 }, { transform: 'scale(1,1)', filter: 'brightness(1)', opacity: 1 }];
+  if (cardEl) { // holographic sheen follows the pointer over the title card (mouse only, tier >= 2)
+    let cr = null;
+    cardEl.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'mouse' || tierOf() < 2) return; cr = cardEl.getBoundingClientRect(); cardEl.classList.add('is-holo'); });
+    cardEl.addEventListener('pointermove', (e) => { if (!cr) return; const x = e.clientX - cr.left, y = e.clientY - cr.top; cardEl.style.setProperty('--hx', x.toFixed(0) + 'px'); cardEl.style.setProperty('--hy', y.toFixed(0) + 'px'); cardEl.style.setProperty('--hxn', (x / cr.width).toFixed(3)); }, { passive: true });
+    cardEl.addEventListener('pointerleave', () => { cr = null; cardEl.classList.remove('is-holo'); });
+  }
   function snap(d, demo) {
     const w = startWave(d, demo); while (w.st < 8) runStage(w, w.st++);
     aVal.set(aTg); aSel.set(aSelT); qFl.fill(0); aHot.fill(0); stLit.forEach((v, i) => (stLit[i] = w.lit[i] ? 0.6 : 0)); cPulse.fill(0); nfl.fill(0); bDur.fill(0); nAmb = 0; cableS = -1; confA = 1; confSp = 1; confVl = 0; fFl.fill(0); nrT.fill(-9); cRoll.fill(1); fDisp = floorV;
     if (chipD) { const cd = chipD; chipD = null; updateChip(cd, chipPc, chipCs); }
   }
   J.bus.on('decision', (d) => { if (J.reduce) { snap(d, false); frame(performance.now() / 1000, 0.016); } else startWave(d, false); if (tipN >= 0) { const n = tipN; tipN = -2; showTip(n, tipLX, tipLY, tipTouch); } });
-  J.bus.on('kill', (k) => { killed = !!k; PK = killed ? T_RED : T_PINK; killFl = 1; });
+  J.bus.on('kill', (k) => {
+    killed = !!k; PK = killed ? T_RED : T_PINK; killFl = 1; killT0 = performance.now() / 1000;
+    if (tierOf() >= 2 && !J.reduce && planeEl) J.animate(planeEl, killed ? KILL_KF : REV_KF, { duration: killed ? 1000 : 520, easing: 'ease-in-out' }); // CRT power-down / power-up
+  });
   J.bus.on('floor', (f) => { floorV = f; fFlash = 1; floorTxt = 'floor ' + f.toFixed(2); });
   const fire = () => { const t = performance.now(); if (t - (fire.t || 0) > 160) { fire.t = t; J.fire(); } };
   let tipLX = 0, tipLY = 0, tipTouch = false;
@@ -774,13 +891,19 @@ JEV.mod('hero', () => {
 
   /* intro: once the boot overlay has left (or on first view), the network wipes in left -> right and the title decodes */
   stage.classList.add('hero-pre');
+  const ignite = !!titleEl && tierOf() >= 2 && !J.reduce; // letter-by-letter neon ignition instead of the scramble
+  if (ignite) {
+    const txt = 'JEV DECIDES'; titleEl.parentNode.setAttribute('aria-label', txt); titleEl.textContent = '';
+    for (let i = 0; i < txt.length; i++) { const sp = document.createElement('span'); sp.className = 'hero-l'; sp.setAttribute('aria-hidden', 'true'); sp.style.setProperty('--i', i); sp.textContent = txt[i] === ' ' ? '\u00a0' : txt[i]; titleEl.appendChild(sp); }
+  }
   J.onView(stage, () => {
     let n = 0;
     const go = () => {
       const b = document.getElementById('fx-boot');
       if (!b || b.classList.contains('fx-out') || ++n > 30) {
+        if (ignite) stage.classList.add('hero-ign');
         stage.classList.remove('hero-pre');
-        if (titleEl) J.scramble(titleEl, 'JEV DECIDES', 1100);
+        if (titleEl && !ignite) J.scramble(titleEl, 'JEV DECIDES', 1100);
       } else setTimeout(go, 100);
     };
     go();

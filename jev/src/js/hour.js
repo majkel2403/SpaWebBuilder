@@ -90,7 +90,20 @@ JEV.mod('hour', () => {
   const avEls = [$('#hr-av0'), $('#hr-av1'), $('#hr-av2')];
   const lbl1 = $('#hr-l1'), lbl2 = $('#hr-l2');
   const jevOrb = $('#hr-jev-orb'), jevAv = avEls[2], lastEl = $('#hr-last'), lastT = $('#hr-last-t');
-  const A = { g: null, W: 0, H: 0, off: null, arcs: [null, null], loop: null, nodes: [], pk: [], nextH: 1.2, ready: false };
+  const A = { g: null, W: 0, H: 0, off: null, arcs: [null, null], loop: null, nodes: [], pk: [], nextH: 1.2, ready: false, av: [], q: [], t: 0, lt: 0, intro: false };
+  const tier = () => J.tier || 2;
+  const shds = $$('.hr-shd', stage), hopN = [false, false, false], hopLast = [-9, -9, -9];
+  /* pooled spark particles for the conduits + mascots (40 max, additive glow sprites) */
+  const AS = Array.from({ length: 40 }, () => ({ x: 0, y: 0, vx: 0, vy: 0, l: 0, m: 1, c: C.pink, s: 4 }));
+  function emitA(x, y, vx, vy, l, hex, s) { for (let i = 0; i < AS.length; i++) { const p = AS[i]; if (p.l <= 0) { p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.l = p.m = l; p.c = hex; p.s = s; return; } } }
+  /** squash-and-stretch hop (class swap restarts the identical keyframes, no forced layout) + a dust puff on landing */
+  function hop(i, delay) {
+    if (reduce || tier() < 2) return;
+    if (delay) { if (A.q.length < 8) A.q.push({ at: A.t + delay, i }); return; }
+    if (A.t - hopLast[i] < 1.1) return; hopLast[i] = A.t; hopN[i] = !hopN[i];
+    for (const el of [avEls[i], shds[i]]) { if (!el) continue; el.classList.toggle('hr-hop-a', hopN[i]); el.classList.toggle('hr-hop-b', !hopN[i]); }
+    if (A.q.length < 8) A.q.push({ at: A.t + 0.5, i, land: true });
+  }
 
   function layoutA() {
     const f = fitC(arcCv); A.g = f.g; A.W = f.W; A.H = f.H;
@@ -106,7 +119,7 @@ JEV.mod('hour', () => {
     }
     const x0 = tr.x + 4, x1 = tr.x + tr.w - 4, yb = A.H - 14, j = av[2], h = av[0];
     A.loop = makePath(roundPoly([[j.x + j.r, j.y], [x1, j.y], [x1, yb], [x0, yb], [x0, h.y], [h.x - h.r, h.y]], 22, 7));
-    A.nodes = [[x1, (j.y + yb) / 2], [x0, (h.y + yb) / 2]];
+    A.av = av; A.nodes = [[x1, (j.y + yb) / 2], [x0, (h.y + yb) / 2]];
     A.arrow = [h.x - h.r, h.y];
     A.ready = true;
     buildStaticA();
@@ -125,6 +138,18 @@ JEV.mod('hour', () => {
         g.fillStyle = rgba(cols[a], 0.16 + 0.5 * Math.sin(u * Math.PI)); g.beginPath(); g.arc(PT.x, PT.y, 1.35, 0, TAU); g.fill();
       }
     }
+    if (tier() >= 2) { /* energy conduits: a soft tube + hot core under each dotted arc */
+      g.globalCompositeOperation = 'lighter'; g.lineCap = 'round'; g.lineJoin = 'round';
+      for (let a = 0; a < 2; a++) {
+        const p = A.arcs[a];
+        for (const [w, al] of tier() >= 3 ? [[14, 0.035], [6, 0.07], [1.1, 0.3]] : [[6, 0.07], [1.1, 0.26]]) {
+          g.lineWidth = w; g.strokeStyle = rgba(cols[a], al); g.beginPath();
+          for (let i = 0; i < p.n; i++) { if (i) g.lineTo(p.x[i], p.y[i]); else g.moveTo(p.x[i], p.y[i]); }
+          g.stroke();
+        }
+      }
+      g.globalCompositeOperation = 'source-over';
+    }
     const L = A.loop;
     g.save(); g.setLineDash([5, 7]); g.lineWidth = 1.2; g.strokeStyle = rgba(pc, 0.45); g.beginPath();
     for (let i = 0; i < L.n; i++) { if (i) g.lineTo(L.x[i], L.y[i]); else g.moveTo(L.x[i], L.y[i]); }
@@ -136,10 +161,10 @@ JEV.mod('hour', () => {
   }
   J.watch(stage, layoutA);
 
-  function spawnPacket(arc, hex, dur, done) { if (A.pk.length < 6) A.pk.push({ arc, hex, dur, t0: J.time, done }); }
+  function spawnPacket(arc, hex, dur, done) { if (A.pk.length < 6) A.pk.push({ arc, hex, dur, t0: J.time, done, sh: 0 }); }
   function drawA(t) {
     const g = A.g; if (!g || !A.ready) return;
-    const W = A.W, H = A.H, sp = killed ? 0.3 : 1;
+    const W = A.W, H = A.H, sp = killed ? 0.3 : 1, tr = tier(), dt = clamp(t - A.lt, 0, 0.1); A.lt = A.t = t;
     g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
     g.clearRect(0, 0, W, H); g.drawImage(A.off, 0, 0, W, H);
     g.globalCompositeOperation = 'lighter';
@@ -148,6 +173,7 @@ JEV.mod('hour', () => {
       for (let k = 0; k < 6; k++) {
         const u = (t * 0.1 * sp + k / 6 + a * 0.41) % 1, s = Math.sin(u * Math.PI);
         at(p, u * p.len); blit(g, hx, PT.x, PT.y, 8 + 5 * s, 0.3 + 0.7 * s); blit(g, '#ffffff', PT.x, PT.y, 2.6, s * 0.9);
+        if (tr >= 2) for (let j = 1; j <= (tr >= 3 ? 3 : 2); j++) { const uu = u - j * 0.013; if (uu < 0) break; at(p, uu * p.len); blit(g, hx, PT.x, PT.y, (8 + 5 * s) * (1 - j * 0.2), (0.34 - j * 0.09) * (0.3 + 0.7 * s)); }
       }
     }
     const L = A.loop, ph = t * 64 * sp, pc = killed ? C.red : C.pink;
@@ -155,20 +181,57 @@ JEV.mod('hour', () => {
     for (let i = A.pk.length - 1; i >= 0; i--) {
       const q = A.pk[i], u = (t - q.t0) / q.dur;
       if (u < 0) continue;
-      if (u >= 1) { A.pk.splice(i, 1); if (q.done) q.done(); continue; }
-      const e = u * u * (3 - 2 * u), p = A.arcs[q.arc];
-      for (let k = 0; k < 4; k++) { at(p, clamp(e - k * 0.03, 0, 1) * p.len); blit(g, q.hex, PT.x, PT.y, 15 - k * 2.8, (1 - k * 0.24) * 0.92); }
+      const p = A.arcs[q.arc];
+      if (u >= 1) {
+        if (tr >= 2) { at(p, p.len); for (let k = 0; k < (tr >= 3 ? 9 : 4); k++) { const a = Math.random() * TAU, v = 40 + Math.random() * 90; emitA(PT.x, PT.y, Math.cos(a) * v, Math.sin(a) * v - 20, 0.5 + Math.random() * 0.3, q.hex, 3 + Math.random() * 3); } }
+        A.pk.splice(i, 1); if (q.done) q.done(); continue;
+      }
+      const e = u * u * (3 - 2 * u), tl = tr >= 3 ? 9 : 4, st = tr >= 3 ? 0.02 : 0.03;
+      for (let k = 0; k < tl; k++) { at(p, clamp(e - k * st, 0, 1) * p.len); blit(g, q.hex, PT.x, PT.y, (15 - k * (tr >= 3 ? 1.4 : 2.8)) * (tr >= 3 ? 1.1 : 1), (1 - k / tl * 0.96) * 0.92); }
       at(p, e * p.len); blit(g, '#ffffff', PT.x, PT.y, 4.4, 1);
+      if (tr >= 2) { /* bloom around the comet head + sparks shed along the way */
+        blit(g, q.hex, PT.x, PT.y, tr >= 3 ? 38 : 26, 0.3);
+        if (tr >= 3 && (q.sh += dt) > 0.035) { q.sh = 0; emitA(PT.x, PT.y, (Math.random() - 0.5) * 50, (Math.random() - 0.7) * 50, 0.45, q.hex, 3); }
+      }
+    }
+    if (tr >= 2) {
+      /* queued hops (stage intro stagger) + landing dust */
+      for (let i = A.q.length - 1; i >= 0; i--) {
+        const q = A.q[i]; if (t < q.at) continue; A.q.splice(i, 1);
+        if (!q.land) { hop(q.i); continue; }
+        const av = A.av[q.i]; if (!av) continue;
+        for (let k = 0; k < 6; k++) { const d = k < 3 ? -1 : 1; emitA(av.x + d * av.r * 0.5, av.y + av.r * 0.92, d * (30 + Math.random() * 60), -(8 + Math.random() * 28), 0.5, q.i === 2 ? pc : q.i ? C.blue : C.orange, 3 + Math.random() * 2); }
+      }
+      /* orbiting sparks: a tilted ellipse around each head (two crossing rings at tier 3) */
+      const n = tr >= 3 ? 4 : 2, hx = [C.orange, C.blue, pc];
+      for (let i = 0; i < 3; i++) {
+        const av = A.av[i]; if (!av) continue;
+        for (let k = 0; k < n; k++) {
+          const a = t * (1.1 + i * 0.22) * sp * (k & 1 ? -1 : 1) + k * TAU / n + i, tilt = k & 1 ? 0.5 : -0.35, R = av.r * (1.1 + 0.06 * (k & 1));
+          const ex = Math.cos(a) * R, ey = Math.sin(a) * R * 0.34, ct = Math.cos(tilt), st2 = Math.sin(tilt), z = 0.65 + 0.35 * Math.sin(a);
+          const x = av.x + ex * ct - ey * st2, y = av.y + ex * st2 + ey * ct;
+          blit(g, hx[i], x, y, 5.5 * z + 1.5, 0.55 + 0.45 * z); blit(g, '#ffffff', x, y, 1.9 * z, 0.9 * z);
+          if (tr >= 3) { const a2 = a - (k & 1 ? -0.22 : 0.22), ex2 = Math.cos(a2) * R, ey2 = Math.sin(a2) * R * 0.34; blit(g, hx[i], av.x + ex2 * ct - ey2 * st2, av.y + ex2 * st2 + ey2 * ct, 3.4 * z, 0.35 * z); }
+        }
+      }
+      for (let i = 0; i < AS.length; i++) {
+        const p = AS[i]; if (p.l <= 0) continue;
+        p.l -= dt; if (p.l <= 0) continue;
+        p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 180 * dt; const k = p.l / p.m;
+        blit(g, p.c, p.x, p.y, p.s * (0.6 + k), k); blit(g, '#ffffff', p.x, p.y, 1.4, k);
+      }
     }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-    if (t > A.nextH) { A.nextH = t + 3.4; spawnPacket(0, killed ? C.red : C.amber, 1.5, null); }
+    if (t > A.nextH) { A.nextH = t + 3.4; hop(0); spawnPacket(0, killed ? C.red : C.amber, 1.5, () => hop(1)); }
   }
   J.task(stage, (t) => drawA(t));
+  J.onView(stage, () => { if (reduce) return; A.q.push({ at: A.t + 0.15, i: 0 }, { at: A.t + 0.4, i: 1 }, { at: A.t + 0.65, i: 2 }); }, { threshold: 0.5 });
 
   /* live decisions: a packet rides dots -> jev, jev's head flashes and shows the typed answer */
   const DEST_HEX = { execute: C.green, review: C.amber, skip: '#b8b2c2' };
   let flip = false;
   function landDecision(d) {
+    hop(2);
     const narrow = J.narrow();
     setT(lastT, narrow ? d.action + ' > ' + d.dest : d.action + ' ' + d.symbol.split('-')[0] + ' ' + d.conf.toFixed(2) + ' > ' + d.dest);
     lastEl.dataset.d = d.dest;
@@ -342,7 +405,7 @@ JEV.mod('hour', () => {
     if (h === headT) return;
     if (headT >= 0) { const o = ticks[headT]; o.setAttribute('stroke-width', headT % 5 === 0 ? 2.2 : 1.4); if (headT < lit) paintTick(headT, true); }
     headT = h;
-    if (h >= 0) { const o = ticks[h]; o.setAttribute('stroke', '#fff'); o.setAttribute('stroke-width', h % 5 === 0 ? 3.4 : 2.6); }
+    if (h >= 0) { const o = ticks[h]; o.setAttribute('stroke', '#fff'); o.setAttribute('stroke-width', h % 5 === 0 ? 3.4 : 2.6); if (mode === 'play') tickSpark(h); }
   }
   let lit = 60, dm = 60, mT = 60, mode = 'static', clk = 0, rest = 0, manT = 0, act = -1, ckT = 0, lastClock = '';
   const LOOP = { PLAY: 12, REST: 4.2, LEAD: 0.5, MAN: 9 };
@@ -401,14 +464,25 @@ JEV.mod('hour', () => {
   function manualMinutes() { let m = 0; for (let i = 0; i < 6; i++) if (on[i]) m += DUR[i]; return m; }
 
   /* burst particles (additive sprites, pooled) */
-  const BU = { g: null, W: 0, H: 0, live: false, shocks: [], ring: { x: 0, y: 0 }, arm: { x: 0, y: 0 } };
-  const PP = Array.from({ length: 150 }, () => ({ x: 0, y: 0, vx: 0, vy: 0, l: 0, m: 1, s: 4, c: 0, k: 0, r: 0, vr: 0 }));
+  const BU = { g: null, W: 0, H: 0, live: false, shocks: [], ring: { x: 0, y: 0 }, arm: { x: 0, y: 0 }, rs: 1 };
+  const PP = Array.from({ length: 260 }, () => ({ x: 0, y: 0, vx: 0, vy: 0, l: 0, m: 1, s: 4, c: 0, k: 0, r: 0, vr: 0 }));
   const BCOL = [C.pink, C.pink2, C.amber, '#ffffff', C.orange, C.green, C.cyan];
   let flashN = false;
   function armFlash() {
     flashN = !flashN;
     armEl.classList.toggle('hr-fa', flashN); armEl.classList.toggle('hr-fb', !flashN);
     const rf = $('.hr-rflash', panB); if (rf) { rf.classList.toggle('hr-fa', flashN); rf.classList.toggle('hr-fb', !flashN); }
+  }
+  /** a few outward sparks off the freshly lit minute tick (tier 3 every minute, tier 2 every fifth) */
+  function tickSpark(m) {
+    const tr = J.tier || 2; if (reduce || tr < 2 || !BU.g || (tr < 3 && m % 5)) return;
+    const a = m / 60 * TAU - Math.PI / 2, x = BU.ring.x + Math.cos(a) * 98 * BU.rs, y = BU.ring.y + Math.sin(a) * 98 * BU.rs, n = m % 5 === 0 ? 7 : 3;
+    for (let i = 0, k = 0; i < PP.length && k < n; i++) {
+      const p = PP[i]; if (p.l > 0) continue;
+      const b = a + (Math.random() - 0.5) * 1.1, s = 40 + Math.random() * 90;
+      p.x = x; p.y = y; p.vx = Math.cos(b) * s; p.vy = Math.sin(b) * s; p.m = p.l = 0.35 + Math.random() * 0.3; p.s = 2.5 + Math.random() * 2; p.c = (m % 5 === 0 ? 3 : 2); p.k = 0; k++;
+    }
+    BU.live = true;
   }
   function burst(x, y, n, up, R) {
     let k = 0;
@@ -455,13 +529,35 @@ JEV.mod('hour', () => {
   J.watch(panB, () => {
     const f = fitC(burstCv); BU.g = f.g; BU.W = f.W; BU.H = f.H;
     const rb = offs($('.hr-ringbox', panB), panB), ab = offs(armEl, panB);
-    BU.ring.x = rb.x + rb.w / 2; BU.ring.y = rb.y + rb.h / 2; BU.arm.x = ab.x + ab.w / 2; BU.arm.y = ab.y + ab.h / 2;
+    BU.rs = rb.w / 220; BU.ring.x = rb.x + rb.w / 2; BU.ring.y = rb.y + rb.h / 2; BU.arm.x = ab.x + ab.w / 2; BU.arm.y = ab.y + ab.h / 2;
   });
   function arrive() {
     if (killed) return;
-    burst(BU.arm.x, BU.arm.y, 92, true, 200); burst(BU.ring.x, BU.ring.y, 46, false, 118);
+    const tr = J.tier || 2;
+    burst(BU.arm.x, BU.arm.y, tr >= 3 ? 150 : 92, true, 200); burst(BU.ring.x, BU.ring.y, tr >= 3 ? 80 : 46, false, 118);
     armFlash();
     if (J.pulse) J.pulse(0.7);
+    if (!reduce && tr >= 2) cinema(tr);
+  }
+  /* ARMED cinematic: screen-wide shockwave (+ radial light burst at tier 3), a confetti rain with gravity, and the whole panel lifting in 3D for a beat */
+  const shockEl = $('#hr-shock'), lbEl = $('#hr-lightb');
+  let cinN = false;
+  function cinema(tr) {
+    cinN = !cinN;
+    const r = armEl.getBoundingClientRect();
+    shockEl.style.setProperty('--sx', (r.left + r.width / 2).toFixed(0) + 'px'); shockEl.style.setProperty('--sy', (r.top + r.height / 2).toFixed(0) + 'px');
+    lbEl.style.setProperty('--sx', (r.left + r.width / 2).toFixed(0) + 'px'); lbEl.style.setProperty('--sy', (r.top + r.height / 2).toFixed(0) + 'px');
+    for (const el of tr >= 3 ? [shockEl, lbEl, panB] : [shockEl, panB]) {
+      const p = el === panB ? 'hr-lift-' : 'hr-f';
+      el.classList.toggle(p + 'a', cinN); el.classList.toggle(p + 'b', !cinN);
+    }
+    if (tr >= 3) { /* confetti rain from the panel's top edge */
+      for (let i = 0, k = 0; i < PP.length && k < 60; i++) {
+        const p = PP[i]; if (p.l > 0) continue;
+        p.x = Math.random() * BU.W; p.y = 4 + Math.random() * 20; p.vx = (Math.random() - 0.5) * 60; p.vy = 30 + Math.random() * 120; p.m = p.l = 1.4 + Math.random() * 1.1;
+        p.s = 3 + Math.random() * 4; p.c = (Math.random() * BCOL.length) | 0; p.k = 1; p.r = Math.random() * TAU; p.vr = (Math.random() - 0.5) * 14; k++;
+      }
+    }
   }
   function resetB() {
     for (let i = 0; i < 6; i++) { setSw(i, false); barS[i].style.transform = ''; }
@@ -532,8 +628,9 @@ JEV.mod('hour', () => {
   };
 
   const btBox = $('#hr-btbox'), btCv = $('#hr-btc'), tip = $('#hr-bt-tip');
-  const BT = { g: null, W: 0, H: 0, off: null, e: reduce ? 1 : 0, go: reduce, t0: -1, hx: -1, dirty: true, sweep: -1, nextSweep: 9, ey: null, padL: 38, cw: 100, last: -1, left: 0, rl: true, tipX: -1, tipDone: -1 };
+  const BT = { g: null, W: 0, H: 0, off: null, e: reduce ? 1 : 0, go: reduce, t0: -1, hx: -1, dirty: true, sweep: -1, nextSweep: 9, ey: null, padL: 38, cw: 100, last: -1, left: 0, rl: true, tipX: -1, tipDone: -1, lastLive: 0, bx0: 0, bx1: 0, top: 0, bot: 0 };
   const X = (v) => '×' + v.toFixed(2);
+  const tierNow = () => J.tier || 2;
   function layoutC() {
     BT.rl = true; // box moved / resized: re-read its left edge on the next hover
     if (!bt) return;
@@ -558,7 +655,7 @@ JEV.mod('hour', () => {
       g.fillStyle = 'rgba(160,152,176,.8)'; g.fillText('year ' + (y + 1), padL + cw * (y + 0.5) / 4, H - 8);
     }
     // drawdown block (behind everything else)
-    const bx0 = xOf(bt.pi), bx1 = xOf(bt.ti);
+    const bx0 = xOf(bt.pi), bx1 = xOf(bt.ti); BT.bx0 = bx0; BT.bx1 = bx1; BT.top = padT; BT.bot = H - 20;
     const dg = g.createLinearGradient(0, padT, 0, H - 20); dg.addColorStop(0, 'rgba(255,77,94,.26)'); dg.addColorStop(1, 'rgba(255,77,94,.07)');
     g.fillStyle = dg; g.fillRect(bx0, padT, bx1 - bx0, H - 20 - padT);
     g.strokeStyle = 'rgba(255,77,94,.55)'; g.lineWidth = 1; g.setLineDash([3, 3]); g.strokeRect(bx0 + 0.5, padT + 0.5, bx1 - bx0 - 1, H - 20 - padT - 1); g.setLineDash([]);
@@ -575,6 +672,13 @@ JEV.mod('hour', () => {
     g.lineWidth = 2.2; const lg = g.createLinearGradient(padL, 0, W - padR, 0); lg.addColorStop(0, '#ffc13d'); lg.addColorStop(1, '#ff9d3d'); g.strokeStyle = lg; g.stroke();
     g.lineTo(cx(cols - 1), eBot + 4); g.lineTo(cx(0), eBot + 4); g.closePath();
     const ag = g.createLinearGradient(0, eTop, 0, eBot); ag.addColorStop(0, 'rgba(255,193,61,.2)'); ag.addColorStop(1, 'rgba(255,193,61,0)'); g.fillStyle = ag; g.fill();
+    if (tierNow() >= 2) { /* heat glow under the curve: hot amber near the line, cooling to the baseline, brighter where the curve is high */
+      g.save(); g.clip(); g.globalCompositeOperation = 'lighter';
+      const hg = g.createLinearGradient(0, eTop, 0, eBot); hg.addColorStop(0, 'rgba(255,150,40,.34)'); hg.addColorStop(0.45, 'rgba(255,96,40,.12)'); hg.addColorStop(1, 'rgba(255,60,60,0)');
+      g.fillStyle = hg; g.fillRect(padL, eTop - 8, cw, eBot - eTop + 14);
+      if (tierNow() >= 3) { g.lineJoin = 'round'; g.beginPath(); for (let c = 0; c < cols; c++) { if (c) g.lineTo(cx(c), ey[c]); else g.moveTo(cx(c), ey[c]); } g.lineWidth = 14; g.strokeStyle = 'rgba(255,170,60,.1)'; g.stroke(); }
+      g.restore();
+    }
     // labels
     g.textAlign = 'left'; g.font = '700 9.5px ' + MONO;
     g.fillStyle = '#2ee6a6'; g.fillText('win', 4, mid - 9); g.fillStyle = '#ff6b79'; g.fillText('loss', 4, mid + 17);
@@ -666,6 +770,8 @@ JEV.mod('hour', () => {
     const g = BT.g; if (!g || !BT.off) return;
     flushTip();
     let need = BT.dirty;
+    const live = !reduce && BT.e >= 1 && BT.bx1 > BT.bx0 && tierNow() >= 2;   /* drawdown block pulses + warning scan: redraw at ~30 Hz */
+    if (live && t - BT.lastLive > 0.033) { BT.lastLive = t; need = true; }
     if (BT.go && BT.e < 1) { if (BT.t0 < 0) BT.t0 = t; const p = clamp((t - BT.t0) / 2.6, 0, 1); BT.e = 1 - Math.pow(1 - p, 3); need = true; if (p >= 1) BT.nextSweep = t + 3; }
     else if (BT.e >= 1 && !reduce) { if (BT.sweep < 0 && t > BT.nextSweep) BT.sweep = 0; if (BT.sweep >= 0) { BT.sweep += dt / 1.5; need = true; if (BT.sweep > 1) { BT.sweep = -1; BT.nextSweep = t + 8; } } }
     if (!need) return;
@@ -678,6 +784,18 @@ JEV.mod('hour', () => {
       const c = clamp(Math.floor((sx - BT.padL) / BT.cw * BT.cols), 0, BT.cols - 1);
       g.globalAlpha = 0.55; g.drawImage(glow('#4d8dff'), sx - 16, 0, 32, H); g.globalAlpha = 0.9; g.fillStyle = '#fff'; g.fillRect(sx - 0.5, 8, 1, H - 24);
       blit(g, '#ffc13d', sx, BT.ey[c], 18, 0.95);
+      if (tierNow() >= 2) { /* glowing head: bloom + a comet tail riding the curve */
+        blit(g, '#ffffff', sx, BT.ey[c], 5, 0.9); blit(g, '#ffa63d', sx, BT.ey[c], 34, 0.32);
+        for (let k = 1; k <= (tierNow() >= 3 ? 9 : 4); k++) { const cc = c - k * 2; if (cc < 0) break; blit(g, '#ffc13d', BT.padL + (cc + 0.5) * BT.cw / BT.cols, BT.ey[cc], 12 - k, 0.42 - k * 0.04); }
+      }
+    }
+    if (live) {
+      const w = BT.bx1 - BT.bx0, ph = 0.5 + 0.5 * Math.sin(t * 3.4), top = BT.top, hh = BT.bot - top;
+      g.globalAlpha = 0.05 + 0.13 * ph; g.fillStyle = '#ff2e45'; g.fillRect(BT.bx0, top, w, hh);
+      g.globalAlpha = 0.25 + 0.4 * ph; g.strokeStyle = '#ff4d5e'; g.lineWidth = 1.2; g.strokeRect(BT.bx0 + 0.5, top + 0.5, w - 1, hh - 1);
+      const sy = top + ((t * 0.55) % 1) * hh;   // warning scan line sweeping down the block
+      g.globalAlpha = 0.9; g.drawImage(glow('#ff4d5e'), BT.bx0, sy - 9, w, 18); g.globalAlpha = 0.7; g.fillStyle = '#ffd0d5'; g.fillRect(BT.bx0, sy - 0.5, w, 1);
+      if (tierNow() >= 3) { g.globalAlpha = 0.16; g.fillStyle = '#ff6b79'; for (let y = top + 3; y < top + hh; y += 5) g.fillRect(BT.bx0, y, w, 1); }
     }
     if (BT.sweep >= 0) { const x = BT.padL + BT.sweep * BT.cw; g.globalAlpha = Math.sin(BT.sweep * Math.PI) * 0.2; g.drawImage(glow('#8fb4ff'), x - 22, 4, 44, H - 8); }
     if (BT.hx >= 0 && e >= 1) {
@@ -747,6 +865,40 @@ JEV.mod('hour', () => {
   const VERD = { 0: 'almost cash: the capital it takes is enormous', 1: 'what survives fees, spread and slippage', 2: 'what the backtest promised, before the bill', 3: 'every trade must work, every year: nobody sustains this', 4: 'the red end of the dial: returns nobody delivers' };
   const verdIdx = (r) => (r < 12 ? 0 : r < 24 ? 1 : r < 45 ? 2 : r < 120 ? 3 : 4);
   const dispRet = (u) => { const r = u2r(clamp(u, 0, 1)); return r < 10 ? Math.round(r * 10) / 10 : Math.round(r); };
+  /* needle spectacle: sparks shed from the tip at speed + a flare on every gauge tick the needle passes (one small canvas, pooled) */
+  const gcv = $('#hr-gcv'), GP = Array.from({ length: 36 }, () => ({ x: 0, y: 0, vx: 0, vy: 0, l: 0, m: 1, c: C.pink })), FL = Array.from({ length: 8 }, () => ({ x: 0, y: 0, t: 1, mj: 0 }));
+  const GC = { g: null, W: 0, H: 0, s: 1, busy: false }; let flN = 0;
+  function flare(i) {
+    if (reduce || (J.tier || 2) < 2 || !GC.g) return;
+    const k = gTk[i], p = polar(k.u, RR + 14), f = FL[flN++ % FL.length]; f.x = p[0]; f.y = p[1]; f.t = 0; f.mj = k.tx ? 1 : 0; GC.busy = true;
+  }
+  J.watch(gaugeEl, () => { const f = fitC(gcv); GC.g = f.g; GC.W = f.W; GC.H = f.H; GC.s = f.W / 320; });
+  function stepGC(dt) {
+    const g = GC.g; if (!g) return;
+    const tr = J.tier || 2, sp = Math.abs(G.v);
+    if (tr >= 2 && !reduce && sp > 0.35) {   /* shed from the tip, thrown backwards along the sweep */
+      const n = Math.min(tr >= 3 ? 3 : 1, 1 + ((sp - 0.35) * 2) | 0), tp = polar(clamp(G.u, 0, 1), 94), dir = G.v > 0 ? -1 : 1, a = rad(clamp(G.u, 0, 1)) + dir * Math.PI / 2;
+      const col = G.u < r2u(31) ? C.green : G.u < r2u(100) ? C.amber : C.red;
+      for (let q = 0, c = 0; q < GP.length && c < n; q++) if (GP[q].l <= 0) {
+        const p = GP[q], v = 30 + sp * 70 * Math.random(), j = (Math.random() - 0.5) * 1.2;
+        p.x = tp[0]; p.y = tp[1]; p.vx = Math.cos(a + j) * v; p.vy = Math.sin(a + j) * v; p.m = p.l = 0.35 + Math.random() * 0.4; p.c = Math.random() < 0.35 ? '#ffffff' : col; c++; GC.busy = true;
+      }
+    }
+    if (!GC.busy) return;
+    const s = GC.s; g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(0, 0, GC.W, GC.H); g.globalCompositeOperation = 'lighter';
+    let live = 0;
+    for (let i = 0; i < GP.length; i++) {
+      const p = GP[i]; if (p.l <= 0) continue; p.l -= dt; if (p.l <= 0) continue; live++;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 120 * dt; const k = p.l / p.m;
+      blit(g, p.c, p.x * s, p.y * s, (2.5 + 4 * k) * s, k); 
+    }
+    for (let i = 0; i < FL.length; i++) {
+      const f = FL[i]; if (f.t >= 1) continue; f.t += dt / 0.5; live++; const u = Math.min(1, f.t), k = 1 - u;
+      blit(g, '#ffffff', f.x * s, f.y * s, (4 + 6 * u) * s, k); blit(g, f.mj ? C.pink : C.violet, f.x * s, f.y * s, (10 + 22 * u) * s * (f.mj ? 1.3 : 1), k * 0.7);
+    }
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    if (!live) { g.clearRect(0, 0, GC.W, GC.H); GC.busy = false; }
+  }
   function renderG(dt) {
     const u = clamp(G.u, 0, 1), ang = GA + GS * u;
     gNeedle.setAttribute('transform', 'rotate(' + (ang - 270).toFixed(2) + ' ' + CX + ' ' + CY + ')');
@@ -762,7 +914,7 @@ JEV.mod('hour', () => {
     for (let i = 0; i < gTk.length; i++) { const d = Math.abs(gTk[i].u - u); if (d < bd) { bd = d; hot = i; } }
     for (let i = 0; i < gTk.length; i++) {
       const k = gTk[i], st = i === hot ? 2 : k.u <= u + 1e-4 ? 1 : 0;
-      if (st !== k.st) { k.st = st; k.ln.setAttribute('class', 'hr-gtick' + (k.tx ? ' mj' : '') + (st === 2 ? ' hot' : st ? ' lit' : '')); if (k.tx) k.tx.setAttribute('class', 'hr-glab' + (st ? ' lit' : '')); }
+      if (st !== k.st) { if (st === 2) flare(i); k.st = st; k.ln.setAttribute('class', 'hr-gtick' + (k.tx ? ' mj' : '') + (st === 2 ? ' hot' : st ? ' lit' : '')); if (k.tx) k.tx.setAttribute('class', 'hr-glab' + (st ? ' lit' : '')); }
     }
     const r = dispRet(u), rs = fmtRet(r);
     if (rs !== G.lastRet) {
@@ -836,6 +988,7 @@ JEV.mod('hour', () => {
   $$('.hr-pb').forEach((b) => b.addEventListener('click', () => { knob.classList.add('used'); const u = r2u(+b.dataset.r); setU(u); const m = magnet(u, 1e-3); if (m >= 0) { magPulse(m); G.v += (u >= G.u ? 1 : -1) * 0.6; } }));
   J.watch(gaugeEl, () => { gRect = null; G.scale = gsvg.clientWidth / 320; renderG(0); });
   J.task(gaugeEl, (t, dt) => {
+    stepGC(dt);
     const k = G.drag ? 620 : 175, c = G.drag ? 46 : 17, d = G.uT - G.u;
     if (Math.abs(d) > 1e-4 || Math.abs(G.v) > 1e-3) {
       G.v += d * k * dt; G.v *= Math.exp(-c * dt); G.u += G.v * dt; G.rest = false; renderG(dt);
@@ -851,10 +1004,16 @@ JEV.mod('hour', () => {
   const E = { g: null, W: 0, H: 0, on: false, ok: false, rib: [null, null], off: null, fade: 0, t: 0 };
   const RP = Array.from({ length: 10 }, () => ({ x: 0, y: 0, t: 1 })), PU = new Float32Array(40), NP = 18;
   /* splash droplets thrown up where a leak lands in the venue, then falling back (pooled, 24 max) */
-  const DR = Array.from({ length: 24 }, () => ({ x: 0, y: 0, vx: 0, vy: 0, l: 0 }));
+  const DR = Array.from({ length: 48 }, () => ({ x: 0, y: 0, vx: 0, vy: 0, l: 0, m: 0.55 })), tierE = () => J.tier || 2;
   let hitN = false, hitT = 0;
   function splash(x, y) {
-    for (let q = 0, n = 0; q < DR.length && n < 3; q++) if (DR[q].l <= 0) { const d = DR[q]; d.x = x; d.y = y; d.vx = (Math.random() - 0.5) * 90; d.vy = -(50 + Math.random() * 80); d.l = 0.55; n++; }
+    const tr = tierE(), want = tr >= 3 ? 9 : tr >= 2 ? 5 : 3;
+    for (let q = 0, n = 0; q < DR.length && n < want; q++) if (DR[q].l <= 0) {
+      const d = DR[q]; d.x = x; d.y = y; d.m = d.l = 0.55;
+      if (tr >= 2) { const a = -Math.PI * (0.12 + 0.76 * Math.random()), v = 60 + Math.random() * 120; d.vx = Math.cos(a) * v; d.vy = Math.sin(a) * v; d.m = d.l = 0.5 + Math.random() * 0.35; } /* crown: a fan of droplets thrown up and out */
+      else { d.vx = (Math.random() - 0.5) * 90; d.vy = -(50 + Math.random() * 80); }
+      n++;
+    }
     if (E.t - hitT > 0.35) { hitT = E.t; hitN = !hitN; binEl.classList.toggle('hr-hit-a', hitN); binEl.classList.toggle('hr-hit-b', !hitN); }
   }
   function layoutE() {
@@ -886,6 +1045,9 @@ JEV.mod('hour', () => {
         PU[j] = u;
         at(p, Math.pow(u, 1.35) * p.len); const s = Math.sin(Math.min(1, u * 1.15) * Math.PI);
         blit(g, C.red, PT.x, PT.y, 6.5 + 5 * s, E.fade * (0.4 + 0.6 * s)); blit(g, '#ffffff', PT.x, PT.y, 2.3, E.fade * s);
+        if (tierE() >= 3 && u > 0.12 && u < 0.7 && Math.random() < dt * 0.35) { /* a droplet breaks off the ribbon and falls on its own */
+          for (let q = 0; q < DR.length; q++) if (DR[q].l <= 0) { const d = DR[q]; d.x = PT.x; d.y = PT.y; d.vx = (Math.random() - 0.5) * 24; d.vy = 10 + Math.random() * 20; d.m = d.l = 0.9; break; }
+        }
       }
     }
     g.lineWidth = 1.2;
@@ -898,7 +1060,7 @@ JEV.mod('hour', () => {
       const d = DR[k]; if (d.l <= 0) continue;
       d.l -= dt; if (d.l <= 0) continue;
       d.x += d.vx * dt; d.y += d.vy * dt; d.vy += 300 * dt;
-      blit(g, C.red, d.x, d.y, 4.5, Math.min(1, d.l / 0.3)); blit(g, '#ffffff', d.x, d.y, 1.6, d.l / 0.55);
+      blit(g, C.red, d.x, d.y, 4.5, Math.min(1, d.l / 0.3)); blit(g, '#ffffff', d.x, d.y, 1.6, d.l / d.m);
     }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   }
@@ -913,6 +1075,7 @@ JEV.mod('hour', () => {
   /* ---------- bus: kill switch + decisions ---------- */
   J.bus.on('kill', (v) => showKill(v));
   J.bus.on('floor', armText);
+  J.bus.on('tier', () => { buildStaticA(); if (bt) layoutC(); });
   showKill(S.killed);
   if (reduce) { mode = 'static'; renderB(true, 0); updArm(); }
   else { mode = 'static'; }

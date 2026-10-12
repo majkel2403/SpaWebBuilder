@@ -10,6 +10,7 @@
   --serif: 'Fraunces', 'Playfair Display', 'Iowan Old Style', Georgia, serif;
   --gut: clamp(12px, 3vw, 32px);
   --ease: cubic-bezier(.2, .8, .2, 1);
+  --tint: 255, 46, 110; /* section colour temperature: core eases it per section (hero pink · builds magenta · hour amber · desk blue-violet · lab green) */
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; color-scheme: dark; scroll-padding-top: calc(var(--hud-h, 56px) + 10px); scrollbar-width: thin; scrollbar-color: rgba(255, 46, 110, .45) #0b0711; }
@@ -54,7 +55,23 @@ canvas { display: block; }
 .eb::before { content: ''; width: 34px; height: 1px; background: linear-gradient(90deg, transparent, var(--pink)); box-shadow: 0 0 10px var(--pink); }
 .eb i { font-style: normal; color: var(--mut); letter-spacing: .2em; }
 .h2 { font: 700 clamp(26px, 4.6vw, 60px)/1.02 var(--sans); letter-spacing: -.02em; max-width: 22ch; text-wrap: balance; }
-.h2 em { font-style: normal; color: var(--pink); text-shadow: 0 0 28px rgba(255, 46, 110, .55); }
+.h2 em { --em-sh: 0 0 28px rgba(var(--tint), .55); font-style: normal; color: var(--pink); text-shadow: var(--em-sh); }
+/* split-text headings (core.js JEV.splitText): letters rise in, staggered by --i; the <em> letters then catch a travelling glint (--j) */
+.h2.st-ready .st-w { display: inline-block; white-space: nowrap; }
+.h2.st-ready .st-c { display: inline-block; opacity: 0; transform: translate3d(0, .62em, 0) rotate(4deg); transform-origin: 0 100%; }
+html[data-tier="3"] .h2.st-ready .st-c { filter: blur(7px); }
+html[data-tier="3"] .h2.st-in .st-c { filter: none; }
+.h2.st-in .st-c { opacity: 1; transform: none; filter: none; transition: opacity .6s var(--ease), transform .85s var(--ease), filter .7s var(--ease); transition-delay: calc(var(--i, 0) * 15ms + 90ms); }
+.h2.st-in em .st-c { animation: stGlint 7.5s linear 2; animation-delay: calc(var(--j, 0) * 75ms + 1.2s); }
+html[data-tier="3"] .h2.st-in em .st-c { animation-iteration-count: infinite; }
+@keyframes stGlint { 6% { color: #fff; text-shadow: 0 0 18px #fff, 0 0 38px rgba(var(--tint), .95); } 15%, 100% { color: var(--pink); text-shadow: var(--em-sh); } }
+html[data-tier="1"] .h2.st-ready .st-c { opacity: 1; transform: none; filter: none; transition: none; animation: none; }
+/* eyebrow hairline draws itself as the head lands */
+.sec-head.rv .eb::before { transform: scaleX(0); transform-origin: 100% 50%; transition: transform .9s var(--ease) .25s; }
+.sec-head.rv.in .eb::before { transform: none; }
+/* cross-light: a fixed, static colour-temperature wash under the content (above the fx plasma at z -2); only its colour eases between sections */
+body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(62% 46% at 6% -4%, rgba(var(--tint), .11), transparent 72%), radial-gradient(54% 42% at 104% 102%, rgba(var(--tint), .08), transparent 72%); }
 .lede { color: var(--mut); max-width: 66ch; margin-top: 14px; font-size: 12.5px; }
 /* wide screens: headline left, lede (+ optional live slot) right, bottom-aligned - instead of a 22ch headline with the right 40% empty.
    :where() keeps this at zero specificity so module heads (.bld-head, .code-head, anything with its own grid) override freely */
@@ -121,7 +138,7 @@ canvas { display: block; }
 .rv.in, .no-js .rv { opacity: 1; transform: none; filter: none; }
 
 /* ----- HUD ----- */
-.hud { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: clamp(8px, 2vw, 26px); padding: 8px max(var(--gut), env(safe-area-inset-right)) 8px max(var(--gut), env(safe-area-inset-left)); background: linear-gradient(180deg, rgba(5, 3, 10, .94), rgba(5, 3, 10, .62)); backdrop-filter: blur(14px) saturate(1.5); -webkit-backdrop-filter: blur(14px) saturate(1.5); border-bottom: 1px solid rgba(255, 46, 110, .22); }
+.hud { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: clamp(8px, 2vw, 26px); padding: 8px max(var(--gut), env(safe-area-inset-right)) 8px max(var(--gut), env(safe-area-inset-left)); background: linear-gradient(180deg, rgba(5, 3, 10, .94), rgba(5, 3, 10, .62)); backdrop-filter: blur(14px) saturate(1.5); -webkit-backdrop-filter: blur(14px) saturate(1.5); border-bottom: 1px solid rgba(var(--tint), .22); }
 .hud-scan { position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; overflow: hidden; pointer-events: none; opacity: .85; }
 .hud-scan::after { content: ''; position: absolute; left: 0; top: 0; width: 28%; height: 100%; background: linear-gradient(90deg, transparent, var(--pink), #fff, var(--pink), transparent); animation: hudScan 5.5s linear infinite; } /* compositor-only (was a background-position loop) */
 @keyframes hudScan { from { transform: translateX(-103%); } to { transform: translateX(360%); } }
@@ -204,8 +221,8 @@ body.kb-open { overflow: hidden; }
 @media print {
   html, body { background: #fff !important; color: #111 !important; overflow: visible !important; }
   body *, body *::before, body *::after { color: #111 !important; text-shadow: none !important; box-shadow: none !important; animation: none !important; filter: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-  canvas, [id^="fx-"], .fx-ov, .hud, .skip, .marq, .kb, .kb-back, .hud-tip, body::after, .foot-acts, .orb { display: none !important; }
-  .rv { opacity: 1 !important; transform: none !important; }
+  canvas, [id^="fx-"], .fx-ov, .hud, .skip, .marq, .kb, .kb-back, .hud-tip, body::before, body::after, .foot-acts, .orb { display: none !important; }
+  .rv, .h2 .st-c { opacity: 1 !important; transform: none !important; }
   .card { background: none !important; border: 1px solid #bbb !important; break-inside: avoid; }
   .sec { padding: 16px 0 !important; break-inside: auto; } .h2 { break-after: avoid; } .eb::before { display: none; }
   .foot { border-top: 1px solid #999; } .foot p { max-width: none; }
@@ -215,4 +232,10 @@ body.kb-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   .rv { opacity: 1; transform: none; filter: none; }
+  .h2.st-ready .st-c { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; }
 }
+
+/* tier 1 (low): drop the expensive compositing the page used to spend on glass blur and reveal blur */
+html[data-tier="1"] .card { backdrop-filter: none; -webkit-backdrop-filter: none; }
+html[data-tier="1"] .rv { filter: none; }
+html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }

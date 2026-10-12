@@ -238,3 +238,72 @@ body.killed .code-bar::after { background: linear-gradient(90deg, transparent, #
 }
 @media (max-width: 440px) { .code-win { --code-rows: 9; } .code-qbar { display: none; } .code-q i { margin-right: 4px; } .code-st-q { gap: 8px; } }
 @media (prefers-reduced-motion: reduce) { .code-bar::after, .code-hot::before, .code-df::after { animation: none; } .code-cp .ci, .code-cp .ck, .code-mm b { transition: none; } .code-caret { animation: none; } .code-band { transition: none; } }
+
+/* =====================================================================
+ * SPECTACLE (tier-gated: html[data-tier="1"] keeps the page as it was)
+ * ===================================================================== */
+/* 1. glass reflection that follows the pointer (position set on the element itself: no subtree restyle) */
+.code-gloss { position: absolute; inset: 0; z-index: 4; border-radius: inherit; pointer-events: none; opacity: var(--go, 0); transition: opacity .5s;
+  background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 30%), rgba(255, 255, 255, .13), rgba(255, 190, 220, .04) 45%, transparent 70%),
+    linear-gradient(115deg, transparent calc(var(--gs, 40%) - 9%), rgba(255, 255, 255, .07) var(--gs, 40%), transparent calc(var(--gs, 40%) + 7%)); }
+html[data-tier="1"] .code-gloss { display: none; }
+
+/* 2. scanner beam: rides the line being typed, bloom bar + hot spot at the caret */
+.code-scan { position: absolute; left: 0; right: 26px; top: 0; height: 22px; pointer-events: none; opacity: 0; transition: opacity .45s; will-change: transform; }
+.code-typing .code-scan { opacity: 1; }
+.code-scan::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 22px; background: linear-gradient(0deg, rgba(var(--scn, 255, 46, 110), .2), transparent); }
+.code-scan::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: linear-gradient(90deg, rgba(var(--scn, 255, 46, 110), 0), rgba(var(--scn, 255, 46, 110), .9) 12%, rgba(var(--scn, 255, 46, 110), .55) 70%, rgba(var(--scn, 255, 46, 110), 0)); box-shadow: 0 0 10px 1px rgba(var(--scn, 255, 46, 110), .8); }
+.code-scan b { position: absolute; left: -40px; bottom: -9px; width: 80px; height: 18px; border-radius: 50%; background: radial-gradient(closest-side, #fff, rgba(var(--scn, 255, 46, 110), .75) 35%, transparent); opacity: .85; will-change: transform; }
+.code-hot { --scn: 255, 255, 255; }
+.code-hot .code-scan::before { background: linear-gradient(0deg, rgba(255, 255, 255, .3), transparent); }
+.code-dark .code-scan { display: none; }
+html[data-tier="1"] .code-scan { display: none; }
+
+/* 3. state.json heat haze: warm plumes rising through the hot pane + a heat floor */
+.code-haze { position: absolute; inset: 0 26px 0 0; z-index: 2; pointer-events: none; overflow: hidden; opacity: .62; }
+.code-haze::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 46%; background: linear-gradient(0deg, rgba(255, 190, 90, .26), transparent); }
+.code-haze i { position: absolute; left: 0; right: 0; top: 0; height: 200%; will-change: transform;
+  background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(255, 255, 255, .09) 30px, transparent 44px, transparent 61px, rgba(255, 220, 160, .1) 72px, transparent 88px);
+  -webkit-mask: linear-gradient(180deg, transparent, #000 25%, #000 75%, transparent); mask: linear-gradient(180deg, transparent, #000 25%, #000 75%, transparent);
+  animation: codeHaze 5.5s linear infinite; }
+.code-haze i + i { background-position: 41px 0; background-size: 133px 100%; animation-duration: 8.3s; animation-direction: normal; opacity: .7; }
+@keyframes codeHaze { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+html[data-tier="1"] .code-haze { display: none; }
+html:not([data-tier="3"]) .code-haze i + i { display: none; }
+
+/* 4. terminal: matrix rain behind the text, phosphor afterglow on the newest lines, CRT vignette */
+.code-rain { position: absolute; left: 0; top: 0; width: calc(100% - 26px); height: 100%; z-index: 0; pointer-events: none; opacity: .17; }
+html[data-tier="3"] .code-rain { opacity: .21; }
+html[data-tier="1"] .code-rain { display: none; }
+.code-dark .code-term { z-index: 1; }
+.code-crt { position: absolute; left: 0; right: 26px; top: 0; bottom: 0; z-index: 3; pointer-events: none; overflow: hidden; border-radius: 12px;
+  background: radial-gradient(130% 105% at 50% 50%, transparent 55%, rgba(0, 0, 0, .4) 100%), repeating-linear-gradient(0deg, rgba(0, 0, 0, .09) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 26px rgba(0, 0, 0, .55), inset 0 0 2px rgba(255, 90, 150, .25); }
+.code-crt::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 56px; background: linear-gradient(180deg, transparent, rgba(255, 120, 170, .06), transparent); animation: codeRoll 7s linear infinite; will-change: transform; }
+@keyframes codeRoll { from { transform: translateY(-60px); } to { transform: translateY(330px); } }
+html[data-tier="1"] .code-crt { background: radial-gradient(130% 105% at 50% 50%, transparent 58%, rgba(0, 0, 0, .35) 100%); }
+html[data-tier="1"] .code-crt::after { display: none; }
+.code-tl:not(.seed) { animation: codeIn .22s var(--ease) both, codePhos .65s ease-out both; }
+@keyframes codePhos { 0% { text-shadow: 0 0 9px rgba(255, 190, 220, .95), 0 0 2px rgba(255, 255, 255, .9); filter: brightness(1.5); } 100% { text-shadow: 0 0 0 transparent; filter: none; } }
+html[data-tier="1"] .code-tl:not(.seed) { animation: codeIn .22s var(--ease) both; }
+
+/* 5. header status LEDs: rx (amber) = typing, ok (green) = hop / decision, tx (pink) = executed */
+.code-led { flex: none; display: inline-flex; gap: 4px; margin-left: auto; }
+.code-led + .code-meta { margin-left: 8px; }
+.code-led i { width: 5px; height: 5px; border-radius: 50%; background: var(--code-ledoff); transition: background-color .12s, box-shadow .12s; }
+.code-led i.on:nth-child(1) { background: #ffb02e; box-shadow: 0 0 6px 1px rgba(255, 176, 46, .9); }
+.code-led i.on:nth-child(2) { background: #1fd18f; box-shadow: 0 0 6px 1px rgba(46, 230, 166, .9); }
+.code-led i.on:nth-child(3) { background: #ff2e6e; box-shadow: 0 0 6px 1px rgba(255, 46, 110, .9); }
+.code-light { --code-ledoff: rgba(42, 32, 51, .16); } .code-dark { --code-ledoff: rgba(255, 255, 255, .15); } .code-hot { --code-ledoff: rgba(12, 2, 7, .3); }
+.code-hot .code-led i.on { background: #0c0207 !important; box-shadow: 0 0 6px 2px rgba(255, 255, 255, .9) !important; }
+.code-hot .code-led i.on:nth-child(2) { background: #fff !important; }
+@media (max-width: 440px) { .code-dark .code-led { display: none; } .code-dark .code-meta { margin-left: auto; } }
+
+/* 6. compile-success ripple: pane edge flash + a diagonal wavefront across the whole window */
+.code-rip { position: absolute; inset: 0; z-index: 5; border-radius: inherit; pointer-events: none; opacity: 0; box-shadow: inset 0 0 0 2px var(--rip, #2ee6a6), inset 0 0 44px -4px var(--rip, #2ee6a6); }
+html[data-tier="1"] .code-rip, html[data-tier="1"] .code-wave { display: none; }
+.code-wave { position: absolute; inset: 0; z-index: 5; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.code-wave b { position: absolute; top: -10%; bottom: -10%; left: 0; width: 34%; opacity: 0; will-change: transform; transform: translateX(300%) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(46, 230, 166, .1) 38%, rgba(190, 255, 230, .42) 50%, rgba(46, 230, 166, .1) 62%, transparent); }
+.code-status .lamp.ok { box-shadow: 0 0 10px 3px rgba(255, 255, 255, .9); background: #fff; }
+@media (prefers-reduced-motion: reduce) { .code-haze i, .code-crt::after { animation: none; } .code-rain, .code-scan, .code-wave { display: none; } .code-tl:not(.seed) { animation: none; } }

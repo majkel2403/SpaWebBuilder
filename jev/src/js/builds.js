@@ -125,6 +125,8 @@ JEV.mod('builds', () => {
   const flv = new Float32Array(FLN), flT = new Uint8Array(FLN), flR = new Float32Array(FLN * 4);
   bCard.concat(pCard, dCard).forEach((c, i) => { c.fi = i; flT[i] = c.ti; });
   flT[FI_RULES] = TIDX.yellow;
+  const NCI = bCard.concat(pCard, dCard).map((c) => $('.bld-ci', c.el)).concat([$('.bld-ci', rulesEl)]);
+  const NDX = new Float32Array(FLN), NDY = new Float32Array(FLN), ND = new Float32Array(FLN), NTR = new Float32Array(FLN);
   const FL_LIT = [{ offset: 0, filter: 'brightness(1.4)' }], FL_DECAY = { duration: 1000, easing: 'cubic-bezier(.2,.7,.2,1)' };
   const flashCard = (c) => { if (reduce) return; flv[c.fi] = 1; J.animate(c.el, FL_LIT, FL_DECAY); };
   const setConf = (c, p) => {
@@ -142,13 +144,14 @@ JEV.mod('builds', () => {
   const SPH = new Float32Array(NR * 7), SK = new Float32Array(NR * 7), SA = new Float32Array(NR * 7), SOM = new Float32Array(NR * 7);
   const MAXP = 3600, MAXB = 380;
   const PR = new Uint8Array(MAXP), PU = new Float32Array(MAXP), PVU = new Float32Array(MAXP), PPH = new Float32Array(MAXP), PK = new Float32Array(MAXP), PA = new Float32Array(MAXP), POM = new Float32Array(MAXP), PJ = new Float32Array(MAXP), PX = new Float32Array(MAXP), PY = new Float32Array(MAXP);
+  const PTX = new Float32Array(MAXP), PTY = new Float32Array(MAXP), PT = new Float32Array(MAXP), HOT1 = new Int32Array(MAXP), HOT2 = new Int32Array(MAXP);
   const bs = new Int32Array(NB + 1);
   let NP = 0, stars = new Int32Array(0), ridx = [];
   const BR = new Int16Array(MAXB).fill(-1), BU = new Float32Array(MAXB), BV = new Float32Array(MAXB), BL = new Float32Array(MAXB), BP = new Float32Array(MAXB);
   let ready = false, g = null, W = 0, H = 0, sx0 = 0, sy0 = 0, coreCx = 0, coreCy = 0;
   const hz = document.createElement('canvas');
   let kk = S.killed ? 1 : 0, kT = kk, kShown = -1;
-  const bstyle = new Array(NB).fill('#fff');
+  const bstyle = new Array(NB).fill('#fff'), hotS = ['#fff', '#fff'];
   const BALPHA = [0.5, 0.95];
   const bsz = [1.0, 1.55];
   const spr = TRGB.concat([WHITE, RED]).map((c) => {
@@ -188,6 +191,7 @@ JEV.mod('builds', () => {
     const bc = bCard.map((c) => rc(c.el)), pc = pCard.map((c) => rc(c.el)), dc = dCard.map((c) => rc(c.el)), ru = rc(rulesEl);
     bc.forEach((r, i) => setFR(i, r)); pc.forEach((r, j) => setFR(10 + j, r)); dc.forEach((r, m) => setFR(13 + m, r)); setFR(FI_RULES, ru);
     coreCx = core.cx; coreCy = core.cy;
+    for (let i = 0; i < FLN; i++) { const dx = flR[i * 4] + flR[i * 4 + 2] / 2 - coreCx, dy = flR[i * 4 + 1] + flR[i * 4 + 3] / 2 - coreCy, d = Math.hypot(dx, dy) || 1; NDX[i] = dx / d; NDY[i] = dy / d; ND[i] = d; }
     if (tipOn) tipPlace(tipI);
     if (sig === lastSig && ready) return;
     lastSig = sig;
@@ -228,6 +232,7 @@ JEV.mod('builds', () => {
     }
     buildParticles();
     paintHaze();
+    genCracks();
     ready = true;
     draw(performance.now() / 1000, 0.016, true);
   }
@@ -255,7 +260,7 @@ JEV.mod('builds', () => {
       PU[i] = rnd(); PVU[i] = (62 + rnd() * 70) / RLEN[ri];
       if (rnd() < 0.2) { PK[i] = 0; POM[i] = 0; PPH[i] = Math.PI / 2; PA[i] = (rnd() * 2 - 1) * 0.95; }
       else { const q = ri * 7 + ((rnd() * 7) | 0); PPH[i] = SPH[q] + (rnd() - 0.5) * 0.09; PK[i] = SK[q]; POM[i] = SOM[q]; PA[i] = SA[q]; }
-      PJ[i] = (rnd() - 0.5) * 2.2;
+      PJ[i] = (rnd() - 0.5) * 2.2; PT[i] = rnd();
     }
     ridx = []; for (let ri = 0; ri < NR; ri++) ridx.push(new Int32Array(cr[ri]));
     cr.fill(0);
@@ -300,6 +305,7 @@ JEV.mod('builds', () => {
       const white = b >= 10, bright = b & 1, a = white ? (bright ? 0.95 : 0.45) : BALPHA[bright];
       bstyle[b] = mix(white ? WHITE : TRGB[b >> 1], white ? [255, 200, 205] : RED, kk) + ',' + a + ')';
     }
+    hotS[0] = mix([255, 196, 140], [255, 150, 150], kk) + ',.8)'; hotS[1] = mix([255, 246, 225], [255, 215, 215], kk) + ',.95)';
     kShown = kk;
   }
   recolor();
@@ -339,7 +345,115 @@ JEV.mod('builds', () => {
     if (ih > 0) { c.drawImage(s, 0, GK, GK, mid, x, y + GK, GK, ih); c.drawImage(s, GS - GK, GK, GK, mid, x + w - GK, y + GK, GK, ih); }
   }
 
-  let dimV = 0, dimT = 0;
+  /* ---------- spectacle: travelling pulses · shockwave + card nudge · ice cracks + red static · additive bloom (all tier / reduced-motion gated) ---------- */
+  const NPUL = 16, PLR = new Int16Array(NPUL).fill(-1), PLU = new Float32Array(NPUL), PLV = new Float32Array(NPUL), PLS = new Float32Array(NPUL);
+  let rpx = 0, rpy = 0;
+  const ribPt = (ri, u) => { const fi = Math.min(NS - 1.001, u * (NS - 1)), j = fi | 0, tt = fi - j, o = ri * NS * 4 + j * 4; rpx = L[o] + (L[o + 4] - L[o]) * tt; rpy = L[o + 1] + (L[o + 5] - L[o + 1]) * tt; };
+  const fancyNow = () => (J.tier || 2) >= 2 && !reduce;
+  function pulse(ri, str, dur) {
+    if (ri < 0 || ri >= NR || !RN[ri] || !fancyNow()) return;
+    for (let i = 0; i < NPUL; i++) if (PLR[i] < 0) { PLR[i] = ri; PLU[i] = 0; PLV[i] = 1 / dur; PLS[i] = str; return; }
+  }
+  const NSW = 3, SWT = new Float32Array(NSW).fill(-1), SWA = new Float32Array(NSW), SW_LIFE = 1.7;
+  let nudging = false;
+  function shock(a) {
+    if (!fancyNow()) return;
+    let k = 0; for (let i = 0; i < NSW; i++) { if (SWT[i] < 0) { k = i; break; } if (SWT[i] > SWT[k]) k = i; }
+    SWT[k] = 0; SWA[k] = a;
+  }
+  function drawShock(dt, tr) {
+    let act = false;
+    const kmul = mq.matches ? 0.6 : 1;
+    for (let k = 0; k < NSW; k++) {
+      if (SWT[k] < 0) continue;
+      const age = (SWT[k] += dt); if (age > SW_LIFE) { SWT[k] = -1; continue; }
+      act = true;
+      const R = 1000 * (1 - Math.exp(-age * 2.1)), f = 1 - age / SW_LIFE, fa = f * f * SWA[k];
+      g.lineCap = 'butt'; g.strokeStyle = kk > 0.5 ? '#ff4d5e' : '#ff6fa6';
+      g.globalAlpha = fa * 0.08; g.lineWidth = 34; g.beginPath(); g.arc(coreCx, coreCy, R, 0, TAU); g.stroke();
+      g.globalAlpha = fa * 0.4; g.lineWidth = 5; g.beginPath(); g.arc(coreCx, coreCy, R, 0, TAU); g.stroke();
+      g.strokeStyle = '#fff'; g.globalAlpha = fa * 0.85; g.lineWidth = 1.5; g.beginPath(); g.arc(coreCx, coreCy, R, 0, TAU); g.stroke();
+      if (tr >= 3) { // chromatic split of the front
+        g.lineWidth = 1.4; g.globalAlpha = fa * 0.55;
+        g.strokeStyle = '#35e0ff'; g.beginPath(); g.arc(coreCx, coreCy, Math.max(1, R - 5), 0, TAU); g.stroke();
+        g.strokeStyle = '#ff2e9a'; g.beginPath(); g.arc(coreCx, coreCy, R + 5, 0, TAU); g.stroke();
+      }
+    }
+    if (act || nudging) { // the front pushes cards away from the core (inner `translate`, so measured rects and hover tilt stay put)
+      let any = false;
+      for (let i = 0; i < FLN; i++) {
+        let m = 0;
+        for (let k = 0; k < NSW; k++) {
+          if (SWT[k] < 0) continue;
+          const age = SWT[k], R = 1000 * (1 - Math.exp(-age * 2.1)), f = 1 - age / SW_LIFE, z = (ND[i] - R) / 120;
+          m += SWA[k] * 7 * kmul * f * Math.exp(-z * z);
+        }
+        if (m > 0.05) any = true;
+        if (Math.abs(m - NTR[i]) > 0.06 || (m === 0 && NTR[i] !== 0)) { NTR[i] = m; NCI[i].style.translate = m > 0.05 ? (NDX[i] * m).toFixed(1) + 'px ' + (NDY[i] * m).toFixed(1) + 'px' : ''; if (m <= 0.05) NTR[i] = 0; }
+      }
+      nudging = any || act;
+    }
+    g.globalAlpha = 1;
+  }
+  let CK = new Float32Array(0), CKN = 0;
+  function genCracks() {
+    const r = J.rng(77), out = [];
+    const crack = (x, y, a, steps, t0, step, depth) => {
+      for (let i = 0; i < steps; i++) {
+        const l = step * (0.6 + r() * 0.8); a += (r() - 0.5) * 0.7; const nx = x + Math.cos(a) * l, ny = y + Math.sin(a) * l;
+        out.push(x, y, nx, ny, Math.min(0.95, t0 + (i / steps) * 0.5));
+        if (depth < 2 && r() < 0.22) crack(nx, ny, a + (r() < 0.5 ? -1 : 1) * (0.5 + r() * 0.6), Math.max(2, ((steps - i) * 0.5) | 0), t0 + (i / steps) * 0.5, step * 0.8, depth + 1);
+        x = nx; y = ny;
+      }
+    };
+    const n = mq.matches ? 7 : 11;
+    for (let k = 0; k < n; k++) crack(coreCx, coreCy, (k / n) * TAU + r() * 0.5, 12, r() * 0.1, mq.matches ? 22 : 34, 0);
+    for (let ri = 0; ri < NR; ri++) {
+      if (!RN[ri] || r() < 0.4) continue;
+      const j = 6 + ((r() * (NS - 12)) | 0), o = ri * NS * 4 + j * 4;
+      crack(L[o], L[o + 1], r() * TAU, 5, 0.25 + r() * 0.3, 14, 1);
+    }
+    CK = Float32Array.from(out); CKN = CK.length / 5;
+  }
+  function drawIce(tr) {
+    const kc = kk; if (kc < 0.03) return;
+    g.beginPath();
+    for (let i = 0, q = 0; i < CKN; i++, q += 5) if (CK[q + 4] <= kc) { g.moveTo(CK[q], CK[q + 1]); g.lineTo(CK[q + 2], CK[q + 3]); }
+    g.lineJoin = 'round'; g.strokeStyle = '#ff4d5e'; g.globalAlpha = 0.22 * kc; g.lineWidth = 4; g.stroke();
+    g.strokeStyle = '#e4f0ff'; g.globalAlpha = 0.85 * kc; g.lineWidth = 1; g.stroke();
+    // red static: speckle bursts on the frozen ribbons
+    const nn = (kc * (tr >= 3 ? 90 : 55)) | 0;
+    g.fillStyle = '#ff5a68'; g.globalAlpha = 0.85 * kc; g.beginPath();
+    for (let k = 0; k < nn; k++) {
+      const ri = (Math.random() * NR) | 0; if (!RN[ri]) continue;
+      const j = (Math.random() * (NS - 1)) | 0, o = ri * NS * 4 + j * 4, off = RW[ri] * LENS[j] * (Math.random() * 2 - 1);
+      g.rect(L[o] + L[o + 2] * off, L[o + 1] + L[o + 3] * off, 1 + ((Math.random() * 3) | 0) * 1.6, 1);
+    }
+    g.fill();
+    g.fillStyle = '#fff'; g.globalAlpha = 0.7 * kc; g.beginPath();
+    for (let k = 0; k < nn >> 2; k++) {
+      const ri = (Math.random() * NR) | 0; if (!RN[ri]) continue;
+      const j = (Math.random() * (NS - 1)) | 0, o = ri * NS * 4 + j * 4, off = RW[ri] * LENS[j] * (Math.random() * 2 - 1);
+      g.rect(L[o] + L[o + 2] * off, L[o + 1] + L[o + 3] * off, 1.4, 1.4);
+    }
+    g.fill(); g.globalAlpha = 1;
+  }
+  /* bloom: the finished frame is box-downsampled in x2 steps (/2 /4 /8) and added back soft; refreshed every other frame */
+  let bl = null, blF = 0;
+  function bloom() {
+    const w = cv.width, h = cv.height;
+    if (!bl || bl.w !== w || bl.h !== h) {
+      bl = { w, h, c: [] };
+      for (let k = 1; k <= 3; k++) { const c = document.createElement('canvas'); c.width = Math.max(2, w >> k); c.height = Math.max(2, h >> k); const x = c.getContext('2d'); x.globalCompositeOperation = 'copy'; bl.c.push([c, x]); }
+    }
+    if ((blF++ & 1) === 0) { let src = cv; for (let k = 0; k < 3; k++) { const c = bl.c[k]; c[1].drawImage(src, 0, 0, c[0].width, c[0].height); src = c[0]; } }
+    g.globalCompositeOperation = 'lighter';
+    g.globalAlpha = 0.42; g.drawImage(bl.c[1][0], 0, 0, W, H);
+    g.globalAlpha = 0.5; g.drawImage(bl.c[2][0], 0, 0, W, H);
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  }
+
+  let dimV = 0, dimT = 0, tw = 0;
   let szk = 1, lastNow = performance.now(), sY = window.scrollY;
   window.addEventListener('scroll', () => { sY = window.scrollY; }, { passive: true });
   function draw(t, dt, still) {
@@ -348,6 +462,8 @@ JEV.mod('builds', () => {
     const now = performance.now(), rdt = Math.min(0.4, (now - lastNow) / 1000); lastNow = now; // eased state follows wall-clock, motion follows dt
     const ek = 1 - Math.exp(-rdt * 3.2); kk += (kT - kk) * ek; if (Math.abs(kk - kT) < 0.003) kk = kT;
     if (Math.abs(kk - kShown) > 0.004) recolor();
+    const tr = J.tier || 2, fancy = tr >= 2 && !reduce;
+    tw += dt * (fancy ? 1 - 0.97 * kk : 1); const tws = fancy ? tw : t; // ribbon wobble clock: freezes under the kill switch
     const dec = Math.exp(-rdt * 1.55), hk = 1 - Math.exp(-rdt * 9);
     dimV += (dimT - dimV) * (1 - Math.exp(-rdt * 7)); if (Math.abs(dimV - dimT) < 0.004) dimV = dimT;
     const dA = 1 - 0.6 * dimV; // pinned / hovered build: every other stream recedes
@@ -355,11 +471,11 @@ JEV.mod('builds', () => {
       boost[i] *= dec; if (boost[i] < 0.004) boost[i] = 0;
       hov[i] += ((hovT[i] || now < hovUntil[i] ? 1 : 0) - hov[i]) * hk;
       const e = boost[i] > hov[i] * 0.85 ? boost[i] : hov[i] * 0.85; EFF[i] = e;
-      SM[i] = (1 + 2.4 * e) * (1 - 0.7 * kk);
+      SM[i] = (1 + 2.4 * e) * (1 - (fancy ? 0.97 : 0.7) * kk);
     }
     // ---- pointer (stage space) ----
     const Pt = J.pointer, pxs = Pt.x - sx0, pys = Pt.y + sY - sy0, pOn = Pt.x > -5000 && pxs > -120 && pxs < W + 120 && pys > -120 && pys < H + 120;
-    if (pOn && !reduce) { const nx = clamp((pxs - coreCx) / 420, -1, 1), ny = clamp((pys - coreCy) / 260, -1, 1); tiltTo(-ny * 9, nx * 13); } else tiltTo(0, 0);
+    if (pOn && !reduce) { const nx = clamp((pxs - coreCx) / 420, -1, 1), ny = clamp((pys - coreCy) / 260, -1, 1); tiltTo(-ny * 9, nx * 13); } else if (fancy) tiltTo(Math.sin(tws * 0.5) * 2.2, Math.cos(tws * 0.37) * 3.5); else tiltTo(0, 0);
     // ---- draw ----
     g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
     g.clearRect(0, 0, W, H);
@@ -381,7 +497,7 @@ JEV.mod('builds', () => {
     }
     g.globalAlpha = 1;
     // particles, batched per colour bucket
-    const px = still ? 0 : 1;
+    const px = still ? 0 : 1; let nh1 = 0, nh2 = 0;
     for (let b = 0; b < NB; b++) {
       const s0 = bs[b], s1 = bs[b + 1]; if (s0 === s1) continue;
       const sz = (b >= 10 ? (b & 1 ? 1.65 : 1.1) : bsz[b & 1]) * szk;
@@ -393,13 +509,35 @@ JEV.mod('builds', () => {
         let x = L[o] + (L[o + 4] - L[o]) * tt, y = L[o + 1] + (L[o + 5] - L[o + 1]) * tt;
         const nx = L[o + 2] + (L[o + 6] - L[o + 2]) * tt, ny = L[o + 3] + (L[o + 7] - L[o + 3]) * tt;
         const ln = LENS[j] + (LENS[j + 1] - LENS[j]) * tt;
-        const off = ln * (RW[ri] * PA[i] * Math.sin(PPH[i] + u * PK[i] + t * POM[i]) + PJ[i]);
+        const off = ln * (RW[ri] * PA[i] * Math.sin(PPH[i] + u * PK[i] + tws * POM[i]) + PJ[i]);
         x += nx * off; y += ny * off;
         if (pOn) { const dx = x - pxs, dy = y - pys, d2 = dx * dx + dy * dy; if (d2 < 7000) { const d = Math.sqrt(d2) + 0.01, f = (1 - d2 / 7000), s = f * f * 22 / d; x += dx * s; y += dy * s; } }
         PX[i] = x; PY[i] = y;
         g.rect(x, y, sz, sz);
+        if (fancy) {
+          PTX[i] = ny; PTY[i] = -nx; // travel direction (ribbon normal rotated)
+          const h = (ri >= R_CORE ? 1 - u : u) * 0.75 + PT[i] * 0.35; // colour temperature: charging toward the core, cooling as it leaves
+          if (h > 1.0) HOT2[nh2++] = i; else if (h > 0.8) HOT1[nh1++] = i;
+        }
       }
       g.fill();
+    }
+    if (fancy) {
+      // motion-blur trails (every other particle, length follows ribbon speed)
+      const tm = tr >= 3 ? 0.085 : 0.06;
+      g.lineWidth = 1; g.lineCap = 'round';
+      for (let b = 0; b < NB; b++) {
+        const s0 = bs[b], s1 = bs[b + 1]; if (s0 === s1) continue;
+        g.strokeStyle = bstyle[b]; g.globalAlpha = dA * (tr >= 3 ? 0.4 : 0.28); g.beginPath();
+        for (let i = s0; i < s1; i += 2) {
+          const ri = PR[i], l = Math.min(30, tm * PVU[i] * RLEN[ri] * SM[ri]); if (l < 1.6) continue;
+          g.moveTo(PX[i], PY[i]); g.lineTo(PX[i] - PTX[i] * l, PY[i] - PTY[i] * l);
+        }
+        g.stroke();
+      }
+      g.lineCap = 'butt';
+      if (nh1) { g.fillStyle = hotS[0]; g.globalAlpha = dA; g.beginPath(); for (let k = 0; k < nh1; k++) { const i = HOT1[k]; g.rect(PX[i] - 0.3, PY[i] - 0.3, 2, 2); } g.fill(); }
+      if (nh2) { g.fillStyle = hotS[1]; g.globalAlpha = dA; g.beginPath(); for (let k = 0; k < nh2; k++) { const i = HOT2[k]; g.rect(PX[i] - 0.6, PY[i] - 0.6, 2.8, 2.8); } g.fill(); }
     }
     g.globalAlpha = 1;
     // boosted ribbons: bright overlay on their own particles
@@ -416,7 +554,7 @@ JEV.mod('builds', () => {
       g.fillStyle = kk > 0.5 ? 'rgba(255,225,225,.95)' : 'rgba(255,255,255,.95)'; g.beginPath();
       for (let i = 0; i < MAXB; i++) {
         const ri = BR[i]; if (ri < 0) continue;
-        BU[i] += dt * BV[i] * (1 - 0.55 * kk);
+        BU[i] += dt * BV[i] * (1 - (fancy ? 0.95 : 0.55) * kk);
         const u = BU[i]; if (u >= 1) { BR[i] = -1; continue; } if (u < 0) continue;
         const fi = u * (NS - 1), j = fi | 0, tt = fi - j, o = ri * NS * 4 + j * 4, ln = LENS[j] + (LENS[j + 1] - LENS[j]) * tt;
         const off = ln * RW[ri] * BL[i] * Math.sin(BP[i] + u * 5 + t * 1.3);
@@ -433,14 +571,34 @@ JEV.mod('builds', () => {
       g.drawImage(spr[kk > 0.5 ? 6 : RTINT[ri]], PX[i] - 8, PY[i] - 8, 16, 16);
     }
     g.globalAlpha = 1;
+    if (fancy) {
+      // comets travelling a ribbon (a decision firing from a build runs toward the core)
+      for (let i = 0; i < NPUL; i++) {
+        const ri = PLR[i]; if (ri < 0) continue;
+        const u = (PLU[i] += dt * PLV[i] * (1 - 0.95 * kk)); if (u > 1.2) { PLR[i] = -1; continue; }
+        const si = kk > 0.5 ? 6 : RTINT[ri];
+        for (let k = 8; k >= 0; k--) {
+          const uu = u - k * 0.02; if (uu < 0 || uu > 1) continue;
+          ribPt(ri, uu); const f = 1 - k / 9, r = 6 + 9 * f;
+          g.globalAlpha = Math.min(1, PLS[i] * f * f * 0.95); g.drawImage(spr[si], rpx - r, rpy - r, r * 2, r * 2);
+        }
+        if (u <= 1) { ribPt(ri, u); g.globalAlpha = PLS[i]; g.drawImage(spr[kk > 0.5 ? 6 : 5], rpx - 11, rpy - 11, 22, 22); }
+      }
+      g.globalAlpha = 1;
+      drawShock(dt, tr);
+      drawIce(tr);
+      if (tr >= 3) bloom();
+    }
   }
 
   /* wordmark tilt (cached values, writes only when it moved) */
+  const wmw = $('#bld-wmw') || wm;
   let tx = 0, ty = 0, cx0 = 0, cy0 = 0;
   function tiltTo(rx, ry) {
     tx += (rx - tx) * 0.1; ty += (ry - ty) * 0.1;
     if (Math.abs(tx - cx0) + Math.abs(ty - cy0) < 0.04) return;
-    cx0 = tx; cy0 = ty; wm.style.setProperty('--rx', tx.toFixed(2) + 'deg'); wm.style.setProperty('--ry', ty.toFixed(2) + 'deg');
+    cx0 = tx; cy0 = ty; wmw.style.setProperty('--rx', tx.toFixed(2) + 'deg'); wmw.style.setProperty('--ry', ty.toFixed(2) + 'deg');
+    coreBox.style.setProperty('--cpx', (50 + ty / 13 * 40).toFixed(1) + '%'); coreBox.style.setProperty('--cpy', (40 - tx / 9 * 40).toFixed(1) + '%'); // caustic light follows the pointer
   }
 
   /* ---------- timeline of one decision through the hub ---------- */
@@ -466,7 +624,7 @@ JEV.mod('builds', () => {
     if (!fx) return;
     flashCard(c);
     const r = latRows[i].li; r.classList.add('hit'); setTimeout(() => r.classList.remove('hit'), 900);
-    boostR(R_BUILD + i, 1, 34);
+    boostR(R_BUILD + i, 1, 34); pulse(R_BUILD + i, 1, 0.52);
   }
   const FL_CORE = [{ offset: 0, filter: 'brightness(1.5) saturate(1.25)' }], FL_WM = [{ offset: 0, textShadow: '0 0 14px #fff, 0 0 46px #ff5a96, 0 0 90px #ff2e6e' }], FL_DOT = [{ offset: 0, opacity: 1, scale: '1.9' }], FL_FADE = [{ opacity: 0.95 }, { opacity: 0 }], CHIP_POP = [{ offset: 0, scale: '1.35', filter: 'brightness(1.8)' }];
   function stepCore(d, fx) {
@@ -481,6 +639,7 @@ JEV.mod('builds', () => {
       J.animate(wm, FL_WM, { duration: 800, easing: 'ease-out' });
       dotEls.forEach((e) => J.animate(e, FL_DOT, { duration: 650, easing: 'ease-out' }));
     }
+    pulse(R_CORE, 0.9, 0.55); pulse(R_CORE + 1, 0.9, 0.55); pulse(R_CORE + 2, 0.9, 0.55);
     boostR(R_CORE, 1, 40); boostR(R_CORE + 1, d.action === 'hold' ? 0.5 : 1, d.action === 'hold' ? 8 : 34); boostR(R_CORE + 2, 1, 34);
   }
   function stepPrims(d, fx) {
@@ -490,7 +649,7 @@ JEV.mod('builds', () => {
     if (!fx) return;
     pCard.forEach(flashCard);
     const act = activeDecs(d);
-    for (const m of act) for (const j of DEC_FROM[m]) boostR(R_PD + j * 5 + m, 1, 18);
+    for (const m of act) for (const j of DEC_FROM[m]) { boostR(R_PD + j * 5 + m, 1, 18); pulse(R_PD + j * 5 + m, 0.8, 0.5); }
   }
   function stepDecs(d, fx) {
     const a = d.action, e = dCard[0], z = dCard[1], r = dCard[2], x = dCard[3], f = dCard[4];
@@ -501,12 +660,13 @@ JEV.mod('builds', () => {
     setT(f.v, a === 'flatten' ? 'yes' : 'no'); setConf(f, d.p.flatten);
     if (!fx) return;
     const act = activeDecs(d);
-    for (const m of act) { flashCard(dCard[m]); if (d.dest !== 'skip') boostR(R_DR + m, 1, 22); }
+    for (const m of act) { flashCard(dCard[m]); if (d.dest !== 'skip') { boostR(R_DR + m, 1, 22); pulse(R_DR + m, 0.9, 0.5); } }
   }
   const FL_RULES = [{ offset: 0, filter: 'brightness(1.12)' }];
   const FL_RC_BAD = [{ offset: 0, background: 'rgba(255,193,61,.4)' }], FL_RC_OK = [{ offset: 0, background: 'rgba(46,230,166,.28)' }];
   function stepRules(d) {
     if (reduce) return;
+    if (d.dest === 'execute') shock(0.55 + 0.45 * clamp((d.conf - 0.5) / 0.5, 0, 1));
     let key = null;
     if (d.reason === 'kill switch') key = 'kill'; else if (d.reason === 'risk flag') key = 'cap'; else if (d.reason.indexOf('conf') === 0) key = 'floor'; else if (d.size >= 4) key = 'pos';
     if (key && rcEls[key]) J.animate(rcEls[key], d.dest !== 'execute' ? FL_RC_BAD : FL_RC_OK, { duration: 1100, easing: 'ease-out' });
@@ -770,6 +930,62 @@ JEV.mod('builds', () => {
   J.bus.on('kill', (k) => { kT = k ? 1 : 0; updRules(); if (reduce) { kk = kT; recolor(); draw(performance.now() / 1000, 0.016, true); } });
   J.bus.on('floor', () => { updRules(); [...bCard, ...pCard, ...dCard].forEach((c) => c.c.classList.toggle('lo', parseFloat(c.c.textContent) < S.floor && !isNaN(parseFloat(c.c.textContent)))); });
   updStats(); updMix(); updRules(); updCost();
+
+  /* ---------- circuit traces: cap -> trunk -> bus -> a stub into the top of every first-row tile, with travelling bits ---------- */
+  const trc = $('#bld-tr');
+  if (trc) {
+    let tg = null, tW = 0, tH = 0, tDirty = true;
+    const TS = []; // per stub: [x0,y0, x1,y1, x2,y2, x3,y3, total]
+    const tiles = $$('.bld-tile', root);
+    let busY = 0, trunkX = 0, busL = 0, busR = 0;
+    const trMeasure = () => {
+      const f = J.fit(trc, 1.5); tg = f.g; tW = f.W; tH = f.H; TS.length = 0;
+      if (!tiles.length || tW < 10) return;
+      let top = 1e9; tiles.forEach((e) => { top = Math.min(top, e.offsetTop); });
+      const row = tiles.filter((e) => Math.abs(e.offsetTop - top) < 4);
+      trunkX = tW / 2; busY = tH * 0.46;
+      row.forEach((e) => {
+        const cx = e.offsetLeft + e.offsetWidth / 2, a = busY, b = tH;
+        TS.push([trunkX, 0, trunkX, a, cx, a, cx, b, a + Math.abs(cx - trunkX) + (b - a)]);
+      });
+      busL = Math.min(trunkX, ...TS.map((p) => p[4])); busR = Math.max(trunkX, ...TS.map((p) => p[4]));
+      tDirty = true;
+    };
+    const bitAt = (p, d) => { // point at distance d along trunk -> bus -> stub
+      const l0 = p[3], l1 = Math.abs(p[4] - p[2]);
+      if (d < l0) { rpx = p[0]; rpy = d; } else if (d < l0 + l1) { rpx = p[2] + Math.sign(p[4] - p[2]) * (d - l0); rpy = p[3]; } else { rpx = p[4]; rpy = p[5] + (d - l0 - l1); }
+    };
+    function drawTrace(t, bits) {
+      tg.clearRect(0, 0, tW, tH);
+      tg.lineWidth = 1; tg.strokeStyle = 'rgba(255,111,166,.26)'; tg.beginPath();
+      tg.moveTo(trunkX, 0); tg.lineTo(trunkX, busY); tg.moveTo(busL, busY); tg.lineTo(busR, busY);
+      TS.forEach((p) => { tg.moveTo(p[4], p[5]); tg.lineTo(p[6], p[7]); });
+      tg.stroke();
+      tg.strokeStyle = 'rgba(255,111,166,.1)'; tg.beginPath(); // twin hairline (reads as a bus pair)
+      tg.moveTo(trunkX + 4, 0); tg.lineTo(trunkX + 4, busY + 4); tg.moveTo(busL, busY + 4); tg.lineTo(busR, busY + 4);
+      tg.stroke();
+      tg.fillStyle = 'rgba(255,111,166,.75)'; tg.beginPath();
+      tg.rect(trunkX - 2, busY - 2, 4, 4); TS.forEach((p) => { tg.rect(p[4] - 1.5, p[5] - 1.5, 3, 3); tg.rect(p[6] - 2, p[7] - 3, 4, 3); });
+      tg.fill();
+      if (!bits) return;
+      tg.globalCompositeOperation = 'lighter';
+      for (let k = 0; k < TS.length; k++) {
+        const p = TS[k];
+        for (let b = 0; b < 2; b++) {
+          const d = ((t * 52 + b * p[8] * 0.5 + k * 23) % p[8]);
+          bitAt(p, d); tg.globalAlpha = 0.95; tg.drawImage(spr[0], rpx - 6, rpy - 6, 12, 12);
+        }
+      }
+      tg.globalAlpha = 1; tg.globalCompositeOperation = 'source-over';
+    }
+    J.watch(trc, () => { trMeasure(); if (tg && TS.length) drawTrace(0, false); });
+    J.task(trc, (t) => {
+      if (!tg || !TS.length) return;
+      const bits = (J.tier || 2) >= 2 && !reduce;
+      if (!bits) { if (tDirty) { drawTrace(0, false); tDirty = false; } return; }
+      drawTrace(t, true);
+    });
+  }
 
   /* ---------- entrance + frame task + layout watch ---------- */
   J.onView(stage, () => { live = true; measure(); }, { threshold: 0, rootMargin: '700px 0px' });

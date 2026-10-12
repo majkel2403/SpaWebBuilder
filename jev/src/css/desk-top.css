@@ -169,3 +169,14 @@ button.dkt-chip:focus-visible { outline: 2px solid var(--pink2); outline-offset:
 
 /* ---------- wide screens: the desk console grows past the 1380px text column (never narrower than it) ---------- */
 #desk .wrap { max-width: max(1380px, min(1780px, 94vw)); }
+
+/* ---------- spectacle (tier >= 2; tier 1 and reduced motion keep the plain look) ---------- */
+html:not([data-tier="1"]) .dkt-num { -webkit-text-stroke: .9px rgba(255, 255, 255, .5); paint-order: stroke fill; }   /* hot neon rim: stroke sits under the fill, only its outer half shows */
+html:not([data-tier="1"]) .dkt-big::before { animation: dktHalo 3.6s ease-in-out infinite; will-change: opacity; }
+html[data-tier="3"] .dkt-num { text-shadow: 0 0 34px rgba(var(--pc-rgb), .5), 0 0 3px rgba(var(--pc-rgb), .6), 0 0 74px rgba(var(--pc-rgb), .3), 0 0 8px rgba(var(--pc-rgb), .35); }
+@keyframes dktHalo { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+/* ticker: one travelling light passes over every chip (compositor-only) */
+html:not([data-tier="1"]) .dkt-mq::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; will-change: transform;
+  background: linear-gradient(90deg, transparent 40%, rgba(255, 150, 190, .10) 47%, rgba(255, 255, 255, .17) 50%, rgba(255, 150, 190, .10) 53%, transparent 60%); animation: dktTl 5.8s linear infinite; }
+@keyframes dktTl { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .dkt-mq::before { display: none; } .dkt-big::before { animation: none !important; } }

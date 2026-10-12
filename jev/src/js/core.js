@@ -65,6 +65,7 @@
   let last = 0;
   function frame(ms) {
     raf = 0;
+    tierSample(ms);
     const t = ms / 1000, dt = Math.min(0.05, t - last || 0.016);
     last = t; J.time = t;
     let busy = false;
@@ -77,6 +78,133 @@
     if (busy) wake();
   }
   wake();
+
+
+  /* ---------- quality tier: J.tier 3 high · 2 medium · 1 low (+ bus 'tier', <html data-tier>) ---------- */
+  /* start from a device heuristic (the CEILING), then measure the real frame cost: a rolling median of rAF deltas (only while frames flow back to back) plus
+     long-task hints. Downgrades need 2 agreeing evaluations (~6 s), upgrades 4 (~12 s), one step at a time, and a change locks the tier for 10 s: it never flaps.
+     `?tier=1|2|3` pins it (for screenshots / debugging). Effects read J.tier lazily (or CSS [data-tier]) and degrade; tier 1 looks like the page always did. */
+  const nav = navigator, touchPhone = window.matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 700;
+  let ceil = 3;
+  if (J.reduce) ceil = 1;
+  else if (touchPhone || (nav.hardwareConcurrency || 8) <= 4 || (nav.deviceMemory || 8) <= 4 || ((window.devicePixelRatio || 1) >= 2.5 && (nav.hardwareConcurrency || 8) < 8)) ceil = 2;
+  const pin = (/[?&]tier=([123])\b/.exec(location.search) || [])[1];
+  J.tier = pin ? +pin : touchPhone ? 2 : ceil;
+  const setTier = (n) => { J.tier = n; document.documentElement.dataset.tier = n; J.bus.emit('tier', n); };
+  document.documentElement.dataset.tier = J.tier;
+  const FR = new Float32Array(90); let frN = 0, frI = 0, frLast = 0, evalAt = 0, votes = 0, voteTo = 0, lockUntil = 0, longHits = [];
+  try { if (!pin && 'PerformanceObserver' in window) new PerformanceObserver((l) => { for (const e of l.getEntries()) if (e.duration > 120) longHits.push(e.startTime); }).observe({ entryTypes: ['longtask'] }); } catch (e) { /* unsupported */ }
+  function tierSample(ms) {
+    const raw = ms - frLast; frLast = ms;
+    if (pin || document.hidden) return;
+    if (raw > 0 && raw < 220) { FR[frI] = raw; frI = (frI + 1) % FR.length; if (frN < FR.length) frN++; } else if (raw >= 220) { frN = 0; frI = 0; } // a gap (idle loop, tab switch) is not a slow frame: restart the window
+    if (ms < 2500 || ms < evalAt || frN < 45) return;
+    evalAt = ms + 3000;
+    const a = Array.prototype.slice.call(FR, 0, frN).sort((x, y) => x - y), med = a[frN >> 1];
+    while (longHits.length && longHits[0] < ms - 6000) longHits.shift();
+    let cand = med > 34 || longHits.length >= 3 ? 1 : med > 21 ? 2 : 3;
+    cand = Math.min(cand, ceil);
+    if (cand === J.tier || ms < lockUntil) { votes = 0; return; }
+    if (cand !== voteTo) { voteTo = cand; votes = 0; }
+    votes++;
+    if (votes >= (cand < J.tier ? 2 : 4)) { votes = 0; lockUntil = ms + 10000; setTier(J.tier + (cand < J.tier ? -1 : 1)); frN = 0; frI = 0; }
+  }
+
+  /* ---------- shared scroll loop: J.scrollProgress(el, fn(p)) · J.scroll {y, vel} · --sy / --vel on <html> (tier 3 only) ---------- */
+  /* One passive scroll listener arms one rAF that disarms itself once the scroll has settled. Element geometry is cached (re-measured on resize / body resize),
+     so a frame reads scrollY only: no per-frame layout reads. p = 0 when the element's top enters the viewport bottom, 1 when its bottom leaves the viewport top. */
+  const SP = [], root = document.documentElement;
+  J.scroll = { y: window.scrollY, vel: 0 };
+  let spRaf = 0, spLast = window.scrollY, spT = 0, spSy = -1, spVel = '';
+  function spMeasure(e) { const r = e.el.getBoundingClientRect(); e.top = r.top + window.scrollY; e.h = r.height; }
+  function spRemeasure() { for (const e of SP) spMeasure(e); spWake(); }
+  const spIo = new IntersectionObserver((es) => { for (const x of es) { const e = x.target.__sp; if (e) { e.vis = x.isIntersecting; if (e.vis) spWake(); } } }, { rootMargin: '60% 0px' });
+  function spCalc(e, vh) { const p = J.clamp((vh - (e.top - J.scroll.y)) / (vh + e.h), 0, 1); if (p !== e.p) { e.p = p; try { e.fn(p); } catch (er) { console.error('[scrollProgress]', er); } } }
+  function spFrame(ms) {
+    spRaf = 0;
+    const y = window.scrollY, dt = Math.max(8, ms - spT || 16), vh = window.innerHeight; spT = ms;
+    const sc = J.scroll, dy = y - spLast; spLast = y; sc.y = y;
+    sc.vel += (J.clamp(dy / dt / 3, -1, 1) - sc.vel) * 0.18; // smoothed, px/ms ÷ 3 → -1..1
+    if (Math.abs(sc.vel) < 0.004 && !dy) sc.vel = 0;
+    for (const e of SP) if (e.vis || e.p == null || e.p % 1 !== 0) spCalc(e, vh);
+    if (J.tier >= 3 && !J.reduce) { // custom props on :root restyle the whole tree: tier 3 only, and only when the value changed
+      const v = sc.vel.toFixed(2);
+      if (y !== spSy) { spSy = y; root.style.setProperty('--sy', y); }
+      if (v !== spVel) { spVel = v; root.style.setProperty('--vel', v); }
+    }
+    if (dy || sc.vel) spWake();
+  }
+  function spWake() { if (!spRaf) spRaf = requestAnimationFrame(spFrame); }
+  window.addEventListener('scroll', spWake, { passive: true });
+  window.addEventListener('resize', () => { clearTimeout(spRemeasure.t); spRemeasure.t = setTimeout(spRemeasure, 150); }, { passive: true });
+  window.addEventListener('load', () => setTimeout(spRemeasure, 400));
+  if ('ResizeObserver' in window) new ResizeObserver(() => { clearTimeout(spRemeasure.t); spRemeasure.t = setTimeout(spRemeasure, 120); }).observe(document.body);
+  J.scrollProgress = (el, fn) => {
+    const e = { el, fn, p: null, vis: true, top: 0, h: 1 };
+    el.__sp = e; SP.push(e); spMeasure(e); spIo.observe(el); spCalc(e, window.innerHeight);
+    return { stop() { const i = SP.indexOf(e); if (i >= 0) SP.splice(i, 1); spIo.unobserve(el); } };
+  };
+
+  /* ---------- section cross-light: J.tint [r,g,b] (0..255, live, eased) · --tint "r,g,b" on <html> · bus 'tint' (target) ---------- */
+  const TINTS = { hero: [255, 46, 110], code: [196, 58, 214], builds: [236, 44, 176], hour: [255, 170, 50], desk: [96, 130, 255], lab: [46, 230, 166], foot: [166, 107, 255] };
+  J.tint = TINTS.hero.slice();
+  let tgt = TINTS.hero, tintRaf = 0, tintStr = '255,46,110', tintT = 0;
+  function tintFrame(ms) {
+    tintRaf = 0;
+    const dt = Math.min(0.05, (ms - tintT) / 1000 || 0.016), k = 1 - Math.exp(-dt * 3.2); tintT = ms;
+    let moving = false;
+    for (let i = 0; i < 3; i++) { const d = tgt[i] - J.tint[i]; if (Math.abs(d) < 0.6) J.tint[i] = tgt[i]; else { J.tint[i] += d * k; moving = true; } }
+    const s = Math.round(J.tint[0]) + ',' + Math.round(J.tint[1]) + ',' + Math.round(J.tint[2]);
+    if (s !== tintStr) { tintStr = s; root.style.setProperty('--tint', s); }
+    if (moving) tintRaf = requestAnimationFrame(tintFrame);
+  }
+  function tintInit() {
+    if (!('IntersectionObserver' in window)) return;
+    const io2 = new IntersectionObserver((es) => {
+      for (const x of es) {
+        if (!x.isIntersecting) continue;
+        const el = x.target, key = el.id && TINTS[el.id] ? el.id : el.tagName === 'FOOTER' ? 'foot' : null;
+        if (!key || tgt === TINTS[key]) continue;
+        tgt = TINTS[key]; J.bus.emit('tint', tgt.slice());
+        if (J.tier <= 1 || J.reduce) { J.tint = tgt.slice(); tintStr = ''; tintT = performance.now(); tintFrame(tintT); } else if (!tintRaf) { tintT = performance.now(); tintRaf = requestAnimationFrame(tintFrame); }
+      }
+    }, { rootMargin: '-50% 0px -49.9% 0px' }); // a hairline across the viewport middle: the section under it owns the colour temperature
+    document.querySelectorAll('#hero, #code, #builds, #hour, #desk, #lab, body > footer').forEach((el) => io2.observe(el));
+  }
+
+  /* ---------- split-text headings: J.splitText(el) → letters in .st-c (--i = index, --j = index inside <em>), words in .st-w ---------- */
+  /* idempotent; the heading keeps its text through aria-label (the spans are aria-hidden). CSS (base.css) rises/blurs the letters in when `.st-in` lands. */
+  J.splitText = (el) => {
+    if (!el || el.__st) return el;
+    el.__st = 1;
+    if (!el.hasAttribute('aria-label')) el.setAttribute('aria-label', el.textContent.replace(/\s+/g, ' ').trim());
+    let i = 0, j = 0;
+    const walk = (node, inEm) => {
+      for (const n of Array.from(node.childNodes)) {
+        if (n.nodeType === 3) {
+          const f = document.createDocumentFragment();
+          for (const part of n.textContent.split(/(\s+)/)) {
+            if (!part) continue;
+            if (part.trim() === '') { f.appendChild(document.createTextNode(' ')); continue; }
+            const w = document.createElement('span'); w.className = 'st-w'; w.setAttribute('aria-hidden', 'true');
+            for (const ch of part) { const c = document.createElement('span'); c.className = 'st-c'; c.style.cssText = '--i:' + i++ + (inEm ? ';--j:' + j++ : ''); c.textContent = ch; w.appendChild(c); }
+            f.appendChild(w);
+          }
+          node.replaceChild(f, n);
+        } else if (n.nodeType === 1 && !n.classList.contains('fx-hsw')) walk(n, inEm || n.tagName === 'EM');
+      }
+    };
+    walk(el, false);
+    el.classList.add('st-ready');
+    return el;
+  };
+  function headings() {
+    const hs = Array.from(document.querySelectorAll('.h2'));
+    for (const h of hs) J.splitText(h);
+    if (J.reduce || !('IntersectionObserver' in window)) { hs.forEach((h) => h.classList.add('st-in')); return; }
+    const io3 = new IntersectionObserver((es) => { for (const x of es) if (x.isIntersecting) { x.target.classList.add('st-in'); io3.unobserve(x.target); } }, { threshold: 0.3, rootMargin: '0px 0px -8% 0px' });
+    hs.forEach((h) => io3.observe(h));
+  }
 
   /* ---------- off-screen pause: sections / cards / stages far outside the viewport get .is-off → base.css pauses their CSS animations ---------- */
   /* (every running CSS animation costs a style invalidation per frame whether or not it is visible; ~220 of them run on this page) */
@@ -386,6 +514,7 @@
     const kb = document.getElementById('killBtn');
     if (kb) kb.addEventListener('click', () => J.setKilled(!S.killed));
     hud(); hudEls.ready = true; hudExtras(); pauseOffscreen();
+    try { headings(); tintInit(); } catch (e) { console.error('[core:spectacle]', e); }
     for (const m of mods) {
       const t0 = performance.now();
       try { m.init(); } catch (e) { console.error('[module:' + m.name + ']', e); }

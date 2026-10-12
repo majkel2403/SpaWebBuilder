@@ -70,6 +70,12 @@ Core UI facilities: `JEV.shortcut(key, fn, label)` registers a single-key shortc
 `JEV.help()` toggles the dialog, `JEV.toTop()`. HUD metrics (`#mDec`, `#mCost`) are odometers (reels inside, readable text in an `.sr-only` copy: read `JEV.S`, not their textContent); `.m[data-tip]` gets a tooltip on hover / focus / tap.
 Global focus ring + scrollbars + print sheet live in `base.css`; sticky-HUD scroll offset is `--hud-h` (set by core).
 
+**Spectacle primitives (core):**
+`JEV.tier` 3 high / 2 medium / 1 low (+ bus `'tier'`, `<html data-tier>`): device heuristic as ceiling, then a rolling median of real rAF deltas + long tasks; downgrade after 2 agreeing checks (~6 s), upgrade after 4, one step at a time, 10 s lock (never flaps). `?tier=N` pins it.
+Gate new effects on it (`(JEV.tier || 2)` or CSS `html[data-tier="3"]`); tier 1 must look like the page always did. `JEV.scrollProgress(el, fn(p))` p = 0..1 across the element's travel through the viewport (one shared scroll rAF, cached geometry, no layout reads per frame; returns `{stop()}`); `JEV.scroll {y, vel}`;
+`--sy` / `--vel` (-1..1, smoothed) on `<html>` at tier 3 only (root custom props restyle the tree). `JEV.splitText(el)` wraps letters (`.st-c`, `--i`; `--j` inside `<em>`) in `.st-w` words, aria-label kept, idempotent; applied to every `.h2`, which rises in on `.st-in`, `<em>` letters catch a glint.
+`JEV.tint` `[r,g,b]` 0..255 (live, eased) + `--tint: r,g,b` on `<html>` + bus `'tint'` (target): section colour temperature (hero pink, code violet, builds magenta, hour amber, desk blue-violet, lab green); base.css washes the page with it.
+
 Facilities provided by the **fx** module (may not exist yet when your module's init runs — call lazily/guarded): `JEV.pulse(strength 0..1)`, `JEV.toast(msg, kind)`.
 
 ### Decision record `d` (bus `'decision'`)

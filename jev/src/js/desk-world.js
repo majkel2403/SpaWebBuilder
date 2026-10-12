@@ -36,6 +36,8 @@ JEV.mod('desk-world', () => {
     gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.16, J.rgba(hex, 0.95)); gr.addColorStop(0.42, J.rgba(hex, 0.34)); gr.addColorStop(1, J.rgba(hex, 0));
     q.fillStyle = gr; q.fillRect(0, 0, 48, 48); return c;
   });
+  const WARM = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const q = c.getContext('2d'); const gr = q.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(255,214,150,.9)'); gr.addColorStop(0.35, 'rgba(255,170,90,.35)'); gr.addColorStop(1, 'rgba(255,140,70,0)'); q.fillStyle = gr; q.fillRect(0, 0, 64, 64); return c; })();
   const ARC_PAIRS = [[0, 1, 0], [1, 3, 3], [2, 3, 2], [3, 4, 0], [4, 5, 1], [5, 7, 2], [7, 0, 3], [6, 4, 0], [6, 5, 2], [0, 2, 1], [1, 4, 3], [3, 5, 0], [7, 6, 1]];
   const AG = J.AGENTS, AGK = AG.map((a) => a.key);
   const AGI = {}; AGK.forEach((k, i) => (AGI[k] = i));
@@ -64,6 +66,7 @@ JEV.mod('desk-world', () => {
   const NPT_SRC = 7600, GA = Math.PI * (3 - Math.sqrt(5));
   const PX = new Float32Array(NPT_SRC), PY = new Float32Array(NPT_SRC), PZ = new Float32Array(NPT_SRC), PK = new Uint8Array(NPT_SRC);
   let NPT = 0;
+  const LITV = new Uint8Array(NPT_SRC), LIX = [new Int32Array(NPT_SRC), new Int32Array(NPT_SRC), new Int32Array(NPT_SRC), new Int32Array(NPT_SRC)], LN4 = new Int32Array(4);
   (function buildPoints() {
     const vals = new Float32Array(NPT_SRC), sx = new Float32Array(NPT_SRC), sy = new Float32Array(NPT_SRC), sz = new Float32Array(NPT_SRC), r = J.rng(7);
     for (let i = 0; i < NPT_SRC; i++) {
@@ -86,6 +89,8 @@ JEV.mod('desk-world', () => {
     for (let i = n - 1; i > 0; i--) { const j = (r() * (i + 1)) | 0, t = order[i]; order[i] = order[j]; order[j] = t; }
     for (let i = 0; i < n; i++) { const s = keep[order[i] * 2]; PX[i] = sx[s]; PY[i] = sy[s]; PZ[i] = sz[s]; PK[i] = keep[order[i] * 2 + 1]; }
     NPT = n;
+    // night-side city lights: clumps of land dots (high-frequency noise) -> 1 / 2 (twinkle phase)
+    for (let i = 0; i < n; i++) if (PK[i] >= 2 && noise(PX[i] * 9 + 5, PY[i] * 9, PZ[i] * 9) > 0.12 && r() < 0.8) LITV[i] = 1 + (i & 1);
   })();
   const SXa = new Float32Array(NPT_SRC), SYa = new Float32Array(NPT_SRC);
   const NBK = 18, bIdx = Array.from({ length: NBK }, () => new Int32Array(NPT_SRC)), bN = new Int32Array(NBK);
@@ -148,6 +153,15 @@ JEV.mod('desk-world', () => {
   // stars
   const STARS = (() => { const r = J.rng(11); return Array.from({ length: 80 }, () => ({ u: r(), v: r(), ph: r() * TAU, sp: 0.4 + r() * 1.4, s: r() < 0.15 ? 2 : 1 })); })();
 
+  const STARS2 = (() => { const r = J.rng(12); return Array.from({ length: 44 }, (_, i) => ({ u: r(), v: r(), ph: r() * TAU, sp: 0.6 + r() * 1.8, d: 0.5 + r() * 1.6, f: i < 7 })); })();
+  // orbital rings (tilted ellipses around the globe) + satellites with short trails; [radius x R, minor ratio, rotation, [sat angle speeds]]
+  const RINGS = [{ k: 1.3, m: 0.2, rot: 0.5, sp: [0.34, -0.2] }, { k: 1.52, m: 0.3, rot: -0.55, sp: [-0.26, 0.18] }];
+  const RP = Array.from({ length: 10 }, () => ({ on: 0, c: 0, t: 0, col: 3 })); // impact ripples on the sphere
+  function ripple(c, col) { for (let i = 0; i < RP.length; i++) { const p = RP[i]; if (!p.on) { p.on = 1; p.c = c; p.t = 0; p.col = col; return; } } }
+  let _px = 0, _py = 0, _pf = 1;
+  function ringPt(rg, a) { const rx = rg.k * R, ry = rx * rg.m, cr = Math.cos(rg.rot), sr = Math.sin(rg.rot), x = rx * Math.cos(a), y = ry * Math.sin(a); _px = cx + x * cr - y * sr; _py = cy + x * sr + y * cr; _pf = Math.sin(a) > 0 || (_px - cx) * (_px - cx) + (_py - cy) * (_py - cy) > R * R ? 1 : 0; }
+  let OB_OS = 44;
+
   /* ================================================================ layout / static layers ================================================================ */
   let g = null, W = 0, H = 0, SX = 0, SY = 0, SW = 0, SH = 0, cx = 0, cy = 0, R = 100, dotK = 1, nPts = NPT, compact = false;
   let lastSig = '', fontStr = '';
@@ -180,6 +194,11 @@ JEV.mod('desk-world', () => {
     const fr = q.createRadialGradient(m, m, R * 0.74, m, m, R);
     fr.addColorStop(0, 'rgba(' + rim + ',0)'); fr.addColorStop(0.7, 'rgba(' + rim + ',.07)'); fr.addColorStop(1, 'rgba(' + rim + ',.5)');
     q.fillStyle = fr; q.fillRect(m - R, m - R, R * 2, R * 2); q.restore();
+    if ((J.tier || 2) >= 2) { // layered fresnel: a hairline limb, a tight bloom just outside it and a faint far violet halo
+      q.lineWidth = 1.1; q.strokeStyle = 'rgba(' + (kv ? '255,170,180' : '170,240,255') + ',.55)'; q.beginPath(); q.arc(m, m, R * 1.003, 0, TAU); q.stroke();
+      q.lineWidth = R * 0.05; q.strokeStyle = 'rgba(' + rim + ',.09)'; q.beginPath(); q.arc(m, m, R * 1.03, 0, TAU); q.stroke();
+      q.lineWidth = R * 0.14; q.strokeStyle = 'rgba(' + out + ',.035)'; q.beginPath(); q.arc(m, m, R * 1.2, 0, TAU); q.stroke();
+    }
     LAYOK[kv] = true;
   }
   function buildLayers() {
@@ -214,7 +233,7 @@ JEV.mod('desk-world', () => {
     R = Math.max(70, Math.min(SW * (single ? 0.37 : 0.36), SH * (single ? 0.35 : 0.375)));
     cx = SX + SW / 2; cy = SY + SH * (single ? 0.46 : 0.5) + R * 0.04;
     dotK = clamp(R / 230, 0.8, 1.12); ptsBase = single ? Math.round(NPT * 0.7) : NPT; nPts = ptsFor();
-    const os = (stage.querySelector('.dkw-ob') || {}).offsetWidth || 44;
+    const os = (stage.querySelector('.dkw-ob') || {}).offsetWidth || 44; OB_OS = os;
     OB_X = cx; OB_Y = cy + R * 0.05; OB_RX = Math.max(R * 1.1, Math.min(SW / 2 - os * 0.8, R * 1.68)); OB_RY = R * (single ? 0.4 : 0.34);
     buildLayers();
     // beams: right set globe -> ticket port, left set feed rows -> globe
@@ -250,7 +269,7 @@ JEV.mod('desk-world', () => {
   const FD = FEEDS.map((f, i) => {
     const el = J.$('.dkw-v[data-k="' + f.k + '"]', feedsEl), spark = J.$('.dkw-vs', el);
     const bars = Array.from({ length: 12 }, () => { const b = document.createElement('i'); spark.appendChild(b); return b; });
-    return { k: f.k, i, el, city: CIDX[f.city], bias: f.bias, lat0: f.lat0, off: 0, lat: f.lat0, price: 0, prev: 0, up: true, alt: 0, hist: new Float32Array(12), bars, p: J.$('.dkw-vp', el), u: J.$('.dkw-vm u', el), s: J.$('.dkw-vm s', el), n: 0 };
+    return { k: f.k, i, el, city: CIDX[f.city], bias: f.bias, lat0: f.lat0, off: 0, lat: f.lat0, price: 0, prev: 0, up: true, alt: 0, hist: new Float32Array(12), hq: -1, hs: '', bars, p: J.$('.dkw-vp', el), u: J.$('.dkw-vm u', el), s: J.$('.dkw-vm s', el), n: 0 };
   });
   const E = { op: J.$('#dkw-op'), opd: J.$('#dkw-opd'), oc: J.$('#dkw-oc'), disp: J.$('#dkw-disp') };
   let tickN = 0;
@@ -273,6 +292,8 @@ JEV.mod('desk-world', () => {
     if (withLat) { txt(f.u, Math.round(f.lat) + 'ms'); const c = f.lat < 40 ? '' : f.lat < 70 ? 'm' : 's'; if (f.u.className !== c) f.u.className = c; }
     let mn = 1e12, mx = -1e12; for (let i = 0; i < 12; i++) { const v = f.hist[i]; if (v < mn) mn = v; if (v > mx) mx = v; }
     const rg = mx - mn;
+    const dev = (f.price / J.market.price - 1) * 1e4, hv = Math.min(1, Math.abs(dev) / 1.1), hq = Math.round(hv * 10) / 10, hs = dev >= 0 ? 'p' : 'n';
+    if (hq !== f.hq) { f.hq = hq; f.el.style.setProperty('--h', hq); } if (hs !== f.hs) { f.hs = hs; f.el.dataset.hs = hs; }
     for (let i = 0; i < 12; i++) f.bars[i].style.transform = 'scaleY(' + (rg < 1e-6 ? 0.35 : 0.16 + 0.84 * ((f.hist[i] - mn) / rg)).toFixed(2) + ')';
   }
   function updateFeeds(price, paint) {
@@ -331,7 +352,7 @@ JEV.mod('desk-world', () => {
   function draw(t, dt) {
     killMix += ((killed ? 1 : 0) - killMix) * Math.min(1, dt * 2.6);
     if (Math.abs(killMix - (killed ? 1 : 0)) < 0.003) killMix = killed ? 1 : 0;
-    const km = killMix, ks = Math.round(km * 10), alive = 1 - km, lq = QL;
+    const km = killMix, ks = Math.round(km * 10), alive = 1 - km, lq = QL, TIER = J.tier || 2;
     // ---- rotation: idle spin · drag inertia · focus-a-venue
     if (!dragging) {
       if (focusYaw !== null) {
@@ -347,7 +368,16 @@ JEV.mod('desk-world', () => {
     // ---- stars
     g.fillStyle = '#cfe3ff';
     for (let i = 0; i < STARS.length; i += lq > 2 ? 2 : 1) { const s = STARS[i], pu = s.u + yaw * 0.008 * s.s; g.globalAlpha = (0.12 + 0.45 * (0.5 + 0.5 * Math.sin(t * s.sp + s.ph))) * (1 - 0.5 * km); g.fillRect(SX + (pu - Math.floor(pu)) * SW, SY + s.v * SH, s.s, s.s); }
+    if (TIER >= 3) { // depth stars: twinkle + parallax with the spin and tilt; a few get a cross flare
+      const cy0 = (tilt - 0.4) * 26;
+      for (let i = 0; i < STARS2.length; i += lq > 1 ? 2 : 1) {
+        const s = STARS2[i], pu = s.u + yaw * 0.014 * s.d, tw = 0.5 + 0.5 * Math.sin(t * s.sp + s.ph), x = SX + (pu - Math.floor(pu)) * SW, y = SY + s.v * SH + cy0 * s.d;
+        g.globalAlpha = (0.2 + 0.6 * tw) * (1 - 0.5 * km); g.fillStyle = s.d > 1.4 ? '#fff' : '#bcd4ff'; g.fillRect(x, y, 1.6, 1.6);
+        if (s.f && tw > 0.55) { const L = 3 + 6 * tw; g.globalAlpha = (tw - 0.5) * 1.2 * (1 - 0.5 * km); g.fillRect(x + 0.8 - L, y + 0.5, L * 2, 0.6); g.fillRect(x + 0.5, y + 0.8 - L, 0.6, L * 2); }
+      }
+    }
     g.globalAlpha = 1;
+    if (TIER >= 2) { g.lineWidth = 1; g.strokeStyle = km > 0.5 ? 'rgba(255,150,160,.1)' : 'rgba(170,200,255,.1)'; for (let r = 0; r < RINGS.length; r++) { const rg = RINGS[r]; g.beginPath(); g.ellipse(cx, cy, rg.k * R, rg.k * R * rg.m, rg.rot, Math.PI, TAU); g.stroke(); } }
     // ---- orbit track (back half goes under the globe)
     g.lineWidth = 1; g.setLineDash(DASH); g.strokeStyle = km > 0.5 ? 'rgba(255,150,160,.2)' : 'rgba(170,200,255,.2)';
     g.beginPath(); g.ellipse(OB_X, OB_Y, OB_RX, OB_RY, OB_ROT, Math.PI, TAU); g.stroke(); g.setLineDash(EMPTY);
@@ -378,12 +408,15 @@ JEV.mod('desk-world', () => {
       }
     }
     // ---- the point cloud
-    bN.fill(0);
+    const sxv = -0.62 + 0.1 * Math.sin(t * 0.045), syv = 0.4 + 0.05 * Math.sin(t * 0.031 + 1), szv = 0.62, sl = Math.hypot(sxv, syv, szv), kz = szv / sl, lit = TIER >= 3 && lq < 2 && alive > 0.02;
+    const sux = sxv / sl, suy = syv / sl, suz = kz;
+    bN.fill(0); LN4.fill(0);
     for (let i = 0; i < nPts; i++) {
       const x = PX[i], y = PY[i], z = PZ[i], x1 = x * cyw + z * syw, z1 = -x * syw + z * cyw, y2 = y * ct - z1 * st, z2 = y * st + z1 * ct, kd = PK[i];
       SXa[i] = cx + R * x1; SYa[i] = cy - R * y2;
       const b = z2 > 0.02 ? kd * 4 + (z2 > 0.75 ? 3 : z2 > 0.45 ? 2 : z2 > 0.2 ? 1 : 0) : 16 + (kd > 1 ? 1 : 0);
       bIdx[b][bN[b]++] = i;
+      if (lit && LITV[i] && z2 > 0.06) { const lum = x1 * sux + y2 * suy + z2 * suz; if (lum < -0.02) { const q = (lum < -0.22 ? 2 : 0) + LITV[i] - 1; LIX[q][LN4[q]++] = i; } }
     }
     const pal = PAL[ks];
     for (let b = 0; b < NBK; b++) {
@@ -398,19 +431,33 @@ JEV.mod('desk-world', () => {
       const b = q === 0 ? 11 : 13 + q, n = bN[b], ix = bIdx[b], sz = 4.6 * dotK, h = sz / 2; if (!n) continue;
       g.beginPath(); for (let j = 0; j < n; j++) { const i = ix[j]; g.rect(SXa[i] - h, SYa[i] - h, sz, sz); } g.fill();
     }
+    if (lit) { // city lights on the night side
+      const tw = 0.5 + 0.5 * Math.sin(t * 2.3), sz = 1.7 * dotK, h = sz / 2, base = km > 0.5 ? '255,120,90,' : '255,206,128,';
+      for (let q = 0; q < 4; q++) {
+        const n = LN4[q]; if (!n) continue;
+        const ph = (q & 1) ? tw : 1 - tw; g.fillStyle = 'rgba(' + base + ((q > 1 ? 0.78 : 0.38) * (0.55 + 0.45 * ph) * alive).toFixed(2) + ')'; g.beginPath();
+        const ix = LIX[q]; for (let j = 0; j < n; j++) { const i = ix[j]; g.rect(SXa[i] - h, SYa[i] - h, sz, sz); } g.fill();
+        if (q > 1) { g.fillStyle = 'rgba(' + base + (0.07 * alive).toFixed(2) + ')'; g.beginPath(); for (let j = 0; j < n; j++) { const i = ix[j]; g.rect(SXa[i] - 2.4, SYa[i] - 2.4, 4.8, 4.8); } g.fill(); }
+      }
+    }
     // ---- day / night terminator: a soft, nested night crescent (the sun sits upper-left in view space and drifts slowly)
     {
-      const sxv = -0.62 + 0.1 * Math.sin(t * 0.045), syv = 0.4 + 0.05 * Math.sin(t * 0.031 + 1), szv = 0.62, sl = Math.hypot(sxv, syv, szv), kz = szv / sl;
       g.globalCompositeOperation = 'source-over'; g.save(); g.translate(cx, cy); g.rotate(Math.atan2(-syv, sxv));
-      const nest = lq > 2 ? 1 : 3, rr = R * 0.996;
+      const nest = lq > 2 ? 1 : TIER >= 3 && lq < 2 ? 6 : 3, rr = R * 0.996;
       g.fillStyle = km > 0.5 ? 'rgba(20,0,6,' : 'rgba(2,5,24,';
       for (let q = 0; q < nest; q++) {
-        const k = nest === 1 ? kz : kz + (1 - q) * 0.17;
-        g.globalAlpha = nest === 1 ? 0.3 : 0.13; g.beginPath(); g.arc(0, 0, rr, -Math.PI / 2, Math.PI / 2, true);
+        const k = nest === 1 ? kz : nest === 6 ? kz + (1 - q * 0.4) * 0.17 : kz + (1 - q) * 0.17;
+        g.globalAlpha = nest === 1 ? 0.3 : nest === 6 ? 0.075 : 0.13; g.beginPath(); g.arc(0, 0, rr, -Math.PI / 2, Math.PI / 2, true);
         for (let i = 0; i < TN; i++) g.lineTo(-k * rr * TC[i], rr * TS[i]);
         g.closePath(); g.fillStyle = km > 0.5 ? '#14000a' : '#02051a'; g.fill();
       }
       g.restore(); g.globalAlpha = 1; g.globalCompositeOperation = 'lighter';
+      if (TIER >= 2 && alive > 0.02) { // sun side: warm bloom on the limb + a hairline of sunlight
+        const ang = Math.atan2(-syv, sxv), gs = R * 1.5, wx = cx + Math.cos(ang) * R * 0.88, wy = cy + Math.sin(ang) * R * 0.88;
+        g.globalAlpha = 0.3 * alive; g.drawImage(WARM, wx - gs / 2, wy - gs / 2, gs, gs);
+        g.lineWidth = 1.6; g.strokeStyle = 'rgba(255,214,160,' + (0.5 * alive).toFixed(2) + ')'; g.beginPath(); g.arc(cx, cy, R * 1.006, ang - 0.85, ang + 0.85); g.stroke();
+        g.lineWidth = 6; g.strokeStyle = 'rgba(255,170,100,' + (0.1 * alive).toFixed(2) + ')'; g.beginPath(); g.arc(cx, cy, R * 1.012, ang - 0.7, ang + 0.7); g.stroke(); g.globalAlpha = 1;
+      }
     }
     // ---- aurora ribbons over the upper hemisphere
     if (alive > 0.02) {
@@ -478,8 +525,10 @@ JEV.mod('desk-world', () => {
         A.sx[i] = cx + R * x1; A.sy[i] = cy - R * y2; A.sz[i] = z2; A.vis[i] = z2 > 0.01 || x1 * x1 + y2 * y2 > 1.0 ? 1 : 0;
       }
       g.strokeStyle = km > 0.5 ? COLS[7] : COLS[A.col];
-      for (let pass = 0; pass < 2; pass++) {
-        g.lineWidth = pass ? 1.3 + A.lit * 0.8 : 6.5; g.globalAlpha = pass ? (0.34 + 0.6 * A.lit) * (1 - 0.7 * km) : (0.07 + 0.2 * A.lit) * (1 - 0.7 * km);
+      const np = TIER >= 3 && lq < 2 && A.lit > 0.08 ? 3 : 2;
+      for (let pass = 0; pass < np; pass++) {
+        if (pass === 2) { g.lineWidth = 16; g.globalAlpha = 0.07 * A.lit * (1 - 0.7 * km); } else {
+        g.lineWidth = pass ? 1.3 + A.lit * 0.8 : 6.5; g.globalAlpha = pass ? (0.34 + 0.6 * A.lit) * (1 - 0.7 * km) : (0.07 + 0.2 * A.lit) * (1 - 0.7 * km); }
         g.beginPath(); let pen = false;
         for (let i = 0; i <= ARC_SEG; i++) { if (A.vis[i]) { if (!pen) { g.moveTo(A.sx[i], A.sy[i]); pen = true; } else g.lineTo(A.sx[i], A.sy[i]); } else pen = false; }
         g.stroke();
@@ -490,12 +539,12 @@ JEV.mod('desk-world', () => {
     for (let k = 0; k < POOL.length; k++) {
       const p = POOL[k]; if (!p.on) continue;
       if (killed) { p.on = 0; continue; }
-      p.t += p.spd * dt; if (p.t >= 1) { p.on = 0; if (p.kind === 0) { ARCS[p.idx].lit = Math.min(1, ARCS[p.idx].lit + 0.3); const c = p.rev ? ARCS[p.idx].a : ARCS[p.idx].b; FL[c] = Math.min(1, FL[c] + 0.8); } continue; }
+      p.t += p.spd * dt; if (p.t >= 1) { p.on = 0; if (p.kind === 0) { ARCS[p.idx].lit = Math.min(1, ARCS[p.idx].lit + 0.3); const c = p.rev ? ARCS[p.idx].a : ARCS[p.idx].b; FL[c] = Math.min(1, FL[c] + 0.8); if (TIER >= 2) ripple(c, p.col); } continue; }
       if (p.kind === 0) {
         const A = ARCS[p.idx], tt = p.rev ? 1 - p.t : p.t, f = tt * ARC_SEG, i0 = Math.min(ARC_SEG - 1, f | 0), fr = f - i0;
         if (!A.vis[i0] || !A.vis[i0 + 1]) continue;
         const x = A.sx[i0] + (A.sx[i0 + 1] - A.sx[i0]) * fr, y = A.sy[i0] + (A.sy[i0 + 1] - A.sy[i0]) * fr;
-        const dir = p.rev ? 1 : -1, nT = lq > 2 ? 4 : 8; let ox = x, oy = y; g.strokeStyle = COLS[p.col]; g.lineCap = 'round';
+        const dir = p.rev ? 1 : -1, nT = lq > 2 ? 4 : TIER >= 3 && lq < 2 ? 12 : 8; let ox = x, oy = y; g.strokeStyle = COLS[p.col]; g.lineCap = 'round';
         for (let j = 1; j <= nT; j++) {
           const tf = clamp(tt + dir * j * 0.02, 0, 1) * ARC_SEG, i1 = Math.min(ARC_SEG - 1, tf | 0), f1 = tf - i1; if (!A.vis[i1] || !A.vis[i1 + 1]) break;
           const nx = A.sx[i1] + (A.sx[i1 + 1] - A.sx[i1]) * f1, ny = A.sy[i1] + (A.sy[i1 + 1] - A.sy[i1]) * f1, k = 1 - j / (nT + 1);
@@ -503,6 +552,7 @@ JEV.mod('desk-world', () => {
         }
         g.lineCap = 'butt';
         g.globalAlpha = 1; const sz = 22 * p.sz; g.drawImage(SPR[p.col], x - sz / 2, y - sz / 2, sz, sz);
+        if (TIER >= 3 && lq < 2) { const bz = sz * 2.1; g.globalAlpha = 0.3; g.drawImage(SPR[p.col], x - bz / 2, y - bz / 2, bz, bz); g.globalAlpha = 1; }
       } else {
         const B = BEAMS[p.idx]; if (!B) continue; const f = p.t * 40, i0 = Math.min(39, f | 0), fr = f - i0, q = B.pts;
         const x = q[i0 * 2] + (q[i0 * 2 + 2] - q[i0 * 2]) * fr, y = q[i0 * 2 + 1] + (q[i0 * 2 + 3] - q[i0 * 2 + 1]) * fr, sz = 26 * p.sz;
@@ -535,6 +585,51 @@ JEV.mod('desk-world', () => {
       g.globalCompositeOperation = 'lighter';
     }
     g.globalAlpha = 1;
+    // ---- impact ripples: rings expanding over the sphere surface where packets land on a venue
+    for (let r = 0; r < RP.length; r++) {
+      const p = RP[r]; if (!p.on) continue;
+      p.t += dt * 0.85; if (p.t >= 1 || killed) { p.on = 0; continue; }
+      const c = p.c, z2 = MZ[c]; if (z2 < 0.06) continue;
+      const sx = MX[c], sy = MY[c], ang = Math.atan2(sy - cy, sx - cx) + Math.PI / 2, fa = clamp(z2 * 2.4, 0, 1); g.strokeStyle = COLS[p.col];
+      for (let k = 0; k < 2; k++) {
+        const ph = clamp(p.t - k * 0.2, 0, 1); if (ph <= 0) continue; const rr = 5 + ph * R * (k ? 0.17 : 0.24), u = 1 - ph;
+        g.globalAlpha = u * u * 0.85 * fa; g.lineWidth = 0.6 + 2.2 * u; g.beginPath(); g.ellipse(sx, sy, rr, rr * (0.25 + 0.75 * z2), ang, 0, TAU); g.stroke();
+      }
+    }
+    g.globalAlpha = 1;
+    if (TIER >= 2) { // ring system, front half + satellites with trails
+      g.globalCompositeOperation = 'source-over'; g.lineWidth = 1; g.strokeStyle = km > 0.5 ? 'rgba(255,150,160,.18)' : 'rgba(170,200,255,.18)';
+      for (let r = 0; r < RINGS.length; r++) { const rg = RINGS[r]; g.beginPath(); g.ellipse(cx, cy, rg.k * R, rg.k * R * rg.m, rg.rot, 0, Math.PI); g.stroke(); }
+      if (TIER >= 3 && lq < 2) {
+        g.globalCompositeOperation = 'lighter'; g.lineCap = 'round';
+        for (let r = 0; r < RINGS.length; r++) {
+          const rg = RINGS[r];
+          for (let s = 0; s < 2; s++) {
+            const a = t * rg.sp[s] + s * 3.1 + r * 1.3, dr = rg.sp[s] > 0 ? 1 : -1; ringPt(rg, a); let ox = _px, oy = _py; const vis = _pf;
+            g.strokeStyle = km > 0.5 ? '#ff9aa4' : '#cfe6ff';
+            for (let j = 1; j <= 5; j++) { ringPt(rg, a - dr * j * 0.045); if (_pf && vis) { g.globalAlpha = 0.6 * (1 - j / 6); g.lineWidth = 1.5 - j * 0.2; g.beginPath(); g.moveTo(ox, oy); g.lineTo(_px, _py); g.stroke(); } ox = _px; oy = _py; }
+            ringPt(rg, a); if (_pf) { g.globalAlpha = 0.95; g.fillStyle = '#fff'; g.fillRect(_px - 1.2, _py - 1.2, 2.4, 2.4); g.globalAlpha = 0.5; g.drawImage(SPR[km > 0.5 ? 7 : 3], _px - 7, _py - 7, 14, 14); }
+          }
+        }
+        g.lineCap = 'butt'; g.globalAlpha = 1;
+      }
+    }
+    // ---- agent orbs: light halos (+ a soft reflection on the globe for the ones passing in front of it)
+    if (TIER >= 2 && alive > 0.02) {
+      g.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < OB.length; i++) {
+        const o = OB[i], dd = o.d * 0.5 + 0.5, sc = (0.66 + 0.34 * dd) * (1 + 0.26 * o.act), hs = OB_OS * 3.1 * sc, ox = o.x, oy = o.y, al = (0.2 + 0.5 * o.act) * (0.5 + 0.5 * dd) * alive;
+        g.globalAlpha = al; g.drawImage(SPR[AGCOL[i]], ox - hs / 2, oy - hs / 2, hs, hs);
+        if (o.d > 0.05 && TIER >= 2) {
+          const dx = cx - ox, dy = cy - oy, dist = Math.hypot(dx, dy) || 1;
+          if (dist < R * 1.5) {
+            const k = Math.min(0.5, (dist - R * 0.5) / dist), rxp = ox + dx * Math.max(0.15, k), ryp = oy + dy * Math.max(0.15, k), rs = R * (0.5 + 0.2 * o.act);
+            g.globalAlpha = (0.14 + 0.2 * o.act) * alive * clamp(1.4 - dist / (R * 1.3), 0.15, 1); g.drawImage(SPR[AGCOL[i]], rxp - rs / 2, ryp - rs / 2, rs, rs);
+          }
+        }
+      }
+      g.globalAlpha = 1;
+    }
     // ---- orbit track, front half (over the globe)
     g.globalCompositeOperation = 'source-over'; g.setLineDash(DASH); g.lineWidth = 1; g.strokeStyle = km > 0.5 ? 'rgba(255,150,160,.34)' : 'rgba(190,215,255,.34)';
     g.beginPath(); g.ellipse(OB_X, OB_Y, OB_RX, OB_RY, OB_ROT, 0, Math.PI); g.stroke(); g.setLineDash(EMPTY);
@@ -564,7 +659,7 @@ JEV.mod('desk-world', () => {
   let slowAcc = 0;
 
   /* ================================================================ orbiting DOM agents ================================================================ */
-  const OB = J.$$('.dkw-ob', stage).map((el, i) => ({ el, i, key: el.dataset.k, act: 0, rx: 0, z: 0, label: J.$('em', el), orb: J.$('.orb', el), ex: 99, ey: 99, x: 0, y: 0, tx: 1e9, ty: 0, ts: 0, to: -1 }));
+  const OB = J.$$('.dkw-ob', stage).map((el, i) => ({ el, i, key: el.dataset.k, act: 0, rx: 0, z: 0, d: 0, label: J.$('em', el), orb: J.$('.orb', el), ex: 99, ey: 99, x: 0, y: 0, tx: 1e9, ty: 0, ts: 0, to: -1 }));
   const JV = { el: J.$('#dkw-jv'), x: 0, y: 0, tx: 1e9, ty: 0, ts: 0, to: -1, vis: 0 };
   // transform / opacity are written only when they change at 0.5 px / 0.0025 scale / 0.01 opacity resolution (opacity changes ~once per 10 frames)
   function put(o, x, y, sc, op) {
@@ -578,7 +673,7 @@ JEV.mod('desk-world', () => {
     for (let i = 0; i < OB.length; i++) {
       const o = OB[i], a = a0 + i * (TAU / OB.length), ex = OB_RX * Math.cos(a), ey = OB_RY * Math.sin(a), d = Math.sin(a);
       const x = OB_X + ex * cr - ey * sr, y = OB_Y + ex * sr + ey * cr;
-      o.act += ((o.key === on ? 1 : 0) - o.act) * step; o.x = x; o.y = y;
+      o.act += ((o.key === on ? 1 : 0) - o.act) * step; o.x = x; o.y = y; o.d = d;
       if (o.rx > 0) o.rx = Math.max(0, o.rx - dt * 1.6);
       const pinned = ST.pin === o.key, sc = (0.66 + 0.34 * (d * 0.5 + 0.5)) * (1 + 0.26 * o.act + 0.2 * o.rx * o.rx), op = pinned ? 1 : 0.58 + 0.42 * (d * 0.5 + 0.5);
       put(o, x - SX, y - SY + Math.sin(t * 1.3 + i * 1.7) * 2.6 * (0.5 + 0.5 * o.act + 0.3), sc, op);
@@ -698,7 +793,7 @@ JEV.mod('desk-world', () => {
     const win = Math.random() < 0.58, mag = notional * (net * 1e-4 * rnd(0.5, 1.4) + 0.00006 + Math.random() * 0.00018);
     ST.pnl = win ? mag : -mag * rnd(0.5, 1.1);
     ST.alt ^= 1;
-    if (live()) { paintTicket(d); T.tk.className = 'dkw-tk ' + (ST.alt ? 'fa' : 'fb'); } else dirty = true; // (the fly-in flash only plays while it can be seen)
+    if (live()) { paintTicket(d); T.tk.className = 'dkw-tk ' + (ST.alt ? 'fa' : 'fb'); if ((J.tier || 2) >= 2) J.animate(T.not, [{ transform: 'translateY(55%)', opacity: 0.1 }, { transform: 'none', opacity: 1 }], { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)' }); } else dirty = true; // (the fly-in flash only plays while it can be seen)
   }
   function adopt() {
     let d = null;
@@ -787,7 +882,7 @@ JEV.mod('desk-world', () => {
   /* ================================================================ interactions + bus ================================================================ */
   function setFocusRow(c) { focusCity = c; for (let i = 0; i < FD.length; i++) FD[i].el.classList.toggle('is-f', FD[i].city === c); }
   function focusVenue(c) {
-    focusYaw = -CITIES[c].lon * D2R; focusHold = 4.2; kbi = c; yawVel = 0; setFocusRow(c); FL[c] = 1;
+    focusYaw = -CITIES[c].lon * D2R; focusHold = 4.2; kbi = c; yawVel = 0; setFocusRow(c); FL[c] = 1; if ((J.tier || 2) >= 2 && !killed) ripple(c, 3);
     const f = FDC[c]; if (liveEl && f) liveEl.textContent = 'facing ' + f.k + ' ' + CITIES[c].c.toLowerCase() + ', latency ' + Math.round(f.lat) + ' milliseconds, ' + J.sgn((f.price / J.market.price - 1) * 1e4, 1) + ' basis points versus oracle (simulated)';
     if (J.reduce) { yaw = focusYaw; redraw(); }
     if (!killed) for (let k = 0; k < ARC_BY_CITY[c].length; k++) { const ai = ARC_BY_CITY[c][k], A = ARCS[ai]; A.lit = 1; spawn(0, ai, (k + 2) % 4, 0.5, A.a !== c, 1.1); }
@@ -828,6 +923,7 @@ JEV.mod('desk-world', () => {
     e.preventDefault();
   });
 
+  J.bus.on('tier', () => { lastSig = ''; if (g) layout(); });
   J.bus.on('tick', (m) => updateFeeds(m.price, cardIn));
   J.bus.on('decision', (d) => {
     if (killed || !cardIn) return; // (nothing here is visible off screen; a queued burst of packets on return would not be either)

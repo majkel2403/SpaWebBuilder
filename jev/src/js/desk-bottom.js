@@ -58,6 +58,14 @@ JEV.mod('desk-bottom', () => {
   try { if (document.fonts && document.fonts.load) Promise.all([document.fonts.load("700 9px 'JetBrains Mono'"), document.fonts.load("9px 'JetBrains Mono'")]).then(() => onFonts.forEach((f) => f())).catch(() => {}); } catch (e) { /* ignore */ }
   /** Abramowitz-Stegun erf, enough for a tail-probability label */
   const erf = (x) => { const sg = x < 0 ? -1 : 1, a = Math.abs(x), t = 1 / (1 + 0.3275911 * a); return sg * (1 - (((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t) * Math.exp(-a * a)); };
+  const TIER = () => (J.tier || 2);
+  const FX_ON = () => TIER() >= 2 && !J.reduce;
+  /** polyline segment a..b (indices, fractional ok) of ys over XS, used for travelling highlights */
+  const seg = (g, xs, ys, np, a, b, w, style) => {
+    a = Math.max(0, Math.floor(a)); b = Math.min(np - 1, Math.ceil(b)); if (b <= a) return;
+    g.beginPath(); g.moveTo(xs[a], ys[a]); for (let i = a + 1; i <= b; i++) g.lineTo(xs[i], ys[i]);
+    g.lineWidth = w; g.strokeStyle = style; g.stroke();
+  };
   const DASH = [3, 4], DOT = [1.5, 3.5], NODASH = [], F_TAG = '700 9px ' + MONO, F_HALT = '700 9.5px ' + MONO;
 
   /* =====================================================================================================
@@ -72,7 +80,7 @@ JEV.mod('desk-bottom', () => {
     const X0 = 0.2, X1 = 1.0, PEAK = 9.0, MAXP = 220, NSP = 120, NE = 56;
     const YP = new Float32Array(MAXP), YL = new Float32Array(MAXP), YO = new Float32Array(MAXP), XS = new Float32Array(MAXP), SPK = new Float32Array(NSP);
     const EX = new Float32Array(NE), EY = new Float32Array(NE), EV = new Float32Array(NE), EA = new Float32Array(NE), EM = new Float32Array(NE), EZ = new Float32Array(NE);
-    const B = { mp: 0.54, sp: 0.095, ml: 0.676, sl: 0.072, tmp: 0.54, tml: 0.676, tsl: 0.072, bias: 0.1, flash: 0, ring: 1, n: 1204, spT: 0, si: 0, domT: 9, vp: 0, vl: 0, pinP: 0, pinL: 0, post: 0.627, ps: 0.057, dmp: 0.54, dsp: 0.095, dml: 0.676, dsl: 0.072, up: true };
+    const B = { mp: 0.54, sp: 0.095, ml: 0.676, sl: 0.072, tmp: 0.54, tml: 0.676, tsl: 0.072, bias: 0.1, flash: 0, ring: 1, n: 1204, spT: 0, si: 0, domT: 9, vp: 0, vl: 0, pinP: 0, pinL: 0, hb: 0, post: 0.627, ps: 0.057, dmp: 0.54, dsp: 0.095, dml: 0.676, dsl: 0.072, up: true };
     const TAG = [
       { f: 'rgba(255,193,61,.15)', s: 'rgba(255,193,61,.7)', t: '#ffd47a', l: 'rgba(255,193,61,.5)' },
       { f: 'rgba(77,141,255,.17)', s: 'rgba(106,163,255,.75)', t: '#9cc2ff', l: 'rgba(106,163,255,.55)' },
@@ -116,8 +124,8 @@ JEV.mod('desk-bottom', () => {
       e.preventDefault();
     });
     const ST = {
-      ok: { g10: null, g4: null, core: null, hot: null, crgb: '141,255,208', coreS: '#8dffd0', hrgb: '212,255,238', rgb: '46,230,166', tail: 'rgba(141,255,208,.24)', fillTop: 'rgba(46,230,166,.6)', fillMid: 'rgba(46,230,166,.22)', fillBot: 'rgba(46,230,166,.02)', fill: null, spark: null },
-      kill: { g10: null, g4: null, core: null, hot: null, crgb: '255,143,154', coreS: '#ff8f9a', hrgb: '255,214,218', rgb: '255,77,94', tail: 'rgba(255,143,154,.24)', fillTop: 'rgba(255,77,94,.55)', fillMid: 'rgba(255,77,94,.2)', fillBot: 'rgba(255,77,94,.02)', fill: null, spark: null },
+      ok: { g10: null, g4: null, core: null, hot: null, crgb: '141,255,208', coreS: '#8dffd0', hrgb: '212,255,238', rgb: '46,230,166', tail: 'rgba(141,255,208,.24)', fillTop: 'rgba(46,230,166,.6)', fillMid: 'rgba(46,230,166,.22)', fillBot: 'rgba(46,230,166,.02)', fill: null, spark: null, shm: null, wh: 'rgba(212,255,238,', },
+      kill: { g10: null, g4: null, core: null, hot: null, crgb: '255,143,154', coreS: '#ff8f9a', hrgb: '255,214,218', rgb: '255,77,94', tail: 'rgba(255,143,154,.24)', fillTop: 'rgba(255,77,94,.55)', fillMid: 'rgba(255,77,94,.2)', fillBot: 'rgba(255,77,94,.02)', fill: null, spark: null, shm: null, wh: 'rgba(255,214,218,', },
     };
     let W = 0, H = 0, gs = null, gd = null, np = 0, L = 12, pw = 0, baseY = 0, curveH = 0, scale = 1, sy0 = 0, sy1 = 0, ok = false;
     const px = (p) => L + ((p - X0) / (X1 - X0)) * pw;
@@ -171,6 +179,7 @@ JEV.mod('desk-bottom', () => {
         const p = gd.createLinearGradient(0, sy0, 0, sy1); p.addColorStop(0, 'rgba(' + s.rgb + ',.34)'); p.addColorStop(1, 'rgba(' + s.rgb + ',0)'); s.spark = p;
         // glow + core fade out toward the baseline so the flat tails never smear into the axis
         const fade = (rgb, a0, a1) => { const q = gd.createLinearGradient(0, baseY, 0, baseY - curveH * 0.6); q.addColorStop(0, 'rgba(' + rgb + ',' + a0 + ')'); q.addColorStop(1, 'rgba(' + rgb + ',' + a1 + ')'); return q; };
+        const sh = gd.createLinearGradient(0, 0, 170, 0); sh.addColorStop(0, 'rgba(' + s.hrgb + ',0)'); sh.addColorStop(.5, 'rgba(' + s.hrgb + ',.2)'); sh.addColorStop(1, 'rgba(' + s.hrgb + ',0)'); s.shm = sh;
         s.g10 = fade(s.rgb, 0, 0.075); s.g4 = fade(s.rgb, 0, 0.2); s.core = fade(s.crgb, 0.1, 1); s.hot = fade(s.hrgb, 0, 1);
       }
       drawStatic();
@@ -224,6 +233,21 @@ JEV.mod('desk-bottom', () => {
     const trace = (g, ys) => { g.beginPath(); g.moveTo(XS[0], ys[0]); for (let i = 1; i < np; i++) g.lineTo(XS[i], ys[i]); };
     const closeDown = (g) => { g.lineTo(XS[np - 1], baseY); g.lineTo(XS[0], baseY); g.closePath(); };
     /** tags are baked to tiny sprites (text is the costly part of a canvas frame) and only re-baked when the label changes, <= ~9 Hz */
+    const NF = 32, FXp = new Float32Array(NF), FYp = new Float32Array(NF), FVx = new Float32Array(NF), FVy = new Float32Array(NF), FL = new Float32Array(NF), FM = new Float32Array(NF), FR = new Float32Array(NF);
+    for (let i = 0; i < NF; i++) { FL[i] = -Math.random() * 2; FM[i] = 1; }
+    const fount = (g, dt, spr, kill) => {
+      const n = TIER() >= 3 ? NF : 14, boost = 1 + B.flash * 1.6;
+      for (let i = 0; i < n; i++) {
+        if (FL[i] < 0) { FL[i] += dt; if (FL[i] < 0) continue; // spawn on the ribbon near the peak
+          const x = clamp(B.post + B.ps * 0.7 * gauss(), X0 + 0.02, X1 - 0.02), d = x - B.post, h = (scale / (B.ps * 2.5066)) * Math.exp((-0.5 * d * d) / (B.ps * B.ps));
+          FXp[i] = px(x); FYp[i] = baseY - h; FVx[i] = (Math.random() - 0.5) * 16; FVy[i] = -(24 + Math.random() * 46) * boost; FM[i] = 0.9 + Math.random() * 1.3; FL[i] = FM[i] * 0.999; FR[i] = 3 + Math.random() * 4; }
+        FL[i] -= dt; if (FL[i] <= 0) { FL[i] = -Math.random() * 0.6; continue; }
+        FXp[i] += FVx[i] * dt; FYp[i] += FVy[i] * dt; FVy[i] *= 1 - dt * 0.5;
+        const a = Math.sin((1 - FL[i] / FM[i]) * Math.PI), r = FR[i] * (0.6 + 0.6 * (FL[i] / FM[i]));
+        g.globalAlpha = a * 0.85; g.drawImage(spr, FXp[i] - r, FYp[i] - r, r * 2, r * 2);
+      }
+      g.globalAlpha = 1;
+    };
     const TCV = [document.createElement('canvas'), document.createElement('canvas'), document.createElement('canvas')], TAGK = ['', '', ''], TAGT = [-9, -9, -9], TAGW = [60, 60, 60];
     const TY = [5, 22, 39], LANE = [0, 1, 2], TXR = [0, 0, 0];
     const tag = (g, i, name, v, killed, t) => {
@@ -286,6 +310,9 @@ JEV.mod('desk-bottom', () => {
       g.lineWidth = 5; g.strokeStyle = st.g4; g.stroke();
       if (B.flash > 0.03) { g.globalAlpha = Math.min(1, B.flash * 0.6); g.lineWidth = 6; g.strokeStyle = st.hot; g.stroke(); g.globalAlpha = 1; }
       closeDown(g); g.fillStyle = st.fill; g.fill();
+      if (FX_ON()) { // animated gradient: a soft light band sweeps through the fill (clipped to the posterior area)
+        g.save(); g.clip(); g.translate(((t * 0.16) % 1) * (W + 190) - 180, 0); g.fillStyle = st.shm; g.fillRect(0, baseY - curveH - 4, 170, curveH + 6); g.restore();
+      }
       g.globalCompositeOperation = 'source-over';
       trace(g, YO); g.lineWidth = 1.9; g.strokeStyle = st.core; g.stroke();
       // embers: samples drawn from the posterior
@@ -300,6 +327,18 @@ JEV.mod('desk-bottom', () => {
         g.globalAlpha = a; g.drawImage(spr, EX[i] - r, EY[i] - r, r * 2, r * 2);
       }
       g.globalAlpha = 1;
+      if (FX_ON()) {
+        fount(g, dt, spr, kill);
+        // plasma ribbon: travelling highlights ride the posterior (a second one counter-rotates at tier 3)
+        const sw = np + 40, h1 = ((t * 0.32) % 1) * sw - 20;
+        seg(g, XS, YO, np, h1 - 22, h1 - 11, 2.2, st.wh + '.35)'); seg(g, XS, YO, np, h1 - 11, h1 - 4, 2.8, st.wh + '.7)'); seg(g, XS, YO, np, h1 - 4, h1, 3.4, st.wh + '1)');
+        if (TIER() >= 3) { const h2 = (1 - ((t * 0.21 + 0.4) % 1)) * sw - 20; seg(g, XS, YO, np, h2, h2 + 10, 2.4, st.wh + '.55)'); seg(g, XS, YO, np, h2 + 10, h2 + 18, 1.8, st.wh + '.25)'); }
+        // on a posterior update a shock travels outward from the peak along the ribbon
+        if (B.ring < 1) {
+          const pi = (B.post - X0) / (X1 - X0) * (np - 1), hw = B.ring * np * 0.55, al = (1 - B.ring);
+          g.globalAlpha = al; seg(g, XS, YO, np, pi + hw - 9, pi + hw, 4.2, st.wh + '.95)'); seg(g, XS, YO, np, pi - hw, pi - hw + 9, 4.2, st.wh + '.95)'); g.globalAlpha = 1;
+        }
+      }
       // ripple at the posterior peak on every decision
       if (B.ring < 1) {
         const pk = baseY - scale / (B.ps * 2.5066), r = 5 + B.ring * 40;
@@ -556,6 +595,22 @@ JEV.mod('desk-bottom', () => {
     rw.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hover = false; sync(); if (!paused()) resume(); } });
     liveB.addEventListener('click', () => { hold = !hold; if (!hold) hideTip(); sync(); if (!paused()) resume(); });
 
+    // data rain: faint falling streaks behind the rows (tier >= 2, low opacity, own gated task, DPR 1)
+    const rain = $('#dkb-rain');
+    if (rain) {
+      const NC = 18, RX = new Float32Array(NC), RY = new Float32Array(NC), RV = new Float32Array(NC), RS = new Float32Array(NC);
+      const rs = document.createElement('canvas'); rs.width = 4; rs.height = 64; { const g = rs.getContext('2d'); for (let y = 0; y < 64; y += 4) { g.fillStyle = 'rgba(255,120,170,' + ((y / 64) * (y / 64) * 0.9).toFixed(3) + ')'; g.fillRect(1, y, 2, 2.4); } g.fillStyle = 'rgba(255,220,235,.95)'; g.fillRect(0, 60, 4, 4); }
+      let rw2 = 0, rh2 = 0, rg = null;
+      const relay = () => { const f = J.fit(rain, 1); rg = f.g; rw2 = f.W; rh2 = f.H; for (let i = 0; i < NC; i++) { RX[i] = Math.round(((i + Math.random() * 0.8) / NC) * rw2); RY[i] = Math.random() * rh2; RV[i] = 18 + Math.random() * 40; RS[i] = 0.5 + Math.random() * 0.8; } };
+      J.watch(holder, relay);
+      J.task(rain, (t, dt) => {
+        if (!rg || !rw2) return;
+        if (TIER() < 2 || J.reduce) { rain.style.display = 'none'; return; }
+        rain.style.display = '';
+        rg.clearRect(0, 0, rw2, rh2); const n = TIER() >= 3 ? NC : 10;
+        for (let i = 0; i < n; i++) { RY[i] += RV[i] * dt; if (RY[i] - 64 * RS[i] > rh2) { RY[i] = 0; RV[i] = 18 + Math.random() * 40; } rg.drawImage(rs, RX[i], RY[i] - 64 * RS[i], 4, 64 * RS[i]); }
+      });
+    }
     J.task(list, (t) => {
       const now = t * 1000;
       if (paused()) { if (tipLi) placeTip(); return; }
@@ -587,8 +642,8 @@ JEV.mod('desk-bottom', () => {
     for (let q = 0; q < NB; q++) { const s = ramp(VMIN + (q + 0.5) * VSTEP); RGB[q] = s; CORE[q] = 'rgba(' + s + ',.34)'; HALO[q] = 'rgba(' + s + ',.035)'; BAR[q] = 'rgba(' + s + ',.85)'; HEAD[q] = 'rgba(' + s + ',.9)'; }
     const bk = (v) => clamp(Math.floor((v - VMIN) / VSTEP), 0, NB - 1);
     let W = 0, H = 0, gs = null, go = null, ok = false, lw = 0, lh = 0, have = false, snap = true;
-    let padL = 36, padT = 24, padB = 22, hx0 = 0, hx1 = 0, histW = 52, px0 = 0, px1 = 0, pw = 0, ph = 0, dx = 1, lo = 0, hi = 1, invR = 1;
-    let mu = MU0, sg = SG0, step = 0, phase = 0, phT = 0, acc = 0, cur = 0, xf = XF, poolW = 0, poolN = 0, runs = 0, domT = 9, my = 0, meanStr = '+0';
+    let RAD = null, padL = 36, padT = 24, padB = 22, hx0 = 0, hx1 = 0, histW = 52, px0 = 0, px1 = 0, pw = 0, ph = 0, dx = 1, lo = 0, hi = 1, invR = 1;
+    const STR = new Int16Array(8); let mu = MU0, sg = SG0, step = 0, phase = 0, phT = 0, acc = 0, cur = 0, xf = XF, poolW = 0, poolN = 0, runs = 0, domT = 9, my = 0, meanStr = '+0';
     const yPx = (v) => padT + ph - (v - lo) * invR * ph;
     const meanCv = document.createElement('canvas'), haltCv = document.createElement('canvas'); let meanW = 40;
     // pointer probe: a horizontal threshold line — the label says what share of the 140 paths sits above it
@@ -645,6 +700,8 @@ JEV.mod('desk-bottom', () => {
         for (let k = 1; k < S1; k++) { x += mu + vs * gauss(); PX[o + k] = x; MN[k] += x; }
       }
       for (let k = 1; k < S1; k++) MN[k] /= N;
+      { const bv = new Float32Array(8).fill(-1e9); STR.fill(0); // the 8 strongest paths (by end value) wear comets
+        for (let i = 0; i < N; i++) { let v = PX[i * S1 + T], j = 7; if (v <= bv[7]) continue; while (j > 0 && v > bv[j - 1]) { bv[j] = bv[j - 1]; STR[j] = STR[j - 1]; j--; } bv[j] = v; STR[j] = i; } }
       BKS.fill(0);
       for (let i = 0; i < N; i++) BKS[bk(PX[i * S1 + T]) + 1]++;
       for (let q = 0; q < NB; q++) BKS[q + 1] += BKS[q];
@@ -685,6 +742,7 @@ JEV.mod('desk-bottom', () => {
     const lay = () => {
       const a = J.fit(cs), b = J.fit(cA), b2 = J.fit(cB), c = J.fit(co);
       CG[0] = b.g; CG[1] = b2.g; gs = a.g; go = c.g;
+      RAD = go.createLinearGradient(-80, 0, 0, 0); RAD.addColorStop(0, 'rgba(120,210,255,0)'); RAD.addColorStop(.75, 'rgba(120,210,255,.07)'); RAD.addColorStop(1, 'rgba(190,235,255,.22)');
       if (a.W === lw && a.H === lh && ok) return;
       W = a.W; H = a.H; lw = W; lh = H;
       ok = W > 150 && H > 150;
@@ -712,18 +770,35 @@ JEV.mod('desk-bottom', () => {
       const xh = px0 + step * dx, o = step;
       HC.fill(0);
       for (let i = 0; i < N; i++) { const v = (PX[i * S1 + o] - lo) * invR * NBIN; if (v >= 0 && v < NBIN) HC[v | 0]++; }
-      const sn = snap || J.reduce, binH = ph / NBIN, kb = sn ? 1 : 1 - Math.exp(-dt * 14);
+      const fxo = FX_ON(), sn = snap || J.reduce, binH = ph / NBIN, kb = sn ? 1 : 1 - Math.exp(-dt * 14);
       g.globalCompositeOperation = 'lighter';
       for (let b = 0; b < NBIN; b++) {
         HB[b] += (Math.min(1, HC[b] * (1 / (N * 0.1))) - HB[b]) * kb;
-        const w = HB[b] * (histW - 5); if (w < 0.7) continue;
+        const wob = fxo ? 1 + 0.07 * Math.sin(t * 2.6 + b * 0.55) + 0.04 * Math.sin(t * 4.3 - b * 0.9) : 1, w = Math.min(histW - 5, HB[b] * (histW - 5) * wob); if (w < 0.7) continue;
         g.fillStyle = BAR[bk(lo + ((b + 0.5) / NBIN) * (hi - lo))]; g.fillRect(hx1 - 1 - w, padT + ph - (b + 1) * binH + 0.6, w, Math.max(1, binH - 1.2));
+        if (fxo && w > 4) { g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(hx1 - 1 - w, padT + ph - (b + 1) * binH + 0.6, 2, Math.max(1, binH - 1.2)); }
       }
       snap = false;
       g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(hx1 - 1, padT, 1, ph);
       // frontier line + heads (each head wears its path's colour)
       if (step > 0 && step < T) { g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(xh - 0.5, padT, 1, ph); }
       for (let q = 0; q < NB; q++) { const s0 = BKS[q], s1 = BKS[q + 1]; if (s0 === s1) continue; g.fillStyle = HEAD[q]; for (let j = s0; j < s1; j++) g.fillRect(xh - 1, yPx(PX[BKI[j] * S1 + o]) - 1, 2, 2); }
+      if (fxo && !killed) {
+        const nc = TIER() >= 3 ? 8 : 4, grow = step < T;
+        for (let c = 0; c < nc && o > 4; c++) {
+          const base = STR[c] * S1, q = bk(PX[base + T]), spr = SPB[q] || (SPB[q] = sprite(RGB[q])), hp = grow ? o : ((t * 0.4 + c * 0.11) % 1) * o, h0 = hp | 0;
+          const t3 = Math.max(0, h0 - 16), t2 = Math.max(0, h0 - 8), t1 = Math.max(0, h0 - 3);
+          for (let z = 0; z < 3; z++) {
+            const a0 = z === 0 ? t3 : z === 1 ? t2 : t1, b0 = z === 0 ? t2 : z === 1 ? t1 : h0;
+            g.beginPath(); g.moveTo(px0 + a0 * dx, yPx(PX[base + a0])); for (let k = a0 + 1; k <= b0; k++) g.lineTo(px0 + k * dx, yPx(PX[base + k]));
+            g.lineWidth = 1.2 + z * 0.8; g.strokeStyle = 'rgba(' + RGB[q] + ',' + (0.25 + z * 0.3) + ')'; g.stroke();
+          }
+          g.globalAlpha = 0.95; g.drawImage(spr, px0 + h0 * dx - 11, yPx(PX[base + h0]) - 11, 22, 22); g.globalAlpha = 1;
+        }
+        // radar sweep: a scan line crosses the cloud, light trailing behind it
+        const sx = px0 + ((t / 7) % 1) * Math.max(40, Math.min(step, T) * dx);
+        g.save(); g.translate(sx, 0); g.fillStyle = RAD; g.fillRect(-80, padT, 80, ph); g.fillStyle = 'rgba(200,238,255,.45)'; g.fillRect(0, padT, 1, ph); g.restore();
+      }
       g.globalCompositeOperation = 'source-over';
       // mean tag riding the histogram
       mv = MN[o];
@@ -808,6 +883,16 @@ JEV.mod('desk-bottom', () => {
     J.task(drc, frame);
   };
 
+  /* heartbeat: the three cards breathe a synchronized glow on every decision / JEV.pulse (bus 'pulse' when core emits it) */
+  let lastBeat = -1e9;
+  const beat = (str) => {
+    if (!FX_ON() || J.hidden()) return;
+    const n = performance.now(); if (n - lastBeat < 260) return; lastBeat = n;
+    const a = 0.12 + 0.3 * clamp(str, 0, 1), k = S.killed ? '255,77,94' : '255,46,110';
+    [bay, lgc, drc].forEach((c) => J.animate(c, [{ boxShadow: '0 0 0 0 rgba(' + k + ',0), inset 0 0 0 rgba(' + k + ',0)' }, { boxShadow: '0 0 34px -6px rgba(' + k + ',' + a.toFixed(2) + '), inset 0 0 38px rgba(' + k + ',' + (a * 0.35).toFixed(2) + ')', offset: 0.2 }, { boxShadow: '0 0 12px -6px rgba(' + k + ',' + (a * 0.3).toFixed(2) + '), inset 0 0 14px rgba(' + k + ',' + (a * 0.1).toFixed(2) + ')', offset: 0.42 }, { boxShadow: '0 0 0 0 rgba(' + k + ',0), inset 0 0 0 rgba(' + k + ',0)' }], { duration: 1100, easing: 'ease-out' }));
+  };
+  J.bus.on('decision', (d) => beat(d && d.dest === 'execute' ? 0.8 : 0.4));
+  J.bus.on('pulse', (s) => beat(+s || 0.5));
   initBayes();
   initLog();
   initDrift();

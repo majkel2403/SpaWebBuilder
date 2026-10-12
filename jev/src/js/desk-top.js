@@ -25,6 +25,38 @@ JEV.mod('desk-top', () => {
   };
   const SP = { g: sprite(GRN), r: sprite(RED), a: sprite(AMB), p: sprite(PNK) };
   const glow = (g, spr, x, y, r, a) => { g.globalAlpha = a; g.drawImage(spr, x - r, y - r, r * 2, r * 2); g.globalAlpha = 1; };
+  /* ---- spectacle kit (tier-gated: tier 1 = the page as it always was; reduced motion = off) ---- */
+  const tier = () => (reduce ? 1 : (J.tier || 2));
+  const SPW = sprite('255,255,255'), SPR = [SP.g, SP.r, SP.a, SP.p, SPW];       // particle sprites: 0 green 1 red 2 amber 3 pink 4 white
+  const beamSpr = (rgb) => {                                                    // vertical light column: soft sides, bright toward the bottom (stretched, never re-rendered)
+    const c = document.createElement('canvas'); c.width = 16; c.height = 64; const g = c.getContext('2d');
+    const v = g.createLinearGradient(0, 0, 0, 64); v.addColorStop(0, 'rgba(' + rgb + ',0)'); v.addColorStop(1, 'rgba(' + rgb + ',.9)'); g.fillStyle = v; g.fillRect(0, 0, 16, 64);
+    g.globalCompositeOperation = 'destination-in'; const h = g.createLinearGradient(0, 0, 16, 0); h.addColorStop(0, 'rgba(0,0,0,0)'); h.addColorStop(.5, '#000'); h.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = h; g.fillRect(0, 0, 16, 64); return c;
+  };
+  const BM = { g: beamSpr(GRN), r: beamSpr(RED), p: beamSpr(PNK), a: beamSpr(AMB) };
+  const bandSpr = (() => { const c = document.createElement('canvas'); c.width = 64; c.height = 4; const g = c.getContext('2d'), h = g.createLinearGradient(0, 0, 64, 0);
+    h.addColorStop(0, 'rgba(255,255,255,0)'); h.addColorStop(.5, 'rgba(255,255,255,.2)'); h.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = h; g.fillRect(0, 0, 64, 4); return c; })();
+  /** bounded particle pool (typed arrays, ring-reused: no allocation per spawn / frame). slot = x y vx vy life max size kind */
+  const mkPool = (n) => ({ n, a: new Float32Array(n * 8), c: 0 });
+  function spawn(p, x, y, vx, vy, life, size, kind) {
+    const a = p.a, o = p.c * 8; p.c = (p.c + 1) % p.n;
+    a[o] = x; a[o + 1] = y; a[o + 2] = vx; a[o + 3] = vy; a[o + 4] = life; a[o + 5] = life; a[o + 6] = size; a[o + 7] = kind;
+  }
+  /** burst of radial sparks; ay = vertical accel (px/s^2, negative rises) */
+  function burst(p, x, y, n, kind, speed, life, size, ay) {
+    for (let i = 0; i < n; i++) { const an = Math.random() * TAU, sp = speed * (0.35 + Math.random() * 0.75); spawn(p, x, y, Math.cos(an) * sp, Math.sin(an) * sp + (ay || 0) * 0.02, life * (0.6 + Math.random() * 0.6), size * (0.7 + Math.random() * 0.6), Math.random() < 0.25 ? 4 : kind); }
+  }
+  function drawPool(p, g, dt, ay, drag, flick) {
+    const a = p.a, k = Math.exp(-dt * drag); g.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < p.n; i++) {
+      const o = i * 8; let life = a[o + 4]; if (life <= 0) continue;
+      life -= dt; a[o + 4] = life; if (life <= 0) continue;
+      a[o + 2] *= k; a[o + 3] = a[o + 3] * k + ay * dt; a[o] += a[o + 2] * dt; a[o + 1] += a[o + 3] * dt;
+      const f = life / a[o + 5], fl = flick ? 0.65 + 0.35 * Math.sin(life * 38 + i * 1.7) : 1;
+      glow(g, SPR[a[o + 7]], a[o], a[o + 1], a[o + 6] * (0.35 + 0.65 * f), Math.min(1, f * 1.6) * fl);
+    }
+    g.globalCompositeOperation = 'source-over';
+  }
   const AG = {}; J.AGENTS.forEach((a) => (AG[a.key] = a));
   const HOLD = { entry: 'edge', sizer: 'kelly', guard: 'prior', router: 'taker', exit: 'closer', funding: 'prior', news: 'spotter', mm: 'taker', liq: 'closer', rebal: 'spotter' };
 
@@ -100,8 +132,8 @@ JEV.mod('desk-top', () => {
   const draw1 = (k, imb, bid) => (0.35 + Math.random() * 1.5) * (1 + k * 0.2) * (Math.random() < 0.05 ? 2.4 : 1) * Math.max(0.35, 1 + (bid ? 1 : -1) * 0.6 * imb);
   const retarget = (frac) => {
     for (let k = 0; k < NB; k++) {
-      if (Math.random() < frac) { const v = draw1(k, sim.imbT, false); if (Math.abs(v - tA[k]) > 0.6 + 0.4 * tA[k]) { fA[k] = 1; sA[k] = v > tA[k] ? 1 : -1; pA[k] = bkA[k]; } tA[k] = v; }
-      if (Math.random() < frac) { const v = draw1(k, sim.imbT, true); if (Math.abs(v - tB[k]) > 0.6 + 0.4 * tB[k]) { fB[k] = 1; sB[k] = v > tB[k] ? 1 : -1; pB[k] = bkB[k]; } tB[k] = v; }
+      if (Math.random() < frac) { const v = draw1(k, sim.imbT, false); if (Math.abs(v - tA[k]) > 0.6 + 0.4 * tA[k]) { fA[k] = 1; sA[k] = v > tA[k] ? 1 : -1; pA[k] = bkA[k]; if (v < tA[k] * 0.42 && tA[k] > 1) eA[k] = 1; } tA[k] = v; }
+      if (Math.random() < frac) { const v = draw1(k, sim.imbT, true); if (Math.abs(v - tB[k]) > 0.6 + 0.4 * tB[k]) { fB[k] = 1; sB[k] = v > tB[k] ? 1 : -1; pB[k] = bkB[k]; if (v < tB[k] * 0.42 && tB[k] > 1) eB[k] = 1; } tB[k] = v; }
     }
   };
   const bookLabels = (price) => {
@@ -112,10 +144,14 @@ JEV.mod('desk-top', () => {
   for (let k = 0; k < NB; k++) { tA[k] = bkA[k] = draw1(k, 0, false); tB[k] = bkB[k] = draw1(k, 0, true); }
   bookLabels(M.price);
 
+  const eA = new Int8Array(NB), eB = new Int8Array(NB);              // 'level eaten' flags (a size collapsed): consumed by drawBook
+  const fx = { birthT: -1e9, birthN: 0, tickT: -1e9, pool: mkPool(120) };
   let lastPx = M.price;
   function tapeTick(price, dp) {
     const t = nowMs(); let cur = cands[cands.length - 1];
+    fx.tickT = t;
     if (t - cur.t0 >= CAND_MS) {
+      fx.birthT = t; fx.birthN = 1;
       accum(cur, cands[cands.length - 2]);
       cur = mkC(cur.c, t); cands.push(cur); if (cands.length > KEEP) cands.shift();
       tg.slide = tg.slot || 8;
@@ -362,6 +398,7 @@ JEV.mod('desk-top', () => {
   pcv.addEventListener('pointerleave', () => { if (!sc.touch) sc.on = false; }); pcv.addEventListener('pointercancel', () => { if (!sc.touch) sc.on = false; });
   pcv.style.touchAction = 'pan-y'; pcv.style.cursor = 'crosshair';
   const PY0 = 16, PX0 = 8;
+  const pfx = { pool: mkPool(56), hiT: -1e9, loT: -1e9, crackT: -1e9, crack: new Float32Array(24), trail: 0 };
   /** the cached layer: grid, above/below-open fill, glow + line, open baseline, axis labels */
   function renderPnl() {
     const og = pc.og, W = pc.W, H = pc.H, x0 = PX0, x1 = W - pc.ax, y0 = PY0, y1 = H - 10, yMin = pc.yMin;
@@ -406,6 +443,17 @@ JEV.mod('desk-top', () => {
       let lo = sim.open, hi = sim.open;
       for (let i = 0; i < HN; i++) { const v = hist[i]; if (v < lo) lo = v; if (v > hi) hi = v; }
       if (sim.bal < lo) lo = sim.bal; if (sim.bal > hi) hi = sim.bal;
+      if (pc.init && tier() >= 2) {                              // new window high: embers rise off the head; new window low: a red crack + a glitch jolt (rate-limited)
+        const tn = nowMs();
+        if (sim.bal > pc.hi + 0.5 && tn - pfx.hiT > 2500) {
+          pfx.hiT = tn; const ex = pc.W - pc.ax, n = tier() >= 3 ? 26 : 14;
+          for (let i = 0; i < n; i++) spawn(pfx.pool, ex + (Math.random() - 0.5) * 8, pc.yEnd, (Math.random() - 0.7) * 44, -(30 + Math.random() * 70), 0.9 + Math.random() * 1.3, 5 + Math.random() * 6, i % 3 === 0 ? 4 : i % 3 === 1 ? 2 : 0);
+        } else if (sim.bal < pc.lo - 0.5 && tn - pfx.loT > 2500) {
+          pfx.loT = tn; pfx.crackT = tn; const c = pfx.crack;
+          for (let b = 0; b < 3; b++) { let x = 0, y = 0; const an = Math.PI * (0.6 + b * 0.35) + (Math.random() - 0.5) * 0.4; for (let j = 0; j < 4; j++) { const l = 9 + Math.random() * 12, a2 = an + (Math.random() - 0.5) * 1.1; x += Math.cos(a2) * l; y += Math.sin(a2) * l; c[b * 8 + j * 2] = x; c[b * 8 + j * 2 + 1] = y; } }
+          if (bigEl) J.animate(bigEl, [{ transform: 'none' }, { transform: 'translateX(-3px) skewX(-4deg)', offset: .12 }, { transform: 'translateX(4px)', offset: .24 }, { transform: 'translateX(-2px) skewX(3deg)', offset: .38 }, { transform: 'translateX(1px)', offset: .55 }, { transform: 'none' }], { duration: 420, easing: 'steps(7, end)' });
+        }
+      }
       const pad = Math.max((hi - lo) * 0.16, 30); pc.lo = lo; pc.hi = hi; pc.tMin = lo - pad; pc.tMax = hi + pad;
     }
     if (!pc.init) { pc.yMin = pc.tMin; pc.yMax = pc.tMax; pc.init = true; } else { const k = 1 - Math.exp(-dt * 4); pc.yMin += (pc.tMin - pc.yMin) * k; pc.yMax += (pc.tMax - pc.yMax) * k; }
@@ -417,6 +465,30 @@ JEV.mod('desk-top', () => {
     g.globalCompositeOperation = 'lighter'; glow(g, rgb, x1, yEnd, 14 + Math.sin(t * 4) * 3, 0.9);
     const age = (nowMs() - sim.jumpT) / 1000;
     if (age < 1.1) { g.strokeStyle = sim.jump >= 0 ? cG(1 - age / 1.1) : cR(1 - age / 1.1); g.lineWidth = 1.5; g.beginPath(); g.arc(x1, yEnd, 5 + age * 34, 0, TAU); g.stroke(); }
+    const tr = tier();
+    if (tr >= 2) {
+      const ys2 = (y1 - y0) / (pc.yMax - pc.yMin), dxp = (x1 - PX0) / HN, K = tr >= 3 ? 36 : 22, yb = y1 + pc.yMin * ys2;
+      g.lineCap = 'round'; g.strokeStyle = pc.up ? '#b8ffe6' : '#ffc0c6';                  // comet trail: the last ~6-9 s of the curve, tapering toward the tail
+      let px0 = x1 - K * dxp, py0 = yb - hat(HN - K) * ys2;
+      for (let i = HN - K + 1; i < HN; i++) {
+        const r = (i - (HN - K)) / K, x = x1 - (HN - 1 - i) * dxp, y = i === HN - 1 ? yEnd : yb - hat(i) * ys2;
+        g.globalAlpha = r * r * 0.85; g.lineWidth = 0.8 + 3.4 * r; g.beginPath(); g.moveTo(px0, py0); g.lineTo(x, y); g.stroke(); px0 = x; py0 = y;
+      }
+      g.globalAlpha = 1; g.lineCap = 'butt';
+      const ph = (t * 0.13) % 1.25, sx = PX0 + (ph - 0.1) * (x1 - PX0);                      // scanning highlight: a soft band sweeps the plot, a bead rides the curve under it
+      if (sx > PX0 && sx < x1) {
+        g.globalAlpha = 0.9; g.drawImage(bandSpr, sx - 46, y0 - 4, 92, y1 - y0 + 8); g.globalAlpha = 1;
+        const ix = clamp(Math.round((sx - PX0) / dxp), 0, HN - 1); glow(g, pc.up ? SP.g : SP.r, sx, yb - (ix === HN - 1 ? sim.bal : hat(ix)) * ys2, 9, 0.85);
+      }
+      glow(g, SPW, x1, yEnd, 6 + Math.sin(t * 6) * 1.5, 0.55);
+      const ca = (nowMs() - pfx.crackT) / 1000;
+      if (ca < 0.75) {                                                                          // crack: three jagged red forks from the head, flickering out
+        g.globalAlpha = (1 - ca / 0.75) * (ca < 0.3 ? 1 : 0.5 + 0.5 * Math.sin(ca * 70)); g.lineWidth = 1.6; g.strokeStyle = C.red; g.lineJoin = 'miter';
+        for (let b = 0; b < 3; b++) { g.beginPath(); g.moveTo(x1, yEnd); for (let j = 0; j < 4; j++) g.lineTo(x1 + pfx.crack[b * 8 + j * 2], yEnd + pfx.crack[b * 8 + j * 2 + 1]); g.stroke(); }
+        g.globalAlpha = 1; g.lineJoin = 'round';
+      }
+      drawPool(pfx.pool, g, Math.min(dt, 0.05), -18, 1.6, true);
+    }
     g.globalCompositeOperation = 'source-over';
     g.fillStyle = '#fff'; g.beginPath(); g.arc(x1, yEnd, 2.6, 0, TAU); g.fill();
     g.drawImage(pc.tag, x1 + 7, pc.ty - 8, pc.tw, 16);
@@ -512,9 +584,9 @@ JEV.mod('desk-top', () => {
     g.fillText(nar ? 'BOOK' : 'ORDER BOOK', bx0, 12);
     g.textAlign = 'right'; g.fillStyle = '#b4abc2'; g.font = '500 ' + fs + 'px ' + MONO; g.fillText('10 × 10', bx1 - (nar ? 0 : 12), 12);
     if (!nar) { g.fillStyle = C.green; g.beginPath(); g.arc(bx1 - 2, 12, 2 + 0.6 * Math.sin(t * 5), 0, TAU); g.fill(); }
-    const fz = fs;
+    const fz = fs, tr = tier(), shY = headH + (((t * 0.32) % 1.5) - 0.25) * (H - headH - imbH);   // tier>=2: size glow at each bar tip, waterfall shimmer, eaten-level sparks
     for (let side = 0; side < 2; side++) {
-      const ask = side === 0, bk = ask ? bkA : bkB, fl = ask ? fA : fB, sg = ask ? sA : sB, pv = ask ? pA : pB, lb = ask ? lblA : lblB; let cum = 0;
+      const ask = side === 0, eat = ask ? eA : eB, bk = ask ? bkA : bkB, fl = ask ? fA : fB, sg = ask ? sA : sB, pv = ask ? pA : pB, lb = ask ? lblA : lblB; let cum = 0;
       for (let kk = 0; kk < NB; kk++) {
         cum += bk[kk];
         const y = ask ? headH + (NB - 1 - kk) * rh : yS + spH + kk * rh, h = rh - 1.2;
@@ -522,6 +594,14 @@ JEV.mod('desk-top', () => {
         const w = Math.max(2, Math.min(1, bk[kk] / book.mx) * (nar ? bwid * 0.94 : bwid - 46));
         g.fillStyle = ask ? cR(kk === 0 ? 0.78 : 0.52) : cG(kk === 0 ? 0.72 : 0.46); g.fillRect(bx1 - w, y, w, h);
         g.fillStyle = ask ? cR(0.95) : cG(0.95); g.fillRect(bx1 - w, y, 1.5, h);
+        if (tr >= 2) {
+          const sz = Math.min(1, bk[kk] / book.mx), yc = y + h / 2, sh = Math.exp(-Math.pow((yc - shY) / (rh * 2.4), 2));
+          g.globalCompositeOperation = 'lighter';
+          glow(g, ask ? SP.r : SP.g, bx1 - w, yc, 8 + sz * 14, (0.12 + 0.4 * sz * sz) * al); g.globalAlpha = al;
+          if (sh > 0.03) { g.fillStyle = 'rgba(255,255,255,' + (0.13 * sh).toFixed(3) + ')'; g.fillRect(bx1 - w, y, w, h); }
+          g.globalCompositeOperation = 'source-over';
+          if (eat[kk]) { eat[kk] = 0; if (al > 0.6) burst(fx.pool, cw + 10 + (bwid - w), yc, tr >= 3 ? 12 : 7, ask ? 1 : 0, 90, 0.7, 7, 0); }
+        } else if (eat[kk]) eat[kk] = 0;
         if (fl[kk] > 0.02) {                                  // size change: green = grew, red = shrank; the old edge fades as a trail
           const f = fl[kk], bwm = nar ? bwid * 0.94 : bwid - 46, wp = Math.max(2, Math.min(1, pv[kk] / book.mx) * bwm), grew = sg[kk] > 0;
           g.fillStyle = grew ? cG(f * 0.5) : cR(f * 0.5); g.fillRect(bx1 - w, y, w, h);
@@ -570,7 +650,7 @@ JEV.mod('desk-top', () => {
     const pad = Math.max((hi - lo) * 0.13, 10), tMin = lo - pad * 1.25, tMax = hi + pad;
     if (!tg.init) { tg.yMin = tMin; tg.yMax = tMax; tg.init = true; } else { const k = 1 - Math.exp(-dt * 3.2); tg.yMin += (tMin - tg.yMin) * k; tg.yMax += (tMax - tg.yMax) * k; }
     tg.ys = (y1 - y0) / (tg.yMax - tg.yMin);
-    const yMin = tg.yMin, yMax = tg.yMax;
+    const yMin = tg.yMin, yMax = tg.yMax, tr = tier();
 
     // grid + price axis
     const raw = (yMax - yMin) / (nar ? 4 : 5), mag = Math.pow(10, Math.floor(Math.log10(raw))), rm = raw / mag, step = (rm <= 1 ? 1 : rm <= 2 ? 2 : rm <= 5 ? 5 : 10) * mag;
@@ -598,9 +678,9 @@ JEV.mod('desk-top', () => {
       for (let i = 0; i < n; i++) { const c = cands[st + i], x = X(i), y = Y(c.vw + c.sd); i ? g.lineTo(x, y) : g.moveTo(x, y); }
       for (let i = n - 1; i >= 0; i--) { const c = cands[st + i]; g.lineTo(X(i), Y(c.vw - c.sd)); }
       g.closePath(); g.fillStyle = 'rgba(' + VIO + ',.11)'; g.fill();
-      g.setLineDash([3, 4]); g.lineWidth = 1; g.strokeStyle = 'rgba(' + VIO + ',.55)';
+      g.setLineDash([3, 4]); g.lineWidth = 1; g.strokeStyle = 'rgba(' + VIO + ',.55)'; g.lineDashOffset = tr >= 2 ? -t * 9 : 0;      // tier>=2: the band edges flow
       for (let s = 0; s < 2; s++) { g.beginPath(); for (let i = 0; i < n; i++) { const c = cands[st + i], x = X(i), y = Y(c.vw + (s ? -c.sd : c.sd)); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); }
-      g.setLineDash([]);
+      g.setLineDash([]); g.lineDashOffset = 0;
     }
     // volume
     let vmax = 1; for (let i = 0; i < n; i++) if (cands[st + i].v > vmax) vmax = cands[st + i].v;
@@ -608,6 +688,16 @@ JEV.mod('desk-top', () => {
     for (let pass = 0; pass < 2; pass++) {
       g.fillStyle = pass === 0 ? cG(0.4) : cR(0.4);
       for (let i = 0; i < n; i++) { const c = cands[st + i], cc = i === n - 1 ? px : c.c; if ((cc >= c.o) !== (pass === 0)) continue; const h = Math.max(1, c.v / vmax * tg.volH); g.fillRect(X(i) - bw / 2, vb - h, bw, h); }
+    }
+    if (tr >= 2) {                                                // volume glow: soft additive halo under every bar, hot cap on the busy ones
+      g.globalCompositeOperation = 'lighter';
+      for (let pass = 0; pass < 2; pass++) {
+        g.fillStyle = pass === 0 ? cG(0.1) : cR(0.1);
+        for (let i = 0; i < n; i++) { const c = cands[st + i], cc = i === n - 1 ? px : c.c; if ((cc >= c.o) !== (pass === 0)) continue; const h = Math.max(1, c.v / vmax * tg.volH); g.fillRect(X(i) - bw / 2 - 2, vb - h - 2, bw + 4, h + 2); }
+        g.fillStyle = pass === 0 ? cG(0.6) : cR(0.6);
+        for (let i = 0; i < n; i++) { const c = cands[st + i], cc = i === n - 1 ? px : c.c; if ((cc >= c.o) !== (pass === 0) || c.v < vmax * 0.6) continue; const h = Math.max(1, c.v / vmax * tg.volH); g.fillRect(X(i) - bw / 2, vb - h, bw, 1.5); }
+      }
+      g.globalCompositeOperation = 'source-over';
     }
     // candles — halo, wicks, bodies
     g.globalCompositeOperation = 'lighter';
@@ -642,11 +732,21 @@ JEV.mod('desk-top', () => {
         for (let i = 0; i < n; i++) { const x = X(i), y = Y(cands[st + i].vw); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
       }
       g.globalCompositeOperation = 'source-over';
+      if (tr >= 2) {                                              // vwap flow: a travelling highlight rides the line
+        g.globalCompositeOperation = 'lighter'; g.setLineDash([16, 120]); g.lineDashOffset = -t * 70; g.lineWidth = 2.6; g.strokeStyle = 'rgba(255,238,190,.75)'; g.beginPath();
+        for (let i = 0; i < n; i++) { const x = X(i), y = Y(cands[st + i].vw); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+        g.setLineDash([]); g.lineDashOffset = 0; g.globalCompositeOperation = 'source-over';
+      }
     }
     // high / low flags
     g.font = '500 ' + fs + 'px ' + MONO; g.textAlign = 'center'; g.fillStyle = '#d6cde2';
     if (iHi >= 0 && iHi < n - 1) g.fillText(f0(hi), clamp(X(iHi), x0 + 22, x1 - 22), Y(hi) - 8);
     if (iLo >= 0 && iLo < n - 1) g.fillText(f0(lo), clamp(X(iLo), x0 + 22, x1 - 22), Y(lo) + 9);
+    if (tr >= 2) {                                                // candle birth: a pink light column + a spark burst at the new open
+      const bx = X(n - 1), age = (nowMs() - fx.birthT) / 1000;
+      if (fx.birthN) { fx.birthN = 0; burst(fx.pool, bx, Y(cur.o), tr >= 3 ? 16 : 9, 3, 120, 0.9, 7, 60); }
+      if (age < 0.8) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = (1 - age / 0.8) * 0.5; g.drawImage(BM.p, bx - bw - 3, y0, bw * 2 + 6, y1 - y0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }
+    }
     // fired tickets
     const first = cands[st].cid, r = nar ? 4.5 : 5.5, tnow = nowMs(); hits.length = 0;
     for (let pass = 0; pass < 2; pass++) {
@@ -666,6 +766,16 @@ JEV.mod('desk-top', () => {
           g.globalCompositeOperation = 'lighter';
           glow(g, isB ? SP.g : isS ? SP.r : SP.a, x, y, 12 + age * 12, 0.9 * (1 - age / 3.2));
           g.strokeStyle = isB ? cG(1 - age / 1.4) : isS ? cR(1 - age / 1.4) : 'rgba(' + AMB + ',' + (1 - age / 1.4) + ')'; if (age < 1.4) { g.lineWidth = 1.4; g.beginPath(); g.arc(x, y, r + age * 16, 0, TAU); g.stroke(); }
+          if (tr >= 2) {
+            const bs = isB ? BM.g : isS ? BM.r : BM.a, fall = Math.min(1, age / 0.45);
+            for (let q = 1; q <= 2; q++) { const a2 = age - q * 0.22; if (a2 > 0 && a2 < 1.6) { g.globalAlpha = (1 - a2 / 1.6) * 0.6; g.lineWidth = 1.1; g.strokeStyle = isB ? C.green : isS ? C.red : C.amber; g.beginPath(); g.arc(x, y, r + a2 * 24, 0, TAU); g.stroke(); } }
+            const hy = y0 + (y - y0) * (1 - Math.pow(1 - fall, 3));
+            g.globalAlpha = age < 0.45 ? 0.7 : 0.7 * Math.max(0, 1 - (age - 0.45) / 1.7);
+            if (g.globalAlpha > 0.01 && hy > y0 + 2) g.drawImage(bs, x - 4, y0, 8, hy - y0);
+            g.globalAlpha = 1;
+            if (age < 0.45) glow(g, SPW, x, hy, 9, 0.9);
+            else if (!m.fx) { m.fx = 1; burst(fx.pool, x, y, tr >= 3 ? 14 : 8, isB ? 0 : isS ? 1 : 2, 105, 0.85, 7, 40); }
+          }
           g.globalCompositeOperation = 'source-over';
           if (m.txt && !nar) { g.globalAlpha = Math.min(1, (3.2 - age) / 1.2); g.font = '700 ' + fs + 'px ' + MONO; g.textAlign = 'right'; g.fillStyle = isB ? '#7ff5cf' : isS ? '#ff9aa4' : '#ffd77a'; g.fillText(m.txt, x - r - 5, y + 0.5); g.globalAlpha = 1; }
         }
@@ -675,7 +785,13 @@ JEV.mod('desk-top', () => {
     const up = px >= cur.o, lcol = up ? C.green : C.red, ly = Y(px), lx = X(n - 1);
     g.setLineDash([5, 4]); g.lineDashOffset = -t * 18; g.lineWidth = 1; g.strokeStyle = 'rgba(' + (up ? GRN : RED) + ',' + (0.55 + 0.3 * Math.sin(t * 5)).toFixed(2) + ')';
     g.beginPath(); g.moveTo(lx, ly + 0.5); g.lineTo(x1 + 8, ly + 0.5); g.stroke(); g.setLineDash([]);
-    g.globalCompositeOperation = 'lighter'; glow(g, up ? SP.g : SP.r, lx, ly, 13 + 4 * Math.sin(t * 5), 0.95); g.globalCompositeOperation = 'source-over';
+    g.globalCompositeOperation = 'lighter'; glow(g, up ? SP.g : SP.r, lx, ly, 13 + 4 * Math.sin(t * 5), 0.95);
+    if (tr >= 2) {                                                // every tick: a ring leaves the last price and a light runs down the price line to the tag
+      const pa = (tnow - fx.tickT) / 1000;
+      if (pa < 0.9) { g.lineWidth = 1.3; g.strokeStyle = up ? cG(0.8 * (1 - pa / 0.9)) : cR(0.8 * (1 - pa / 0.9)); g.beginPath(); g.arc(lx, ly, 4 + pa * 26, 0, TAU); g.stroke(); }
+      if (pa < 0.55) glow(g, SPW, lx + (x1 + 8 - lx) * (pa / 0.55), ly, 6, 0.8 * (1 - pa / 0.55));
+    }
+    g.globalCompositeOperation = 'source-over';
     g.restore();
     // price tag
     const tw = tg.axW - 4; rr(g, x1 + 5, ly - 8.5, tw, 17, 4); g.fillStyle = lcol; g.fill();
@@ -718,6 +834,7 @@ JEV.mod('desk-top', () => {
       }
     }
     drawBook(t, dt);
+    if (tr >= 2) drawPool(fx.pool, g, Math.min(dt, 0.05), 60, 2.2, false);
     if (S.killed) {
       const m = 'KILL SWITCH · NEW ORDERS GO TO REVIEW'; g.font = '700 9.5px ' + MONO;
       const bx = (x1 + x0) / 2 - 150, by = y0 + 8; rr(g, bx, by, 300, 20, 5); g.fillStyle = 'rgba(255,77,94,.16)'; g.fill(); g.strokeStyle = cR(0.7); g.stroke();
