@@ -1,0 +1,18 @@
+{
+  "title": "Destination badge",
+  "description": "The big EXECUTE / REVIEW / SKIP verdict badge that scrambles in with a 3D flip, a ring pulse, a particle burst on execute, a shimmer, a shake on kill and a live tally of all three routes.",
+  "width": "420px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

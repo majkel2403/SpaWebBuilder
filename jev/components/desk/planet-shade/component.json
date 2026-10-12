@@ -1,0 +1,9 @@
+{
+  "title": "Planet shading",
+  "description": "A dark glass sphere with layered atmosphere glow, fresnel limb, a nested day-night terminator and a warm sun bloom that drifts; turns red under the kill switch.",
+  "width": "560px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

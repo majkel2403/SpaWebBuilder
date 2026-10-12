@@ -1,0 +1,18 @@
+{
+  "title": "Pipeline status pill",
+  "description": "The pipeline header: a status pill with a pulsing lamp that walks encode, typed questions, the gate and code acts while a four-colour progress hairline fills, replayed on every decision.",
+  "width": "620px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

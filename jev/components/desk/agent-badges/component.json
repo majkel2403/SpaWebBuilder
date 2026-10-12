@@ -1,0 +1,9 @@
+{
+  "title": "Agent badge kit",
+  "description": "The agent badge atoms in the six agent colours: glowing dot, row tag, filter chip and pill, plus the JEV and kill-switch variants; the badge of the agent that just acted flashes.",
+  "width": "560px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

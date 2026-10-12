@@ -1,0 +1,9 @@
+{
+  "title": "Great-circle arcs",
+  "description": "A graticule sphere with eight venue markers that ping, great-circle arcs lifted above the surface and glowing data packets that fly along them; every decision launches a pink packet.",
+  "width": "560px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

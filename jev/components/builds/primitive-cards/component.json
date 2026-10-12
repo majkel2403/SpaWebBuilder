@@ -1,0 +1,18 @@
+{
+  "title": "Typed-question cards",
+  "description": "The three primitive cards (which one? how much? yes or no?) with live answer, confidence below the floor in amber and a glowing confidence bar.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

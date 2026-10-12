@@ -1,0 +1,18 @@
+{
+  "title": "Layer chips",
+  "description": "Pill chip atoms: static status chips, toggle chips with a glowing dot and aria-pressed state, and the whole accent palette, with a live readout of which layers are on.",
+  "width": "620px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

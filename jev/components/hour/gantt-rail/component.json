@@ -1,0 +1,18 @@
+{
+  "title": "Phase gantt rail",
+  "description": "Six colour-coded phase bars on a sixty-minute rail with a glowing playhead and a lit axis, replaying the six phases of the hour in a loop.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

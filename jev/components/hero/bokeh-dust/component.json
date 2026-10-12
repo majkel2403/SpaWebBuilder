@@ -1,0 +1,1 @@
+{"title":"Bokeh dust layer","description":"A drifting canvas layer of soft pink, violet and amber bokeh sprites with depth parallax that follows the pointer.","width":"900px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}

@@ -1,0 +1,18 @@
+{
+  "title": "Typing engine",
+  "description": "A code pane that types itself token by token with a caret that follows the text, a speed control and replay, and appends a typed line for every simulated decision.",
+  "width": "720px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

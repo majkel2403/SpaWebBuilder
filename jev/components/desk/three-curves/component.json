@@ -1,0 +1,9 @@
+{
+  "title": "Prior x book = posterior curves",
+  "description": "Three tagged density curves (amber prior, blue book likelihood, green posterior) with gliding mean tags that never collide, a peak ripple on every decision and a three-item legend.",
+  "width": "560px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

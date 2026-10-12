@@ -1,0 +1,38 @@
+.dkc { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
+.dkt-pnl { --pc: var(--up); --pc-rgb: 46, 230, 166; }
+.dkt-pnl.dkt-neg { --pc: var(--dn); --pc-rgb: 255, 77, 94; }
+.dkto { min-height: 0; }
+.dkt-pnl { display: flex; flex-direction: column; }
+.dkt-pin { flex: 1; display: flex; flex-direction: column; gap: 9px; padding: 8px 16px 16px; min-height: 0; }
+.dkt-acct { display: flex; align-items: center; gap: 8px; font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--dkt-k); }
+.dkt-acct b { color: #fff; font-weight: 700; }
+.dkt-acct .lamp { width: 6px; height: 6px; }
+.dkt-live { margin-left: auto; color: var(--green); border-color: rgba(46, 230, 166, .45); background: rgba(46, 230, 166, .08); }
+body.killed .dkt-live { color: var(--red); border-color: rgba(255, 77, 94, .55); background: rgba(255, 77, 94, .1); }
+.dkt-big { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; margin-top: 2px; }
+.dkt-big::before { content: ''; position: absolute; left: -30px; top: -26px; width: 300px; height: 130px; pointer-events: none; z-index: 0; background: radial-gradient(closest-side, rgba(var(--pc-rgb), .22), transparent); mix-blend-mode: screen; transition: background .6s; }
+.dkt-num { position: relative; z-index: 1; display: inline-flex; align-items: baseline; font: 900 clamp(50px, 5.2vw, 76px)/.95 var(--serif); letter-spacing: -.025em; color: var(--pc); font-feature-settings: 'tnum' 1, 'lnum' 1;
+  text-shadow: 0 0 34px rgba(var(--pc-rgb), .5), 0 0 3px rgba(var(--pc-rgb), .55); transition: color .5s, text-shadow .5s; }
+.dkt-num sup { font-size: .44em; font-weight: 700; align-self: flex-start; margin: .12em .07em 0 0; opacity: .85; }
+.dkt-num > span { display: inline-flex; }
+.dkt-dg { position: relative; display: inline-block; min-width: .6em; text-align: center; will-change: transform; }
+.dkt-dg > .dkt-gl { text-align: center; }
+.dkt-gl { position: absolute; inset: 0; font-style: normal; pointer-events: none; opacity: 0; }
+.dkt-gl.u { color: #e6fff6; text-shadow: 0 0 30px var(--green), 0 0 8px rgba(46, 230, 166, .7); }
+.dkt-gl.d { color: #ffe3e6; text-shadow: 0 0 30px var(--red), 0 0 8px rgba(255, 77, 94, .7); }
+.dkt-gl.s { color: var(--pink2); text-shadow: 0 0 14px var(--pink); }
+.dkt-ol { position: absolute; inset: 0; font-style: normal; text-align: center; pointer-events: none; will-change: transform, opacity; }
+.dkt-cm { display: inline-block; min-width: .26em; text-align: center; opacity: .8; }
+.dkt-r2 { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
+.dkt-dp { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 99px; font-size: 11px; font-weight: 700; letter-spacing: .06em; font-variant-numeric: tabular-nums; color: var(--pc);
+  border: 1px solid rgba(var(--pc-rgb), .5); background: linear-gradient(180deg, rgba(var(--pc-rgb), .2), rgba(var(--pc-rgb), .07)); box-shadow: 0 0 18px rgba(var(--pc-rgb), .22), inset 0 0 12px rgba(var(--pc-rgb), .08); transition: color .5s, border-color .5s, background .5s; }
+.dkt-dp i { font-style: normal; font-size: 9px; display: inline-block; transition: transform .5s cubic-bezier(.3, 1.4, .5, 1); }
+.dkt-dp u { text-decoration: none; font-weight: 500; opacity: .85; }
+.dkt-pop { position: absolute; z-index: 3; pointer-events: none; font: 700 12px/1 var(--mono); letter-spacing: .04em; white-space: nowrap; padding: 3px 8px; border-radius: 6px; background: rgba(8, 4, 12, .78); border: 1px solid currentColor; will-change: transform, opacity; }
+.dkt-sub { font-size: 9.5px; letter-spacing: .1em; color: var(--dkt-k); text-transform: lowercase; }
+html:not([data-tier="1"]) .dkt-num { -webkit-text-stroke: .9px rgba(255, 255, 255, .5); paint-order: stroke fill; }   /* hot neon rim: stroke sits under the fill, only its outer half shows */
+html:not([data-tier="1"]) .dkt-big::before { animation: dktHalo 3.6s ease-in-out infinite; will-change: opacity; }
+html[data-tier="3"] .dkt-num { text-shadow: 0 0 34px rgba(var(--pc-rgb), .5), 0 0 3px rgba(var(--pc-rgb), .6), 0 0 74px rgba(var(--pc-rgb), .3), 0 0 8px rgba(var(--pc-rgb), .35); }
+@keyframes dktHalo { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+.dkt-pin { padding-top: 16px; }
+@media (prefers-reduced-motion: reduce) { .dkt-big::before { animation: none !important; } }

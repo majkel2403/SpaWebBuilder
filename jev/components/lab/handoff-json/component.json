@@ -1,0 +1,18 @@
+{
+  "title": "Handoff JSON viewer",
+  "description": "A mini editor window that types out the typed handoff from Jev to code (action, size, venue, conf, risk_ok, reason, dest) as syntax-coloured JSON on every decision, with a copy-json button.",
+  "width": "460px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

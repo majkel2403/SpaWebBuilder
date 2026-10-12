@@ -1,0 +1,19 @@
+/* hero / state-panel — the STATE input panel of the JEV DECIDES diagram: 15 ports with live values and 20-decision sparklines. Prefix hero-/hsp-. */
+.hsp-stage { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 28px 14px 24px; border-radius: 14px; background: radial-gradient(90% 90% at 50% 40%, #14061a 0%, #08040d 60%, #05030a 100%); }
+.hsp-panel { width: min(100%, 320px); border-radius: 9px; background: rgba(9, 4, 15, .84); border: 1px solid rgba(255, 70, 140, .26); padding: 10px 10px 10px; box-shadow: 0 0 40px rgba(255, 46, 110, .12); }
+.hsp-head { display: flex; flex-direction: column; gap: 3px; padding: 0 2px 8px; }
+.hsp-head b { font-size: 10.5px; letter-spacing: .18em; color: #e9dff0; font-weight: 700; }
+.hsp-head span { font-size: 9px; letter-spacing: .04em; color: #a095ac; }
+.hsp-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.hsp-row { position: relative; display: grid; grid-template-columns: 1fr 14px; align-items: center; height: 28px; font-size: 10.5px; color: #b0a5bb; }
+.hsp-row .hsp-k { text-align: right; padding-right: 8px; position: relative; z-index: 1; transition: color .5s; }
+.hsp-row .hsp-v { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); z-index: 1; color: #8f859b; font-variant-numeric: tabular-nums; transition: color .5s, text-shadow .5s; }
+.hsp-row canvas { position: absolute; left: 64px; top: 0; width: 84px; height: 100%; pointer-events: none; }
+.hsp-row .hsp-port { width: 7px; height: 7px; border-radius: 50%; background: #0b0610; border: 1px solid rgba(255, 110, 170, .85); justify-self: center; transition: background .4s, box-shadow .4s; }
+.hsp-row.is-lit .hsp-k, .hsp-row.is-lit .hsp-v { color: #fff; }
+.hsp-row.is-lit .hsp-v { text-shadow: 0 0 10px rgba(255, 46, 110, .8); }
+.hsp-row.is-lit .hsp-port { background: var(--pink); box-shadow: 0 0 10px var(--pink); }
+body.killed .hsp-row.is-lit .hsp-port { background: var(--red); box-shadow: 0 0 10px var(--red); }
+body.killed .hsp-panel { border-color: rgba(255, 77, 94, .4); }
+.hsp-btn { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .8); border: 1px solid rgba(255, 111, 166, .5); border-radius: 99px; padding: 11px 16px; min-height: 40px; cursor: pointer; }
+.hsp-btn:hover { background: rgba(255, 46, 110, .18); }

@@ -1,0 +1,18 @@
+{
+  "title": "Switch cards",
+  "description": "Glass switch cards with a glowing toggle and a two-line label (auto, kill switch bound to the runtime, dry run, a disabled one), each with its own accent and on/off caption.",
+  "width": "560px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

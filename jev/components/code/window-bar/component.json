@@ -1,0 +1,18 @@
+{
+  "title": "Window title bar",
+  "description": "The editor window title bar: traffic-light dots, file tabs that glow as a decision hops across them, a travelling hairline and a 16-bar audio glyph that jumps on every decision.",
+  "width": "720px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

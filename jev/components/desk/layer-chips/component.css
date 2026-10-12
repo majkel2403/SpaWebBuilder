@@ -1,0 +1,15 @@
+.dkc { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
+.dkt-ph-s { font-style: normal; }
+.dkt-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.dkt-chip { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 26px; padding: 0 12px; border-radius: 99px; font: 500 9.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dkt-k); border: 1px solid var(--line2); background: rgba(255, 255, 255, .03); transition: color .25s, border-color .25s, background .25s, box-shadow .25s; }
+.dkt-chip.dkt-st { color: var(--cc); border-color: rgba(var(--cc-rgb), .45); background: rgba(var(--cc-rgb), .1); font-weight: 700; }
+button.dkt-chip { cursor: pointer; }
+button.dkt-chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .35; transition: opacity .25s, box-shadow .25s; }
+button.dkt-chip.on { color: var(--cc); border-color: rgba(var(--cc-rgb), .6); background: rgba(var(--cc-rgb), .12); box-shadow: 0 0 14px rgba(var(--cc-rgb), .18); }
+button.dkt-chip.on::before { opacity: 1; box-shadow: 0 0 8px currentColor; }
+button.dkt-chip:hover { border-color: rgba(var(--cc-rgb), .8); color: #fff; }
+button.dkt-chip:focus-visible { outline: 2px solid var(--pink2); outline-offset: 2px; }
+.dklc-b { display: grid; gap: 12px; padding: 14px 16px 16px; } .dklc-l { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--dkt-k); margin-bottom: -4px; }
+.dklc-r { margin: 4px 0 0; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--dkt-k); } .dklc-r b { color: var(--dkt-ink); font-weight: 700; }
+@media (max-width: 700px) { .dkt-chips { flex-wrap: wrap; } .dkt-chip { padding: 0 11px; } }
+@media (pointer: coarse) { button.dkt-chip { min-height: 40px; } }

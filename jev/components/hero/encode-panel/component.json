@@ -1,0 +1,1 @@
+{"title":"Encode panel","description":"The narrow ENCODE column that folds the fifteen state ports into twelve zig-zag vector nodes, with pink beams running through on every decision.","width":"460px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}

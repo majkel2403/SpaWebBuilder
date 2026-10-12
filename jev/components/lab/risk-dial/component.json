@@ -1,0 +1,18 @@
+{
+  "title": "Risk meter dial",
+  "description": "The \"risk ok?\" flag question: a half-circle gradient gauge with a spring needle, a serif YES or NO and seven reason chips (spread, latency, age, loss, drawdown, vol, kill) that turn red when tripped.",
+  "width": "440px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

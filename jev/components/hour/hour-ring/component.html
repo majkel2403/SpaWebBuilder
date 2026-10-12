@@ -1,0 +1,30 @@
+<div class="hr">
+<article class="card hr-p" id="hr-rg-p" data-c="yellow" aria-labelledby="hr-rg-t">
+  <i class="hr-edge" aria-hidden="true"></i>
+  <div class="hr-ph"><span class="hr-tag">the hour</span><span class="hr-ps">sixty ticks &middot; six phases</span><span class="hr-badge" id="hr-rg-badge" data-c="yellow">60:00</span></div>
+  <h3 class="hr-t" id="hr-rg-t">Sixty minutes on one ring &mdash; each tick takes the colour of its phase</h3>
+  <p class="hr-note"><span data-c="yellow">tap the ring to restart the hour</span></p>
+  <div class="hr-rwrap">
+    <div class="hr-ringbox" id="hr-ringbox" tabindex="0" role="button" aria-label="Sixty minute ring; press to restart">
+      <i class="hr-sweep" aria-hidden="true"></i>
+      <i class="hr-rflash" aria-hidden="true"></i>
+      <svg class="hr-ring" id="hr-ring" viewBox="0 0 220 220" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="hr-rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd773"/><stop offset="1" stop-color="#ff9b2e"/></linearGradient>
+          <radialGradient id="hr-rh"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset=".25" stop-color="#ffd773" stop-opacity=".9"/><stop offset="1" stop-color="#ffb02e" stop-opacity="0"/></radialGradient>
+        </defs>
+        <g id="hr-ticks"></g>
+        <circle cx="110" cy="110" r="84" fill="rgba(255,193,61,.035)" stroke="rgba(255,255,255,.07)" stroke-width="8"/>
+        <circle cx="110" cy="110" r="84" fill="none" stroke="rgba(255,193,61,.18)" stroke-width="14" stroke-linecap="round" id="hr-rglow" transform="rotate(-90 110 110)" stroke-dasharray="528 528" stroke-dashoffset="0"/>
+        <circle cx="110" cy="110" r="84" fill="none" stroke="url(#hr-rg)" stroke-width="7" stroke-linecap="round" id="hr-rprog" transform="rotate(-90 110 110)" stroke-dasharray="528 528" stroke-dashoffset="0"/>
+        <g id="hr-rhead"><circle cx="110" cy="26" r="15" fill="url(#hr-rh)"/><circle cx="110" cy="26" r="3.4" fill="#fff"/></g>
+      </svg>
+      <div class="hr-clockbox">
+        <b class="hr-clock num" id="hr-clock">60:00</b>
+        <i id="hr-clock-l">minutes to armed</i>
+      </div>
+    </div>
+  </div>
+  <p class="hr-foot">62 svg ticks &middot; one progress circle &middot; the clock is a serif numeral</p>
+</article>
+</div>

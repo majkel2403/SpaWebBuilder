@@ -1,0 +1,9 @@
+{
+  "title": "Precision-weight ring",
+  "description": "A conic-gradient donut ring that splits amber (prior) and blue (book) by a weight, animated through a registered CSS property, shown live plus a row of static variants.",
+  "width": "460px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

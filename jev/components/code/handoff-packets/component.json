@@ -1,0 +1,18 @@
+{
+  "title": "Handoff packets into queue counters",
+  "description": "Every \"Saved handoff\" line fires a comet burst of additive glow sprites that arcs into its queue/ counter (execute pink, review amber, skip grey), which bumps and flares on arrival.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Glowing range slider",
+  "description": "A single neon range slider with value bubble, glowing trail, tick sparks, zero mark and a red risk band, shown in five accents with one row that follows the live net edge.",
+  "width": "620px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

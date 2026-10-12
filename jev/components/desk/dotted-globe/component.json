@@ -1,0 +1,9 @@
+{
+  "title": "Dotted globe only",
+  "description": "Just the dotted planet: 4,000 hand-projected points forming noise continents with a shelf and sparse ocean, graticule, night-side city lights, drag to spin with inertia; no orbs, arcs or markers.",
+  "width": "560px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

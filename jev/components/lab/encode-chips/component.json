@@ -1,0 +1,18 @@
+{
+  "title": "Encode feature chips",
+  "description": "Ten feature chips (nine state inputs plus net edge) each with a value and a centred or left-anchored glowing bar; risky values turn red and every decision pops the chips in.",
+  "width": "680px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

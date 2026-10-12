@@ -1,0 +1,18 @@
+{
+  "title": "Lamp, pill and chip kit",
+  "description": "Status atoms: pulsing lamps, outlined pills, accent-coloured chips and a live counter chip row, with a state pill that follows the kill switch.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

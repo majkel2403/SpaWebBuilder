@@ -1,0 +1,18 @@
+{
+  "title": "Line gutter and active-line band",
+  "description": "A line-number gutter with a glowing active number and a spring-eased current-line band that hops to the lines a decision touches; click a line or use the arrow keys to move it.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

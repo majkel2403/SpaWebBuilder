@@ -1,0 +1,18 @@
+{
+  "title": "Balance history chart",
+  "description": "A live balance-history area chart split at the session open (green above, red below) with a glowing head, dashed open line and hover or touch scrub tooltip.",
+  "width": "620px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

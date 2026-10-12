@@ -1,0 +1,18 @@
+{
+  "title": "Verdict strip",
+  "description": "A one-line glass verdict pill (action, size, confidence and a coloured execute / review / skip tag) that follows the live decision stream and tints its border to the route.",
+  "width": "460px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

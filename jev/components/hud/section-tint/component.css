@@ -1,0 +1,23 @@
+/* Section tint wash (hud/section-tint)
+   Reuse: copy this folder + base.css. The rules below are copied from base.css so the piece is self-describing; keep them or rely on base.css. */
+body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(62% 46% at 6% -4%, rgba(var(--tint), .11), transparent 72%), radial-gradient(54% 42% at 104% 102%, rgba(var(--tint), .08), transparent 72%); }
+.h2 em { --em-sh: 0 0 28px rgba(var(--tint), .55); font-style: normal; color: var(--pink); text-shadow: var(--em-sh); }
+
+.hx-tint-sec { min-height: 78vh; display: grid; align-content: center; gap: 12px; padding: 40px 0; border-bottom: 1px dashed var(--line); }
+.hx-tint-sec .h2 { font-size: clamp(26px, 6vw, 54px); }
+.hx-read { position: sticky; top: 10px; z-index: 10; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--line2); border-radius: 12px; background: rgba(8,5,14,.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.hx-sw { width: 34px; height: 34px; flex: none; border-radius: 9px; background: rgb(var(--tint)); box-shadow: 0 0 22px rgba(var(--tint), .6); }
+.hx-read b { font: 700 13px/1.2 var(--mono); color: var(--ink); } .hx-read span { color: var(--dim); font-size: 10.5px; }
+.hx-edge { height: 3px; border-radius: 3px; background: linear-gradient(90deg, transparent, rgb(var(--tint)), transparent); box-shadow: 0 0 14px rgba(var(--tint), .8); }
+
+/* demo layout (hx-*) */
+.hx-box { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 18px; min-width: 0; }
+.hx-lab { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+.hx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.hx-note { color: var(--dim); font-size: 10.5px; margin-top: 12px; line-height: 1.7; }
+.hx-note code { color: var(--pink2); }
+.hx-btn { min-height: 40px; padding: 0 14px; border-radius: 99px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); border: 1px solid var(--line2); background: rgba(255,255,255,.03); transition: color .25s, border-color .25s, background .25s; }
+.hx-btn:hover { color: #fff; border-color: rgba(255,46,110,.6); background: rgba(255,46,110,.14); }
+.hx-stack { display: grid; gap: 12px; }

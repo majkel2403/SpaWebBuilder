@@ -1,0 +1,29 @@
+.dkx { --dkw-k: #aaa1b8; --dkw-ink: #ece5f2; --dkw-glass: rgba(9, 6, 17, .6); }
+.dkw-rail { position: relative; height: 22px; margin: 11px 0 0; }
+.dkw-rln, .dkw-rfl { position: absolute; left: 8.3333%; right: 8.3333%; top: 50%; height: 2px; margin-top: -1px; border-radius: 2px; background: rgba(255, 255, 255, .13); }
+.dkw-rfl { right: auto; width: 83.3333%; transform-origin: 0 50%; transform: scaleX(calc(var(--q) / 5)); background: linear-gradient(90deg, #2ee6a6, #ffc13d, #ff2e6e, #a66bff, #4d8dff, #ff8a3d); box-shadow: 0 0 10px rgba(255, 255, 255, .45); transition: transform .55s var(--ease); }
+.dkw-rfl { overflow: hidden; }
+.dkw-rfl::after { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 38%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .9), transparent); transform: translateX(-100%); animation: dkwRun 1.7s linear infinite; }
+@keyframes dkwRun { to { transform: translateX(270%); } }
+.dkw-tl { position: absolute; top: 50%; left: calc((var(--q) + .5) * 16.6667%); width: 56px; height: 6px; margin: -3px 0 0 -10px; border-radius: 6px; transform: translateX(-100%); transform-origin: 100% 50%; background: linear-gradient(90deg, transparent, var(--mc)); opacity: .75; transition: left .55s var(--ease); pointer-events: none; }
+.dkw-sd { position: absolute; top: 50%; left: calc((var(--n) + .5) * 16.6667%); width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; border-radius: 50%; border: 2px solid var(--ac); background: #0a0610; transition: background .4s, box-shadow .4s; }
+.dkw-sd.on { background: var(--ac); box-shadow: 0 0 10px var(--ac); }
+.dkw-sd::before, .dkw-sd::after { content: ''; position: absolute; pointer-events: none; opacity: 0; }
+.dkw-sd::after { inset: -3px; border-radius: 50%; border: 1.5px solid var(--ac); }
+.dkw-sd::before { left: 50%; top: 50%; width: 38px; height: 2px; margin: -1px 0 0 -19px; background: linear-gradient(90deg, transparent, var(--ac), #fff, var(--ac), transparent); }
+html:not([data-tier="1"]) .dkw-sd.on::after { animation: dkwIgn .85s ease-out; }
+html:not([data-tier="1"]) .dkw-sd.on::before { animation: dkwFlare .75s ease-out; }
+@keyframes dkwIgn { 0% { opacity: 1; transform: scale(.6); } 100% { opacity: 0; transform: scale(3.6); } }
+@keyframes dkwFlare { 0% { opacity: 1; transform: scaleX(.15); } 35% { opacity: .95; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1.4); } }
+.dkw-mk { position: absolute; top: 50%; left: calc((var(--q) + .5) * 16.6667%); width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff 0 18%, var(--mc) 62%, transparent 100%); box-shadow: 0 0 14px var(--mc), 0 0 28px var(--mc); transition: left .55s var(--ease); animation: dkwMk 1.1s ease-in-out infinite; }
+@keyframes dkwMk { 50% { scale: .78; } }
+.dkw-rl { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); margin-top: 2px; font-size: 8px; letter-spacing: .08em; text-transform: uppercase; color: var(--dkw-k); text-align: center; }
+.dkw-now { display: flex; align-items: center; gap: 9px; margin-top: 9px; padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(var(--ac-rgb, 46, 230, 166), .35); background: rgba(255, 255, 255, .035); }
+.dkw-now .orb { --s: 24px; }
+.dkw-nt b { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #fff; }
+.dkw-nt i { display: block; font-style: normal; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--dkw-k); }
+.dkw-now em { margin-left: auto; font-style: normal; font-size: 9.5px; color: var(--dkw-ink); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dkx-wrap { overflow: hidden; max-width: 330px; margin: 0 auto; padding: 14px 14px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--dkw-glass); }
+.dkx-cap { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--dkw-k); }
+body.killed .dkx-wrap { border-color: rgba(255, 77, 94, .55); }
+@media (prefers-reduced-motion: reduce) { .dkw-mk, .dkw-rfl::after, .dkw-sd::before, .dkw-sd::after { animation: none !important; } }

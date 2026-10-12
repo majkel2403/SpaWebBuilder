@@ -1,0 +1,18 @@
+{
+  "title": "60:00 ring",
+  "description": "The amber sixty-tick ring with a glowing head and a serif 60:00 clock that fills over twelve seconds, colours every tick by phase and flashes when the hour is up.",
+  "width": "420px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

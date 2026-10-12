@@ -1,0 +1,1 @@
+{"title":"Typed question nodes","description":"The three typed-question nodes (choice, score, flag) with ring pulses and the live answer written beside each.","width":"560px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}

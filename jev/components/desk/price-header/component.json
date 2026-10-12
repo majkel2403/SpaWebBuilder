@@ -1,0 +1,18 @@
+{
+  "title": "Live price header",
+  "description": "The tape header readout: a big tabular BTC-perp price with a small decimal, an up/down percent pill, and hi / lo / volume figures that update on every tick.",
+  "width": "620px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

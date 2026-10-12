@@ -1,0 +1,18 @@
+{
+  "title": "Odometer digits",
+  "description": "A rolling-digit odometer atom (reel per digit, forward roll on 9 to 0, digit flash) shown as four variants: decisions count, running cost, median latency and a manual stepper.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

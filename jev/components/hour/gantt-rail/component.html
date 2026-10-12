@@ -1,0 +1,25 @@
+<div class="hr">
+<article class="card hr-p" id="hr-gp" data-c="yellow" aria-labelledby="hr-gt-t">
+  <i class="hr-edge" aria-hidden="true"></i>
+  <div class="hr-ph"><span class="hr-tag">phase rail</span><span class="hr-ps">six bars &middot; sixty minutes</span><span class="hr-badge" id="hr-g-clock" data-c="yellow">00:00</span></div>
+  <h3 class="hr-t" id="hr-gt-t">Six phases on a sixty-minute rail &mdash; the white playhead fills each bar as it passes</h3>
+  <p class="hr-note"><span data-c="yellow">set a bar with <code>style="--s:24;--e:41"</code> (start / end minute) &middot; tap to restart</span></p>
+  <div class="hr-gantt" id="hr-gantt" style="margin-top:20px" tabindex="0" role="button" aria-label="Phase rail; press to restart">
+    <div class="hr-g-rows" id="hr-g-rows">
+      <i class="hr-g-r" data-c="orange" style="--s:0;--e:8"><s></s></i>
+      <i class="hr-g-r" data-c="blue" style="--s:6;--e:26"><s></s></i>
+      <i class="hr-g-r" data-c="yellow" style="--s:24;--e:41"><s></s></i>
+      <i class="hr-g-r" data-c="green" style="--s:41;--e:52"><s></s></i>
+      <i class="hr-g-r" data-c="cyan" style="--s:52;--e:58"><s></s></i>
+      <i class="hr-g-r" data-c="pink" style="--s:58;--e:60"><s></s></i>
+      <b class="hr-g-ph" id="hr-g-ph"></b>
+    </div>
+    <div class="hr-g-axis"><span>00</span><span>15</span><span>30</span><span>45</span><span>60 min</span></div>
+  </div>
+  <ul class="hr-g-leg" aria-label="Legend">
+    <li data-c="orange"><s></s>strategy spec</li><li data-c="blue"><s></s>data + features</li><li data-c="yellow"><s></s>the bot code</li>
+    <li data-c="green"><s></s>backtest 4 years</li><li data-c="cyan"><s></s>paper trade</li><li data-c="pink"><s></s>caps + kill switch</li>
+  </ul>
+  <p class="hr-foot">rows are plain elements &middot; the fill is <code>--f</code> (0..1) set from script</p>
+</article>
+</div>

@@ -1,0 +1,18 @@
+{
+  "title": "Build tooltip card",
+  "description": "The glass tooltip card of a build: accent header with name and primitive, plus last answer, confidence, typed-answer latency and gate result; hover, focus or tap one of four build chips.",
+  "width": "620px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

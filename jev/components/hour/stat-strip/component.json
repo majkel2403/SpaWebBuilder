@@ -1,0 +1,18 @@
+{
+  "title": "Six-stat strip",
+  "description": "A strip of six serif count-up stats that settle with a glow: four illustrative backtest numbers plus two live counters fed by the decision stream; tap to replay.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

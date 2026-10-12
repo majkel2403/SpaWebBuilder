@@ -1,0 +1,1 @@
+{"title":"Destination legend","description":"The execute, review and skip legend dots with live tallies and a pulsing idle hint to fire a decision.","width":"760px","needs":{"fx":false,"hud":false},"html":["component.html"],"css":["component.css"],"js":["component.js"]}

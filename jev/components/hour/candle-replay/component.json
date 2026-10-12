@@ -1,0 +1,18 @@
+{
+  "title": "Candle replay strip",
+  "description": "A seeded endless candlestick strip with green buy arrows, dashed red stops and exit markers scrolling under a glowing playhead; it slows when the kill switch is thrown.",
+  "width": "720px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

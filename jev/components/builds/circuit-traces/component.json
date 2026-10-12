@@ -1,0 +1,18 @@
+{
+  "title": "Circuit traces",
+  "description": "A canvas of circuit traces: one trunk drops from a cap into a twin-hairline bus with a stub into the top of every card, with bits travelling the wires, a bright pulse per decision and a red switch under the kill switch.",
+  "width": "820px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

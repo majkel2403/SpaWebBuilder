@@ -1,0 +1,18 @@
+{
+  "title": "Energy arc with comet packets",
+  "description": "A dotted glowing arc between two orb mascots with ambient light beads, and a comet packet that rides it for every simulated decision, bursts on arrival and flashes the receiving orb.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

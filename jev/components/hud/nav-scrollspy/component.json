@@ -1,0 +1,18 @@
+{
+  "title": "Nav with scrollspy",
+  "description": "A sticky section nav whose active link follows the scroll position with a sliding underline, numbered links, and smooth anchor jumps.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

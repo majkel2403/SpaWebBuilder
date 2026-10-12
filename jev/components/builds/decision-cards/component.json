@@ -1,0 +1,18 @@
+{
+  "title": "Answer cards (enter, size, route, exit, flatten)",
+  "description": "Five answer cards that code acts on (enter, size, route, exit, flatten); the ones a decision actually uses light up, the route card shows the gate result.",
+  "width": "1060px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

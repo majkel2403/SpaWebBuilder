@@ -1,0 +1,18 @@
+{
+  "title": "Handoff pulse",
+  "description": "A 60-second heartbeat of decisions as thin bars scrolling left: green executed, amber to review, grey skipped, height by confidence.",
+  "width": "520px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

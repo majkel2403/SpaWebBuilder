@@ -1,0 +1,18 @@
+{
+  "title": "Hard rules",
+  "description": "The rules held by code, not the model: a draggable confidence-floor slider, the kill switch and the loss-cap and max-position chips, with a live line showing what the gate does to the latest decision.",
+  "width": "560px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

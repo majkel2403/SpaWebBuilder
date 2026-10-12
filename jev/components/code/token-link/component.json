@@ -1,0 +1,18 @@
+{
+  "title": "Token hover-link",
+  "description": "Hover or tap an identifier (FLOOR, conf, \"execute\", risk_ok) in one snippet and every other use lights up across both panes, with a live \"N refs in M panes\" readout.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

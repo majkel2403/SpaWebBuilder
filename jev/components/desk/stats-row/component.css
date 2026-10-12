@@ -1,0 +1,10 @@
+.dkc { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
+.dkt-gl { position: absolute; inset: 0; font-style: normal; pointer-events: none; opacity: 0; }
+.dkt-gl.s { color: var(--pink2); text-shadow: 0 0 14px var(--pink); }
+.dkt-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding-top: 10px; margin-top: 2px; border-top: 1px solid var(--line); }
+.dkt-stats > div { position: relative; min-width: 0; }
+.dkt-stats label { display: block; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--dkt-k); margin-bottom: 3px; white-space: nowrap; }
+.dkt-stats b { position: relative; display: block; font: 700 clamp(14px, 1.35vw, 18px)/1.15 var(--mono); color: #fff; white-space: nowrap; letter-spacing: -.01em; }
+.dkt-ring { position: absolute; right: 0; top: 2px; width: 26px; height: 26px; border-radius: 50%; background: conic-gradient(var(--green) calc(var(--p, 50) * 1%), rgba(255, 255, 255, .09) 0); -webkit-mask: radial-gradient(farthest-side, transparent 61%, #000 64%); mask: radial-gradient(farthest-side, transparent 61%, #000 64%); filter: drop-shadow(0 0 5px rgba(46, 230, 166, .55)); }
+.dkst-b { padding: 4px 16px 16px; } .dkst-b .dkt-stats { border-top: 0; padding-top: 12px; }
+@media (max-width: 700px) { .dkt-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; } .dkt-stats b { font-size: 18px; } }

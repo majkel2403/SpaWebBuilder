@@ -1,0 +1,30 @@
+/* Metric chip strip (hud/metric-strip)
+   Reuse: copy this folder + base.css. The rules below are copied from base.css so the piece is self-describing; keep them or rely on base.css. */
+.mets { display: flex; gap: clamp(12px, 2.2vw, 32px); flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; align-items: center; }
+.mets::-webkit-scrollbar { display: none; }
+.m { flex: none; } .m label { display: block; font-size: 9px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; }
+.m { border-radius: 6px; cursor: default; }
+.m b { display: block; font-size: 14px; font-weight: 700; letter-spacing: .02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* odometer: each digit is a 0-9 reel; the transform eases with a tiny overshoot, like a mechanical counter */
+.od { display: inline-flex; vertical-align: top; } .od-s { display: inline-block; height: 1.55em; }
+.od-d { display: inline-block; height: 1.55em; overflow: hidden; }
+.od-r { display: block; transform: translateY(calc(var(--d, 0) * -1.55em)); transition: transform .62s cubic-bezier(.2, .9, .25, 1.12); will-change: transform; }
+.od-r i { display: block; height: 1.55em; line-height: 1.55em; font-style: normal; }
+
+.hx-strip { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px clamp(14px, 3vw, 32px); }
+.hx-strip::-webkit-scrollbar { display: none; }
+.hx-fl { display: flex; align-items: center; gap: 8px; }
+.hx-st { width: 34px; height: 34px; padding: 0; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line2); background: rgba(255,255,255,.03); font: 700 15px/1 var(--mono); color: var(--mut); }
+.hx-st:hover { color: #fff; border-color: rgba(255,46,110,.6); background: rgba(255,46,110,.16); }
+@media (pointer: coarse) { .hx-st { width: 40px; height: 40px; } }
+
+/* demo layout (hx-*) */
+.hx-box { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 18px; min-width: 0; }
+.hx-lab { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+.hx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.hx-note { color: var(--dim); font-size: 10.5px; margin-top: 12px; line-height: 1.7; }
+.hx-note code { color: var(--pink2); }
+.hx-btn { min-height: 40px; padding: 0 14px; border-radius: 99px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); border: 1px solid var(--line2); background: rgba(255,255,255,.03); transition: color .25s, border-color .25s, background .25s; }
+.hx-btn:hover { color: #fff; border-color: rgba(255,46,110,.6); background: rgba(255,46,110,.14); }
+.hx-stack { display: grid; gap: 12px; }

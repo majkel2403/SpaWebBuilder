@@ -1,0 +1,18 @@
+{
+  "title": "Confidence sparkline",
+  "description": "A 24-point SVG sparkline atom with a dashed floor line, soft area fill and a glowing head dot that turns amber under the floor, shown as four live variants.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

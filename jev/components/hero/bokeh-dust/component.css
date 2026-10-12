@@ -1,0 +1,5 @@
+/* hero / bokeh-dust — a drifting canvas layer of soft bokeh sprites (pink, violet, amber) with depth parallax; drop it behind any dark panel. Prefix hero-/hbd-. */
+.hbd-stage { position: relative; height: clamp(320px, 56vh, 520px); overflow: hidden; border-radius: 14px; background: radial-gradient(90% 70% at 50% 46%, #14061a 0%, #08040d 56%, #05030a 100%); display: flex; align-items: center; justify-content: center; }
+.hbd-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hbd-note { position: relative; z-index: 1; max-width: 44ch; padding: 0 16px; text-align: center; font-size: 11px; line-height: 1.7; letter-spacing: .06em; color: #b3a8be; pointer-events: none; }
+.hbd-note b { color: var(--pink2); letter-spacing: .2em; text-transform: uppercase; }

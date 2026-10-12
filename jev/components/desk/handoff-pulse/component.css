@@ -1,0 +1,9 @@
+.dkc { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
+.dkt-pu { width: 100%; }
+.dkt-pu label, .dkt-kvs label { display: block; font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dkt-k); margin-bottom: 3px; white-space: nowrap; }
+.dkt-pu label { letter-spacing: .16em; overflow: hidden; text-overflow: ellipsis; }   /* 9px label must fit the 140px flex basis on one line (960-1259px) */
+.dkt-pu canvas { width: 100%; height: 28px; }
+.dkhp-b { padding: 16px; display: grid; gap: 12px; } .dkhp-b .dkt-pu canvas { height: 64px; }
+.dkhp-lg { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--dkt-k); }
+.dkhp-lg b { color: var(--dkt-ink); margin-left: 5px; } .dkhp-lg i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.dkhp-lg .g { background: var(--green); box-shadow: 0 0 8px var(--green); } .dkhp-lg .a { background: var(--amber); } .dkhp-lg .s { background: #7d7590; }

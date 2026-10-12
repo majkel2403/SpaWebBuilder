@@ -1,0 +1,18 @@
+{
+  "title": "Pixel robot (Hermes)",
+  "description": "The pixel-art Hermes robot on its own: glass ring, blinking eyes, blinking antenna, scan line, squash-and-stretch hop on tap, in four sizes and a halted variant.",
+  "width": "720px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

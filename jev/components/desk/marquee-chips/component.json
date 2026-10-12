@@ -1,0 +1,18 @@
+{
+  "title": "Marquee chips",
+  "description": "An endless scrolling strip of live status chips (agents, holder, handoffs per minute, fair vs market, edge, tickets, spend, last ticket, floor, kill switch) with edge fade, hover pause and a travelling light.",
+  "width": "1000px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

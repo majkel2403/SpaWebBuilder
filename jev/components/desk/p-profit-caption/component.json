@@ -1,0 +1,9 @@
+{
+  "title": "P(profit) caption",
+  "description": "The big amber P(profit) odometer of the drift card with drift and noise per step, the trade count, a loss-to-profit colour key and a pooled result over runs.",
+  "width": "400px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

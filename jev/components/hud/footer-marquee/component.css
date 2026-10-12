@@ -1,0 +1,23 @@
+/* Footer marquee (hud/footer-marquee)
+   Reuse: copy this folder + base.css. The rules below are copied from base.css so the piece is self-describing; keep them or rely on base.css. */
+.marq { display: flex; overflow: hidden; border-bottom: 1px solid var(--line); background: rgba(255, 46, 110, .05); }
+.marq > div { display: flex; flex: none; gap: 42px; padding: 11px 21px; white-space: nowrap; font-size: 10px; letter-spacing: .22em; color: var(--mut); text-transform: uppercase; animation: marq 40s linear infinite; }
+.marq b { color: var(--pink); font-weight: 700; }
+@keyframes marq { to { transform: translateX(-100%); } }
+
+.marq:hover > div { animation-play-state: paused; }
+.marq.rev > div { animation-direction: reverse; animation-duration: 55s; }
+.marq.alt { background: rgba(46,230,166,.05); } .marq.alt b { color: var(--green); }
+.marq span.hx-bad { color: var(--red); }
+.hx-frame { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+
+/* demo layout (hx-*) */
+.hx-box { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 18px; min-width: 0; }
+.hx-lab { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+.hx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.hx-note { color: var(--dim); font-size: 10.5px; margin-top: 12px; line-height: 1.7; }
+.hx-note code { color: var(--pink2); }
+.hx-btn { min-height: 40px; padding: 0 14px; border-radius: 99px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); border: 1px solid var(--line2); background: rgba(255,255,255,.03); transition: color .25s, border-color .25s, background .25s; }
+.hx-btn:hover { color: #fff; border-color: rgba(255,46,110,.6); background: rgba(255,46,110,.14); }
+.hx-stack { display: grid; gap: 12px; }

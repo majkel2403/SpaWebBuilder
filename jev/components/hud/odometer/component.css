@@ -1,0 +1,23 @@
+/* Odometer digit reels (hud/odometer)
+   Reuse: copy this folder + base.css. The rules below are copied from base.css so the piece is self-describing; keep them or rely on base.css. */
+/* odometer: each digit is a 0-9 reel; the transform eases with a tiny overshoot, like a mechanical counter */
+.od { display: inline-flex; vertical-align: top; } .od-s { display: inline-block; height: 1.55em; }
+.od-d { display: inline-block; height: 1.55em; overflow: hidden; }
+.od-r { display: block; transform: translateY(calc(var(--d, 0) * -1.55em)); transition: transform .62s cubic-bezier(.2, .9, .25, 1.12); will-change: transform; }
+.od-r i { display: block; height: 1.55em; line-height: 1.55em; font-style: normal; }
+
+.hx-od-big { font: 800 clamp(34px, 8vw, 64px)/1.1 var(--sans); letter-spacing: -.02em; }
+.hx-od-mid { font: 700 clamp(20px, 4vw, 28px)/1.2 var(--mono); }
+.hx-od-sm { font: 700 13px/1.2 var(--mono); }
+.hx-od-val { display: block; min-height: 1.55em; }
+
+/* demo layout (hx-*) */
+.hx-box { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 18px; min-width: 0; }
+.hx-lab { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+.hx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.hx-note { color: var(--dim); font-size: 10.5px; margin-top: 12px; line-height: 1.7; }
+.hx-note code { color: var(--pink2); }
+.hx-btn { min-height: 40px; padding: 0 14px; border-radius: 99px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); border: 1px solid var(--line2); background: rgba(255,255,255,.03); transition: color .25s, border-color .25s, background .25s; }
+.hx-btn:hover { color: #fff; border-color: rgba(255,46,110,.6); background: rgba(255,46,110,.14); }
+.hx-stack { display: grid; gap: 12px; }

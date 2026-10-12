@@ -1,0 +1,28 @@
+/* Glitch wordmark (hud/glitch-wordmark)
+   Reuse: copy this folder + base.css. The rules below are copied from base.css so the piece is self-describing; keep them or rely on base.css. */
+/* ----- glitch wordmark: <span class="glitch" data-text="JEV">JEV</span> ----- */
+.glitch { position: relative; display: inline-block; }
+.glitch::before, .glitch::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; opacity: 0; mix-blend-mode: screen; }
+.glitch::before { color: #00f0ff; animation: gl1 7s infinite steps(1); } .glitch::after { color: #ff2e6e; animation: gl2 7s infinite steps(1); }
+@keyframes gl1 { 0%, 92%, 100% { opacity: 0; transform: none; } 93% { opacity: .9; transform: translate(-4px, 1px); clip-path: inset(8% 0 62% 0); } 95% { opacity: .9; transform: translate(3px, -2px); clip-path: inset(56% 0 10% 0); } 97% { opacity: .9; transform: translate(-2px, 0); clip-path: inset(30% 0 40% 0); } }
+@keyframes gl2 { 0%, 92%, 100% { opacity: 0; transform: none; } 94% { opacity: .9; transform: translate(4px, -1px); clip-path: inset(52% 0 14% 0); } 96% { opacity: .9; transform: translate(-3px, 2px); clip-path: inset(12% 0 58% 0); } 98% { opacity: .9; transform: translate(2px, 0); clip-path: inset(40% 0 30% 0); } }
+html[data-tier="1"] .glitch::before, html[data-tier="1"] .glitch::after { mix-blend-mode: normal; }
+
+.glitch.hx-burst::before { animation: gx1 .55s steps(1) 1; } .glitch.hx-burst::after { animation: gx2 .55s steps(1) 1; }
+@keyframes gx1 { 0%, 100% { opacity: 0; } 10% { opacity: .95; transform: translate(-6px, 1px); clip-path: inset(8% 0 62% 0); } 30% { opacity: .95; transform: translate(5px, -2px); clip-path: inset(56% 0 10% 0); } 55% { opacity: .95; transform: translate(-3px, 0); clip-path: inset(30% 0 40% 0); } 80% { opacity: .95; transform: translate(4px, 1px); clip-path: inset(70% 0 4% 0); } }
+@keyframes gx2 { 0%, 100% { opacity: 0; } 15% { opacity: .95; transform: translate(6px, -1px); clip-path: inset(52% 0 14% 0); } 40% { opacity: .95; transform: translate(-5px, 2px); clip-path: inset(12% 0 58% 0); } 65% { opacity: .95; transform: translate(3px, 0); clip-path: inset(40% 0 30% 0); } 85% { opacity: .95; transform: translate(-4px, 0); clip-path: inset(4% 0 80% 0); } }
+.glitch:hover::before { animation: gx1 .55s steps(1) infinite; } .glitch:hover::after { animation: gx2 .55s steps(1) infinite; }
+.hx-gl-xl { font: 800 clamp(64px, 17vw, 168px)/.95 var(--sans); letter-spacing: -.04em; color: #fff; text-shadow: 0 0 40px rgba(255,46,110,.5); }
+.hx-gl-l { font: 800 clamp(26px, 6vw, 54px)/1 var(--sans); letter-spacing: .04em; }
+.hx-gl-m { font: 700 15px/1 var(--mono); letter-spacing: .3em; }
+
+/* demo layout (hx-*) */
+.hx-box { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 18px; min-width: 0; }
+.hx-lab { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+.hx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.hx-note { color: var(--dim); font-size: 10.5px; margin-top: 12px; line-height: 1.7; }
+.hx-note code { color: var(--pink2); }
+.hx-btn { min-height: 40px; padding: 0 14px; border-radius: 99px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); border: 1px solid var(--line2); background: rgba(255,255,255,.03); transition: color .25s, border-color .25s, background .25s; }
+.hx-btn:hover { color: #fff; border-color: rgba(255,46,110,.6); background: rgba(255,46,110,.14); }
+.hx-stack { display: grid; gap: 12px; }

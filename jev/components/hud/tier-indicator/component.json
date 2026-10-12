@@ -1,0 +1,18 @@
+{
+  "title": "Quality tier indicator",
+  "description": "A three-bar quality-tier gauge showing the auto-detected performance tier (1 low, 2 medium, 3 high), with buttons to pin a tier and a live card/glitch preview of what each tier changes.",
+  "width": "860px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

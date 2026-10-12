@@ -1,0 +1,15 @@
+<div class="card dkb-card dkb-log dkar" id="dkar" role="region" aria-label="activity row kit, simulated">
+  <div class="ph"><span class="dkb-t"><b class="pk">◆</b> <b>activity row</b> <i class="dkb-ph-s">— one step, one line</i></span><span class="dkb-hn"><i class="lamp" aria-hidden="true"></i> live</span></div>
+  <div class="dkar-body">
+    <div class="dkar-cap">live · newest step</div>
+    <ol class="dkb-rl dkar-list" id="dkar-live" aria-live="off"></ol>
+    <div class="dkar-cap">variants</div>
+    <ol class="dkb-rl dkar-list">
+      <li class="dkb-r" style="--a:#4d8dff;--ar:77,141,255" data-ag="taker"><i class="dkb-d"></i><b class="dkb-ag">TAKER</b><span class="dkb-vb">fill</span><span class="dkb-v up">+$12.40</span><span class="dkb-ms">filled on okx · slip 0.4bps</span></li>
+      <li class="dkb-r" style="--a:#ff8a3d;--ar:255,138,61" data-ag="closer"><i class="dkb-d"></i><b class="dkb-ag">CLOSER</b><span class="dkb-vb">stop</span><span class="dkb-v dn">-$8.10</span><span class="dkb-ms">stop hit · closed -6.2bps · rule held</span></li>
+      <li class="dkb-r dkb-j" style="--a:#ff2e6e;--ar:255,46,110" data-ag="jev"><i class="dkb-d"></i><b class="dkb-ag">JEV</b><span class="dkb-vb">choice</span><span class="dkb-v am">→ review</span><span class="dkb-ms">buy btc 1% · conf .78 · conf 0.78 &lt; 0.85</span></li>
+      <li class="dkb-r dkb-j dkb-rk" style="--a:#ff4d5e;--ar:255,77,94" data-ag="jev"><i class="dkb-d"></i><b class="dkb-ag">JEV</b><span class="dkb-vb">kill</span><span class="dkb-v dn">■ halted</span><span class="dkb-ms">kill switch thrown · every order routes to review</span></li>
+    </ol>
+  </div>
+  <div class="dkb-foot">markup: <b>li.dkb-r</b> &gt; <b>i.dkb-d</b> + <b>b.dkb-ag</b> + <b>span.dkb-vb</b> + <b>span.dkb-v.up|dn|am|gy</b> + <b>span.dkb-ms</b> · set <b>--a</b> / <b>--ar</b> · add <b>.dkb-j</b> (JEV), <b>.dkb-rk</b> (kill), <b>.new</b> (entrance)</div>
+</div>

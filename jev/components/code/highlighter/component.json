@@ -1,0 +1,18 @@
+{
+  "title": "Syntax highlighter",
+  "description": "The tiny regex highlighter behind the editor panes: edit python or json in a textarea and see it coloured live in a dark, light or hot-pink skin.",
+  "width": "860px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

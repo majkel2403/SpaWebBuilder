@@ -1,0 +1,18 @@
+{
+  "title": "Decision tape",
+  "description": "A five-row tape of the latest decisions (id, action, size, confidence, destination dot, reason) where new rows slide in with a pink flash, rows are clickable and a button copies the tape as JSON.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

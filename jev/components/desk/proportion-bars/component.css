@@ -1,0 +1,9 @@
+.dkc { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
+.dkt-sig { color: var(--dkt-k); }
+.dkt-sig b { color: var(--dkt-ink); font-weight: 700; letter-spacing: .08em; }
+.dkt-pb { display: grid; grid-template-columns: 44px minmax(0, 1fr) minmax(104px, auto); align-items: center; gap: 10px; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--dkt-k); }
+.dkt-pb b { font-weight: 500; color: var(--dkt-ink); font-variant-numeric: tabular-nums; text-align: right; letter-spacing: .06em; font-size: 9.5px; white-space: nowrap; }
+.dkt-pbar { display: flex; gap: 2px; height: 8px; min-width: 0; }
+.dkt-pbar i { display: block; flex: 0 0 var(--w, 25%); min-width: 2px; height: 100%; background: var(--c); border-radius: 3px; box-shadow: 0 0 10px var(--c), inset 0 1px 0 rgba(255, 255, 255, .38); transition: flex-basis .8s var(--ease); }
+.dkpb-b { display: grid; gap: 14px; padding: 16px; }
+@media (max-width: 700px) { .dkt-pb { grid-template-columns: 38px minmax(0, 1fr) auto; gap: 8px; } .dkt-pb b { font-size: 9px; } }

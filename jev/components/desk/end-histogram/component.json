@@ -1,0 +1,9 @@
+{
+  "title": "End-value histogram",
+  "description": "A live histogram of where 140 simulated paths stand, bars coloured loss to profit from pink to amber, with a mean tag, a zero line and a pointer probe that reads the share above a level.",
+  "width": "360px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

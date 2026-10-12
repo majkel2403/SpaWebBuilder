@@ -1,0 +1,18 @@
+{
+  "title": "Switch row (spring toggle)",
+  "description": "The spring toggle row used by the hour: label, minute range, glowing knob with squash press, ripple, on/off word and progress bar, in four variants including a live kill-switch row.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

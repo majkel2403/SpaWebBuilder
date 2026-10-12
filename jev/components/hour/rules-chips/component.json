@@ -1,0 +1,18 @@
+{
+  "title": "Hard-rule chips",
+  "description": "A row of hard-rule chips held by code: daily loss cap, max position, confidence floor and a live kill-switch chip that mirrors and toggles the global kill switch.",
+  "width": "520px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

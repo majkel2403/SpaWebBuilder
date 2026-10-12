@@ -1,0 +1,18 @@
+{
+  "title": "Action probability bars",
+  "description": "Jev's \"which action?\" choice question: five probability bars (buy, sell, hold, close, flatten) with the winner glowing, plus a confidence ring and the picked action.",
+  "width": "560px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

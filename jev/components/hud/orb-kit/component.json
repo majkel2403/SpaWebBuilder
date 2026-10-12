@@ -1,0 +1,18 @@
+{
+  "title": "Orb mascot kit",
+  "description": "The glass Jev orb in nine colours and any size, with blinking eyes that follow the pointer (or wander when idle) and widen when a decision for that colour lands.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

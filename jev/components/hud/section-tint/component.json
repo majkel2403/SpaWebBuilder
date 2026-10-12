@@ -1,0 +1,18 @@
+{
+  "title": "Section tint wash",
+  "description": "The page colour temperature: a fixed two-corner radial wash that eases to a new colour as each section crosses the viewport middle, with a live readout of the tint value.",
+  "width": "1000px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

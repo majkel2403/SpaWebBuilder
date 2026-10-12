@@ -1,0 +1,26 @@
+/* Nav with scrollspy (hud/nav-scrollspy)
+   Reuse: copy this folder + base.css. The rules below are copied from base.css so the piece is self-describing; keep them or rely on base.css. */
+
+.hx-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 14px; padding: 8px var(--gut); margin: 0 calc(var(--gut) * -1); background: linear-gradient(180deg, rgba(5,3,10,.94), rgba(5,3,10,.7)); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line2); }
+.hx-bar .logo b { width: 30px; height: 30px; font-size: 17px; }
+.spy { position: relative; display: flex; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; padding-bottom: 5px; margin-bottom: -5px; }
+.spy::-webkit-scrollbar { display: none; }
+.spy a { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 11px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--mut); border-radius: 7px; transition: color .25s, background .25s; }
+.spy a i { font-style: normal; color: var(--dim); transition: color .25s; }
+.spy a:hover { color: #fff; background: rgba(255,46,110,.12); }
+.spy a.on { color: #fff; } .spy a.on i { color: var(--pink); }
+.spy-ind { position: absolute; left: 0; bottom: 0; height: 2px; width: var(--spy-w, 0px); transform: translateX(var(--spy-x, 0px)); background: linear-gradient(90deg, var(--violet), var(--pink), var(--pink2)); box-shadow: 0 0 10px rgba(255,46,110,.7); border-radius: 2px; transition: transform .45s var(--ease), width .45s var(--ease); pointer-events: none; }
+.hx-sec { min-height: 78vh; padding: 28px 0; border-bottom: 1px dashed var(--line); color: var(--mut); }
+.hx-sec > b { display: block; font: 700 11px/1 var(--mono); letter-spacing: .24em; text-transform: uppercase; color: var(--pink); margin-bottom: 12px; }
+.hx-sec p { max-width: 60ch; font-size: 12px; margin-top: 8px; }
+
+/* demo layout (hx-*) */
+.hx-box { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 18px; min-width: 0; }
+.hx-lab { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+.hx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.hx-note { color: var(--dim); font-size: 10.5px; margin-top: 12px; line-height: 1.7; }
+.hx-note code { color: var(--pink2); }
+.hx-btn { min-height: 40px; padding: 0 14px; border-radius: 99px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); border: 1px solid var(--line2); background: rgba(255,255,255,.03); transition: color .25s, border-color .25s, background .25s; }
+.hx-btn:hover { color: #fff; border-color: rgba(255,46,110,.6); background: rgba(255,46,110,.14); }
+.hx-stack { display: grid; gap: 12px; }

@@ -1,0 +1,18 @@
+{
+  "title": "Scenario chip row",
+  "description": "A wrapping row of icon preset chips (trend, mean-revert, wide book, stale feed, reversal, stress, random) that runs the engine on the picked scenario and prints its verdict.",
+  "width": "620px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

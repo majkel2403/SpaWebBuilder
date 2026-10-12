@@ -1,0 +1,11 @@
+/* hero / encode-panel — the ENCODE column: fifteen input ports folded into twelve zig-zag vector nodes through a sparse additive mesh; beams per decision. Prefix hero-/hep-. */
+.hep-stage { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 28px 14px 24px; border-radius: 14px; background: radial-gradient(90% 90% at 50% 40%, #14061a 0%, #08040d 60%, #05030a 100%); }
+.hep-panel { width: min(100%, 360px); border-radius: 9px; background: rgba(9, 4, 15, .84); border: 1px solid rgba(255, 70, 140, .26); padding: 10px 10px 8px; box-shadow: 0 0 40px rgba(255, 46, 110, .12); }
+.hep-head { display: flex; flex-direction: column; gap: 3px; padding: 0 2px 6px; }
+.hep-head b { font-size: 10.5px; letter-spacing: .18em; color: #e9dff0; font-weight: 700; }
+.hep-head span { font-size: 9px; letter-spacing: .04em; color: #a095ac; }
+.hep-panel canvas { display: block; width: 100%; height: 400px; }
+.hep-foot { display: flex; justify-content: space-between; padding: 4px 6px 0; font-size: 8.5px; letter-spacing: .2em; text-transform: uppercase; color: #8d8499; }
+body.killed .hep-panel { border-color: rgba(255, 77, 94, .4); }
+.hbtn { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .8); border: 1px solid rgba(255, 111, 166, .5); border-radius: 99px; padding: 11px 16px; min-height: 40px; cursor: pointer; }
+.hbtn:hover { background: rgba(255, 46, 110, .18); }

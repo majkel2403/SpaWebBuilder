@@ -1,0 +1,9 @@
+{
+  "title": "Random-walk fan",
+  "description": "One hundred and forty random-walk equity curves with a small positive drift fanning out coloured by where they end, with a bright sample-mean spine, a dotted two-sigma noise cone and a hover trace.",
+  "width": "560px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

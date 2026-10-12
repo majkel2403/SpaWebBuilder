@@ -1,0 +1,18 @@
+{
+  "title": "Action chip + dots",
+  "description": "The pill that shows the last action (buy, sell, hold, close, flatten) with an arrow glyph, three pulsing primitive dots and a one-line last-answer capsule, plus all five states side by side.",
+  "width": "560px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

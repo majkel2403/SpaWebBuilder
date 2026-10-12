@@ -1,0 +1,13 @@
+.dkx { --dkw-k: #aaa1b8; --dkw-ink: #ece5f2; --dkw-glass: rgba(9, 6, 17, .6); }
+.dkx-map { position: relative; height: 240px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(120, 170, 255, .2);
+  background: radial-gradient(rgba(140, 180, 255, .22) 1px, transparent 1.4px) 0 0 / 14px 14px, radial-gradient(60% 80% at 50% 54%, rgba(44, 96, 210, .16), transparent 72%), #05030c; }
+/* a marker: <i class="dkx-mk" style="--x:%;--y:%;--vc:#hex;--vc-rgb:r,g,b;--d:delay"><b>code</b><u>ms</u></i> */
+.dkx-mk { position: absolute; left: var(--x); top: var(--y); width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--vc); box-shadow: 0 0 12px var(--vc), 0 0 0 2px rgba(255, 255, 255, .7); }
+.dkx-mk::before, .dkx-mk::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1.5px solid var(--vc); opacity: 0; animation: dkxPing 2.6s ease-out infinite; animation-delay: var(--d, 0s); }
+.dkx-mk::after { animation-delay: calc(var(--d, 0s) + 1.3s); }
+.dkx-mk b { position: absolute; left: 16px; top: -3px; font: 700 9px/1 var(--mono); letter-spacing: .16em; color: var(--dkw-ink); white-space: nowrap; }
+.dkx-mk u { position: absolute; left: 16px; top: 9px; font: 500 8.5px/1 var(--mono); text-decoration: none; color: var(--vc); white-space: nowrap; }
+@keyframes dkxPing { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(5.5); } }
+.dkx-map .dkx-cap { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dkw-k); }
+body.killed .dkx-mk { --vc: #ff4d5e; }
+@media (prefers-reduced-motion: reduce) { .dkx-mk::before, .dkx-mk::after { animation: none; opacity: .35; transform: scale(2.6); } }

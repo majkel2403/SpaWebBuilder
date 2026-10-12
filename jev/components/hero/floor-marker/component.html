@@ -1,0 +1,17 @@
+<section class="hfm-stage" aria-label="Confidence floor marker (simulation)">
+  <div class="hfm-card">
+    <div class="hfm-head"><b>CONFIDENCE FLOOR</b><span>below the floor goes to human review</span></div>
+    <div class="hfm-track" id="hfmTrack">
+      <i class="hfm-zone hfm-zone-rv" id="hfmRv"></i><i class="hfm-zone hfm-zone-ex" id="hfmEx"></i>
+      <i class="hfm-tick" id="hfmTick" title="latest confidence"><em id="hfmTickV">0.93</em></i>
+      <i class="hfm-flag" id="hfmFlag"><em id="hfmFloorV">floor 0.85</em></i>
+      <div class="hfm-scale"><span>0</span><span>.25</span><span>.5</span><span>.75</span><span>1</span></div>
+    </div>
+    <div class="hfm-ctl">
+      <button class="hbtn" id="hfmDn" type="button" aria-label="lower the floor">&minus; .05</button>
+      <span class="hfm-read" id="hfmRead">execute</span>
+      <button class="hbtn" id="hfmUp" type="button" aria-label="raise the floor">+ .05</button>
+    </div>
+  </div>
+  <button class="hbtn" id="hfmFire" type="button">fire a decision</button>
+</section>

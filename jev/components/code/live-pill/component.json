@@ -1,0 +1,18 @@
+{
+  "title": "Terminal live / pause pill",
+  "description": "The sticky LIVE pill of the terminal: it freezes the stream when you hover the log or pin it, counts the decisions held back as \"+N new\", and resumes on click, Enter or Escape.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

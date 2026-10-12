@@ -1,0 +1,15 @@
+{
+  "title": "Hot-pink pane with heat haze",
+  "description": "A CSS-only hot-pink code pane: a diagonal sheen sweeping across, warm haze plumes rising through the text over a heat floor, and a shift to orange-red under the kill switch.",
+  "width": "560px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ]
+}

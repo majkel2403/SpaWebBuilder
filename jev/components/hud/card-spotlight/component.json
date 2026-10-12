@@ -1,0 +1,18 @@
+{
+  "title": "Card spotlight border",
+  "description": "Glass cards whose border and surface are lit by a pointer-following radial spotlight (idle drift on touch screens), each showing the latest live decision for its destination.",
+  "width": "1000px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

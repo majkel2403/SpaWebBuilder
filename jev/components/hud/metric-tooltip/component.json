@@ -1,0 +1,18 @@
+{
+  "title": "Metric tooltip",
+  "description": "One shared fixed tooltip for any [data-tip] element: opens on hover or keyboard focus, flips above near the viewport bottom, auto-hides on touch, scroll and Escape.",
+  "width": "860px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

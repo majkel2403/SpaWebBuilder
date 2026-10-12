@@ -1,0 +1,15 @@
+{
+  "title": "FIG panel shell",
+  "description": "The glass figure-panel shell used by every hour card: accent edge, tag, subtitle, badge, headline, note chips, dashed footer and the giant FIG.n watermark, in four accents.",
+  "width": "900px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ]
+}

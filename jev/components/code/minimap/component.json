@@ -1,0 +1,18 @@
+{
+  "title": "Code minimap",
+  "description": "A scrolling code view with a canvas minimap of coloured line stubs, a draggable viewport window and a cursor tick that jumps to the gate lines on every decision.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

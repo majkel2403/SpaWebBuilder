@@ -1,0 +1,18 @@
+{
+  "title": "Toggle switch kit",
+  "description": "The glowing .tg toggle switch in every accent colour, keyboard and touch accessible, with two live switches bound to the kill switch and the confidence floor.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

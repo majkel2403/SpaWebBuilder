@@ -1,0 +1,18 @@
+{
+  "title": "Segmented squares bar",
+  "description": "A ten-square glowing segmented bar atom (n of 10) in four colours: a pinging live row, two static rows and one you can click or arrow-key.",
+  "width": "560px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

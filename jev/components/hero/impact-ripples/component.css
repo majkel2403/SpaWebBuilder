@@ -1,0 +1,7 @@
+/* hero / impact-ripples — three destination ports with expanding ripple rings and a lens-flare streak on every landing. Prefix hero-/hir-. */
+.hir-stage { position: relative; height: 340px; overflow: hidden; border-radius: 14px; cursor: pointer; background: radial-gradient(90% 90% at 70% 50%, #14061a 0%, #08040d 60%, #05030a 100%); -webkit-tap-highlight-color: transparent; }
+.hir-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hir-ports { list-style: none; margin: 0; padding: 0; position: absolute; right: 6%; top: 0; bottom: 0; width: 0; pointer-events: none; }
+.hir-ports li { position: absolute; right: 22px; font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: #b3a8be; transform: translateY(-50%); }
+.hir-ports li:nth-child(1) { top: 20%; } .hir-ports li:nth-child(2) { top: 50%; } .hir-ports li:nth-child(3) { top: 80%; }
+.hir-hint { position: absolute; left: 14px; bottom: 10px; font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: #8d8499; pointer-events: none; }

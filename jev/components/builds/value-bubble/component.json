@@ -1,0 +1,18 @@
+{
+  "title": "Value-on-hover bubble",
+  "description": "A one-element hover bubble that follows the pointer (and taps on touch) over any element with a data-vt attribute and shows its live value, demoed on five action-share bars.",
+  "width": "520px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

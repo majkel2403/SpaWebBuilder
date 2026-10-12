@@ -1,0 +1,18 @@
+{
+  "title": "Matrix rain layer",
+  "description": "A canvas layer of falling hex and symbol glyphs with fading trails (pre-rendered glyph atlas, 20 Hz fade) that speeds up on every decision and turns red under the kill switch.",
+  "width": "720px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

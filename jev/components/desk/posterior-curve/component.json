@@ -1,0 +1,9 @@
+{
+  "title": "Posterior density curve",
+  "description": "A single glowing posterior density for P(up 5m) that re-centres on every decision, with ember particles, a travelling highlight and a pointer probe that lights the upper tail.",
+  "width": "560px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

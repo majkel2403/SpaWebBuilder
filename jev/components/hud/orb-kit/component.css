@@ -1,0 +1,31 @@
+/* Orb mascot kit (hud/orb-kit)
+   Reuse: copy this folder + base.css. The rules below are copied from base.css so the piece is self-describing; keep them or rely on base.css. */
+/* ----- mascot orb (Jev family): <span class="orb pink" style="--s:90px"><i class="e l"></i><i class="e r"></i></span> ----- */
+.orb { --s: 90px; --c1: #8fbcff; --c2: #2a5cff; --g: rgba(80, 140, 255, .6); position: relative; display: inline-block; width: var(--s); height: var(--s); border-radius: 50%; flex: none;
+  background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, .95) 0 5%, var(--c1) 24%, var(--c2) 68%, rgba(0, 0, 0, .55) 108%);
+  box-shadow: 0 0 calc(var(--s) * .55) var(--g), inset -6px -10px 18px rgba(0, 0, 0, .38), inset 4px 6px 12px rgba(255, 255, 255, .22); }
+.orb .e { position: absolute; top: 37%; width: 14%; height: 29%; border-radius: 99px; background: #0a0710; translate: var(--ex, 0) var(--ey, 0); animation: orbBlink 5.5s infinite; }
+.orb .e.l { left: 30%; rotate: -13deg; } .orb .e.r { right: 30%; rotate: 13deg; animation-delay: .06s; }
+@keyframes orbBlink { 0%, 93%, 100% { scale: 1 1; } 96% { scale: 1 .08; } }
+.orb.pink { --c1: #ff9cc4; --c2: #ff1f75; --g: rgba(255, 46, 120, .65); } .orb.blue { --c1: #8fbcff; --c2: #2a5cff; }
+.orb.white { --c1: #ffffff; --c2: #d9d2e6; --g: rgba(255, 255, 255, .45); } .orb.amber { --c1: #ffe08a; --c2: #ff9f1a; --g: rgba(255, 180, 40, .6); }
+.orb.green { --c1: #8ff5cf; --c2: #12b57e; --g: rgba(46, 230, 166, .55); } .orb.violet { --c1: #cdaaff; --c2: #7a3df0; --g: rgba(166, 107, 255, .6); }
+.orb.red { --c1: #ffa08f; --c2: #f0401f; --g: rgba(255, 90, 50, .6); } .orb.orange { --c1: #ffc08f; --c2: #ff6a0f; --g: rgba(255, 138, 61, .6); }
+.orb.cyan { --c1: #a6f1ff; --c2: #18a8d8; --g: rgba(59, 224, 255, .55); }
+
+.orb { transition: transform .35s var(--ease), filter .35s; }
+.orb:hover { transform: translateY(-4px) scale(1.06); }
+body.killed .orb { filter: saturate(.25) brightness(.8); }
+.hx-orbs { display: flex; flex-wrap: wrap; align-items: center; gap: 22px clamp(14px, 3vw, 30px); }
+.hx-orb-cell { display: grid; justify-items: center; gap: 10px; color: var(--mut); font-size: 9px; letter-spacing: .18em; text-transform: uppercase; }
+
+/* demo layout (hx-*) */
+.hx-box { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 18px; min-width: 0; }
+.hx-lab { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+.hx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.hx-note { color: var(--dim); font-size: 10.5px; margin-top: 12px; line-height: 1.7; }
+.hx-note code { color: var(--pink2); }
+.hx-btn { min-height: 40px; padding: 0 14px; border-radius: 99px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); border: 1px solid var(--line2); background: rgba(255,255,255,.03); transition: color .25s, border-color .25s, background .25s; }
+.hx-btn:hover { color: #fff; border-color: rgba(255,46,110,.6); background: rgba(255,46,110,.14); }
+.hx-stack { display: grid; gap: 12px; }

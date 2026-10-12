@@ -1,0 +1,8 @@
+.cx-mr-card { position: relative; height: 260px; border-radius: 14px; overflow: hidden; isolation: isolate; background: linear-gradient(180deg, #100a18, #08040d); box-shadow: inset 0 0 0 1px rgba(255, 70, 140, .22), 0 16px 36px -18px rgba(0, 0, 0, .9); display: grid; place-items: center; }
+.code-rain { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: .5; }
+html[data-tier="1"] .code-rain { opacity: .3; }
+.cx-mr-txt { position: relative; z-index: 1; max-width: 34ch; padding: 18px 20px; text-align: center; background: radial-gradient(closest-side, rgba(8, 4, 13, .85), rgba(8, 4, 13, 0)); font: 400 11.5px/1.6 var(--mono); color: var(--mut); }
+.cx-mr-txt small { display: block; font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--pink2); }
+.cx-mr-txt b { display: block; margin: 4px 0 8px; font: 700 20px/1.1 var(--mono); color: var(--ink); }
+.cx-mr-txt code { color: var(--pink2); }
+@media (prefers-reduced-motion: reduce) { .code-rain { display: none; } }

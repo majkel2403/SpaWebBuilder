@@ -1,0 +1,18 @@
+{
+  "title": "ARMED banner with burst",
+  "description": "The six-cell progress banner that waits on six switches, then flips to a glowing ARMED slab with a white flash, shine sweep, confetti burst and shockwave ring; HALTED under the kill switch.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

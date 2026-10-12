@@ -1,0 +1,9 @@
+{
+  "title": "Orbiting agent orbs",
+  "description": "Six agent orbs circling a central white Jev orb on a tilted dashed ellipse, scaling and fading with depth; the orb whose step runs on a decision lights up with a halo.",
+  "width": "560px",
+  "needs": { "fx": false, "hud": false },
+  "html": ["component.html"],
+  "css": ["component.css"],
+  "js": ["component.js"]
+}

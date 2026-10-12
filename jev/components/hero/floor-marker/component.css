@@ -1,0 +1,22 @@
+/* hero / floor-marker — the 0.85 confidence floor: a spring-loaded marker on a 0..1 track with a live confidence tick. Prefix hero-/hfm-. */
+.hfm-stage { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 28px 14px 24px; border-radius: 14px; background: radial-gradient(90% 90% at 50% 40%, #14061a 0%, #08040d 60%, #05030a 100%); }
+.hfm-card { width: min(100%, 560px); border-radius: 9px; background: rgba(9, 4, 15, .84); border: 1px solid rgba(255, 70, 140, .26); padding: 12px 18px 14px; box-shadow: 0 0 40px rgba(255, 46, 110, .12); }
+.hfm-head { display: flex; flex-direction: column; gap: 3px; padding-bottom: 54px; }
+.hfm-head b { font-size: 10.5px; letter-spacing: .18em; color: #e9dff0; font-weight: 700; }
+.hfm-head span { font-size: 9px; letter-spacing: .04em; color: #a095ac; }
+.hfm-track { position: relative; height: 14px; border-radius: 99px; background: rgba(255, 255, 255, .075); margin: 0 6px 44px; }
+.hfm-zone { position: absolute; top: 0; bottom: 0; border-radius: 99px; }
+.hfm-zone-rv { left: 0; background: linear-gradient(90deg, rgba(255, 193, 61, .1), rgba(255, 193, 61, .5)); }
+.hfm-zone-ex { right: 0; background: linear-gradient(90deg, rgba(255, 46, 110, .55), rgba(255, 46, 110, .95)); box-shadow: 0 0 16px rgba(255, 46, 110, .45); }
+.hfm-flag { position: absolute; top: -26px; bottom: -8px; width: 0; border-left: 1.5px dashed #ffd0e2; filter: drop-shadow(0 0 6px rgba(255, 46, 110, .8)); will-change: transform; }
+.hfm-flag em { position: absolute; top: -4px; left: 0; transform: translate(-50%, -100%); font-style: normal; font-size: 10px; letter-spacing: .08em; color: #ffd0e2; white-space: nowrap; background: rgba(8, 4, 13, .9); padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(255, 111, 166, .5); }
+.hfm-tick { position: absolute; top: -4px; width: 4px; height: 22px; margin-left: -2px; border-radius: 2px; background: var(--green); box-shadow: 0 0 12px var(--green); transition: left .5s cubic-bezier(.34, 1.56, .64, 1), background .3s, box-shadow .3s; }
+.hfm-tick.is-low { background: var(--amber); box-shadow: 0 0 12px var(--amber); }
+.hfm-tick em { position: absolute; top: 26px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 10px; color: #fff; font-variant-numeric: tabular-nums; }
+.hfm-scale { position: absolute; left: 0; right: 0; bottom: -38px; display: flex; justify-content: space-between; font-size: 8.5px; color: #7d7389; letter-spacing: .1em; }
+.hfm-ctl { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.hfm-read { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--green); }
+.hfm-read.is-rv { color: var(--amber); }
+body.killed .hfm-zone-ex { background: linear-gradient(90deg, rgba(255, 77, 94, .55), rgba(255, 77, 94, .95)); box-shadow: 0 0 16px rgba(255, 60, 80, .45); }
+.hbtn { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .8); border: 1px solid rgba(255, 111, 166, .5); border-radius: 99px; padding: 11px 16px; min-height: 40px; cursor: pointer; }
+.hbtn:hover { background: rgba(255, 46, 110, .18); }

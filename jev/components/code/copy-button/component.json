@@ -1,0 +1,18 @@
+{
+  "title": "Copy button morph",
+  "description": "A copy button whose clipboard glyph morphs into an animated check mark, shown in a light, a hot-pink and a dark header, with the copied text and a status line.",
+  "width": "720px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

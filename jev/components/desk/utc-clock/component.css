@@ -1,0 +1,8 @@
+.dkc { --dkt-k: #aaa1b8; --dkt-ink: #ece5f2; }
+.dkt-clk { display: flex; align-items: baseline; gap: 8px; margin-left: auto; flex: none; }
+.dkt-clk b { font: 700 clamp(22px, 2.6vw, 30px)/1 var(--mono); letter-spacing: .02em; color: #fff; text-shadow: 0 0 20px rgba(255, 255, 255, .28); }
+.dkt-clk i { font-style: normal; font-size: 9px; letter-spacing: .24em; text-transform: uppercase; color: var(--dkt-k); }
+.dkt-sim { margin-left: 6px; align-self: center; border-color: rgba(255, 193, 61, .4); color: var(--amber); }
+.dkck-b { padding: 22px 18px 18px; display: grid; gap: 18px; } .dkck-b > .dkt-clk { margin-left: 0; } .dkck-b > .dkt-clk b { font-size: clamp(34px, 7vw, 54px); }
+.dkck-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 22px; padding-top: 14px; border-top: 1px solid var(--line); } .dkck-row .dkt-clk { margin-left: 0; }
+.dkck-sm b { font-size: 20px !important; } .dkck-m { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--dkt-k); } .dkck-m b { color: var(--dkt-ink); letter-spacing: .08em; margin-left: 6px; }

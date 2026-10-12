@@ -1,0 +1,18 @@
+<div class="cx-tl" id="cx-tl">
+  <div class="cx-tl-grid">
+    <article class="code-pane code-light" aria-label="gate.py"><header class="code-ph"><i class="code-pd"></i><b>gate.py</b></header><pre class="cx-tl-src" tabindex="0"><span class="code-ct">FLOOR </span><span class="code-o">= </span><span class="code-n">0.85</span>
+
+<span class="code-k">def </span><span class="code-fd">gate</span><span class="code-o">(</span><span class="code-v">answer</span><span class="code-o">):</span>
+<span class="code-w">    </span><span class="code-k">if </span><span class="code-v">answer</span><span class="code-o">.</span><span class="code-a">conf </span><span class="code-o">&gt;= </span><span class="code-ct">FLOOR </span><span class="code-k">and </span><span class="code-v">answer</span><span class="code-o">.</span><span class="code-a">risk_ok</span><span class="code-o">:</span>
+<span class="code-w">        </span><span class="code-k">return </span><span class="code-s">"execute"</span>
+<span class="code-w">    </span><span class="code-k">return </span><span class="code-s">"review"</span></pre></article>
+    <article class="code-pane code-dark" aria-label="decision.json"><header class="code-ph"><i class="code-pd"></i><b>decision.json</b></header><pre class="cx-tl-src" tabindex="0"><span class="code-o">{</span>
+<span class="code-w">  </span><span class="code-jk">"choice"</span><span class="code-o">: </span><span class="code-s">"buy"</span><span class="code-o">,</span>
+<span class="code-w">  </span><span class="code-jk">"conf"</span><span class="code-o">: </span><span class="code-n">0.93</span><span class="code-o">,</span>
+<span class="code-w">  </span><span class="code-jk">"risk_ok"</span><span class="code-o">: </span><span class="code-k">true</span><span class="code-o">,</span>
+<span class="code-w">  </span><span class="code-jk">"floor"</span><span class="code-o">: </span><span class="code-n">0.85</span><span class="code-o">,</span>
+<span class="code-w">  </span><span class="code-jk">"dest"</span><span class="code-o">: </span><span class="code-s">"execute"</span>
+<span class="code-o">}</span></pre></article>
+  </div>
+  <p class="cx-tl-st" role="status" aria-live="polite" data-idle="hover an identifier &middot; same name lights up in every pane">hover an identifier &middot; same name lights up in every pane</p>
+</div>
