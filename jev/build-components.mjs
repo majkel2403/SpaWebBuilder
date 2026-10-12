@@ -51,7 +51,7 @@ ${js}
 }
 // gallery
 const groups = [...new Set(comps.map((c) => c.group))];
-const card = (c) => `<a class="g-card" href="./${c.group}/${c.name}/index.html"><div class="g-prev"><iframe loading="lazy" src="./${c.group}/${c.name}/index.html" title="${c.title || c.name}" tabindex="-1"></iframe></div><div class="g-meta"><b>${c.title || c.name}</b><span>${c.group} / ${c.name}</span><p>${c.description || ''}</p></div></a>`;
+const card = (c) => `<a class="g-card" href="./${c.group}/${c.name}/index.html"><div class="g-prev"><iframe data-src="./${c.group}/${c.name}/index.html" title="${c.title || c.name}" tabindex="-1"></iframe></div><div class="g-meta"><b>${c.title || c.name}</b><span>${c.group} / ${c.name}</span><p>${c.description || ''}</p></div></a>`;
 const gallery = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JEV components</title>
 <style>
 :root{color-scheme:dark}body{margin:0;background:#05030a;color:#f4eef6;font:12.5px/1.5 ui-monospace,'JetBrains Mono',Menlo,monospace;padding:clamp(14px,3vw,40px)}
@@ -65,6 +65,11 @@ h2{font:600 11px/1 ui-monospace,monospace;letter-spacing:.24em;text-transform:up
 </style></head><body><h1>JEV <em>components</em></h1>
 <p class="sub">Every section and chart of the JEV Desk as a standalone page. Open one, or copy its folder: <code>component.html</code> + <code>component.css</code> + <code>component.js</code> + <code>component.json</code> and the shared runtime (engine.js, core.js, base.css). All data is simulated.</p>
 ${groups.map((g) => `<h2>${g}</h2><div class="g">${comps.filter((c) => c.group === g).map(card).join('')}</div>`).join('\n')}
-</body></html>`;
+<script>
+/* live previews: load an iframe only while its card is on screen (max ~6 at once), unload when it leaves */
+const io=new IntersectionObserver(es=>es.forEach(e=>{const f=e.target.querySelector('iframe');if(!f)return;
+ if(e.isIntersecting){if(!f.src)f.src=f.dataset.src}else if(f.src){f.removeAttribute('src');f.src='about:blank';f.removeAttribute('src')}}),{rootMargin:'-10% 0px'});
+document.querySelectorAll('.g-prev').forEach(el=>io.observe(el));
+</script></body></html>`;
 if (!only) fs.writeFileSync(path.join(cdir, 'index.html'), gallery);
 console.log(`${comps.length} components${only ? ' (partial build)' : ' + gallery'}`);
