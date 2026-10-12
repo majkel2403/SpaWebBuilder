@@ -1,0 +1,23 @@
+<section class="hpl-stage" id="hplStage" aria-label="Pointer and scroll parallax of the hero layers (simulation)">
+  <div class="hpl-net" id="hplNet">
+    <div class="hpl-bg" aria-hidden="true"><i class="hpl-aura"></i><i class="hpl-grid"></i></div>
+    <div class="hpl-plane" id="hplPlane">
+      <canvas id="hplStatic" aria-hidden="true"></canvas>
+      <canvas id="hplLive" role="img" aria-label="Layered mesh. Move the pointer over the page, or use the scroll slider, to shift the grid, the plane, the labels and the glass cards at different depths. Click or tap to fire a simulated decision."></canvas>
+      <canvas id="hplLabels" class="hpl-labels" aria-hidden="true"></canvas>
+    </div>
+    <div class="hpl-vig" aria-hidden="true"></div>
+    <div class="hpl-chip" id="hplChip"><span class="hpl-c-top"><i class="lamp pink"></i><span class="hpl-c-lab">layer depth</span></span><span class="hpl-c-body"><b>grid</b> far <span class="hpl-sep">&middot;</span> <b>plane</b> mid <span class="hpl-sep">&middot;</span> <b>labels + cards</b> near</span></div>
+    <div class="hpl-legend" id="hplLegend" aria-hidden="true"><span><i class="hpl-dot hpl-dot-ex"></i>translate only</span><span><i class="hpl-dot hpl-dot-rv"></i>pointer + scroll</span><span class="hpl-leg-sim">simulated &middot; move the pointer</span></div>
+  </div>
+  <div class="hpl-card" id="hplCard">
+    <div class="hpl-eyebrow"><i class="lamp pink"></i>jev &middot; layers &middot; parallax</div>
+    <h2 class="hpl-title">DEPTH SHIFT</h2>
+    <p class="hpl-sub"><b class="hpl-w1">grid far</b><i>&middot;</i><b class="hpl-w2">plane mid</b><i>&middot;</i><b class="hpl-w3">cards near</b></p>
+  </div>
+  <div class="hpl-bar">
+    <label class="hpl-sl">scroll <input id="hplScroll" type="range" min="0" max="100" value="0" aria-label="simulated scroll position"></label>
+    <button class="hbtn" id="hplFire" type="button">fire a decision</button>
+    <output class="hpl-out" id="hplOut" aria-live="off"></output>
+  </div>
+</section>

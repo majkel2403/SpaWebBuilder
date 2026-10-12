@@ -1,0 +1,1 @@
+{"title": "Parallax layers", "description": "The hero's pointer and scroll parallax: grid, aura, network plane, floating labels and glass cards move at different depths, translate-only, with a scroll slider and live offsets.", "width": "1100px", "needs": {"fx": false, "hud": false}, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"]}

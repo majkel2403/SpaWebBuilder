@@ -1,0 +1,55 @@
+/* hero / kill-crt-overlay — red flicker, beam stutter, CRT scanlines and power-down / power-up collapse. Prefix hero-/hkc-. */
+.hkc-stage { position: relative; display: flex; flex-direction: column; gap: 12px; }
+.hkc-net { position: relative; height: clamp(420px, 56vw, 560px); overflow: hidden; border-radius: 14px; background: radial-gradient(90% 70% at 50% 46%, #14061a 0%, #08040d 56%, #05030a 100%); }
+.hkc-plane { position: absolute; inset: 0; }
+.hkc-net canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#hkcLive { cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+#hkcStatic { transition: filter .7s var(--ease, ease); }
+body.killed #hkcStatic { filter: hue-rotate(15deg) saturate(1.25) brightness(1.05); }
+html[data-tier="2"] .hkc-plane, html[data-tier="3"] .hkc-plane { will-change: translate, scale; }
+.hkc-vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(130% 100% at 50% 46%, transparent 52%, rgba(5, 3, 10, .72) 100%), linear-gradient(180deg, rgba(5, 3, 10, .55), transparent 12%, transparent 88%, rgba(5, 3, 10, .6)); }
+/* CRT overlay for the kill state (scanlines + red vignette; tier 3 adds the flicker) */
+.hkc-crt { position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 2; display: none; mix-blend-mode: normal;
+  background: repeating-linear-gradient(180deg, rgba(255, 40, 60, .0) 0 2px, rgba(255, 40, 60, .11) 2px 3px), radial-gradient(120% 100% at 50% 50%, transparent 40%, rgba(255, 30, 50, .22) 100%); transition: opacity .5s ease; }
+html[data-tier="2"] .hkc-crt, html[data-tier="3"] .hkc-crt { display: block; }
+body.killed .hkc-crt { opacity: .8; }
+html[data-tier="3"] body.killed .hkc-crt { animation: hkcCrt 2.4s steps(1) infinite; }
+@keyframes hkcCrt { 0% { opacity: .8; } 7% { opacity: .45; } 9% { opacity: .85; } 52% { opacity: .8; } 54% { opacity: .55; } 57% { opacity: .9; } 100% { opacity: .8; } }
+.hkc-chip { position: absolute; top: 14px; right: clamp(12px, 2vw, 28px); z-index: 4; max-width: calc(100% - 24px); pointer-events: none;
+  display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 10px; font-size: 10.5px; line-height: 1.5; letter-spacing: .03em; color: #cfc6d8; white-space: nowrap;
+  background: linear-gradient(180deg, rgba(24, 9, 28, .78), rgba(10, 5, 16, .78)); border: 1px solid rgba(255, 70, 140, .34); box-shadow: 0 0 28px rgba(255, 46, 110, .2), inset 0 1px 0 rgba(255, 255, 255, .06);
+  backdrop-filter: blur(10px) saturate(1.3); -webkit-backdrop-filter: blur(10px) saturate(1.3); }
+.hkc-c-top { display: inline-flex; align-items: center; gap: 7px; padding-right: 10px; border-right: 1px solid rgba(255, 255, 255, .12); }
+.hkc-c-top .lamp { width: 6px; height: 6px; }
+.hkc-c-lab { font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--mut); }
+.hkc-c-body b { color: var(--pink2); text-shadow: 0 0 12px rgba(255, 46, 110, .7); text-transform: uppercase; letter-spacing: .08em; }
+.hkc-sep { color: #7d7389; margin: 0 .5em; }
+body.killed .hkc-chip { border-color: rgba(255, 77, 94, .55); box-shadow: 0 0 30px rgba(255, 60, 80, .3); }
+body.killed .hkc-c-body b { color: var(--red); text-shadow: 0 0 12px rgba(255, 77, 94, .8); }
+.hkc-card { position: absolute; left: clamp(12px, 2vw, 28px); top: calc(clamp(420px, 56vw, 560px) - 118px); z-index: 4; padding: 13px 22px 15px 18px; border-radius: 6px 12px 12px 6px; max-width: calc(100% - 24px);
+  background: linear-gradient(180deg, rgba(20, 7, 24, .78), rgba(8, 4, 13, .84)); border: 1px solid rgba(255, 70, 140, .28); border-left: 3px solid var(--pink);
+  box-shadow: -6px 0 32px -6px rgba(255, 46, 110, .55), 0 0 48px rgba(255, 46, 110, .16), inset 0 1px 0 rgba(255, 255, 255, .07);
+  backdrop-filter: blur(12px) saturate(1.3); -webkit-backdrop-filter: blur(12px) saturate(1.3); }
+.hkc-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 9.5px; letter-spacing: .22em; text-transform: uppercase; color: #b3a8be; margin-bottom: 6px; }
+.hkc-eyebrow .lamp { width: 6px; height: 6px; }
+.hkc-title { font: 800 clamp(30px, 3.05vw, 44px)/1 var(--mono); letter-spacing: .015em; color: #fff; text-shadow: 0 0 32px rgba(255, 46, 110, .55), 0 0 2px rgba(255, 255, 255, .6); white-space: nowrap; margin: 0; transition: color .4s ease; }
+.hkc-sub { margin: 9px 0 0; font-size: clamp(10.5px, .86vw, 12px); font-weight: 500; letter-spacing: .04em; color: var(--ink); white-space: nowrap; }
+.hkc-sub i { font-style: normal; color: #7d7389; margin: 0 .7em; } .hkc-sub b { font-weight: 700; }
+.hkc-w1 { color: var(--orange); text-shadow: 0 0 14px rgba(255, 138, 61, .5); } .hkc-w2 { color: var(--pink2); text-shadow: 0 0 14px rgba(255, 46, 110, .6); } .hkc-w3 { color: #fff; }
+body.killed .hkc-card { border-left-color: var(--red); box-shadow: -6px 0 32px -6px rgba(255, 77, 94, .6), 0 0 48px rgba(255, 60, 80, .18), inset 0 1px 0 rgba(255, 255, 255, .07); }
+body.killed .hkc-title { color: #ffd6da; text-shadow: 0 0 30px rgba(255, 77, 94, .7), 0 0 2px rgba(255, 255, 255, .6); }
+.hkc-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.hbtn { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .8); border: 1px solid rgba(255, 111, 166, .5); border-radius: 99px; padding: 11px 16px; min-height: 40px; cursor: pointer; }
+.hbtn:hover { background: rgba(255, 46, 110, .18); }
+.hbtn-kill { border-color: rgba(255, 77, 94, .7); color: #ffd6da; }
+.hbtn-kill[aria-pressed="true"] { background: rgba(255, 77, 94, .28); }
+@media (max-width: 1100px) { .hkc-eyebrow { display: none; } .hkc-card { padding: 11px 18px 13px 16px; } }
+@media (max-width: 899px) { .hkc-c-lab, .hkc-c-top { display: none; } }
+@media (max-width: 699px) {
+  .hkc-net { height: auto; aspect-ratio: 1 / 1.15; }
+  .hkc-chip { top: 7px; left: 8px; right: 8px; max-width: none; justify-content: flex-start; white-space: normal; flex-wrap: wrap; gap: 2px 8px; padding: 6px 10px; font-size: 8.5px; line-height: 1.55; }
+  .hkc-card { position: relative; left: auto; top: auto; max-width: none; }
+  .hkc-eyebrow { display: flex; font-size: 9px; } .hkc-title { font-size: clamp(30px, 10.5vw, 44px); }
+  .hkc-sub { font-size: 11.5px; white-space: normal; } .hkc-sub i { margin: 0 .45em; }
+}
+@media (prefers-reduced-motion: reduce) { .hkc-crt { animation: none !important; } }

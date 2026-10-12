@@ -1,0 +1,10 @@
+<section class="hnt-stage" id="hntStage" aria-label="Node tooltip over a live decision mesh (simulation)">
+  <div class="hnt-net" id="hntNet">
+    <canvas id="hntStatic" aria-hidden="true"></canvas>
+    <canvas id="hntLive" role="img" aria-label="Live mesh from state to code acts. Hover or tap a node or a state row to read its current value, a 20-point sparkline and which typed question it drives most. Click or tap empty space to fire a simulated decision."></canvas>
+    <div class="hnt-tip" id="hntTip" aria-hidden="true"><b class="hnt-tip-h"></b><span class="hnt-tip-v"></span><canvas class="hnt-tip-sp"></canvas><span class="hnt-tip-w"></span><span class="hnt-tip-s">simulated</span></div>
+    <button class="sr-only" type="button" id="hntFire" aria-describedby="hntTip" aria-keyshortcuts="ArrowUp ArrowDown">fire a sample decision (arrow keys inspect state fields)</button>
+    <div class="hnt-hint" aria-hidden="true">hover or tap a node &middot; arrow keys walk the state fields</div>
+  </div>
+  <div class="hnt-bar"><button class="hbtn" id="hntBtn" type="button">fire a decision</button></div>
+</section>

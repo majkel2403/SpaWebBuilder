@@ -1,0 +1,12 @@
+/* hero / bloom-pass — additive downsampled bloom of a live canvas, with an on/off comparison. Prefix hero-/hbp-. */
+.hbp-stage { display: flex; flex-direction: column; gap: 12px; }
+.hbp-net { position: relative; height: clamp(420px, 56vw, 560px); overflow: hidden; border-radius: 14px; background: radial-gradient(90% 70% at 50% 46%, #14061a 0%, #08040d 56%, #05030a 100%); }
+.hbp-net canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#hbpLive { cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.hbp-bar { display: flex; flex-wrap: wrap; gap: 10px 14px; justify-content: center; align-items: center; }
+.hbp-th { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
+.hbp-th canvas { width: 120px; height: 68px; border-radius: 6px; border: 1px solid rgba(255, 90, 156, .3); background: #05030a; filter: brightness(2.4) saturate(1.2); }
+.hbp-th i { font-style: normal; font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase; color: #8d8499; }
+.hbtn { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: #ffd0e2; background: rgba(8, 4, 13, .8); border: 1px solid rgba(255, 111, 166, .5); border-radius: 99px; padding: 11px 16px; min-height: 40px; cursor: pointer; }
+.hbtn:hover, .hbtn[aria-pressed="true"] { background: rgba(255, 46, 110, .18); }
+@media (max-width: 699px) { .hbp-net { height: auto; aspect-ratio: 1 / 1.15; } .hbp-th canvas { width: 96px; height: 54px; } }

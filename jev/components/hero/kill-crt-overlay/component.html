@@ -1,0 +1,20 @@
+<section class="hkc-stage" id="hkcStage" aria-label="Kill switch CRT overlay (simulation)">
+  <div class="hkc-net" id="hkcNet">
+    <div class="hkc-plane" id="hkcPlane">
+      <canvas id="hkcStatic" aria-hidden="true"></canvas>
+      <canvas id="hkcLive" role="img" aria-label="Layered mesh. Toggle the kill switch to see the red flicker, stuttering beams, scanlines and the power-down collapse. Click or tap to fire a simulated decision."></canvas>
+    </div>
+    <div class="hkc-vig" aria-hidden="true"></div>
+    <div class="hkc-crt" aria-hidden="true"></div>
+    <div class="hkc-chip" id="hkcChip"><span class="hkc-c-top"><i class="lamp pink"></i><span class="hkc-c-lab">kill switch</span></span><span class="hkc-c-body"><b id="hkcState">armed</b><span class="hkc-sep">&middot;</span><span id="hkcNote">decisions flow, orders route to execute</span></span></div>
+  </div>
+  <div class="hkc-card" id="hkcCard">
+    <div class="hkc-eyebrow"><i class="lamp pink"></i>jev &middot; kill switch &middot; key k</div>
+    <h2 class="hkc-title" id="hkcTitle">ARMED</h2>
+    <p class="hkc-sub"><b class="hkc-w1">hermes writes</b><i>&middot;</i><b class="hkc-w2">jev decides</b><i>&middot;</i><b class="hkc-w3">code acts</b></p>
+  </div>
+  <div class="hkc-bar">
+    <button class="hbtn hbtn-kill" id="hkcKill" type="button" aria-pressed="false">kill switch: arm &rarr; halt</button>
+    <button class="hbtn" id="hkcFire" type="button">fire a decision</button>
+  </div>
+</section>

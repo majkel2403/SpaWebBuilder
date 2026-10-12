@@ -1,6 +1,6 @@
 # JEV components
 
-Every section, chart, widget and effect of the JEV Desk as a standalone page: **178 components** (builds 24, code 20, desk 47, fx 16, hero 14, hour 18, hud 18, lab 21). Open `components/index.html` for the live gallery.
+Every section, chart, widget and effect of the JEV Desk as a standalone page: **184 components** (builds 24, code 20, desk 47, fx 16, hero 20, hour 18, hud 18, lab 21). Open `components/index.html` for the live gallery.
 
 **Use one elsewhere:** copy its folder (`component.html`, `component.css`, `component.js`, `component.json`) plus the shared runtime `src/js/engine.js`, `src/js/core.js`, `src/css/base.css`, put the markup in a container and call `JEV.boot()` after loading the scripts. Each folder's own `README.md` lists the data it consumes (bus events `decision`, `tick`, `kill`, `floor`, `JEV.market`) and how to feed it real data.
 **Rebuild pages:** `node jev/build-components.mjs` (all) or `--only group/name`. Each `index.html` is generated and fully self-contained.
@@ -117,16 +117,22 @@ Note: components are extracted copies of the main page's modules; the main page 
 | `fx/toasts` | Toasts | Glass toast pills with icon, countdown bar, hover-to-hold and tap or swipe to dismiss; info, ok and kill variants, max two stacked. |
 | `hero/answers-panel` | Typed answers panel | The right half of the hero diagram: three typed questions, eleven probability answers with the 0.85 floor and a confidence tick, and the code acts (execute, review, skip) with odometer counters, fed live by decisions. |
 | `hero/backdrop-fx` | Hero backdrop effects | A CSS-only hero backdrop: spinning conic aura, dot grid, scanning bar, vignette and a glowing hot-pink rule. |
+| `hero/bloom-pass` | Bloom pass | The hero's additive bloom composite: the live canvas is downsampled to 1/3 and 1/9 copies and added back over itself, over animated beams, with an on/off toggle and the two buffers shown. |
 | `hero/bokeh-dust` | Bokeh dust layer | A drifting canvas layer of soft pink, violet and amber bokeh sprites with depth parallax that follows the pointer. |
 | `hero/decision-chip` | Latest decision chip | A glass readout chip that shows the newest simulated decision (symbol, action, confidence, size, risk, destination badge, latency) with odometer digit rolls. |
 | `hero/decision-network` | Jev decides network | A luminous neural-network diagram where every simulated decision flows from state through encode and Jev system one into typed questions, answers and code acts, with a live readout chip and title card. |
+| `hero/depth-fog` | Depth fog | The hero's depth-of-field darkening: one pre-rendered fog ramp whose clear centre follows the layer the active wave is in, over a full layered mesh, with a fog on/off toggle. |
 | `hero/encode-panel` | Encode panel | The narrow ENCODE column that folds the fifteen state ports into twelve zig-zag vector nodes, with pink beams running through on every decision. |
 | `hero/floor-marker` | Confidence floor marker | The 0.85 confidence floor as a spring-loaded marker on a probability track with a live confidence tick and floor step buttons. |
 | `hero/full-section` | Hero full section | The complete JEV DECIDES hero section: decision network canvas, readout chip, legend and title card. |
 | `hero/impact-ripples` | Impact ripples and flare | Three destination ports (execute, review, skip) that throw expanding ripple rings and a lens-flare streak whenever a decision lands there. |
 | `hero/jev-mesh` | Jev system one mesh | The glowing JEV SYSTEM ONE panel: three layers of dense additive mesh woven with a bright cable, with white-hot beams hopping layer to layer on each decision. |
+| `hero/kill-crt-overlay` | Kill switch CRT overlay | The hero's kill-switch look: red flash and flicker, beam stutter, CRT scanlines and the power-down and power-up collapse of the plane when the kill switch is toggled. |
 | `hero/legend-strip` | Destination legend | The execute, review and skip legend dots with live tallies and a pulsing idle hint to fire a decision. |
+| `hero/node-tooltip` | Node tooltip | The hero's hover and tap tooltip on nodes and state rows: field name, current value, a 20-point sparkline and which question the field drives most with its salience, over a live mesh fed by decisions. |
+| `hero/parallax-layers` | Parallax layers | The hero's pointer and scroll parallax: grid, aura, network plane, floating labels and glass cards move at different depths, translate-only, with a scroll slider and live offsets. |
 | `hero/question-nodes` | Typed question nodes | The three typed-question nodes (choice, score, flag) with ring pulses and the live answer written beside each. |
+| `hero/signal-trace` | Signal trace | The glowing polyline that traces the latest decision through the real graph edges (strongest field to encode, jev layers, three questions, chosen answers, code act) and fades over 2 seconds. |
 | `hero/state-panel` | State panel | The STATE input column: fifteen ports with live values and 20-decision sparklines, lighting up whichever field changed. |
 | `hero/title-card` | JEV DECIDES title card | The glass JEV DECIDES title card with a hot-pink spine, spinning conic border, pointer-following holographic sheen and a letter-by-letter neon ignition you can replay. |
 | `hour/answer-chip` | Last-answer chip | The small live pill that shows the last typed answer (action, symbol, confidence and gate result) with execute, review and skip colours and a pulse on every decision. |
@@ -188,9 +194,9 @@ Note: components are extracted copies of the main page's modules; the main page 
 | `lab/typed-questions` | Typed questions | Jev's three typed questions side by side: which action (choice bars and confidence ring), how much (size columns) and risk ok (gauge with check chips). |
 
 ## Verification (2026-10-12)
-All 178 pages were built, loaded in headless Chromium at 1100x650 (desktop) and 390x700 (touch phone), screenshotted and reviewed on contact sheets: each renders its own content with live simulated data, no empty scene, no console errors, no horizontal overflow (see `node build-components.mjs` + the audit used during development).
+All 184 pages were built, loaded in headless Chromium at 1100x650 (desktop) and 390x700 (touch phone), screenshotted and reviewed on contact sheets: each renders its own content with live simulated data, no empty scene, no console errors, no horizontal overflow (see `node build-components.mjs` + the audit used during development).
 
 ## Known limits (by design)
 - Components are extracted copies; the main page is still built from `src/`.
-- `hero/*` pieces are compact re-implementations of the diagram parts; the full-page extras (node hover tooltips with sparklines, depth fog, bloom, scroll parallax, CRT kill overlay) exist only in the main page (`src/js/hero.js`) and in `hero/decision-network`.
+- `hero/*` pieces are compact re-implementations of the diagram parts; the full-page extras (node hover tooltip, depth fog, bloom, parallax, CRT kill overlay, signal trace) are also available as their own components (`hero/node-tooltip`, `depth-fog`, `bloom-pass`, `parallax-layers`, `kill-crt-overlay`, `signal-trace`).
 - Pieces that only make sense inside the full page chrome (HUD metrics, section tint) are demoed with small stand-in layouts.

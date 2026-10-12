@@ -1,0 +1,1 @@
+{"title": "Kill switch CRT overlay", "description": "The hero's kill-switch look: red flash and flicker, beam stutter, CRT scanlines and the power-down and power-up collapse of the plane when the kill switch is toggled.", "width": "1100px", "needs": {"fx": false, "hud": false}, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"]}
