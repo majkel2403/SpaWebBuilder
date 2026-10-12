@@ -1,0 +1,97 @@
+/* JEV motion — premium preset package. Opt-in per element via data-m / data-m-loop, or per component via component.json "motion".
+   Needs nothing but motion.js (adds html.m-js, so with JS off everything stays visible). Respects prefers-reduced-motion and JEV.tier. */
+:root {
+  --m-ease-out: cubic-bezier(.16, 1, .3, 1);          /* expo-out: arrivals */
+  --m-ease-in: cubic-bezier(.7, 0, .84, 0);           /* expo-in: exits */
+  --m-ease-io: cubic-bezier(.65, 0, .35, 1);          /* in-out: moves, loops */
+  --m-ease-back: cubic-bezier(.34, 1.56, .64, 1);     /* overshoot: pops */
+  --m-ease-spring: linear(0, .17 4%, .52 9%, .86 14%, 1.06 19%, 1.12 23%, 1.1 27%, 1.03 33%, .98 40%, .99 47%, 1 60%, 1); /* spring, ~0.6 damping */
+  --m-dur-xs: 140ms; --m-dur-sm: 260ms; --m-dur-md: 520ms; --m-dur-lg: 900ms; --m-dur-xl: 1500ms;
+  --m-dur: var(--m-dur-lg);
+  --m-delay: 0ms; --m-stagger: 70ms; --m-i: 0; --m-dist: 28px; --m-speed: 1;
+  --m-glow: var(--cc, #ff2e6e);
+}
+/* ---------- entrance: hidden state (only when JS is running) ---------- */
+html.m-js [data-m]:not(.m-in):not(.m-done) { opacity: 0; will-change: opacity, transform; }
+html.m-js [data-m] { transition: opacity calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
+  transform calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
+  filter calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)),
+  clip-path calc(var(--m-dur) / var(--m-speed)) var(--m-ease, var(--m-ease-out)) calc((var(--m-delay) + var(--m-i) * var(--m-stagger)) / var(--m-speed)); }
+html.m-js [data-m="fade"]:not(.m-in):not(.m-done) { }
+html.m-js [data-m="rise"]:not(.m-in):not(.m-done) { transform: translateY(var(--m-dist)); }
+html.m-js [data-m="drop"]:not(.m-in):not(.m-done) { transform: translateY(calc(var(--m-dist) * -1)); }
+html.m-js [data-m="slide-l"]:not(.m-in):not(.m-done) { transform: translateX(calc(var(--m-dist) * -1.6)); }
+html.m-js [data-m="slide-r"]:not(.m-in):not(.m-done) { transform: translateX(calc(var(--m-dist) * 1.6)); }
+html.m-js [data-m="scale"]:not(.m-in):not(.m-done) { transform: scale(.92); }
+html.m-js [data-m="zoom"]:not(.m-in):not(.m-done) { transform: scale(1.12); }
+html.m-js [data-m="pop"]:not(.m-in):not(.m-done) { transform: scale(.6); --m-ease: var(--m-ease-back); }
+html.m-js [data-m="blur"]:not(.m-in):not(.m-done) { filter: blur(14px); transform: translateY(10px) scale(.985); }
+html.m-js [data-m="flip"]:not(.m-in):not(.m-done) { transform: perspective(900px) rotateX(-62deg) translateY(14px); transform-origin: 50% 0; }
+html.m-js [data-m="tilt"]:not(.m-in):not(.m-done) { transform: perspective(900px) rotateY(24deg) translateX(-18px) scale(.96); transform-origin: 0 50%; }
+html.m-js [data-m="wipe-x"]:not(.m-in):not(.m-done) { clip-path: inset(0 100% 0 0); opacity: 1; }
+html.m-js [data-m="wipe-y"]:not(.m-in):not(.m-done) { clip-path: inset(100% 0 0 0); opacity: 1; }
+html.m-js [data-m="iris"]:not(.m-in):not(.m-done) { clip-path: circle(0% at 50% 50%); opacity: 1; }
+html.m-js [data-m="glow"]:not(.m-in):not(.m-done) { filter: brightness(2.2) saturate(1.6) blur(6px); transform: scale(1.04); }
+html.m-js [data-m="spring"]:not(.m-in):not(.m-done) { transform: translateY(calc(var(--m-dist) * 1.4)) scale(.94); --m-ease: var(--m-ease-spring); --m-dur: var(--m-dur-xl); }
+html.m-js [data-m="rise"].m-in, html.m-js [data-m="drop"].m-in, html.m-js [data-m="slide-l"].m-in, html.m-js [data-m="slide-r"].m-in, html.m-js [data-m="scale"].m-in, html.m-js [data-m="zoom"].m-in, html.m-js [data-m="pop"].m-in, html.m-js [data-m="blur"].m-in, html.m-js [data-m="flip"].m-in, html.m-js [data-m="tilt"].m-in, html.m-js [data-m="glow"].m-in, html.m-js [data-m="spring"].m-in { opacity: 1; transform: none; filter: none; }
+html.m-js [data-m="wipe-x"].m-in, html.m-js [data-m="wipe-y"].m-in { clip-path: inset(0 0 0 0); }
+html.m-js [data-m="iris"].m-in { clip-path: circle(150% at 50% 50%); }
+/* exit: add .m-out (JEVM.out) — reverse choreography, faster */
+html.m-js [data-m].m-out { opacity: 0; transition-duration: calc(var(--m-dur-md) / var(--m-speed)); transition-timing-function: var(--m-ease-in); transition-delay: calc(var(--m-i) * 30ms); }
+html.m-js [data-m="rise"].m-out { transform: translateY(calc(var(--m-dist) * -.7)); }
+html.m-js [data-m="drop"].m-out { transform: translateY(calc(var(--m-dist) * .7)); }
+html.m-js [data-m="slide-l"].m-out { transform: translateX(calc(var(--m-dist) * 1.2)); }
+html.m-js [data-m="slide-r"].m-out { transform: translateX(calc(var(--m-dist) * -1.2)); }
+html.m-js [data-m="scale"].m-out, html.m-js [data-m="pop"].m-out, html.m-js [data-m="spring"].m-out { transform: scale(.94); }
+html.m-js [data-m="zoom"].m-out { transform: scale(.9); }
+html.m-js [data-m="blur"].m-out { filter: blur(10px); }
+html.m-js [data-m="wipe-x"].m-out { clip-path: inset(0 0 0 100%); opacity: 1; }
+html.m-js [data-m="wipe-y"].m-out { clip-path: inset(0 0 100% 0); opacity: 1; }
+html.m-js [data-m="iris"].m-out { clip-path: circle(0% at 50% 50%); opacity: 1; }
+html.m-js [data-m].m-done { transition: none; }   /* after the entrance finished: never fight the component's own transitions */
+
+/* ---------- loops (ambient life) ---------- */
+[data-m-loop] { animation-duration: calc(var(--m-loop-dur, 4s) / var(--m-speed)); animation-iteration-count: infinite; animation-timing-function: var(--m-ease-io); animation-delay: calc(var(--m-i) * -380ms); }
+[data-m-loop="breathe"] { animation-name: m-breathe; }
+[data-m-loop="float"] { animation-name: m-float; --m-loop-dur: 5.5s; }
+[data-m-loop="pulse"] { animation-name: m-pulse; --m-loop-dur: 2s; }
+[data-m-loop="glow"] { animation-name: m-glowloop; --m-loop-dur: 3s; }
+[data-m-loop="shimmer"] { animation-name: m-shimmer; --m-loop-dur: 3.4s; background-size: 220% 100%; }
+[data-m-loop="sweep"] { animation-name: m-sweep; --m-loop-dur: 4.5s; }
+[data-m-loop="flicker"] { animation-name: m-flicker; --m-loop-dur: 5s; animation-timing-function: steps(1); }
+[data-m-loop="sway"] { animation-name: m-sway; --m-loop-dur: 6s; }
+[data-m-loop="orbit"] { animation-name: m-orbit; --m-loop-dur: 14s; animation-timing-function: linear; }
+[data-m-loop="ring"] { animation-name: m-ring; --m-loop-dur: 2.4s; animation-timing-function: var(--m-ease-out); }
+@keyframes m-breathe { 50% { transform: scale(1.025); } }
+@keyframes m-float { 50% { transform: translateY(-6px); } }
+@keyframes m-pulse { 50% { opacity: .45; transform: scale(.88); } }
+@keyframes m-glowloop { 50% { filter: drop-shadow(0 0 14px var(--m-glow)) brightness(1.15); } }
+@keyframes m-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+@keyframes m-sweep { 0% { transform: translateX(-130%) skewX(-18deg); opacity: 0; } 15%, 70% { opacity: .9; } 100% { transform: translateX(260%) skewX(-18deg); opacity: 0; } }
+@keyframes m-flicker { 0%, 100% { opacity: 1; } 91% { opacity: 1; } 92% { opacity: .55; } 93% { opacity: 1; } 95% { opacity: .7; } 96% { opacity: 1; } }
+@keyframes m-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+@keyframes m-orbit { to { transform: rotate(360deg); } }
+@keyframes m-ring { 0% { box-shadow: 0 0 0 0 var(--m-glow); opacity: 1; } 100% { box-shadow: 0 0 0 18px transparent; opacity: 1; } }
+.m-paused [data-m-loop], [data-m-loop].m-paused, .m-off [data-m-loop] { animation-play-state: paused; }
+
+/* ---------- text: letters/words (JEVM.split) ---------- */
+.m-split .m-ch { display: inline-block; white-space: pre; }
+html.m-js [data-m-split]:not(.m-in) .m-ch { opacity: 0; transform: translateY(.55em) rotate(2deg); filter: blur(6px); }
+html.m-js [data-m-split] .m-ch { transition: opacity .7s var(--m-ease-out) calc(var(--m-delay) + var(--m-i) * 28ms), transform .8s var(--m-ease-out) calc(var(--m-delay) + var(--m-i) * 28ms), filter .7s var(--m-ease-out) calc(var(--m-delay) + var(--m-i) * 28ms); }
+html.m-js [data-m-split].m-in .m-ch { opacity: 1; transform: none; filter: none; }
+
+/* ---------- control bar of standalone component pages ---------- */
+.m-bar { position: fixed; right: 10px; bottom: 8px; z-index: 50; display: flex; gap: 6px; align-items: center; font: 10px/1 var(--mono, ui-monospace, monospace); letter-spacing: .1em; text-transform: uppercase; color: #8d8499; background: rgba(8, 4, 14, .72); border: 1px solid rgba(255, 255, 255, .12); border-radius: 99px; padding: 5px 6px 5px 12px; backdrop-filter: blur(8px); }
+.m-bar b { color: #ff7ab3; font-weight: 700; }
+.m-bar button { all: unset; cursor: pointer; padding: 6px 10px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .14); color: #f4eef6; transition: .2s; }
+.m-bar button:hover, .m-bar button:focus-visible { background: rgba(255, 46, 110, .25); border-color: #ff2e6e; }
+.m-bar button[aria-pressed="true"] { background: rgba(255, 46, 110, .3); border-color: #ff2e6e; }
+@media (max-width: 520px) { .m-bar { left: 10px; right: 10px; justify-content: space-between; } }
+
+/* ---------- degrade: low tier, reduced motion ---------- */
+html[data-tier="1"] [data-m="blur"]:not(.m-in), html[data-tier="1"] [data-m="glow"]:not(.m-in) { filter: none !important; }
+html[data-tier="1"] [data-m-loop="glow"] { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  html.m-js [data-m], html.m-js [data-m]:not(.m-in), html.m-js [data-m-split] .m-ch { opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important; transition: none !important; }
+  [data-m-loop] { animation: none !important; }
+}

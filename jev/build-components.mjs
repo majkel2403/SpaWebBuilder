@@ -18,6 +18,7 @@ const core = rd(src('js', 'core.js'));
 const main = rd(src('js', 'main.js'));
 const fxCss = rd(src('css', 'fx.css')), fxJs = rd(src('js', 'fx.js')), fxHtml = rd(src('html', '00-fx.html'));
 const hudHtml = rd(src('html', '05-hud.html'));
+const motionCss = rd(path.join(root, 'motion', 'motion.css')), motionJs = rd(path.join(root, 'motion', 'motion.js'));
 
 const stageCss = `
 body.cmp{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,3vw,40px)}
@@ -35,9 +36,12 @@ for (const g of fs.readdirSync(cdir, { withFileTypes: true }).filter((d) => d.is
     if (m.hidden) continue;
     const files = (kind) => blocks(g.name + '/' + c.name, kind).map((x) => x.text);
     const needs = m.needs || {};
-    const css = [base, needs.fx ? fxCss : '', ...files('css'), stageCss].join('\n');
+    const mo = m.motion ? m.motion : null;
+    const moCss = mo && mo.css ? (Array.isArray(mo.css) ? mo.css : [mo.css]).map((f) => rd(path.join(dir, f))).join('\n') : '';
+    const css = [base, needs.fx ? fxCss : '', ...files('css'), stageCss, mo ? motionCss : '', moCss].join('\n');
     const html = [needs.fx ? fxHtml : '', needs.hud ? hudHtml : '', `<div class="cmp-stage"${m.width ? ` style="--cmp-w:${m.width}"` : ''}>`, ...files('html'), '</div>', `<div class="cmp-note">jev / ${g.name} / ${c.name}</div>`].join('\n');
-    const js = [engine, core, needs.fx ? fxJs : '', ...files('js'), main].filter(Boolean)
+    const moJs = mo ? [motionJs, `(function(){var cfg=${JSON.stringify(mo.config || mo).replace(/<\//g, '<\\/')};function go(){JEVM.apply(cfg)}if(document.readyState==='complete')setTimeout(go,60);else addEventListener('load',function(){setTimeout(go,60)})})();`] : [];
+    const js = [engine, core, needs.fx ? fxJs : '', ...files('js'), main, ...moJs].filter(Boolean)
       .map((s) => `<script>\n${esc(s)}\n</script>`).join('\n');
     const page = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">

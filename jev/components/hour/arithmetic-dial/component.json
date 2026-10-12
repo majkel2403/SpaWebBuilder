@@ -26,5 +26,33 @@
     "hour/_fx-d",
     "hour/_close",
     "hour/_solo-end"
-  ]
+  ],
+  "motion": {
+    "config": {
+      "root": {
+        "enter": "fade",
+        "dur": 500
+      },
+      "items": [
+        {
+          "sel": ".hr-d",
+          "enter": "blur",
+          "dur": 900
+        },
+        {
+          "sel": ".hr-d > *",
+          "enter": "rise",
+          "stagger": 90,
+          "dur": 700,
+          "delay": 150
+        }
+      ],
+      "loops": [
+        {
+          "sel": ".hr-d .hr-knob, .hr-d [class*=needle]",
+          "loop": "glow"
+        }
+      ]
+    }
+  }
 }
