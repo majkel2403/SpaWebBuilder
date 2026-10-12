@@ -1,0 +1,18 @@
+{
+  "title": "Latency by build tile",
+  "description": "Ten animated latency bars, one per build, coloured by typed question, with the row of the build that just answered lighting up.",
+  "width": "460px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

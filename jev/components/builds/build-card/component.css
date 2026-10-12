@@ -1,0 +1,52 @@
+/* ===== builds — "ten builds, one decision layer": particle hub + live tiles (prefix bld-) ===== */
+@property --hi { syntax: '<number>'; inherits: true; initial-value: 1.2; }
+@property --hs { syntax: '<number>'; inherits: true; initial-value: 1; }
+.bld { position: relative; overflow-x: clip; --spring: cubic-bezier(.34, 1.5, .5, 1); --spring-s: cubic-bezier(.3, 1.3, .5, 1); --bld-side: clamp(186px, 20.5vw, 272px); --bld-vg: clamp(62px, 8.4vw, 100px); --bld-k: #aaa1b8; --bld-line: rgba(255, 255, 255, .06);
+  background: radial-gradient(64% 34% at 50% 30%, rgba(255, 46, 110, .075), transparent 72%), radial-gradient(40% 20% at 50% 78%, rgba(255, 197, 61, .035), transparent 70%); }
+.bld-solo { padding: 28px 0; background: none; }
+.bld-bc-grid { position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; }
+
+/* ---------- card (shared by builds, primitives, decisions, rules) ---------- */
+.bld-card { position: relative; border-radius: 9px; background: linear-gradient(180deg, #130a1a, #09050e); border: 1px solid rgba(var(--cc-rgb), .72);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .55), 0 0 22px rgba(var(--cc-rgb), .15), inset 0 0 20px rgba(var(--cc-rgb), .05); overflow: hidden; min-width: 0;
+  transition: opacity .7s var(--ease) var(--d, 0s), box-shadow .35s var(--ease), border-color .35s; }
+.bld-b { cursor: pointer; }
+.bld-b:focus-visible { outline: 2px solid var(--pink2); outline-offset: 3px; }
+.bld-b::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: var(--ga, 0); transition: opacity .35s; mix-blend-mode: screen;
+  background: radial-gradient(150px circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, .24), rgba(255, 255, 255, .06) 45%, transparent 72%); }
+.bld-b.bld-tilt { z-index: 3; will-change: transform; transform: perspective(720px) rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)) scale(var(--ts, 1));
+  transition: opacity .7s var(--ease) var(--d, 0s), box-shadow .35s var(--ease), border-color .35s, transform .2s cubic-bezier(.2, .7, .3, 1); }
+.bld-b.bld-tilt.bld-settle { transition: opacity .7s var(--ease) var(--d, 0s), box-shadow .35s var(--ease), border-color .35s, transform .8s var(--spring); }
+.bld-b.bld-pin .bld-hd i::before { content: '\25C9\00a0'; }
+.bld-b.bld-pin { border-color: var(--cc); box-shadow: 0 0 0 1px rgba(0, 0, 0, .55), 0 0 30px rgba(var(--cc-rgb), .38), inset 0 0 22px rgba(var(--cc-rgb), .1); }
+.bld-focus .bld-card:not(.bld-hot) .bld-ci { opacity: .5; }
+.bld-ci { transition: transform .85s var(--ease) var(--d, 0s), opacity .3s; }
+.bld-sp { position: relative; flex: 1 1 0; min-width: 16px; height: 12px; align-self: center; margin: 0 1px; }
+.bld-sp svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.bld-sp .fl { stroke: rgba(255, 197, 61, .38); stroke-width: 1; stroke-dasharray: 2 2; vector-effect: non-scaling-stroke; }
+.bld-sp polygon { fill: rgba(var(--cc-rgb), .14); stroke: none; }
+.bld-sp polyline { fill: none; stroke: var(--cc); stroke-width: 1.15; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.bld-sp em { position: absolute; right: 0; top: 50%; width: 4px; height: 4px; margin: -2px -2px 0 0; border-radius: 50%; background: #fff; box-shadow: 0 0 6px var(--cc); transition: top .5s var(--spring); }
+.bld-sp.lo em { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.bld-card:hover, .bld-card.bld-hot { border-color: var(--cc); box-shadow: 0 0 0 1px rgba(0, 0, 0, .55), 0 0 34px rgba(var(--cc-rgb), .42), inset 0 0 24px rgba(var(--cc-rgb), .1); }
+.bld-ci { transition: transform .85s var(--ease) var(--d, 0s); }
+.bld-hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 10px 4px; background: linear-gradient(180deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, 0) 62%), var(--cc); color: #14070e; font-size: 10.5px; font-weight: 800; line-height: 1.35; letter-spacing: .03em; white-space: nowrap; }
+.bld-hd b { font-weight: 800; overflow: hidden; text-overflow: ellipsis; }
+.bld-hd i { font-style: normal; font-size: 8.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .72; flex: none; }
+.bld-rw { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 4px 10px; font-size: 10.5px; line-height: 1.45; min-width: 0; }
+.bld-rw + .bld-rw { border-top: 1px solid var(--bld-line); }
+.bld-rw span { color: var(--bld-k); flex: none; }
+.bld-rw b { color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.bld-rw b.bld-c { color: #d9fff0; } .bld-rw b.bld-c.lo { color: var(--amber); }
+.bld-rw b[data-d="execute"] { color: var(--green); } .bld-rw b[data-d="review"] { color: var(--amber); } .bld-rw b[data-d="skip"] { color: var(--bld-k); }
+body.killed .bld-rw b[data-d="review"] { color: var(--red); }
+.bld-m { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(var(--cc-rgb), .14); display: block; }
+.bld-m i { display: block; height: 100%; width: 100%; transform-origin: 0 50%; transform: scaleX(.9); background: var(--cc); box-shadow: 0 0 8px var(--cc); transition: transform .7s var(--ease); }
+
+.bld-card::before { content: ''; position: absolute; inset: 0; z-index: 3; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .95) 50%, transparent 62%) 160% 0 / 250% 100% no-repeat;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+html:not([data-tier="1"]) .bld-stage .bld-card::before { animation: bldEdge 1.5s cubic-bezier(.3, .6, .3, 1) calc(var(--d, 0s) + .3s) both; }
+@keyframes bldEdge { 0% { opacity: 1; background-position: 160% 0; } 80% { opacity: 1; } 100% { opacity: 0; background-position: -60% 0; } }
+
+@media (prefers-reduced-motion: reduce) { .bld-b.bld-tilt { transform: none; } .bld-card::before { display: none !important; animation: none; } }

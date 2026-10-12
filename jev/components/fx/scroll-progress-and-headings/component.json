@@ -1,0 +1,1 @@
+{ "title": "Scroll progress and headings", "description": "A pink scroll-progress hairline with a tick per section, split-letter heading reveals with a one-shot light sweep, and staggered blur-in section reveals.", "width": "1100px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }

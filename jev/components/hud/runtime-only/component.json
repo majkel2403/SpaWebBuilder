@@ -1,0 +1,1 @@
+{ "title": "Runtime tail", "description": "A blank stage that tails the live JEV state, simulated market and the recent decision stream as JSON, for testing the data bus.", "width": "1100px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }

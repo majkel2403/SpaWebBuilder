@@ -1,0 +1,1 @@
+{ "title": "Cursor ring and magnets", "description": "A custom ring-and-dot cursor that eases toward the pointer, grows over interactive elements and shrinks on press, plus magnetic buttons that drift toward the pointer.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }

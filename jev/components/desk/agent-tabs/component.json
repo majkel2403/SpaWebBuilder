@@ -1,0 +1,18 @@
+{
+  "title": "Agent tabs",
+  "description": "A strip of six agent tabs with orbs and live idle / working / done / halted state; click one to pin it.",
+  "width": "1200px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

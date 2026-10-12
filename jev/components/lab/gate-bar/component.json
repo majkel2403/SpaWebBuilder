@@ -1,0 +1,18 @@
+{
+  "title": "Confidence gate bar",
+  "description": "A tiny reusable 0-1 confidence gate with a draggable floor marker, live confidence pin and pass / below-floor / halt verdict.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

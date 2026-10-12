@@ -1,0 +1,18 @@
+{
+  "title": "Builds hub",
+  "description": "The full decision hub: a glass JEV core card fed by ten build cards through particle ribbons, then three typed questions, five answers and the hard-rules row, all live from the simulated decision stream.",
+  "width": "1240px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

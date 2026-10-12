@@ -1,0 +1,18 @@
+{
+  "title": "Builds full section",
+  "description": "The whole \"ten builds, one decision layer\" section: head with live stats, the particle hub, the circuit traces and all six live dashboard tiles.",
+  "width": "1440px",
+  "needs": {
+    "fx": true,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

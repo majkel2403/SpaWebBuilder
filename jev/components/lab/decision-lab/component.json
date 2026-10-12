@@ -1,0 +1,18 @@
+{
+  "title": "Decision lab",
+  "description": "The whole interactive lab: nine state sliders, scenario presets, confidence floor and kill switch driving the live engine, replayed stage by stage through encode, typed questions, gate and code acts.",
+  "width": "1380px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

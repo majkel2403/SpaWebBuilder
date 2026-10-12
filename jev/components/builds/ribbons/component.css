@@ -1,0 +1,36 @@
+/* ===== builds — "ten builds, one decision layer": particle hub + live tiles (prefix bld-) ===== */
+@property --hi { syntax: '<number>'; inherits: true; initial-value: 1.2; }
+@property --hs { syntax: '<number>'; inherits: true; initial-value: 1; }
+.bld { position: relative; overflow-x: clip; --spring: cubic-bezier(.34, 1.5, .5, 1); --spring-s: cubic-bezier(.3, 1.3, .5, 1); --bld-side: clamp(186px, 20.5vw, 272px); --bld-vg: clamp(62px, 8.4vw, 100px); --bld-k: #aaa1b8; --bld-line: rgba(255, 255, 255, .06);
+  background: radial-gradient(64% 34% at 50% 30%, rgba(255, 46, 110, .075), transparent 72%), radial-gradient(40% 20% at 50% 78%, rgba(255, 197, 61, .035), transparent 70%); }
+.bld-solo { padding: 30px 0; background: none; }
+
+.bld-stage { position: relative; isolation: isolate; padding: 4px 0 26px; }
+/* overhangs the stage (50px above/below, and sideways as far as the page gutter allows) so the hit-flash halo of an edge card is not cut off at the stage edge; GM in builds.js is the halo reach */
+.bld-cv { --ov: min(50px, calc((100vw - 100%) / 2)); position: absolute; left: calc(-1 * var(--ov)); top: -50px; width: calc(100% + 2 * var(--ov)); height: calc(100% + 100px); z-index: 0; pointer-events: none; transition: opacity 1.4s ease .25s; }
+.bld-flow { position: relative; z-index: 1; display: flex; flex-direction: column; }
+/* ---------- card (shared by builds, primitives, decisions, rules) ---------- */
+.bld-card { position: relative; border-radius: 9px; background: linear-gradient(180deg, #130a1a, #09050e); border: 1px solid rgba(var(--cc-rgb), .72);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .55), 0 0 22px rgba(var(--cc-rgb), .15), inset 0 0 20px rgba(var(--cc-rgb), .05); overflow: hidden; min-width: 0;
+  transition: opacity .7s var(--ease) var(--d, 0s), box-shadow .35s var(--ease), border-color .35s; }
+.bld-ci { transition: transform .85s var(--ease) var(--d, 0s), opacity .3s; }
+.bld-card:hover, .bld-card.bld-hot { border-color: var(--cc); box-shadow: 0 0 0 1px rgba(0, 0, 0, .55), 0 0 34px rgba(var(--cc-rgb), .42), inset 0 0 24px rgba(var(--cc-rgb), .1); }
+.bld-ci { transition: transform .85s var(--ease) var(--d, 0s); }
+.bld-hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 10px 4px; background: linear-gradient(180deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, 0) 62%), var(--cc); color: #14070e; font-size: 10.5px; font-weight: 800; line-height: 1.35; letter-spacing: .03em; white-space: nowrap; }
+.bld-hd b { font-weight: 800; overflow: hidden; text-overflow: ellipsis; }
+.bld-hd i { font-style: normal; font-size: 8.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .72; flex: none; }
+.bld-rw { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 4px 10px; font-size: 10.5px; line-height: 1.45; min-width: 0; }
+.bld-rw + .bld-rw { border-top: 1px solid var(--bld-line); }
+.bld-rw span { color: var(--bld-k); flex: none; }
+.bld-rw b { color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.bld-rw b.bld-c { color: #d9fff0; } .bld-rw b.bld-c.lo { color: var(--amber); }
+.bld-rw b[data-d="execute"] { color: var(--green); } .bld-rw b[data-d="review"] { color: var(--amber); } .bld-rw b[data-d="skip"] { color: var(--bld-k); }
+body.killed .bld-rw b[data-d="review"] { color: var(--red); }
+.bld-m { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(var(--cc-rgb), .14); display: block; }
+.bld-m i { display: block; height: 100%; width: 100%; transform-origin: 0 50%; transform: scaleX(.9); background: var(--cc); box-shadow: 0 0 8px var(--cc); transition: transform .7s var(--ease); }
+
+
+.bld-rb-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 40px 0; }
+.bld-rb-box { flex: 0 0 clamp(150px, 26%, 250px); }
+.bld-rb-box .bld-rw { padding: 9px 10px; font-size: 10.5px; transition: background .4s; }
+@media (max-width: 759px) { .bld-rb-box { flex-basis: 40%; } .bld-rb-box .bld-rw { padding: 8px 8px; font-size: 10px; gap: 6px; } .bld-hd i { display: none; } .bld-rb-row { padding: 28px 0; } }

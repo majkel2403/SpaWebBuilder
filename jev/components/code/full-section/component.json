@@ -1,0 +1,18 @@
+{
+  "title": "code section",
+  "description": "The complete code section: headline with the hermes > jev > code > queue flow strip, followed by the four-pane jev-starter window.",
+  "width": "1200px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

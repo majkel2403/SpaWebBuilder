@@ -1,0 +1,18 @@
+{
+  "title": "Order book ladder",
+  "description": "The live 10 x 10 depth ladder as a standalone canvas card: size bars with flashes and sparks, cumulative depth, spread row, imbalance meter and depth heat.",
+  "width": "420px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

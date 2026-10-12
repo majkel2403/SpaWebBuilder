@@ -1,0 +1,75 @@
+<div class="hr">
+<article class="card hr-p hr-a" id="hr-a" data-c="orange" aria-labelledby="hr-a-t">
+  <i class="hr-edge" aria-hidden="true"></i>
+  <div class="hr-ph"><span class="hr-tag">the build</span><span class="hr-ps">3 agents &middot; 60 minutes &middot; 1 bot</span><span class="hr-badge" data-c="yellow">$0.90 / run</span></div>
+  <h3 class="hr-t" id="hr-a-t">Hermes writes the rules, <b class="hr-cb">Dots</b> feeds the data, and <b class="hr-cp">Jev</b> is the only one that can send an order</h3>
+  <p class="hr-note"><span data-c="yellow">top: the three heads and what passes between them</span><span class="hide-s">bottom: four years of candles replayed, with the entries and their stops</span></p>
+
+  <div class="hr-stage" id="hr-stage" role="group" aria-label="Diagram: Hermes passes the rules to Dots, Dots passes the features to Jev, Jev arms the bot or sends it back to the rules. Simulated.">
+    <canvas class="hr-cv" id="hr-arc" aria-hidden="true"></canvas>
+    <div class="hr-trio">
+
+      <div class="hr-ag" data-k="hermes" data-c="orange">
+        <div class="hr-av hr-av-px" id="hr-av0">
+          <i class="hr-scan" aria-hidden="true"></i><svg class="hr-robot" viewBox="0 0 14 13" shape-rendering="crispEdges" aria-hidden="true" focusable="false">
+            <path fill="#b34a0c" d="M6 1h2v1H6zM2 2h10v1H2zM1 3h1v8H1zM12 3h1v8h-1zM2 11h10v1H2zM4 12h2v1H4zM8 12h2v1H8z"/>
+            <path fill="#ff8a3d" d="M2 3h10v8H2z"/>
+            <path fill="#ffc79a" d="M3 4h3v1H3zM3 5h1v1H3z"/>
+            <path fill="#e8681c" d="M11 4h1v6h-1zM10 10h1v1h-1zM2 10h8v1H2z"/>
+            <path fill="#5a2208" d="M4 9h6v1H4z"/>
+            <path fill="#ffd23d" d="M0 5h1v4H0zM13 5h1v4h-1z"/>
+            <rect x="6" y="0" width="2" height="1" fill="#ff8a3d"/>
+            <rect class="hr-ant" x="6" y="0" width="2" height="1" fill="#fff1b8"/>
+            <rect class="hr-eye" x="4" y="6" width="2" height="2" fill="#14080a"/>
+            <rect class="hr-eye" x="8" y="6" width="2" height="2" fill="#14080a"/>
+          </svg>
+        </div>
+        <i class="hr-shd" aria-hidden="true"></i><b class="hr-an">HERMES</b>
+        <span class="hr-al">writes the strategy and the risk rules</span>
+        <span class="hr-as">hermes agent &middot; strategy.yaml</span>
+      </div>
+
+      <div class="hr-ag" data-k="dots" data-c="blue">
+        <div class="hr-av" id="hr-av1"><span class="orb blue"><i class="e l"></i><i class="e r"></i></span></div>
+        <i class="hr-shd" aria-hidden="true"></i><b class="hr-an">DOTS</b>
+        <span class="hr-al">pulls and cleans four years of data</span>
+        <span class="hr-as">the data side</span>
+      </div>
+
+      <div class="hr-ag" data-k="jev" data-c="pink" id="hr-jev">
+        <div class="hr-av" id="hr-av2"><span class="orb pink" id="hr-jev-orb"><i class="e l"></i><i class="e r"></i></span></div>
+        <i class="hr-shd" aria-hidden="true"></i><b class="hr-an">JEV</b>
+        <span class="hr-al">backtests, caps and arms it</span>
+        <span class="hr-as">the gate &middot; cap &middot; kill switch &middot; orders</span>
+        <span class="hr-last" id="hr-last" data-d="skip" aria-live="off"><i></i><span id="hr-last-t">last answer &middot; waiting</span></span>
+      </div>
+
+    </div>
+    <span class="hr-lbl" id="hr-l1" data-c="yellow">the rules</span>
+    <span class="hr-lbl" id="hr-l2" data-c="blue">the features</span>
+    <span class="hr-lbl hr-lbl-r" id="hr-l3" data-c="pink">armed &mdash; or back to the rules</span>
+  </div>
+
+  <div class="hr-lower">
+    <div class="hr-tapebox">
+      <div class="hr-cap"><span>four years of candles, replayed in the backtest</span><i class="hr-leg"><b class="up">&#9650;</b> entry <b class="dn">&#9660;</b> exit <s></s> the stop</i></div>
+      <div class="hr-tape"><canvas id="hr-tape" role="img" aria-label="Simulated candle replay with entries, exits and dashed stop lines scrolling slowly"></canvas></div>
+    </div>
+    <div class="hr-rules" role="group" aria-label="Hard rules, held by code">
+      <div class="hr-chip"><span>daily loss cap</span><b id="hr-r-loss">$2,000</b></div>
+      <div class="hr-chip"><span>max position</span><b id="hr-r-pos">4%</b></div>
+      <button class="hr-chip hr-kill" id="hr-kill" type="button" aria-pressed="false" title="Live: mirrors the kill switch in the header. Click to throw / release it."><span>kill switch</span><b id="hr-kill-t"><i></i>armed</b></button>
+      <p class="hr-cap2">jev holds all three</p>
+    </div>
+  </div>
+
+  <div class="hr-stats hr-st4" id="hr-a-stats">
+    <div><b id="hr-s-time" data-to="480">08:00</b><span>to armed</span></div>
+    <div><b id="hr-s-trades" data-to="1840">1,840</b><span>backtested trades</span></div>
+    <div><b id="hr-s-year" data-to="31">31%</b><span>backtest, a year <em>(illustrative)</em></span></div>
+    <div><b class="hot" id="hr-s-cost" data-to="0.9">$0.90</b><span>the llm side</span></div>
+  </div>
+  <p class="hr-foot">the cap, the stop and the kill switch were written before the first order, not after the first loss</p>
+  <span class="hr-fig" aria-hidden="true">FIG.1</span>
+</article>
+</div>

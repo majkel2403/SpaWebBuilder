@@ -1,0 +1,18 @@
+{
+  "title": "Drift vs noise",
+  "description": "140 random-walk equity curves with a small positive drift fanning out, a live end-value histogram and hover probes.",
+  "width": "560px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Venue feeds",
+  "description": "Global feeds: an oracle price tile with sparkline and eight simulated venue rows with price, latency, bps versus oracle and deviation heat.",
+  "width": "300px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

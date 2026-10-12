@@ -1,0 +1,14 @@
+/* Runtime-only: a blank stage; only the json tail styling lives here. */
+.rt-wrap { padding-bottom: 14px; }
+.rt-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 4px 18px; padding: 8px 14px 0; }
+@media (max-width: 760px) { .rt-grid { grid-template-columns: minmax(0, 1fr); } }
+.rt-col h3 { margin: 12px 0 6px; font: 600 9px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--pink); }
+.rt-col h3 small { color: var(--dim); letter-spacing: .12em; font-size: 9px; margin-left: 6px; }
+.rt-pre { margin: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(0, 0, 0, .35); color: var(--mut); font: 400 10.5px/1.55 var(--mono); white-space: pre-wrap; word-break: break-word; overflow: hidden; }
+.rt-tail { height: 420px; white-space: pre; overflow: hidden; text-overflow: clip; }
+.rt-k { color: var(--pink2); } .rt-s { color: var(--green); } .rt-n { color: var(--amber); } .rt-b { color: var(--violet); }
+.rt-l { display: block; overflow: hidden; text-overflow: ellipsis; }
+.rt-l.rt-review { color: var(--pink2); } .rt-l.rt-skip { color: var(--dim); }
+.rt-l.new { animation: rtIn .5s var(--ease); }
+@keyframes rtIn { from { opacity: 0; transform: translateX(-8px); } }
+@media (max-width: 760px) { .rt-tail { height: auto; max-height: 520px; white-space: normal; } .rt-l { white-space: normal; word-break: break-all; text-overflow: clip; margin-bottom: 4px; } }

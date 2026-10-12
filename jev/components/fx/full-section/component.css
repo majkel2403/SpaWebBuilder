@@ -1,0 +1,17 @@
+/* fx / full-section demo page (the fx module itself is fx.css / fx.js, unmodified copies of src/) */
+#fx-prog { top: 52px; }
+.fxf-bar { position: sticky; top: 0; z-index: 60; height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 clamp(8px, 2vw, 18px); margin: 0 calc(-1 * clamp(12px, 3vw, 40px)); border-bottom: 1px solid var(--line); background: rgba(8, 4, 14, .8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.fxf-bar .nav { display: flex; gap: 2px; }
+.fxf-bar .nav a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: 8px; font-size: 10px; letter-spacing: .18em; color: var(--mut); text-decoration: none; }
+.fxf-acts { display: flex; align-items: center; gap: 8px; }
+.fxf-btn { min-height: 40px; padding: 0 12px; border-radius: 99px; font: 700 10px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); border: 1px solid var(--line2); background: rgba(255, 255, 255, .04); }
+.fxf-btn:hover { border-color: var(--pink); }
+.fxf-bar .kill { min-height: 40px; }
+body.killed .fxf-bar .kill { color: var(--red); border-color: rgba(255, 77, 94, .5); background: rgba(255, 77, 94, .08); }
+body.killed .fxf-bar .kill i { background: var(--red); box-shadow: 0 0 10px var(--red); }
+.fxf-sec { min-height: 80vh; }
+.fxf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.fxf-card { padding: 20px 18px; display: grid; gap: 8px; }
+.fxf-card b { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--pink); font-weight: 500; }
+.fxf-card span { font: 600 18px/1.2 var(--sans); }
+@media (max-width: 700px) { .fxf-grid { grid-template-columns: 1fr; } .fxf-bar .hide-s { display: none; } .fxf-btn { padding: 0 9px; letter-spacing: .08em; } }

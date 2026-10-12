@@ -1,0 +1,18 @@
+{
+  "title": "The tape (candles + book)",
+  "description": "Live BTC-perp candlestick chart with VWAP and +/-1 sigma bands, volume, fired-ticket markers, a crosshair tooltip and a live depth ladder beside it.",
+  "width": "1100px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

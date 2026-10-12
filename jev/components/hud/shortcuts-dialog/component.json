@@ -1,0 +1,1 @@
+{ "title": "Shortcuts dialog", "description": "The keyboard-shortcuts dialog (? key or button): focus-trapped modal that lists every registered single-key shortcut, with a demo trigger.", "width": "720px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }

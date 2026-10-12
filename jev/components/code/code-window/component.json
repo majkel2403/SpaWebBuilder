@@ -1,0 +1,18 @@
+{
+  "title": "jev-starter window",
+  "description": "The whole jev-starter editor window: desk.py, a live hot-pink state.json, questions.py and a streaming zsh terminal with queue counters, handoff packets, ripples and pointer tilt.",
+  "width": "1100px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

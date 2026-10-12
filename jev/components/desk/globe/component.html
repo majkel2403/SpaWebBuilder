@@ -1,0 +1,24 @@
+<div class="card dkw-world" id="dkw-world" role="region" aria-label="the world: eight venues, one oracle, six agents in orbit (simulated)">
+  <div class="ph dkw-ph">
+    <span class="dkw-pt"><b class="pk">◆</b> <b>the world</b> <i class="dkw-ph-s">— eight simulated venues · one oracle · jev in orbit</i></span>
+  </div>
+  <div class="dkw-body" id="dkw-body">
+    <canvas class="dkw-cv" id="dkw-cv" aria-hidden="true"></canvas>
+    <!-- centre: globe stage (canvas lives in .dkw-body so the beams can reach the ticket column) -->
+    <div class="dkw-stage" id="dkw-stage">
+      <div class="dkw-cap" aria-hidden="true"><b>btc-perp</b> · 8 venues · 1 oracle<span class="hide-s"> · 1 book · 6 agents in orbit</span></div>
+      <div class="dkw-grab" id="dkw-grab" role="group" tabindex="0" aria-label="simulated globe with eight venue markers; packets travel along arcs between them. drag to spin, left and right arrows to spin, enter to face the next venue, escape to release."></div>
+      <div class="dkw-tip" id="dkw-tip" aria-hidden="true"><b id="dkw-tip-n">coinbase</b><i id="dkw-tip-c">sfo</i><span>latency <u id="dkw-tip-l">24ms</u></span><span>vs oracle <u id="dkw-tip-s">+0.3bp</u></span><em>simulated</em></div>
+      <div class="dkw-live sr-only" id="dkw-live" role="status" aria-live="polite"></div>
+      <button type="button" class="dkw-ob" data-k="spotter" style="--ac-rgb:46,230,166;--ac:#2ee6a6" aria-label="spotter, scans books and venues"><span class="orb green"><i class="e l"></i><i class="e r"></i></span><em>spotter</em></button>
+      <button type="button" class="dkw-ob" data-k="prior" style="--ac-rgb:255,193,61;--ac:#ffc13d" aria-label="prior, prior from history"><span class="orb amber"><i class="e l"></i><i class="e r"></i></span><em>prior</em></button>
+      <button type="button" class="dkw-ob" data-k="edge" style="--ac-rgb:255,46,110;--ac:#ff2e6e" aria-label="edge, fair value versus market"><span class="orb pink"><i class="e l"></i><i class="e r"></i></span><em>edge</em></button>
+      <button type="button" class="dkw-ob" data-k="kelly" style="--ac-rgb:166,107,255;--ac:#a66bff" aria-label="kelly, sizes the ticket"><span class="orb violet"><i class="e l"></i><i class="e r"></i></span><em>kelly</em></button>
+      <button type="button" class="dkw-ob" data-k="taker" style="--ac-rgb:77,141,255;--ac:#4d8dff" aria-label="taker, crosses the spread"><span class="orb blue"><i class="e l"></i><i class="e r"></i></span><em>taker</em></button>
+      <button type="button" class="dkw-ob" data-k="closer" style="--ac-rgb:255,138,61;--ac:#ff8a3d" aria-label="closer, takes profit or stops"><span class="orb orange"><i class="e l"></i><i class="e r"></i></span><em>closer</em></button>
+      <div class="dkw-jv" id="dkw-jv" aria-hidden="true"><span class="orb white"><i class="e l"></i><i class="e r"></i></span><em>jev · answers</em></div>
+      <div class="dkw-lg" aria-hidden="true"><span style="--c:#ffc13d">quote</span><span style="--c:#f4eef6">order</span><span style="--c:#ff7ab3">jev</span><span style="--c:#3be0ff">fill</span></div>
+      <div class="dkw-hint hide-s" aria-hidden="true">drag to spin · click a venue to face it · ←/→ keys</div>
+    </div>
+  </div>
+</div>

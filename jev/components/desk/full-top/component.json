@@ -1,0 +1,18 @@
+{
+  "title": "Desk top (ticker, P&L, tape)",
+  "description": "The whole top of the desk: status ticker, SWARM P&L card and THE TAPE candlestick chart with order book, laid out like the page.",
+  "width": "1380px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

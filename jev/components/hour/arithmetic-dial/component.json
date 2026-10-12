@@ -1,0 +1,18 @@
+{
+  "title": "The arithmetic: capital dial",
+  "description": "A draggable log gauge from 5% to 480% a year that shows the capital needed to earn $1.2M a year, with magnets, presets and a spring needle.",
+  "width": "680px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

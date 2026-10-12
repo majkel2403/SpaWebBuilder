@@ -1,0 +1,18 @@
+{
+  "title": "World card",
+  "description": "Eight venues on a draggable dotted globe, global feeds, a ticket in flight and six agents in orbit — the full desk-world section.",
+  "width": "1320px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

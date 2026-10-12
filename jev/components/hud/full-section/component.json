@@ -1,0 +1,1 @@
+{ "title": "HUD section", "description": "The whole HUD as on the page: sticky bar with odometers, nav, shortcuts button and kill switch over a placeholder page.", "width": "1280px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }

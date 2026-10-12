@@ -1,0 +1,18 @@
+{
+  "title": "Status ticker",
+  "description": "The desk status ticker card: wordmark, 60 s handoff pulse, nav / session p&l / floor, UTC clock and a marquee of live chips (agents, edge, tickets, spend, kill switch).",
+  "width": "1380px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

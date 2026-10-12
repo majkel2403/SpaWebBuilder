@@ -1,0 +1,38 @@
+.lab { position: relative; overflow-x: clip; --lab-k: #aaa1b8; --lab-t: #ece6f1; --lab-line: rgba(255, 255, 255, .09); --lab-line2: rgba(255, 255, 255, .16);
+  --lab-glass: linear-gradient(180deg, rgba(24, 14, 31, .93), rgba(9, 5, 14, .96)); --lab-gap: 44px; }
+.lab-ctl, .lab-st, .lab-tape { background: var(--lab-glass); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: rgba(var(--cc-rgb, 255, 255, 255), .22);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .04); isolation: isolate; }
+.lab-st { container: labs / inline-size; padding: 12px clamp(12px, 1.5vw, 18px) 16px; transition: border-color .45s, box-shadow .45s; }
+.lab-sh { display: flex; align-items: center; gap: 10px; min-height: 26px; }
+.lab-n { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 7px; flex: none; font: 800 10px/1 var(--mono); color: var(--cc); border: 1px solid rgba(var(--cc-rgb), .75); background: rgba(var(--cc-rgb), .13); box-shadow: 0 0 14px rgba(var(--cc-rgb), .4); }
+.lab-sh h3 { font: 700 13px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: #fff; white-space: nowrap; }
+.lab-sd { flex: 1 1 auto; min-width: 0; font-size: 10.5px; color: var(--lab-k); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lab-sb { margin-left: auto; padding: 3px 10px; border-radius: 5px; font-size: 10px; font-weight: 800; letter-spacing: .1em; white-space: nowrap; color: var(--cc); border: 1px solid rgba(var(--cc-rgb), .65); background: rgba(var(--cc-rgb), .1); font-variant-numeric: tabular-nums; transition: color .3s, border-color .3s, background .3s; }
+.lab-sb[data-v="pass"] { --cc: #2ee6a6; --cc-rgb: 46, 230, 166; } .lab-sb[data-v="below"] { --cc: #ffc13d; --cc-rgb: 255, 193, 61; } .lab-sb[data-v="halt"] { --cc: #ff4d5e; --cc-rgb: 255, 77, 94; }
+.lab-gate { padding: 40px 14px 2px; }
+.lab-gt { --f: .85; position: relative; height: 28px; border-radius: 9px; background: rgba(255, 255, 255, .045); border: 1px solid var(--lab-line2); }
+.lab-gt > i { position: absolute; top: 0; bottom: 0; pointer-events: none; }
+.lab-gt-lo { left: 0; width: calc(var(--f) * 100%); border-radius: 8px 0 0 8px; background: repeating-linear-gradient(135deg, rgba(255, 193, 61, .3) 0 5px, rgba(255, 193, 61, .09) 5px 10px); }
+.lab-gt-hi { left: calc(var(--f) * 100%); right: 0; border-radius: 0 8px 8px 0; background: linear-gradient(90deg, rgba(46, 230, 166, .2), rgba(46, 230, 166, .5)); box-shadow: inset 0 0 18px rgba(46, 230, 166, .25); }
+.lab-gt-tail { left: 0; right: 0; top: 10px !important; bottom: 10px !important; border-radius: 4px; transform-origin: 0 50%; transform: scaleX(.9); background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .85)); transition: transform .75s var(--ease); }
+.lab-gt-k { left: calc(var(--x) * 100%); width: 1px; background: rgba(255, 255, 255, .16); }
+.lab-gt-hz { display: none; inset: 0; border-radius: 8px; background: repeating-linear-gradient(-45deg, rgba(255, 77, 94, .45) 0 8px, transparent 8px 16px); opacity: .55; }
+body.killed .lab-gt-hz { display: block; }
+.lab-cf { position: absolute; left: 90%; top: 50%; width: 0; height: 0; z-index: 2; --cc: #2ee6a6; --cc-rgb: 46, 230, 166; transition: left .8s cubic-bezier(.2, .9, .2, 1); }
+.lab-cf[data-v="below"] { --cc: #ffc13d; --cc-rgb: 255, 193, 61; } .lab-cf[data-v="halt"] { --cc: #ff4d5e; --cc-rgb: 255, 77, 94; }
+.lab-cf-o { position: absolute; left: -10px; top: -10px; width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle at 36% 30%, #fff 0 18%, var(--cc) 56%, rgba(var(--cc-rgb), .75)); box-shadow: 0 0 0 4px rgba(var(--cc-rgb), .25), 0 0 24px var(--cc); }
+.lab-cf b { position: absolute; left: 0; top: 19px; transform: translateX(-50%); padding: 3px 9px; border-radius: 6px; font: 800 12px/1.2 var(--mono); white-space: nowrap; color: #08050d; background: var(--cc); box-shadow: 0 0 16px rgba(var(--cc-rgb), .7); font-variant-numeric: tabular-nums; }
+.lab-cf b::before { content: ''; position: absolute; left: 50%; top: -4px; margin-left: -4px; border: 4px solid transparent; border-top: 0; border-bottom-color: var(--cc); }
+.lab-fl { position: absolute; left: calc(var(--f) * 100%); top: -37px; bottom: -5px; width: 48px; margin-left: -24px; z-index: 3; display: flex; justify-content: center; align-items: flex-start; cursor: ew-resize; touch-action: none; }
+.lab-fl::before { content: ''; position: absolute; left: 50%; top: 25px; bottom: 0; width: 2px; margin-left: -1px; background: linear-gradient(180deg, var(--orange), rgba(255, 138, 61, .45)); box-shadow: 0 0 12px var(--orange); }
+.lab-fl-t { position: relative; z-index: 1; margin-top: 2px; display: inline-flex; gap: 6px; padding: 5px 10px; border-radius: 7px; background: #1b0f08; border: 1px solid var(--orange); color: var(--orange); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 18px rgba(255, 138, 61, .6); transition: background .2s, color .2s; }
+.lab-fl-t b { color: #fff; font-variant-numeric: tabular-nums; }
+.lab-fl:hover .lab-fl-t, .lab-fl.drag .lab-fl-t { background: var(--orange); color: #1a0a00; } .lab-fl:hover .lab-fl-t b, .lab-fl.drag .lab-fl-t b { color: #1a0a00; }
+.lab-fl:focus-visible { outline: none; } .lab-fl:focus-visible .lab-fl-t { outline: 2px solid #fff; outline-offset: 2px; }
+.lab-gx { position: relative; height: 14px; margin-top: 38px; font-size: 9.5px; color: var(--lab-k); }
+.lab-gx span { position: absolute; left: calc(var(--x) * 100%); transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+.lab-why { margin-top: 12px; padding: 7px 11px; border-radius: 7px; font-size: 11.5px; color: var(--lab-k); background: rgba(255, 255, 255, .03); border: 1px dashed var(--lab-line2); }
+.lab-why b { color: #fff; font-weight: 700; } .lab-why u { text-decoration: none; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.lab-st > :not(.lab-edge) { transition: none; }
+.lab-live .lab-cf, .lab-live .lab-gt-tail { transition-duration: .2s !important; }
+@media (max-width: 420px) { .lab-fl-t { padding: 5px 8px; letter-spacing: .06em; } .lab-sh h3 { letter-spacing: .1em; } }

@@ -1,0 +1,18 @@
+{
+  "title": "Swarm P&L panel",
+  "description": "The SWARM P&L card: serif odometer balance with neon glow, balance-history line with a live head, win/loss strip, route/size bars and lifetime stats.",
+  "width": "520px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

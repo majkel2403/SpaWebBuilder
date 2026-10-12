@@ -1,0 +1,18 @@
+{
+  "title": "JEV core card",
+  "description": "The glass JEV system-one card: a spinning pink rim, pulsing halo and rings, a holographic JEV wordmark that tilts with the pointer, a live action chip and last-answer line.",
+  "width": "520px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Build card",
+  "description": "A reusable build card with a typed-question tag, live answer, confidence sparkline against the floor line and a hover-tilt glass look, shown as a grid of four accent variants.",
+  "width": "1000px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

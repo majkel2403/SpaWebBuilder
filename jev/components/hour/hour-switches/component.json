@@ -1,0 +1,18 @@
+{
+  "title": "The hour: six switches",
+  "description": "An amber 60:00 ring, six spring switches and a gantt rail that flip one after another until the ARMED banner fires with a particle burst.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

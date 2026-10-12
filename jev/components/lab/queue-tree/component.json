@@ -1,0 +1,18 @@
+{
+  "title": "Queue tree and handoff",
+  "description": "The code-acts queue: a typed handoff.json that types itself out and an execute / review / skip file tree where each new decision lands as a file.",
+  "width": "760px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

@@ -1,0 +1,12 @@
+/* Shortcuts dialog: .kb, .kb-back, .kb-h, .kb-l, .kb kbd, body.kb-open and .hud-help live in base.css (the dialog is built by core.js on first open).
+   Rules below are the demo panel only. */
+.sd-wrap { padding-bottom: 16px; }
+.sd-body { display: flex; align-items: center; gap: 18px; padding: 18px 14px 6px; }
+.sd-btn { width: 44px; height: 44px; font-size: 16px; }
+.sd-note { color: var(--mut); font-size: 11.5px; max-width: 60ch; }
+.sd-note kbd, .sd-chip kbd { font: 700 10px/1 var(--mono); padding: 3px 6px; border: 1px solid var(--line2); border-radius: 5px; color: var(--pink2); }
+.sd-note code { color: var(--ink); }
+.sd-demo { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 14px 0; }
+.sd-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line2); background: rgba(255, 255, 255, .03); color: var(--mut); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.sd-chip b { color: var(--ink); min-width: 3ch; }
+@media (max-width: 520px) { .sd-body { flex-direction: column; align-items: flex-start; } }

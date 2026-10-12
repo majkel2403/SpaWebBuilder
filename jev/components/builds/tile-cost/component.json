@@ -1,0 +1,18 @@
+{
+  "title": "Cost this run tile",
+  "description": "A serif odometer showing the simulated running cost of all typed answers, with decisions count, cost each and a zero-token line.",
+  "width": "460px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

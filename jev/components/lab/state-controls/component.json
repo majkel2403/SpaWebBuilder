@@ -1,0 +1,18 @@
+{
+  "title": "State controls",
+  "description": "A glass control card with nine input sliders, scenario presets, floor and kill switch that emits a simulated market state and shows it as live JSON.",
+  "width": "520px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

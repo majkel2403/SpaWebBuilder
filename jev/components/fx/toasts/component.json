@@ -1,0 +1,1 @@
+{ "title": "Toasts", "description": "Glass toast pills with icon, countdown bar, hover-to-hold and tap or swipe to dismiss; info, ok and kill variants, max two stacked.", "width": "900px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }

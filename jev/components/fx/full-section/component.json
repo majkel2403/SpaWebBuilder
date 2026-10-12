@@ -1,0 +1,1 @@
+{ "title": "FX layer (full)", "description": "The whole fx module together: boot overlay, plasma background, grain, scanlines, cursor ring, scroll progress, split headings, toasts and the kill-switch theatre.", "width": "1100px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["fx.css", "component.css"], "js": ["fx.js", "component.js"] }

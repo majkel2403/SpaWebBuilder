@@ -1,0 +1,18 @@
+{
+  "title": "The honest part: backtest vs reality",
+  "description": "Two bars from one strategy, backtest versus what reaches you, with red leak ribbons falling into the venue bin.",
+  "width": "680px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

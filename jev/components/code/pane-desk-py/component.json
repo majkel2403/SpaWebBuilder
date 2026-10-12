@@ -1,0 +1,18 @@
+{
+  "title": "desk.py pane",
+  "description": "A light editor pane that types out the python desk() gate with line numbers, a moving current-line band, minimap, scanner beam and status LEDs.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

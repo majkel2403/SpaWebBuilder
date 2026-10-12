@@ -1,0 +1,1 @@
+{ "title": "Kill switch", "description": "The pill-shaped kill switch: one click halts every simulated order into human review and tints the whole page red, shown with a live execute / review / skip tally.", "width": "720px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }

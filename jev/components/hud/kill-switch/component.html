@@ -1,0 +1,13 @@
+<div class="ks-wrap card">
+  <div class="ph"><span><b>kill switch</b> · global effect demo</span><span class="pk" id="ksState">armed</span></div>
+  <div class="ks-body">
+    <button class="kill" id="killBtn" type="button" aria-pressed="false" aria-label="Kill switch" aria-keyshortcuts="k" title="Kill switch (k): every order goes to human review, holds still skip"><i></i><span id="killTxt">ARMED</span></button>
+    <p class="ks-note">click it (or press <kbd>k</kbd>). while halted the whole page takes a red edge vignette and every simulated ticket is rerouted to human review; holds still skip.</p>
+  </div>
+  <div class="ks-tally">
+    <div><label>execute</label><b id="ksExec" class="num up">0</b></div>
+    <div><label>review</label><b id="ksRev" class="num hot">0</b></div>
+    <div><label>skip</label><b id="ksSkip" class="num mut">0</b></div>
+  </div>
+  <div class="ks-log" id="ksLog" aria-live="off"></div>
+</div>

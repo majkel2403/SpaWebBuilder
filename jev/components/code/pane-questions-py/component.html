@@ -1,0 +1,30 @@
+<div class="code-one" id="code-one">
+  <article class="code-pane code-light" data-k="q" aria-label="questions.py">
+    <header class="code-ph"><i class="code-pd"></i><b>questions.py</b><button class="code-cp" type="button" data-cp="questions.py" aria-label="copy questions.py (illustrative sample)" title="copy"><svg viewBox="0 0 16 16" aria-hidden="true"><g class="ci"><rect x="5.5" y="5.5" width="8" height="8" rx="1.8"/><path d="M10.5 3.6A1.8 1.8 0 0 0 8.7 1.8H3.8A1.8 1.8 0 0 0 2 3.6v4.9a1.8 1.8 0 0 0 1.8 1.8h.2"/></g><path class="ck" d="M3.6 8.6l3 3 5.8-6.4"/></svg></button><span class="code-led" aria-hidden="true"><i></i><i></i><i></i></span><span class="code-meta">ln <em class="code-ln-n">1</em> &middot; <em class="code-ts-n">0.0</em> t/s</span></header>
+    <i class="code-rip" aria-hidden="true"></i>
+    <div class="code-view">
+      <div class="code-body" tabindex="0" role="region" aria-label="questions.py source (scroll sideways on small screens)">
+        <div class="code-doc"><pre class="code-src" data-lang="py"># hard rules live in code, not in the model.
+from pathlib import Path
+from jev import choice, score, flag
+
+QUESTIONS = {
+    "action": choice("buy", "sell", "hold", "close", "flatten"),
+    "size": score(0.5, 1, 2, 4),            # % of capital
+    "risk_ok": flag("spread, latency, loss, feed age"),
+}
+
+FLOOR = 0.85                  # below this a human looks first
+DAILY_LOSS_CAP = 2000         # usd, then the desk stops
+MAX_POSITION = 0.04           # 4% of capital
+KILL_FILE = Path("KILL")      # one file halts the desk
+
+def gate(answer):
+    if KILL_FILE.exists() or answer.daily_pnl &lt;= -DAILY_LOSS_CAP:
+        return False
+    return answer.size / 100 &lt;= MAX_POSITION</pre></div>
+      </div>
+      <div class="code-mm" aria-hidden="true"><canvas></canvas><i></i></div>
+    </div>
+  </article>
+</div>

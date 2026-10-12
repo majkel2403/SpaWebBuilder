@@ -1,0 +1,18 @@
+{
+  "title": "Decision pipeline",
+  "description": "The four-stage decision pipeline (encode, typed questions, gate, code acts) with ribbons, comet and particle bursts, fed by a built-in demo state that cycles through scenarios.",
+  "width": "1100px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

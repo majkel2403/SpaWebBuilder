@@ -1,0 +1,18 @@
+{
+  "title": "Mascots: pixel robot and orbs",
+  "description": "The character kit: a pixel-art robot and two glass orbs with breathing, squash-and-stretch hops, orbiting sparks and a live answer chip.",
+  "width": "720px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

@@ -1,0 +1,8 @@
+/* HUD bar: every .hud / .mets / .m / .od / .nav / .kill / .hud-tip / .hud-help rule lives in the shared base.css (copy it with the folder).
+   Only the placeholder-page rules for this demo are here. */
+.hudx-demo { display: block; }
+.hudx-sec { min-height: 62vh; padding: 28px var(--gut); border-bottom: 1px dashed var(--line); color: var(--mut); }
+.hudx-sec > b { display: block; font: 700 11px/1 var(--mono); letter-spacing: .24em; text-transform: uppercase; color: var(--pink); margin-bottom: 12px; }
+.hudx-sec p { max-width: 60ch; font-size: 12px; margin-top: 8px; }
+.hudx-sec kbd { font: 700 10px/1 var(--mono); padding: 3px 6px; border: 1px solid var(--line2); border-radius: 5px; color: var(--pink2); }
+.hudx-last { color: var(--ink); font-variant-numeric: tabular-nums; }

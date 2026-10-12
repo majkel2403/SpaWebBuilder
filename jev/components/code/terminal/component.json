@@ -1,0 +1,18 @@
+{
+  "title": "jev terminal",
+  "description": "A dark zsh terminal that streams every simulated decision (choice, size, risk flag, saved handoff) with matrix rain, CRT glow, a live/pause pill, a run button and scroll-back.",
+  "width": "640px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}

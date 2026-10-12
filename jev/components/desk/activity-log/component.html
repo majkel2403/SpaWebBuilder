@@ -1,0 +1,15 @@
+<div class="card dkb-card dkb-log" id="dkb-log" style="--i:4" role="region" aria-label="activity log, simulated">
+  <div class="ph">
+    <span class="dkb-t"><b class="pk">◆</b> <b>activity log</b> <i class="dkb-ph-s">— six agents · every step</i></span>
+    <span class="dkb-hn dkb-hl">
+      <button type="button" class="dkb-live" id="dkb-live" aria-pressed="false" title="the log pauses while the pointer is over it · tap to hold or resume"><i class="lamp" aria-hidden="true"></i><span id="dkb-lv">live</span></button>
+      <span><b id="dkb-cnt" class="num">39</b> resolved</span>
+    </span>
+  </div>
+  <div class="dkb-chips" id="dkb-chips" role="group" aria-label="mute or unmute an agent"></div>
+  <div class="dkb-rw" id="dkb-rw">
+    <button type="button" class="dkb-more" id="dkb-more" hidden aria-label="jump to the newest steps"></button>
+    <div class="dkb-tip" id="dkb-tip" role="tooltip" aria-hidden="true"><b id="dkb-tph"></b><span id="dkb-tpt"></span></div>
+    <div class="dkb-rows" id="dkb-rows" role="group" tabindex="0" aria-label="log rows: arrow keys move, full message shows in a card"><canvas class="dkb-rain" id="dkb-rain" aria-hidden="true"></canvas><ol class="dkb-rl" id="dkb-rl" role="log" aria-live="off" aria-label="newest step first"></ol></div>
+  </div>
+</div>

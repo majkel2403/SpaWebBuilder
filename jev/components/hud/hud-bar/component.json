@@ -1,0 +1,1 @@
+{ "title": "HUD bar", "description": "The sticky trading HUD: live decision, cost, median-latency and floor odometers, section nav, shortcuts button and the kill switch.", "width": "1280px", "needs": { "fx": false, "hud": false }, "html": ["component.html"], "css": ["component.css"], "js": ["component.js"] }

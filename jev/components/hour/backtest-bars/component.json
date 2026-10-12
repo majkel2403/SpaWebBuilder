@@ -1,0 +1,18 @@
+{
+  "title": "The backtest: 1,840 trades",
+  "description": "Every backtest trade as a thin up/down bar with the running total above, a pulsing drawdown block and a scrubbable crosshair.",
+  "width": "620px",
+  "needs": {
+    "fx": false,
+    "hud": false
+  },
+  "html": [
+    "component.html"
+  ],
+  "css": [
+    "component.css"
+  ],
+  "js": [
+    "component.js"
+  ]
+}
