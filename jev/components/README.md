@@ -186,3 +186,11 @@ Note: components are extracted copies of the main page's modules; the main page 
 | `lab/state-controls` | State controls | A glass control card with nine input sliders, scenario presets, floor and kill switch that emits a simulated market state and shows it as live JSON. |
 | `lab/switch-card` | Switch cards | Glass switch cards with a glowing toggle and a two-line label (auto, kill switch bound to the runtime, dry run, a disabled one), each with its own accent and on/off caption. |
 | `lab/typed-questions` | Typed questions | Jev's three typed questions side by side: which action (choice bars and confidence ring), how much (size columns) and risk ok (gauge with check chips). |
+
+## Verification (2026-10-12)
+All 178 pages were built, loaded in headless Chromium at 1100x650 (desktop) and 390x700 (touch phone), screenshotted and reviewed on contact sheets: each renders its own content with live simulated data, no empty scene, no console errors, no horizontal overflow (see `node build-components.mjs` + the audit used during development).
+
+## Known limits (by design)
+- Components are extracted copies; the main page is still built from `src/`.
+- `hero/*` pieces are compact re-implementations of the diagram parts; the full-page extras (node hover tooltips with sparklines, depth fog, bloom, scroll parallax, CRT kill overlay) exist only in the main page (`src/js/hero.js`) and in `hero/decision-network`.
+- Pieces that only make sense inside the full page chrome (HUD metrics, section tint) are demoed with small stand-in layouts.
